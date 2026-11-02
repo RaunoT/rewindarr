@@ -92,10 +92,10 @@ If you like this project and wish to support it, you can do so on [GitHub Sponso
 
 ## Star History
 
-<a href="https://star-history.dera.page/#RaunoT/rewindarr&type=date&legend=top-left">
+<a href="https://star-history.dera.page/#RaunoT/plex-rewind&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=RaunoT/rewindarr&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=RaunoT/rewindarr&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=RaunoT/rewindarr&type=date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=RaunoT/plex-rewind&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=RaunoT/plex-rewind&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=RaunoT/plex-rewind&type=date&legend=top-left" />
  </picture>
 </a>
