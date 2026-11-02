@@ -292,7 +292,7 @@ describe('getHistoryPage', () => {
       NOW,
     )
     const forBob = await getHistoryPage(
-      { since: SINCE, kind: 'request', userId: '2' },
+      { since: SINCE, kind: 'request', userIds: ['2'] },
       1,
       25,
       NOW,
@@ -319,6 +319,37 @@ describe('getHistoryPage', () => {
 
     expect(plays.totals).toMatchObject({ plays: 10, requests: 0 })
     expect(ids(found)).toEqual(['request 2'])
+  })
+
+  it('asks the source for one user, and picks several from everyone', async () => {
+    const one = await getHistoryPage(
+      { since: SINCE, userIds: ['1'] },
+      1,
+      25,
+      NOW,
+    )
+
+    expect(getHistoryPlays).toHaveBeenLastCalledWith({
+      since: SINCE,
+      libraries: undefined,
+      userId: '1',
+    })
+    expect(one.totals).toMatchObject({ plays: 100, requests: 2 })
+
+    const several = await getHistoryPage(
+      { since: SINCE, userIds: ['2', '3'] },
+      1,
+      25,
+      NOW,
+    )
+
+    expect(getHistoryPlays).toHaveBeenLastCalledWith({
+      since: SINCE,
+      libraries: undefined,
+      userId: undefined,
+    })
+    // Only Bob's request, as the plays are all Alice's
+    expect(ids(several)).toEqual(['request 2'])
   })
 
   it('has one empty page without anything', async () => {

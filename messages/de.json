@@ -61,24 +61,14 @@
     "showMore": "Mehr anzeigen",
     "title": "Dashboard",
     "usersTitle": "Benutzer",
-    "users": "{count, plural, one {# Benutzer} other {# Benutzer}}",
-    "movies": "{count, plural, one {Film} other {Filme}}",
-    "episodes": "{count, plural, one {Episode} other {Episoden}}",
-    "tracks": "{count, plural, one {Titel} other {Titel}}",
-    "requests": "{count, plural, one {# Anfrage} other {# Anfragen}}",
-    "durationWatched": "{duration} geschaut",
-    "durationListened": "{duration} gehört",
-    "durationPlayed": "{duration} abgespielt"
+    "users": "{count, plural, one {# Benutzer} other {# Benutzer}}"
   },
   "DashboardFilters": {
     "type": "Statistik für",
     "general": "Alle",
     "personal": "Nur mich",
     "sortByLabel": "Sortieren nach",
-    "sort": "Sortieren",
-    "byDuration": "Nach Wiedergabezeit",
-    "byPlays": "Nach Anzahl der Wiedergaben",
-    "byUsers": "Nach Anzahl der Benutzer"
+    "sort": "Sortieren"
   },
   "DashboardNavContent": {
     "label": "Dashboard Navigation",
@@ -99,29 +89,24 @@
     "syncingShort": "Wiedergabeverlauf wird synchronisiert…",
     "title": "Verlauf",
     "libraryLabel": "Bibliothek",
-    "allLibraries": "Alle Bibliotheken",
     "noPlays": "Noch nichts abgespielt",
     "today": "Heute",
     "yesterday": "Gestern",
     "poster": "Poster für {title}",
     "anonymous": "Anonym",
     "unknownUser": "Unbekannter Benutzer",
-    "userLabel": "Benutzer",
-    "allUsers": "Alle Benutzer",
     "onlyMine": "Nur meine",
     "search": "Titel suchen",
+    "clearSearch": "Suche löschen",
     "noMatches": "Keine Wiedergaben passen zu den Filtern",
     "pagination": "Seiten",
     "page": "Seite {page}",
-    "pageOf": "{page} von {pageCount}",
     "previousPage": "Vorherige Seite",
     "nextPage": "Nächste Seite",
-    "playCount": "{count, plural, one {# Wiedergabe} other {# Wiedergaben}}",
     "episodeNumber": "S{season} · F{episode}",
     "rowsLabel": "Zeilen pro Seite",
     "rowsOption": "{count} pro Seite",
     "kindLabel": "Art",
-    "allKinds": "Wiedergaben und Anfragen",
     "plays": "Wiedergaben",
     "requests": "Anfragen",
     "request": "Anfrage",
@@ -152,8 +137,7 @@
     "7days": "7 Tage",
     "pastYear": "Letztes Jahr",
     "allTime": "Gesamte Zeit",
-    "days": "{count, plural, one {# Tag} other {# Tage}}",
-    "label": "Zeitraum auswählen"
+    "days": "{count, plural, one {# Tag} other {# Tage}}"
   },
   "NotFound": {
     "title": "404",
@@ -309,13 +293,13 @@
     "startDate": "Startdatum",
     "profilePictureAlt": "Profilbild von {name}",
     "time": {
-      "zero": "0 Minuten",
-      "month": "{count, plural, one {# Monat} other {# Monate}}",
-      "week": "{count, plural, one {# Woche} other {# Wochen}}",
-      "day": "{count, plural, one {# Tag} other {# Tage}}",
-      "hr": "{count, plural, one {# Stunde} other {# Stunden}}",
-      "min": "{count, plural, one {# Minute} other {# Minuten}}",
-      "sec": "{count, plural, one {# Sekunde} other {# Sekunden}}"
+      "zero": "0 Min.",
+      "month": "{count, plural, one {# Mon.} other {# Mon.}}",
+      "week": "{count, plural, one {# Wo.} other {# Wo.}}",
+      "day": "{count, plural, one {# Tg.} other {# Tg.}}",
+      "hr": "{count, plural, one {# Std.} other {# Std.}}",
+      "min": "{count, plural, one {# Min.} other {# Min.}}",
+      "sec": "{count, plural, one {# Sek.} other {# Sek.}}"
     },
     "fileSize": "{value, number} {unit}"
   },
@@ -474,5 +458,20 @@
     "requestLabel": "Anfrage für {title}",
     "externalLinkLabel": "{title} auf {site}",
     "externalSearchLabel": "{title} auf {site} suchen"
+  },
+  "Totals": {
+    "playTime": "Abspielzeit",
+    "listenTime": "Hörzeit",
+    "movies": "Filme",
+    "episodes": "Episoden",
+    "tracks": "Titel"
+  },
+  "Filters": {
+    "title": "Filter",
+    "titleWithCount": "{count, plural, one {Filter, # aktiv} other {Filter, # aktiv}}",
+    "clearAll": "Alle zurücksetzen",
+    "done": "Fertig",
+    "period": "Zeitraum",
+    "all": "Alle"
   }
 }

@@ -61,24 +61,14 @@
     "showMore": "Mostrar más",
     "title": "Panel",
     "usersTitle": "Usuarios",
-    "users": "{count, plural, one {# usuario} other {# usuarios}}",
-    "movies": "{count, plural, one {película} other {películas}}",
-    "episodes": "{count, plural, one {episodio} other {episodios}}",
-    "tracks": "{count, plural, one {canción} other {canciones}}",
-    "requests": "{count, plural, one {# solicitud} other {# solicitudes}}",
-    "durationWatched": "{duration} de visualización",
-    "durationListened": "{duration} de escucha",
-    "durationPlayed": "{duration} de reproducción"
+    "users": "{count, plural, one {# usuario} other {# usuarios}}"
   },
   "DashboardFilters": {
     "type": "Estadísticas de",
     "general": "Todos",
     "personal": "Solo yo",
     "sortByLabel": "Ordenar por",
-    "sort": "Ordenar",
-    "byDuration": "Por tiempo de visualización",
-    "byPlays": "Por reproducciones",
-    "byUsers": "Por usuarios"
+    "sort": "Ordenar"
   },
   "DashboardNavContent": {
     "label": "Navegación del panel",
@@ -99,29 +89,24 @@
     "syncingShort": "Sincronizando el historial…",
     "title": "Historial",
     "libraryLabel": "Biblioteca",
-    "allLibraries": "Todas las bibliotecas",
     "noPlays": "Aún no se ha reproducido nada",
     "today": "Hoy",
     "yesterday": "Ayer",
     "poster": "Póster de {title}",
     "anonymous": "Anónimo",
     "unknownUser": "Usuario desconocido",
-    "userLabel": "Usuario",
-    "allUsers": "Todos los usuarios",
     "onlyMine": "Solo las mías",
     "search": "Buscar títulos",
+    "clearSearch": "Borrar búsqueda",
     "noMatches": "Ninguna reproducción coincide con los filtros",
     "pagination": "Páginas",
     "page": "Página {page}",
-    "pageOf": "{page} de {pageCount}",
     "previousPage": "Página anterior",
     "nextPage": "Página siguiente",
-    "playCount": "{count, plural, one {# reproducción} other {# reproducciones}}",
     "episodeNumber": "T{season} · E{episode}",
     "rowsLabel": "Filas por página",
     "rowsOption": "{count} por página",
     "kindLabel": "Tipo",
-    "allKinds": "Reproducciones y solicitudes",
     "plays": "Reproducciones",
     "requests": "Solicitudes",
     "request": "Solicitud",
@@ -152,8 +137,7 @@
     "7days": "7 días",
     "pastYear": "Último año",
     "allTime": "Desde siempre",
-    "days": "{count, plural, one {# día} other {# días}}",
-    "label": "Selección de periodo"
+    "days": "{count, plural, one {# día} other {# días}}"
   },
   "NotFound": {
     "title": "404",
@@ -311,8 +295,8 @@
     "time": {
       "zero": "0 min",
       "month": "{count, plural, one {# mes} other {# meses}}",
-      "week": "{count, plural, one {# semana} other {# semanas}}",
-      "day": "{count, plural, one {# día} other {# días}}",
+      "week": "{count, plural, one {# sem.} other {# sem.}}",
+      "day": "{count, plural, one {# d} other {# d}}",
       "hr": "{count, plural, one {# h} other {# h}}",
       "min": "{count, plural, one {# min} other {# min}}",
       "sec": "{count, plural, one {# s} other {# s}}"
@@ -474,5 +458,20 @@
     "requestLabel": "Solicitar {title}",
     "externalLinkLabel": "{title} en {site}",
     "externalSearchLabel": "Buscar {title} en {site}"
+  },
+  "Totals": {
+    "playTime": "Tiempo de reproducción",
+    "listenTime": "Tiempo de escucha",
+    "movies": "Películas",
+    "episodes": "Episodios",
+    "tracks": "Canciones"
+  },
+  "Filters": {
+    "title": "Filtros",
+    "titleWithCount": "{count, plural, one {Filtros, # activo} other {Filtros, # activos}}",
+    "clearAll": "Borrar todo",
+    "done": "Listo",
+    "period": "Periodo",
+    "all": "Todo"
   }
 }

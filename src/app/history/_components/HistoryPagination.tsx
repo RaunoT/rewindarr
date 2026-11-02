@@ -18,9 +18,9 @@ const PAGE_LINK =
   'focus-visible:focus-ring inline-flex h-8 min-w-8 items-center justify-center rounded-full px-2 text-sm tabular-nums transition-colors'
 const PAGE_LINK_IDLE = 'text-neutral-300 hover:bg-white/10 hover:text-white'
 
-// The pages and the rows per page, like under a table. On phones the pages
-// take a row of their own above the rest, with only the arrows and where you
-// are, as the page numbers don't fit.
+// The pages in the middle and the rows per page at the end, like under a
+// table. On phones the page numbers don't fit next to the rows per page, so
+// only the arrows go at the start.
 export default function HistoryPagination({
   page,
   pageCount,
@@ -30,13 +30,13 @@ export default function HistoryPagination({
   const t = useTranslations('History')
 
   return (
-    <div className='mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-white/10 pt-3'>
+    <div className='mt-3 flex items-center justify-between gap-4 border-t border-white/10 pt-3'>
       {/* Keeps the pages in the middle */}
       <div className='max-sm:hidden sm:flex-1' />
       {pageCount > 1 && (
         <nav
           aria-label={t('pagination')}
-          className='flex items-center justify-center gap-1 max-sm:order-first max-sm:w-full'
+          className='flex items-center justify-center gap-1'
         >
           <ArrowLink
             href={page > 1 ? getHref(page - 1) : null}
@@ -44,32 +44,12 @@ export default function HistoryPagination({
           >
             <ChevronLeftIcon className='size-4' />
           </ArrowLink>
-          <ul className='flex items-center gap-1 max-sm:hidden'>
-            {getPageNumbers(page, pageCount).map((number, i) => (
-              <li key={number ?? `gap-${i}`}>
-                {number === null ? (
-                  <span className='px-1 text-sm text-neutral-500'>{'…'}</span>
-                ) : (
-                  <Link
-                    href={getHref(number)}
-                    className={clsx(
-                      PAGE_LINK,
-                      number === page
-                        ? 'bg-white/15 font-medium text-white'
-                        : PAGE_LINK_IDLE,
-                    )}
-                    aria-current={number === page ? 'page' : undefined}
-                    aria-label={t('page', { page: number })}
-                  >
-                    {number}
-                  </Link>
-                )}
-              </li>
-            ))}
-          </ul>
-          <span className='px-2 text-sm text-neutral-300 tabular-nums sm:hidden'>
-            {t('pageOf', { page, pageCount })}
-          </span>
+          <PageList
+            numbers={getPageNumbers(page, pageCount)}
+            page={page}
+            getHref={getHref}
+            className='max-sm:hidden'
+          />
           <ArrowLink
             href={page < pageCount ? getHref(page + 1) : null}
             label={t('nextPage')}
@@ -78,12 +58,50 @@ export default function HistoryPagination({
           </ArrowLink>
         </nav>
       )}
-      <div className='flex justify-end sm:flex-1'>
+      <div className='ml-auto flex justify-end sm:flex-1'>
         <Suspense>
           <PageSizeSelect value={pageSize} />
         </Suspense>
       </div>
     </div>
+  )
+}
+
+type PageListProps = {
+  // Null where pages are left out
+  numbers: (number | null)[]
+  page: number
+  getHref: (page: number) => string
+  className: string
+}
+
+function PageList({ numbers, page, getHref, className }: PageListProps) {
+  const t = useTranslations('History')
+
+  return (
+    <ul className={clsx('flex items-center gap-1', className)}>
+      {numbers.map((number, i) => (
+        <li key={number ?? `gap-${i}`}>
+          {number === null ? (
+            <span className='px-1 text-sm text-neutral-500'>{'…'}</span>
+          ) : (
+            <Link
+              href={getHref(number)}
+              className={clsx(
+                PAGE_LINK,
+                number === page
+                  ? 'bg-white/15 font-medium text-white'
+                  : PAGE_LINK_IDLE,
+              )}
+              aria-current={number === page ? 'page' : undefined}
+              aria-label={t('page', { page: number })}
+            >
+              {number}
+            </Link>
+          )}
+        </li>
+      ))}
+    </ul>
   )
 }
 

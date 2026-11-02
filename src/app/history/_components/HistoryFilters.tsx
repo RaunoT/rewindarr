@@ -1,11 +1,18 @@
 'use client'
 
-import PeriodSelect from '@/app/dashboard/_components/PeriodSelect'
+import PeriodFilter from '@/app/dashboard/_components/PeriodFilter'
+import ChipGroup from '@/components/filters/ChipGroup'
+import FilterSheet, { FilterGroup } from '@/components/filters/FilterSheet'
+import SearchPill from '@/components/filters/SearchPill'
+import SegmentedControl from '@/components/filters/SegmentedControl'
+import { UserList } from '@/components/filters/UserPicker'
+import { MediaIcon, STAT_ICONS } from '@/components/icons'
 import { PublicSettings } from '@/types/settings'
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { PlayIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { ToggleButton } from 'react-aria-components'
 
 // How long typing pauses before the search runs
 const SEARCH_DELAY = 400
@@ -13,18 +20,25 @@ const SEARCH_DELAY = 400
 export type FilterOption = {
   value: string
   label: string
+  // A library's section type, for its icon
+  type?: string
+  // A user's profile picture
+  avatar?: string
 }
 
 type Props = {
   settings: PublicSettings
   libraries: FilterOption[]
+  // Only the viewer's own when the server is anonymized
   users: FilterOption[]
   // Whether requests can be told apart from plays, which takes Seerr
   hasRequests: boolean
 }
 
-// The filters live in the URL, so a filtered page can be shared and Back
-// undoes a filter. Each new filter starts again from the first page.
+// The search and the period stay in sight, the rest are behind the filters
+// button. The filters live in the URL, so a
+// filtered page can be shared and Back undoes a filter. Each new filter starts
+// again from the first page.
 export default function HistoryFilters({
   settings,
   libraries,
@@ -32,6 +46,7 @@ export default function HistoryFilters({
   hasRequests,
 }: Props) {
   const t = useTranslations('History')
+  const tRoot = useTranslations()
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -39,24 +54,53 @@ export default function HistoryFilters({
   const [search, setSearch] = useState(searchParam)
   // Back and the other filters change the URL too
   const [shownSearchParam, setShownSearchParam] = useState(searchParam)
+  // Ones in the URL that aren't among the options don't count
+  const pickedLibraries = getPicked('library', libraries)
+  const pickedUsers = getPicked('user', users)
+  const kindParam = searchParams.get('kind')
+  const kind =
+    hasRequests && (kindParam === 'play' || kindParam === 'request')
+      ? kindParam
+      : 'all'
+  const activeCount =
+    Number(kind !== 'all') +
+    Number(pickedLibraries.length > 0) +
+    Number(pickedUsers.length > 0)
+  const canClear =
+    activeCount > 0 || !!searchParam || searchParams.has('period')
+  const hasMoreFilters = hasRequests || libraries.length > 1 || users.length > 0
 
   if (searchParam !== shownSearchParam) {
     setShownSearchParam(searchParam)
     setSearch(searchParam)
   }
 
-  function getHref(name: string, value: string) {
+  function getPicked(name: string, options: FilterOption[]) {
+    return searchParams
+      .getAll(name)
+      .filter((value) => options.some((option) => option.value === value))
+  }
+
+  // Each value in a parameter of its own, none for all of them
+  function setParam(name: string, values: string[]) {
     const params = new URLSearchParams(searchParams.toString())
 
     params.delete('page')
+    params.delete(name)
 
-    if (value) {
-      params.set(name, value)
-    } else {
-      params.delete(name)
+    for (const value of values) {
+      params.append(name, value)
     }
 
-    return params.size ? `${pathname}?${params.toString()}` : pathname
+    router.push(params.size ? `${pathname}?${params.toString()}` : pathname)
+  }
+
+  // Back to the defaults, keeping only the rows per page
+  function handleClear() {
+    const rows = searchParams.get('rows')
+
+    setSearch('')
+    router.push(rows ? `${pathname}?rows=${rows}` : pathname)
   }
 
   useEffect(() => {
@@ -87,98 +131,107 @@ export default function HistoryFilters({
     return () => clearTimeout(timer)
   }, [search, shownSearchParam, pathname, router])
 
-  return (
-    // The search takes a row and the selects share the next evenly, two to a
-    // row on phones with an odd one out across the whole row
-    <div className='mb-4 flex flex-col gap-2'>
-      <label className='relative'>
-        <span className='sr-only'>{t('search')}</span>
-        <MagnifyingGlassIcon
-          className='pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-neutral-400'
-          aria-hidden='true'
-        />
-        <input
-          type='search'
-          className='input input--small pl-8!'
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t('search')}
-        />
-      </label>
-      <div className='grid grid-cols-2 gap-2 sm:flex sm:*:flex-1 [&>:last-child:nth-child(odd)]:max-sm:col-span-2'>
-        <PeriodSelect settings={settings} />
-        {hasRequests && (
-          <FilterSelect
-            name='kind'
-            label={t('kindLabel')}
-            allLabel={t('allKinds')}
-            options={[
-              { value: 'play', label: t('plays') },
-              { value: 'request', label: t('requests') },
-            ]}
-            onChange={(value) => router.push(getHref('kind', value))}
-          />
-        )}
-        {libraries.length > 1 && (
-          <FilterSelect
-            name='library'
-            label={t('libraryLabel')}
-            allLabel={t('allLibraries')}
-            options={libraries}
-            onChange={(value) => router.push(getHref('library', value))}
-          />
-        )}
-        {users.length > 0 && (
-          <FilterSelect
-            name='user'
-            label={t('userLabel')}
-            allLabel={t('allUsers')}
-            options={users}
-            onChange={(value) => router.push(getHref('user', value))}
-          />
-        )}
-      </div>
-    </div>
-  )
-}
+  function getKind() {
+    return (
+      <SegmentedControl
+        label={t('kindLabel')}
+        options={[
+          { value: 'all', label: tRoot('Filters.all') },
+          { value: 'play', label: t('plays'), icon: <PlayIcon /> },
+          {
+            value: 'request',
+            label: t('requests'),
+            icon: <STAT_ICONS.requests />,
+          },
+        ]}
+        value={kind}
+        onChange={(value) => setParam('kind', value === 'all' ? [] : [value])}
+        className='w-full'
+      />
+    )
+  }
 
-type FilterSelectProps = {
-  name: string
-  label: string
-  allLabel: string
-  options: FilterOption[]
-  onChange: (value: string) => void
-}
+  function getLibraries() {
+    return (
+      <ChipGroup
+        label={t('libraryLabel')}
+        allLabel={tRoot('Filters.all')}
+        options={libraries.map((library) => ({
+          ...library,
+          icon: library.type && <MediaIcon type={library.type} />,
+        }))}
+        value={pickedLibraries}
+        onChange={(values) => setParam('library', values)}
+      />
+    )
+  }
 
-function FilterSelect({
-  name,
-  label,
-  allLabel,
-  options,
-  onChange,
-}: FilterSelectProps) {
-  const searchParams = useSearchParams()
-  const param = searchParams.get(name)
-  // A value in the URL that isn't one of the options shows them all
-  const value = options.find((option) => option.value === param)?.value ?? ''
+  // Anonymized servers only offer your own, which is a switch
+  function getOnlyMine() {
+    const [user] = users
+
+    return (
+      <ToggleButton
+        isSelected={pickedUsers.length > 0}
+        onChange={(isSelected) =>
+          setParam('user', isSelected ? [user.value] : [])
+        }
+        className='chip w-fit'
+      >
+        <STAT_ICONS.users />
+        {user.label}
+      </ToggleButton>
+    )
+  }
 
   return (
-    <div className='input-wrapper'>
-      <div className='select-wrapper'>
-        <select
-          className='input input--small'
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          aria-label={label}
+    // On phones the period takes a row of its own under the search
+    <div className='mb-4 flex flex-wrap items-center gap-2'>
+      <SearchPill
+        label={t('search')}
+        value={search}
+        onChange={setSearch}
+        clearLabel={t('clearSearch')}
+        className='min-w-40 flex-1'
+      />
+      <PeriodFilter
+        settings={settings}
+        className='max-sm:order-last max-sm:w-full'
+      />
+      {hasMoreFilters && (
+        <FilterSheet
+          count={activeCount}
+          canClear={canClear}
+          onClear={handleClear}
         >
-          <option value=''>{allLabel}</option>
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
+          {hasRequests && (
+            <FilterGroup label={t('kindLabel')}>{getKind()}</FilterGroup>
+          )}
+          {libraries.length > 1 && (
+            <FilterGroup label={t('libraryLabel')}>
+              {getLibraries()}
+            </FilterGroup>
+          )}
+          {users.length === 1 ? (
+            <FilterGroup label={tRoot('Common.users')}>
+              {getOnlyMine()}
+            </FilterGroup>
+          ) : (
+            users.length > 1 && (
+              <FilterGroup label={tRoot('Common.users')}>
+                <UserList
+                  label={tRoot('Common.users')}
+                  options={users}
+                  selectionMode='multiple'
+                  value={pickedUsers}
+                  onChange={(values) => setParam('user', values)}
+                  className='-mx-1.5'
+                />
+              </FilterGroup>
+            )
+          )}
+        </FilterSheet>
+      )}
     </div>
   )
 }

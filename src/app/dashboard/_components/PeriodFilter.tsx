@@ -1,15 +1,17 @@
 'use client'
 
 import { GlobalContext } from '@/app/_components/GlobalContextProvider'
+import SegmentedControl from '@/components/filters/SegmentedControl'
 import { DashboardSearchParams } from '@/types/dashboard'
 import { PublicSettings } from '@/types/settings'
 import { parseCustomPeriod } from '@/utils/getPeriod'
 import { useTranslations } from 'next-intl'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { ChangeEvent, useContext, useEffect } from 'react'
+import { useContext, useEffect } from 'react'
 
 type Props = {
   settings: PublicSettings
+  className?: string
 }
 
 function getPeriodValue(period: string, customPeriod: number): number {
@@ -27,8 +29,10 @@ function getPeriodValue(period: string, customPeriod: number): number {
   }
 }
 
-export default function PeriodSelect({ settings }: Props) {
+// Always in sight, as every number on the page depends on it
+export default function PeriodFilter({ settings, className }: Props) {
   const t = useTranslations('PeriodSelectContent')
+  const tFilters = useTranslations('Filters')
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -70,17 +74,13 @@ export default function PeriodSelect({ settings }: Props) {
     return params.toString() ? `?${params.toString()}` : ''
   }
 
-  function handleChange(e: ChangeEvent<HTMLSelectElement>) {
-    const isDefault = e.target.value === 'custom'
+  function handleChange(value: string) {
+    const isDefault = value === 'custom'
 
     setPeriod(
-      isDefault
-        ? undefined
-        : (e.target.value as DashboardSearchParams['period']),
+      isDefault ? undefined : (value as DashboardSearchParams['period']),
     )
-    router.push(
-      `${pathname}${getUpdatedQueryParams(isDefault ? '' : e.target.value)}`,
-    )
+    router.push(`${pathname}${getUpdatedQueryParams(isDefault ? '' : value)}`)
   }
 
   useEffect(() => {
@@ -96,21 +96,12 @@ export default function PeriodSelect({ settings }: Props) {
   }, [periodParam, setPeriod, isValidPeriod])
 
   return (
-    <div className='input-wrapper'>
-      <div className='select-wrapper'>
-        <select
-          className='input input--small'
-          value={isValidPeriod ? periodParam : 'custom'}
-          onChange={handleChange}
-          aria-label={t('label')}
-        >
-          {periodOptions.map(({ label, value }) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </div>
-    </div>
+    <SegmentedControl
+      label={tFilters('period')}
+      options={periodOptions}
+      value={isValidPeriod ? periodParam : 'custom'}
+      onChange={handleChange}
+      className={className}
+    />
   )
 }

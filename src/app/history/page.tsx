@@ -1,10 +1,10 @@
 import AutoRefresh from '@/components/AutoRefresh'
 import HistoryReading from '@/components/HistoryReading'
 import { STAT_ICONS } from '@/components/icons'
-import SkeletonLine from '@/components/SkeletonLine'
 import SkeletonSized from '@/components/SkeletonSized'
 import SourceUnreachable from '@/components/SourceUnreachable'
 import StatusMessage from '@/components/StatusMessage'
+import Totals, { Total, TotalsSkeleton } from '@/components/Totals'
 import { authOptions } from '@/lib/auth'
 import { DashboardSearchParams } from '@/types/dashboard'
 import { HistoryKind, HistoryTotals } from '@/types/history'
@@ -42,7 +42,7 @@ import {
 import { kebabCase, sortBy } from 'lodash'
 import { Metadata } from 'next'
 import { getServerSession, Session } from 'next-auth'
-import { getLocale, getTranslations } from 'next-intl/server'
+import { getFormatter, getLocale, getTranslations } from 'next-intl/server'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -63,8 +63,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type SearchParams = {
   period?: DashboardSearchParams['period']
-  library?: string
-  user?: string
+  // Repeated for each library and user picked
+  library?: string | string[]
+  user?: string | string[]
   kind?: string
   q?: string
   page?: string
@@ -91,6 +92,8 @@ async function getUserOptions(
     users.map((user) => ({
       value: String(user.user_id),
       label: user.friendly_name || user.username,
+      // The picture itself, as Tracearr's thumb is already proxied
+      avatar: user.user_thumb || user.thumb,
     })),
     (option) => option.label.toLowerCase(),
   )
@@ -102,58 +105,65 @@ type TotalsProps = {
   hasRequests: boolean
 }
 
+// The totals that say something with the filters
+function getTotalKeys(filter: HistoryFilter, hasRequests: boolean) {
+  return [
+    ...(filter.kind !== 'request' ? (['watchTime', 'plays'] as const) : []),
+    ...(hasRequests && filter.kind !== 'play' ? (['requests'] as const) : []),
+    // Says nothing when it's one user's history
+    ...(filter.userIds?.length !== 1 ? (['users'] as const) : []),
+  ]
+}
+
 // What the period adds up to with the filters, like the dashboard's
-async function Totals({ totals, filter, hasRequests }: TotalsProps) {
+async function HistoryTotalsRow({ totals, filter, hasRequests }: TotalsProps) {
   const t = await getTranslations()
+  const format = await getFormatter()
+  const items: Record<ReturnType<typeof getTotalKeys>[number], Total> = {
+    watchTime: {
+      key: 'watchTime',
+      icon: <STAT_ICONS.duration />,
+      // Music counts too, so neither watched nor listened
+      label: t('Totals.playTime'),
+      value: secondsToTime(totals.watchTime, t),
+    },
+    plays: {
+      key: 'plays',
+      icon: <PlayIcon />,
+      label: t('Common.plays'),
+      value: format.number(totals.plays),
+    },
+    requests: {
+      key: 'requests',
+      icon: <STAT_ICONS.requests />,
+      label: t('Common.requests'),
+      value: format.number(totals.requests),
+    },
+    users: {
+      key: 'users',
+      icon: <STAT_ICONS.users />,
+      label: t('Common.users'),
+      value: format.number(totals.users),
+    },
+  }
 
   return (
-    <ul className='icon-stats-container mb-4 gap-x-3 text-neutral-300'>
-      {filter.kind !== 'request' && (
-        <>
-          <li className='icon-stat-wrapper icon-stat-wrapper--clean'>
-            <STAT_ICONS.duration />
-            {t('Dashboard.durationPlayed', {
-              duration: secondsToTime(totals.watchTime, t),
-            })}
-          </li>
-          <li className='icon-stat-wrapper icon-stat-wrapper--clean'>
-            <PlayIcon />
-            {t('History.playCount', { count: totals.plays })}
-          </li>
-        </>
-      )}
-      {hasRequests && filter.kind !== 'play' && (
-        <li className='icon-stat-wrapper icon-stat-wrapper--clean'>
-          <STAT_ICONS.requests />
-          {t('Dashboard.requests', { count: totals.requests })}
-        </li>
-      )}
-      {/* Says nothing when it's one user's history */}
-      {!filter.userId && (
-        <li className='icon-stat-wrapper icon-stat-wrapper--clean'>
-          <STAT_ICONS.users />
-          {t('Dashboard.users', { count: totals.users })}
-        </li>
-      )}
-    </ul>
+    <Totals
+      totals={getTotalKeys(filter, hasRequests).map((key) => items[key])}
+    />
   )
 }
 
-// As tall as the totals, so the card doesn't move once they load
-function TotalsSkeleton() {
-  return (
-    <div className='icon-stats-container mb-4 gap-x-3'>
-      <SkeletonLine width='w-28' />
-      <SkeletonLine width='w-16' />
-      <SkeletonLine width='w-20' />
-    </div>
-  )
-}
-
-function HistoryLoader({ rows }: { rows: number }) {
+function HistoryLoader({
+  rows,
+  totalsCount,
+}: {
+  rows: number
+  totalsCount: number
+}) {
   return (
     <>
-      <TotalsSkeleton />
+      <TotalsSkeleton count={totalsCount} />
       <CardWrapper>
         <HistorySkeleton rows={rows} />
       </CardWrapper>
@@ -192,12 +202,16 @@ async function HistoryContent({
   ])
   // Without Seerr, the plays are all there is, which isn't a filter
   const isFiltered = !!(
-    filter.userId ||
+    filter.userIds?.length ||
     filter.search ||
     (hasRequests && filter.kind)
   )
   const totalsList = (
-    <Totals totals={totals} filter={filter} hasRequests={hasRequests} />
+    <HistoryTotalsRow
+      totals={totals}
+      filter={filter}
+      hasRequests={hasRequests}
+    />
   )
   const requestsNotice = hasRequestsFailed && (
     <p className='mb-3 flex items-center gap-2 text-sm text-red-300'>
@@ -384,23 +398,36 @@ export default async function HistoryPage({ searchParams }: Props) {
   const libraries = sortByActiveLibraries(reachableLibraries, settings).filter(
     (library) => library.section_type in LIBRARY_PLAY_TYPES,
   )
-  const library = libraries.find(
-    (library) => kebabCase(library.section_name) === libraryParam,
+  const libraryParams = [libraryParam ?? []].flat()
+  const pickedLibraries = libraries.filter((library) =>
+    libraryParams.includes(kebabCase(library.section_name)),
   )
   // Only the users the filter offers, so the URL can't pick an excluded one
-  const userId = users.find((option) => option.value === user)?.value
+  const userIds = [user ?? []]
+    .flat()
+    .filter((userId) => users.some((option) => option.value === userId))
   const kind = hasRequests ? KINDS.find((value) => value === kindParam) : 'play'
   const search = q?.trim() || undefined
   const period = getPeriod(periodParam, settings)
   // The filters the URL asked for that apply, which the page links keep
-  const params = new URLSearchParams({
-    ...(periodParam && { period: periodParam }),
-    ...(library && { library: kebabCase(library.section_name) }),
-    ...(userId && { user: userId }),
-    ...(hasRequests && kind && { kind }),
-    ...(search && { q: search }),
-    ...(rows && { rows: String(pageSize) }),
-  })
+  const filter: HistoryFilter = {
+    since: period.date,
+    libraries: pickedLibraries.length ? pickedLibraries : libraries,
+    userIds,
+    search,
+    kind,
+  }
+  const params = new URLSearchParams([
+    ...(periodParam ? [['period', periodParam]] : []),
+    ...pickedLibraries.map((library) => [
+      'library',
+      kebabCase(library.section_name),
+    ]),
+    ...userIds.map((userId) => ['user', userId]),
+    ...(hasRequests && kind ? [['kind', kind]] : []),
+    ...(search ? [['q', search]] : []),
+    ...(rows ? [['rows', String(pageSize)]] : []),
+  ])
 
   return (
     <>
@@ -408,21 +435,21 @@ export default async function HistoryPage({ searchParams }: Props) {
         libraries.map((library) => ({
           value: kebabCase(library.section_name),
           label: library.section_name,
+          type: library.section_type,
         })),
       )}
       <Suspense
-        fallback={<HistoryLoader rows={pageSize} />}
+        fallback={
+          <HistoryLoader
+            rows={pageSize}
+            totalsCount={getTotalKeys(filter, hasRequests).length}
+          />
+        }
         // Without the page, so the list stays up while the next one loads
         key={params.toString()}
       >
         <HistoryContent
-          filter={{
-            since: period.date,
-            libraries: library ? [library] : libraries,
-            userId,
-            search,
-            kind,
-          }}
+          filter={filter}
           page={parsePage(page)}
           pageSize={pageSize}
           params={params}

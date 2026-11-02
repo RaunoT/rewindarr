@@ -61,24 +61,14 @@
     "showMore": "Show more",
     "title": "Dashboard",
     "usersTitle": "Users",
-    "users": "{count, plural, one {# user} other {# users}}",
-    "movies": "{count, plural, one {movie} other {movies}}",
-    "episodes": "{count, plural, one {episode} other {episodes}}",
-    "tracks": "{count, plural, one {track} other {tracks}}",
-    "requests": "{count, plural, one {# request} other {# requests}}",
-    "durationWatched": "{duration} watched",
-    "durationListened": "{duration} listened",
-    "durationPlayed": "{duration} played"
+    "users": "{count, plural, one {# user} other {# users}}"
   },
   "DashboardFilters": {
     "type": "Stats for",
     "general": "Everyone",
     "personal": "Just me",
     "sortByLabel": "Sort by",
-    "sort": "Sort",
-    "byDuration": "By watch time",
-    "byPlays": "By plays",
-    "byUsers": "By users"
+    "sort": "Sort"
   },
   "DashboardNavContent": {
     "label": "Dashboard navigation",
@@ -99,29 +89,24 @@
     "syncingShort": "Syncing the play history…",
     "title": "History",
     "libraryLabel": "Library",
-    "allLibraries": "All libraries",
     "noPlays": "Nothing played yet",
     "today": "Today",
     "yesterday": "Yesterday",
     "poster": "Poster for {title}",
     "anonymous": "Anonymous",
     "unknownUser": "Unknown user",
-    "userLabel": "User",
-    "allUsers": "All users",
     "onlyMine": "Only mine",
     "search": "Search titles",
+    "clearSearch": "Clear search",
     "noMatches": "No plays match the filters",
     "pagination": "Pages",
     "page": "Page {page}",
-    "pageOf": "{page} of {pageCount}",
     "previousPage": "Previous page",
     "nextPage": "Next page",
-    "playCount": "{count, plural, one {# play} other {# plays}}",
     "episodeNumber": "S{season} · E{episode}",
     "rowsLabel": "Rows per page",
     "rowsOption": "{count} per page",
     "kindLabel": "Type",
-    "allKinds": "Plays and requests",
     "plays": "Plays",
     "requests": "Requests",
     "request": "Request",
@@ -152,8 +137,7 @@
     "7days": "7 days",
     "pastYear": "Past year",
     "allTime": "All time",
-    "days": "{count, plural, one {# day} other {# days}}",
-    "label": "Period select"
+    "days": "{count, plural, one {# day} other {# days}}"
   },
   "NotFound": {
     "title": "404",
@@ -310,8 +294,8 @@
     "profilePictureAlt": "{name}'s profile picture",
     "time": {
       "zero": "0 mins",
-      "month": "{count, plural, one {# month} other {# months}}",
-      "week": "{count, plural, one {# week} other {# weeks}}",
+      "month": "{count, plural, one {# mth} other {# mths}}",
+      "week": "{count, plural, one {# wk} other {# wks}}",
       "day": "{count, plural, one {# day} other {# days}}",
       "hr": "{count, plural, one {# hr} other {# hrs}}",
       "min": "{count, plural, one {# min} other {# mins}}",
@@ -474,5 +458,20 @@
     "requestLabel": "Request {title}",
     "externalLinkLabel": "{title} on {site}",
     "externalSearchLabel": "Search {site} for {title}"
+  },
+  "Totals": {
+    "playTime": "Play time",
+    "listenTime": "Listening time",
+    "movies": "Movies",
+    "episodes": "Episodes",
+    "tracks": "Tracks"
+  },
+  "Filters": {
+    "title": "Filters",
+    "titleWithCount": "{count, plural, one {Filters, # on} other {Filters, # on}}",
+    "clearAll": "Clear all",
+    "done": "Done",
+    "period": "Period",
+    "all": "All"
   }
 }

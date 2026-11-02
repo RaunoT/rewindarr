@@ -56,7 +56,7 @@ describe('secondsToTime', () => {
   it('drops seconds next to a larger unit', () => {
     expect(secondsToTime(DAY + 10, t)).toBe('1 day')
     expect(secondsToTime(DAY + 40, t)).toBe('1 day 1 min')
-    expect(secondsToTime(MONTH + 10, t)).toBe('1 month')
+    expect(secondsToTime(MONTH + 10, t)).toBe('1 mth')
   })
 
   it('shows at most two units', () => {
@@ -65,9 +65,9 @@ describe('secondsToTime', () => {
   })
 
   it('uses weeks and months for long durations', () => {
-    expect(secondsToTime(8 * DAY, t)).toBe('1 week 1 day')
-    expect(secondsToTime(MONTH + 14 * DAY, t)).toBe('1 month 2 weeks')
-    expect(secondsToTime(2 * MONTH, t)).toBe('2 months')
+    expect(secondsToTime(8 * DAY, t)).toBe('1 wk 1 day')
+    expect(secondsToTime(MONTH + 14 * DAY, t)).toBe('1 mth 2 wks')
+    expect(secondsToTime(2 * MONTH, t)).toBe('2 mths')
   })
 })
 

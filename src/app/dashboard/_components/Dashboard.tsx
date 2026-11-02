@@ -3,13 +3,13 @@ import { MediaIcon, STAT_ICONS } from '@/components/icons'
 import MediaItems from '@/components/MediaItem/MediaItems'
 import SkeletonSized from '@/components/SkeletonSized'
 import StatusMessage from '@/components/StatusMessage'
+import Totals, { Total } from '@/components/Totals'
 import { PublicSettings } from '@/types/settings'
 import { MediaServer } from '@/types/statsSource'
 import { TautulliItemRow } from '@/types/tautulli'
 import { MoonIcon } from '@heroicons/react/24/outline'
-import { getTranslations } from 'next-intl/server'
+import { getFormatter, getTranslations } from 'next-intl/server'
 import { ReactNode, Suspense } from 'react'
-import DashboardHeader from './DashboardHeader'
 import { DashboardListSkeleton } from './DashboardLoader'
 import ShowMore from './ShowMore'
 
@@ -44,39 +44,70 @@ export default async function Dashboard({
   nextLimit,
   status,
 }: Props) {
-  const t = await getTranslations('Dashboard')
-  const tCommon = await getTranslations('Common')
-  const countNumber = count ? Number(count.replace(/\D/g, '')) : 0
+  const t = await getTranslations()
+  const format = await getFormatter()
+  const totals: Total[] = []
+
+  if (totalDuration) {
+    totals.push({
+      key: 'duration',
+      icon: <STAT_ICONS.duration />,
+      // Users count music too, so neither watched nor listened
+      label:
+        type === 'users'
+          ? t('Totals.playTime')
+          : type === 'artist'
+            ? t('Totals.listenTime')
+            : t('Common.duration'),
+      value: totalDuration,
+    })
+  }
+
+  if (totalRequests !== undefined) {
+    totals.push({
+      key: 'requests',
+      icon: <STAT_ICONS.requests />,
+      label: t('Common.requests'),
+      value: format.number(totalRequests),
+    })
+  }
+
+  if (count && type !== 'users') {
+    totals.push({
+      key: 'count',
+      icon: <MediaIcon type={type} />,
+      label:
+        type === 'movie'
+          ? t('Totals.movies')
+          : type === 'show'
+            ? t('Totals.episodes')
+            : t('Totals.tracks'),
+      value: count,
+    })
+  }
+
+  if (totalSize) {
+    totals.push(
+      type === 'users'
+        ? {
+            key: 'users',
+            icon: <STAT_ICONS.users />,
+            label: t('Common.users'),
+            value: format.number(Number(totalSize)),
+          }
+        : {
+            key: 'size',
+            icon: <STAT_ICONS.size />,
+            label: t('Common.size'),
+            value: totalSize,
+          },
+    )
+  }
 
   return (
     <>
-      <DashboardHeader
-        periodStats={
-          <>
-            {!!totalDuration && (
-              <li className='icon-stat-wrapper icon-stat-wrapper--clean'>
-                <STAT_ICONS.duration />
-                {/* Users count music too, so neither watched nor listened */}
-                {t(
-                  type === 'users'
-                    ? 'durationPlayed'
-                    : type === 'artist'
-                      ? 'durationListened'
-                      : 'durationWatched',
-                  { duration: totalDuration },
-                )}
-              </li>
-            )}
-            {totalRequests !== undefined && (
-              <li className='icon-stat-wrapper icon-stat-wrapper--clean'>
-                <STAT_ICONS.requests />
-                {t('requests', { count: totalRequests })}
-              </li>
-            )}
-          </>
-        }
-        toolbar={toolbar}
-      />
+      {toolbar}
+      <Totals totals={totals} />
 
       <CardWrapper>
         {!status && items?.length ? (
@@ -104,46 +135,13 @@ export default async function Dashboard({
             {status ?? (
               <StatusMessage
                 icon={MoonIcon}
-                description={t('noActivity')}
+                description={t('Dashboard.noActivity')}
                 isInCard
               />
             )}
           </SkeletonSized>
         )}
       </CardWrapper>
-
-      <ul className='icon-stats-container mt-4 justify-center gap-x-3 text-neutral-300 empty:hidden'>
-        {!!totalSize && (
-          <li className='icon-stat-wrapper icon-stat-wrapper--clean'>
-            {type === 'users' ? (
-              <>
-                <STAT_ICONS.users />
-                {t('users', { count: Number(totalSize) })}
-              </>
-            ) : (
-              <>
-                <STAT_ICONS.size />
-                <span className='sr-only'>{tCommon('size')}</span> {totalSize}
-              </>
-            )}
-          </li>
-        )}
-        {count && type !== 'users' && (
-          <li className='icon-stat-wrapper icon-stat-wrapper--clean'>
-            <MediaIcon type={type} />
-            <span>
-              <span>{count}</span>&nbsp;
-              <span>
-                {type === 'movie'
-                  ? t('movies', { count: countNumber })
-                  : type === 'show'
-                    ? t('episodes', { count: countNumber })
-                    : t('tracks', { count: countNumber })}
-              </span>
-            </span>
-          </li>
-        )}
-      </ul>
     </>
   )
 }

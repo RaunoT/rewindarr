@@ -93,7 +93,8 @@ export type HistoryFilter = {
   since: string
   // Every library's plays without them, and only their types' requests
   libraries?: TautulliLibrary[]
-  userId?: string
+  // Everyone's without any
+  userIds?: string[]
   // Looked for in the titles, and a show's or artist's name
   search?: string
   // Both without one
@@ -114,21 +115,31 @@ export type HistoryPage = {
   hasRequestsFailed: boolean
 }
 
+function isPickedUser(userId: string, userIds?: string[]): boolean {
+  return !userIds?.length || userIds.includes(userId)
+}
+
 // Every play matching the filter, newest first. While the history is still
 // being read, the plays of the longest window it already has, so the pages
 // don't wait for the rest.
 async function getMatchingPlays(
-  { since, libraries, userId }: HistoryFilter,
+  { since, libraries, userIds }: HistoryFilter,
   now: number,
 ): Promise<{ plays: HistoryPlay[]; progress: HistoryStatus | null }> {
   const source = getStatsSource()
   const progress = await getHistoryProgress(since, libraries)
+  // The source can only narrow plays down to one user, which keeps an
+  // excluded user's own plays. Several are picked from the rest.
+  const userId = userIds?.length === 1 ? userIds[0] : undefined
+
+  async function getPlays(since: string) {
+    const plays = await source.getHistoryPlays({ since, libraries, userId })
+
+    return plays.filter((play) => isPickedUser(play.userId, userIds))
+  }
 
   if (!progress) {
-    return {
-      plays: await source.getHistoryPlays({ since, libraries, userId }),
-      progress,
-    }
+    return { plays: await getPlays(since), progress }
   }
 
   const sinceTime = new Date(since).getTime()
@@ -143,7 +154,7 @@ async function getMatchingPlays(
       break
     }
 
-    plays = await source.getHistoryPlays({ since: window, libraries, userId })
+    plays = await getPlays(window)
   }
 
   return { plays, progress }
@@ -154,7 +165,7 @@ async function getMatchingPlays(
 async function getMatchingRequests({
   since,
   libraries,
-  userId,
+  userIds,
 }: HistoryFilter): Promise<HistoryRequest[] | null> {
   const requests = await getHistoryRequests(since)
   const types = libraries?.map((library) => REQUEST_TYPES[library.section_type])
@@ -167,7 +178,7 @@ async function getMatchingRequests({
     .filter(
       (request) =>
         (!types || types.includes(request.mediaType)) &&
-        (!userId || request.userId === userId),
+        isPickedUser(request.userId, userIds),
     )
     .sort((a, b) => b.createdAt - a.createdAt)
 }

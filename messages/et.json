@@ -61,24 +61,14 @@
     "showMore": "Näita rohkem",
     "title": "Edetabel",
     "usersTitle": "Kasutajad",
-    "users": "{count, plural, one {# kasutaja} other {# kasutajat}}",
-    "movies": "{count, plural, one {film} other {filmi}}",
-    "episodes": "{count, plural, one {episood} other {episoodi}}",
-    "tracks": "{count, plural, one {lugu} other {lugu}}",
-    "requests": "{count, plural, one {# tellimus} other {# tellimust}}",
-    "durationWatched": "{duration} vaadatud",
-    "durationListened": "{duration} kuulatud",
-    "durationPlayed": "{duration} mängitud"
+    "users": "{count, plural, one {# kasutaja} other {# kasutajat}}"
   },
   "DashboardFilters": {
     "type": "Kelle statistika",
     "general": "Kõigi",
     "personal": "Ainult minu",
     "sortByLabel": "Sorteerimisalus",
-    "sort": "Sorteerimine",
-    "byDuration": "Vaatamisaja järgi",
-    "byPlays": "Mängimiste järgi",
-    "byUsers": "Kasutajate arvu järgi"
+    "sort": "Sorteerimine"
   },
   "DashboardNavContent": {
     "label": "Edetabeli navigatsioon",
@@ -99,29 +89,24 @@
     "syncingShort": "Esitusajaloo sünkroonimine…",
     "title": "Ajalugu",
     "libraryLabel": "Kogumik",
-    "allLibraries": "Kõik kogumikud",
     "noPlays": "Midagi pole veel esitatud",
     "today": "Täna",
     "yesterday": "Eile",
     "poster": "{title} poster",
     "anonymous": "Anonüümne",
     "unknownUser": "Tundmatu kasutaja",
-    "userLabel": "Kasutaja",
-    "allUsers": "Kõik kasutajad",
     "onlyMine": "Ainult minu",
     "search": "Otsi pealkirju",
+    "clearSearch": "Tühjenda otsing",
     "noMatches": "Filtritele ei vasta ükski esitus",
     "pagination": "Lehed",
     "page": "Leht {page}",
-    "pageOf": "{page} / {pageCount}",
     "previousPage": "Eelmine leht",
     "nextPage": "Järgmine leht",
-    "playCount": "{count, plural, one {# esitus} other {# esitust}}",
     "episodeNumber": "H{season} · O{episode}",
     "rowsLabel": "Ridu lehel",
     "rowsOption": "{count} lehel",
     "kindLabel": "Tüüp",
-    "allKinds": "Esitused ja soovid",
     "plays": "Esitused",
     "requests": "Soovid",
     "request": "Soov",
@@ -152,8 +137,7 @@
     "7days": "7 päeva",
     "pastYear": "Viimane aasta",
     "allTime": "Kokku",
-    "days": "{count, plural, one {# päev} other {# päeva}}",
-    "label": "Perioodi valik"
+    "days": "{count, plural, one {# päev} other {# päeva}}"
   },
   "NotFound": {
     "title": "404",
@@ -311,9 +295,9 @@
     "time": {
       "zero": "0 min",
       "month": "{count, plural, one {# kuu} other {# kuud}}",
-      "week": "{count, plural, one {# nädal} other {# nädalat}}",
+      "week": "{count, plural, one {# näd} other {# näd}}",
       "day": "{count, plural, one {# päev} other {# päeva}}",
-      "hr": "{count, plural, one {# tund} other {# tundi}}",
+      "hr": "{count, plural, one {# t} other {# t}}",
       "min": "{count, plural, one {# min} other {# min}}",
       "sec": "{count, plural, one {# sek} other {# sek}}"
     },
@@ -474,5 +458,20 @@
     "requestLabel": "Telli {title}",
     "externalLinkLabel": "{title} saidil {site}",
     "externalSearchLabel": "Otsi {title} saidilt {site}"
+  },
+  "Totals": {
+    "playTime": "Mängimisaeg",
+    "listenTime": "Kuulamisaeg",
+    "movies": "Filmid",
+    "episodes": "Episoodid",
+    "tracks": "Lood"
+  },
+  "Filters": {
+    "title": "Filtrid",
+    "titleWithCount": "{count, plural, one {Filtrid, # sees} other {Filtrid, # sees}}",
+    "clearAll": "Tühjenda kõik",
+    "done": "Valmis",
+    "period": "Periood",
+    "all": "Kõik"
   }
 }

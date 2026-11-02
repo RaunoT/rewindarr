@@ -1,5 +1,6 @@
 'use client'
 
+import Select from '@/components/Select'
 import {
   HISTORY_PAGE_SIZE_COOKIE_NAME,
   HISTORY_PAGE_SIZES,
@@ -29,19 +30,14 @@ export default function PageSizeSelect({ value }: Props) {
   }
 
   return (
-    <div className='select-wrapper w-auto'>
-      <select
-        className='input input--small w-auto'
-        value={value}
-        onChange={(e) => handleChange(e.target.value)}
-        aria-label={t('rowsLabel')}
-      >
-        {HISTORY_PAGE_SIZES.map((size) => (
-          <option key={size} value={size}>
-            {t('rowsOption', { count: size })}
-          </option>
-        ))}
-      </select>
-    </div>
+    <Select
+      label={t('rowsLabel')}
+      options={HISTORY_PAGE_SIZES.map((size) => ({
+        value: String(size),
+        label: t('rowsOption', { count: size }),
+      }))}
+      value={String(value)}
+      onChange={handleChange}
+    />
   )
 }

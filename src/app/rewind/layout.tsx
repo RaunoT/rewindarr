@@ -44,9 +44,11 @@ async function AdminUserSelect({ defaultUserId }: { defaultUserId: string }) {
 
   return (
     <UserSelect
-      users={users.map(({ user_id, friendly_name }) => ({
+      users={users.map(({ user_id, friendly_name, thumb, user_thumb }) => ({
         user_id,
         friendly_name,
+        thumb,
+        user_thumb,
       }))}
       defaultUserId={defaultUserId}
     />
