@@ -1,4 +1,5 @@
 import { HistoryPlay } from './statsSource'
+import { TautulliItemRow } from './tautulli'
 
 // Where a request is at, from Seerr's request and the media's status
 export type RequestStatus =
@@ -28,10 +29,13 @@ export type HistoryRequest = {
   poster: string | null
 }
 
-// A play or a request, at the time it started or was made
-export type HistoryEntry =
+// A play or a request, at the time it started or was made. The page's
+// entries also get their title's year, ratings and IDs, as the dashboard's
+// items have them, which is null for music or when they couldn't be found.
+export type HistoryEntry = (
   | { kind: 'play'; time: number; play: HistoryPlay }
   | { kind: 'request'; time: number; request: HistoryRequest }
+) & { item?: TautulliItemRow | null }
 
 export type HistoryKind = HistoryEntry['kind']
 

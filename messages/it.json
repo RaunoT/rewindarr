@@ -90,8 +90,6 @@
     "title": "Cronologia",
     "libraryLabel": "Libreria",
     "noPlays": "Ancora nessuna riproduzione",
-    "today": "Oggi",
-    "yesterday": "Ieri",
     "poster": "Locandina di {title}",
     "anonymous": "Anonimo",
     "unknownUser": "Utente sconosciuto",
@@ -121,12 +119,6 @@
       "failed": "Non riuscita",
       "partiallyAvailable": "Disponibile in parte",
       "available": "Disponibile"
-    },
-    "mediaType": {
-      "movie": "Film",
-      "show": "Serie",
-      "episode": "Episodio",
-      "track": "Brano"
     }
   },
   "MediaServerDeeplink": {

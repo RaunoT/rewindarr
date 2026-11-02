@@ -1,4 +1,4 @@
-import { HistoryEntry, HistoryRequest } from '@/types/history'
+import { HistoryRequest } from '@/types/history'
 import { HistoryStatus } from '@/types/playHistory'
 import { HistoryPlay, StatsSource } from '@/types/statsSource'
 import { TautulliLibrary } from '@/types/tautulli'
@@ -7,7 +7,6 @@ import {
   getHistoryPage,
   getPageNumbers,
   getRecentPlays,
-  groupByDay,
   HistoryPage,
   parsePage,
 } from './getHistory'
@@ -21,6 +20,11 @@ import { getHistoryProgress, getStatsSource } from './statsSource'
 vi.mock('./statsSource', () => ({
   getHistoryProgress: vi.fn(),
   getStatsSource: vi.fn(),
+}))
+vi.mock('./getMediaAdditionalData', () => ({
+  default: vi.fn(async (items: object[]) =>
+    items.map((item) => ({ ...item, rating: '7.5' })),
+  ),
 }))
 vi.mock('./historyRequests', () => ({
   addRequestDetails: vi.fn(),
@@ -48,10 +52,6 @@ function play(
     userName: 'Alice',
     ...overrides,
   } as HistoryPlay
-}
-
-function playEntry(id: string, startedAt: number): HistoryEntry {
-  return { kind: 'play', time: startedAt, play: play(id, startedAt) }
 }
 
 function request(
@@ -148,28 +148,6 @@ describe('getRecentPlays', () => {
   })
 })
 
-describe('groupByDay', () => {
-  it('groups the entries by their day', () => {
-    const entries = [
-      playEntry('tonight', new Date(2026, 10, 2, 20).getTime()),
-      playEntry('this morning', new Date(2026, 10, 2, 1).getTime()),
-      playEntry('last night', new Date(2026, 10, 1, 23, 59).getTime()),
-      playEntry('last week', new Date(2026, 9, 26, 12).getTime()),
-    ]
-
-    expect(
-      groupByDay(entries, NOW).map((day) => [
-        day.daysAgo,
-        day.entries.map((entry) => entry.kind === 'play' && entry.play.id),
-      ]),
-    ).toEqual([
-      [0, ['tonight', 'this morning']],
-      [1, ['last night']],
-      [7, ['last week']],
-    ])
-  })
-})
-
 describe('getHistoryPage', () => {
   const SINCE = new Date(0).toISOString()
   // One play a day for the past 100 days, every tenth of them Dune
@@ -185,6 +163,9 @@ describe('getHistoryPage', () => {
     request(2, NOW - 1.5 * DAY, { tmdbId: 20, mediaType: 'tv', userId: '2' }),
     request(3, NOW - 2.5 * DAY, { tmdbId: 30, mediaType: 'movie' }),
   ]
+  const getPlayItem = vi.fn(async (play: HistoryPlay) => ({
+    title: play.showTitle || play.title,
+  }))
   const movies = { section_type: 'movie' } as TautulliLibrary
   const music = { section_type: 'artist' } as TautulliLibrary
 
@@ -198,6 +179,7 @@ describe('getHistoryPage', () => {
     vi.clearAllMocks()
     vi.mocked(getStatsSource).mockReturnValue({
       getHistoryPlays,
+      getPlayItem,
     } as unknown as StatsSource)
     vi.mocked(getHistoryProgress).mockResolvedValue(null)
     vi.mocked(getHistoryRequests).mockResolvedValue(requests)
@@ -233,6 +215,18 @@ describe('getHistoryPage', () => {
     expect(result.entries[1]).toMatchObject({
       kind: 'request',
       request: { title: 'Title 10' },
+    })
+  })
+
+  it("adds each title's details, looked up once for all its entries", async () => {
+    const { entries } = await getHistoryPage({ since: SINCE }, 1, 25, NOW)
+
+    // The plays of Dune: Prophecy share a lookup, the others have one each
+    expect(getPlayItem).toHaveBeenCalledTimes(20)
+    expect(entries[0].item).toMatchObject({ title: 'Dune: Prophecy' })
+    expect(entries[1]).toMatchObject({
+      kind: 'request',
+      item: { title: 'Title 10', tmdb_id: 10, rating: '7.5' },
     })
   })
 

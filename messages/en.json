@@ -90,8 +90,6 @@
     "title": "History",
     "libraryLabel": "Library",
     "noPlays": "Nothing played yet",
-    "today": "Today",
-    "yesterday": "Yesterday",
     "poster": "Poster for {title}",
     "anonymous": "Anonymous",
     "unknownUser": "Unknown user",
@@ -121,12 +119,6 @@
       "failed": "Failed",
       "partiallyAvailable": "Partly available",
       "available": "Available"
-    },
-    "mediaType": {
-      "movie": "Movie",
-      "show": "Show",
-      "episode": "Episode",
-      "track": "Track"
     }
   },
   "MediaServerDeeplink": {

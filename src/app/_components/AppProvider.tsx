@@ -37,8 +37,6 @@ const SIDEBAR_ROUTES = [
   '/history',
   '/settings',
 ]
-// Their pages keep to a narrower column, which the notice lines up with
-const NARROW_ROUTES = ['/rewind', '/activity', '/history', '/settings']
 const queryClient = new QueryClient()
 
 export default function AppProvider({
@@ -109,9 +107,6 @@ export default function AppProvider({
               {hasSidebar && (
                 <SourceOutageNotice
                   source={settings.connection.statisticsSource}
-                  isNarrow={NARROW_ROUTES.some((route) =>
-                    pathname.startsWith(route),
-                  )}
                 />
               )}
               {children}

@@ -42,14 +42,9 @@
   }
 }
 
-/* The home page and the dashboard, with their tiles and lists */
+/* The content column every page keeps to */
 @utility page-width {
-  @apply w-full max-w-4xl;
-}
-
-/* Settings, Rewind and Activity, whose forms and cards would stretch wider */
-@utility page-width-narrow {
-  @apply w-full max-w-2xl;
+  @apply w-full max-w-3xl;
 }
 
 @utility focus-ring {

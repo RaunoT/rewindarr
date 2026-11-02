@@ -22,17 +22,6 @@ export default function ActivitiesSkeleton() {
 
   return (
     <div className='w-full'>
-      <div className='mb-4 flex items-center justify-between gap-3'>
-        <div className='flex min-w-0 flex-1 items-center gap-2 text-sm'>
-          <div className='skeleton size-6 shrink-0' />
-          <SkeletonLine width='w-32 sm:w-48' />
-        </div>
-        <div className='flex shrink-0 items-center gap-2'>
-          {/* Without their text on phones */}
-          <div className='skeleton size-6 sm:w-20' />
-          <div className='skeleton h-6 w-11 sm:w-32' />
-        </div>
-      </div>
       <div className='grid grid-cols-[auto_minmax(0,1fr)] gap-4 sm:grid-rows-[1fr_auto] sm:gap-y-0'>
         <div className='skeleton poster sm:row-span-2' />
         <div className='min-w-0 self-center sm:self-start'>
@@ -42,6 +31,13 @@ export default function ActivitiesSkeleton() {
             width='w-2/3 sm:w-1/2'
           />
           <SkeletonLine className='text-xs sm:text-sm' width='w-24' />
+          {/* The user, the device, the state and the stream */}
+          <div className='mt-3 flex flex-wrap gap-1.5'>
+            <div className='skeleton h-5 w-28 sm:h-6' />
+            <div className='skeleton h-5 w-24 sm:h-6' />
+            <div className='skeleton h-5 w-16 sm:h-6 sm:w-20' />
+            <div className='skeleton h-5 w-24 sm:h-6 sm:w-32' />
+          </div>
         </div>
         <div className='col-span-2 text-xs sm:col-span-1 sm:col-start-2 sm:pt-3'>
           <div className='skeleton h-1.5 w-full' />

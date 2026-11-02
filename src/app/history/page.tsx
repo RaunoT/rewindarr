@@ -13,7 +13,6 @@ import { HISTORY_PAGE_SIZE_COOKIE_NAME } from '@/utils/constants'
 import { secondsToTime } from '@/utils/formatting'
 import {
   getHistoryPage,
-  groupByDay,
   HistoryFilter,
   parsePage,
   parsePageSize,
@@ -42,7 +41,7 @@ import {
 import { kebabCase, sortBy } from 'lodash'
 import { Metadata } from 'next'
 import { getServerSession, Session } from 'next-auth'
-import { getFormatter, getLocale, getTranslations } from 'next-intl/server'
+import { getFormatter, getTranslations } from 'next-intl/server'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -192,7 +191,6 @@ async function HistoryContent({
   hasRequests,
 }: ContentProps) {
   const t = await getTranslations('History')
-  const locale = await getLocale()
   const [
     { entries, page, pageCount, totals, progress, hasRequestsFailed },
     mediaServer,
@@ -244,18 +242,7 @@ async function HistoryContent({
 
   const userId = session?.user.id
   const { isAnonymized } = settings.general
-  const now = new Date()
-  const dayFormat = new Intl.DateTimeFormat(locale, {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  })
-  const dayWithYearFormat = new Intl.DateTimeFormat(locale, {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
+  const publicSettings = toPublicSettings(settings)
 
   function getHref(page: number) {
     const pageParams = new URLSearchParams(params)
@@ -281,50 +268,35 @@ async function HistoryContent({
             <AutoRefresh />
           </>
         )}
-        <div className='flex flex-col gap-4'>
-          {groupByDay(entries, now.getTime()).map((day) => (
-            <section key={day.date.getTime()}>
-              <h2 className='mb-1 text-xs font-semibold text-neutral-400'>
-                {day.daysAgo === 0
-                  ? t('today')
-                  : day.daysAgo === 1
-                    ? t('yesterday')
-                    : (day.date.getFullYear() === now.getFullYear()
-                        ? dayFormat
-                        : dayWithYearFormat
-                      ).format(day.date)}
-              </h2>
-              <ul className='divide-y divide-white/10'>
-                {day.entries.map((entry) => {
-                  const entryUserId =
-                    entry.kind === 'play'
-                      ? entry.play.userId
-                      : entry.request.userId
-                  const isOwn = !!userId && entryUserId === userId
-                  const isAnonymous = isAnonymized && !isOwn
+        <ul className='flex flex-col overflow-hidden text-white'>
+          {entries.map((entry) => {
+            const entryUserId =
+              entry.kind === 'play' ? entry.play.userId : entry.request.userId
+            const isOwn = !!userId && entryUserId === userId
+            const isAnonymous = isAnonymized && !isOwn
 
-                  return entry.kind === 'play' ? (
-                    <HistoryItem
-                      key={`play-${entry.play.id}`}
-                      play={entry.play}
-                      mediaServer={mediaServer}
-                      isOwn={isOwn}
-                      isAnonymous={isAnonymous}
-                    />
-                  ) : (
-                    <HistoryRequestItem
-                      key={`request-${entry.request.id}`}
-                      request={entry.request}
-                      seerrUrl={settings.connection.seerrUrl ?? ''}
-                      isOwn={isOwn}
-                      isAnonymous={isAnonymous}
-                    />
-                  )
-                })}
-              </ul>
-            </section>
-          ))}
-        </div>
+            return entry.kind === 'play' ? (
+              <HistoryItem
+                key={`play-${entry.play.id}`}
+                play={entry.play}
+                item={entry.item}
+                mediaServer={mediaServer}
+                settings={publicSettings}
+                isOwn={isOwn}
+                isAnonymous={isAnonymous}
+              />
+            ) : (
+              <HistoryRequestItem
+                key={`request-${entry.request.id}`}
+                request={entry.request}
+                item={entry.item}
+                settings={publicSettings}
+                isOwn={isOwn}
+                isAnonymous={isAnonymous}
+              />
+            )
+          })}
+        </ul>
         <HistoryPagination
           page={page}
           pageCount={pageCount}

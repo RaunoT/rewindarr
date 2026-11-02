@@ -90,8 +90,6 @@
     "title": "Historial",
     "libraryLabel": "Biblioteca",
     "noPlays": "Aún no se ha reproducido nada",
-    "today": "Hoy",
-    "yesterday": "Ayer",
     "poster": "Póster de {title}",
     "anonymous": "Anónimo",
     "unknownUser": "Usuario desconocido",
@@ -121,12 +119,6 @@
       "failed": "Fallida",
       "partiallyAvailable": "Disponible en parte",
       "available": "Disponible"
-    },
-    "mediaType": {
-      "movie": "Película",
-      "show": "Serie",
-      "episode": "Episodio",
-      "track": "Pista"
     }
   },
   "MediaServerDeeplink": {

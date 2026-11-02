@@ -90,8 +90,6 @@
     "title": "Verlauf",
     "libraryLabel": "Bibliothek",
     "noPlays": "Noch nichts abgespielt",
-    "today": "Heute",
-    "yesterday": "Gestern",
     "poster": "Poster für {title}",
     "anonymous": "Anonym",
     "unknownUser": "Unbekannter Benutzer",
@@ -121,12 +119,6 @@
       "failed": "Fehlgeschlagen",
       "partiallyAvailable": "Teilweise verfügbar",
       "available": "Verfügbar"
-    },
-    "mediaType": {
-      "movie": "Film",
-      "show": "Serie",
-      "episode": "Folge",
-      "track": "Titel"
     }
   },
   "MediaServerDeeplink": {

@@ -21,7 +21,7 @@ export default async function HistoryLayout({ children }: Props) {
   }
 
   return (
-    <div className='page-width-narrow mb-auto'>
+    <div className='page-width mb-auto'>
       <PageTitle title={t('title')} />
       {children}
     </div>

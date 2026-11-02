@@ -90,8 +90,6 @@
     "title": "Historique",
     "libraryLabel": "Bibliothèque",
     "noPlays": "Rien n'a encore été lu",
-    "today": "Aujourd'hui",
-    "yesterday": "Hier",
     "poster": "Affiche de {title}",
     "anonymous": "Anonyme",
     "unknownUser": "Utilisateur inconnu",
@@ -121,12 +119,6 @@
       "failed": "Échouée",
       "partiallyAvailable": "Disponible en partie",
       "available": "Disponible"
-    },
-    "mediaType": {
-      "movie": "Film",
-      "show": "Série",
-      "episode": "Épisode",
-      "track": "Morceau"
     }
   },
   "MediaServerDeeplink": {

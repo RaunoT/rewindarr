@@ -90,8 +90,6 @@
     "title": "Ajalugu",
     "libraryLabel": "Kogumik",
     "noPlays": "Midagi pole veel esitatud",
-    "today": "Täna",
-    "yesterday": "Eile",
     "poster": "{title} poster",
     "anonymous": "Anonüümne",
     "unknownUser": "Tundmatu kasutaja",
@@ -121,12 +119,6 @@
       "failed": "Ebaõnnestus",
       "partiallyAvailable": "Osaliselt saadaval",
       "available": "Saadaval"
-    },
-    "mediaType": {
-      "movie": "Film",
-      "show": "Sari",
-      "episode": "Osa",
-      "track": "Lugu"
     }
   },
   "MediaServerDeeplink": {

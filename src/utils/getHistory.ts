@@ -6,14 +6,16 @@ import {
 } from '@/types/history'
 import { HistoryStatus } from '@/types/playHistory'
 import { HistoryPlay } from '@/types/statsSource'
-import { TautulliLibrary } from '@/types/tautulli'
+import { TautulliItemRow, TautulliLibrary } from '@/types/tautulli'
 import { clamp, orderBy, range, sumBy } from 'lodash'
 import { HISTORY_PAGE_SIZES } from './constants'
+import getMediaAdditionalData from './getMediaAdditionalData'
 import {
   addRequestDetails,
   getHistoryRequests,
   isSeerrActive,
 } from './historyRequests'
+import { EMPTY_ROW } from './playStats'
 import { getHistoryProgress, getStatsSource } from './statsSource'
 
 const DAY = 24 * 60 * 60 * 1000
@@ -183,6 +185,81 @@ async function getMatchingRequests({
     .sort((a, b) => b.createdAt - a.createdAt)
 }
 
+// The year, ratings and IDs of each entry's title, looked up like the
+// dashboard's items, so the page shows the same. Entries of one title share a
+// lookup, and a failed one leaves the entry without them.
+async function addItems(entries: HistoryEntry[]): Promise<HistoryEntry[]> {
+  const source = getStatsSource()
+  const lookups = new Map<string, Promise<TautulliItemRow | null>>()
+
+  function lookUp(key: string, load: () => Promise<TautulliItemRow>) {
+    let lookup = lookups.get(key)
+
+    if (!lookup) {
+      lookup = load().catch((error) => {
+        console.error('[HISTORY] - Unable to look up a title!', error)
+
+        return null
+      })
+      lookups.set(key, lookup)
+    }
+
+    return lookup
+  }
+
+  return Promise.all(
+    entries.map(async (entry): Promise<HistoryEntry> => {
+      if (entry.kind === 'request') {
+        const { request } = entry
+
+        return {
+          ...entry,
+          item: await lookUp(
+            `request|${request.mediaType}|${request.tmdbId}`,
+            async () =>
+              (
+                await getMediaAdditionalData(
+                  [
+                    {
+                      ...EMPTY_ROW,
+                      title: request.title,
+                      year: request.year,
+                      tmdb_id: request.tmdbId,
+                    },
+                  ],
+                  request.mediaType,
+                  async () => ({ thumb: '', isDeleted: false }),
+                )
+              )[0],
+          ),
+        }
+      }
+
+      const { play } = entry
+
+      // Music has no ratings to look up
+      if (play.mediaType === 'track') {
+        return { ...entry, item: null }
+      }
+
+      return {
+        ...entry,
+        item: await lookUp(
+          [
+            'play',
+            play.mediaType,
+            play.grandparentRatingKey ||
+              play.ratingKey ||
+              play.showTitle ||
+              play.title,
+          ].join('|'),
+          () => source.getPlayItem(play),
+        ),
+      }
+    }),
+  )
+}
+
 function matchesSearch(texts: (string | null)[], search: string): boolean {
   return texts.some((text) => text?.toLowerCase().includes(search))
 }
@@ -263,13 +340,15 @@ export async function getHistoryPage(
   const detailsById = new Map(detailed.map((request) => [request.id, request]))
 
   return {
-    entries: pageEntries.map((entry) =>
-      entry.kind === 'request'
-        ? {
-            ...entry,
-            request: detailsById.get(entry.request.id) ?? entry.request,
-          }
-        : entry,
+    entries: await addItems(
+      pageEntries.map((entry) =>
+        entry.kind === 'request'
+          ? {
+              ...entry,
+              request: detailsById.get(entry.request.id) ?? entry.request,
+            }
+          : entry,
+      ),
     ),
     page: current,
     pageCount,
@@ -315,46 +394,4 @@ export function getPageNumbers(
   }
 
   return [1, null, page - 1, page, page + 1, null, pageCount]
-}
-
-export type HistoryDay = {
-  // Midnight at the start of the day
-  date: Date
-  // 0 for today and 1 for yesterday
-  daysAgo: number
-  entries: HistoryEntry[]
-}
-
-function getStartOfDay(time: number): Date {
-  const date = new Date(time)
-
-  date.setHours(0, 0, 0, 0)
-
-  return date
-}
-
-// The entries, newest first, by the day they're on. Days are in the
-// Rewindarr server's timezone, like the rest of the stats.
-export function groupByDay(
-  entries: HistoryEntry[],
-  now = Date.now(),
-): HistoryDay[] {
-  const today = getStartOfDay(now).getTime()
-  const days: HistoryDay[] = []
-
-  for (const entry of entries) {
-    const date = getStartOfDay(entry.time)
-    const day = days.at(-1)
-
-    if (day?.date.getTime() === date.getTime()) {
-      day.entries.push(entry)
-    } else {
-      // Rounded, as a day with a daylight saving change is an hour off
-      const daysAgo = Math.round((today - date.getTime()) / DAY)
-
-      days.push({ date, daysAgo, entries: [entry] })
-    }
-  }
-
-  return days
 }
