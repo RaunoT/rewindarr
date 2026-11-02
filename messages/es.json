@@ -96,7 +96,53 @@
   "History": {
     "syncingTitle": "Sincronizando el historial",
     "syncingDescription": "El historial de reproducciones de {source} se sincroniza una sola vez, lo que puede tardar unos minutos. {count, plural, =0 {Acaba de empezar.} one {Por ahora # reproducción, desde {date}.} other {Por ahora # reproducciones, desde {date}.}} Esta página se actualiza sola.",
-    "syncingShort": "Sincronizando el historial…"
+    "syncingShort": "Sincronizando el historial…",
+    "title": "Historial",
+    "libraryLabel": "Biblioteca",
+    "allLibraries": "Todas las bibliotecas",
+    "noPlays": "Aún no se ha reproducido nada",
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "poster": "Póster de {title}",
+    "anonymous": "Anónimo",
+    "unknownUser": "Usuario desconocido",
+    "userLabel": "Usuario",
+    "allUsers": "Todos los usuarios",
+    "onlyMine": "Solo las mías",
+    "search": "Buscar títulos",
+    "noMatches": "Ninguna reproducción coincide con los filtros",
+    "pagination": "Páginas",
+    "page": "Página {page}",
+    "pageOf": "{page} de {pageCount}",
+    "previousPage": "Página anterior",
+    "nextPage": "Página siguiente",
+    "playCount": "{count, plural, one {# reproducción} other {# reproducciones}}",
+    "episodeNumber": "T{season} · E{episode}",
+    "rowsLabel": "Filas por página",
+    "rowsOption": "{count} por página",
+    "kindLabel": "Tipo",
+    "allKinds": "Reproducciones y solicitudes",
+    "plays": "Reproducciones",
+    "requests": "Solicitudes",
+    "request": "Solicitud",
+    "unknownTitle": "Título desconocido",
+    "season": "Temporada {season}",
+    "seasonCount": "{count, plural, one {# temporada} other {# temporadas}}",
+    "requestsFailed": "No se pudieron cargar las solicitudes de Seerr",
+    "requestStatus": {
+      "pending": "Pendiente",
+      "approved": "Aprobada",
+      "declined": "Rechazada",
+      "failed": "Fallida",
+      "partiallyAvailable": "Disponible en parte",
+      "available": "Disponible"
+    },
+    "mediaType": {
+      "movie": "Película",
+      "show": "Serie",
+      "episode": "Episodio",
+      "track": "Pista"
+    }
   },
   "MediaServerDeeplink": {
     "available": "Disponible",
@@ -157,6 +203,7 @@
       "rewind": "Rewind",
       "dashboard": "Panel",
       "activity": "Actividad",
+      "history": "Historial",
       "complete": "Completo",
       "incomplete": "Incompleto",
       "connectionRequired": "Completa primero los ajustes de conexión"
@@ -200,6 +247,9 @@
     },
     "Activity": {
       "title": "Ajustes de actividad"
+    },
+    "History": {
+      "title": "Ajustes del historial"
     },
     "General": {
       "title": "Ajustes generales",

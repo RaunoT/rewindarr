@@ -62,6 +62,9 @@ function play(overrides: Partial<Play>): Play {
     tmdbId: null,
     identityId: 'alice',
     avatar: '',
+    seasonNumber: null,
+    episodeNumber: null,
+    transcodeDecision: null,
     ...overrides,
   }
 }

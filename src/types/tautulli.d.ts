@@ -44,6 +44,10 @@ export type TautulliHistoryRow = {
   grandparent_rating_key: number | string | null
   user_id: number
   user_thumb: string
+  // Season and episode, as numbers or strings, empty for other media
+  parent_media_index: number | string | null
+  media_index: number | string | null
+  transcode_decision: string | null
 }
 
 export type TautulliItemRow = {

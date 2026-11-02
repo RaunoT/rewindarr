@@ -10,6 +10,7 @@ import {
 } from '@/types/tautulli'
 import {
   TracearrCursorPage,
+  TracearrDecision,
   TracearrHistoryRecord,
   TracearrLibrary,
   TracearrMedia,
@@ -666,6 +667,10 @@ function toPlay(record: TracearrHistoryRecord, baseUrl: string): Play | null {
     tmdbId: record.tmdb_id,
     identityId: record.user.id,
     avatar: toAbsoluteUrl(record.user.avatar_url, baseUrl),
+    seasonNumber: record.media_type === 'episode' ? record.season_number : null,
+    episodeNumber:
+      record.media_type === 'episode' ? record.episode_number : null,
+    transcodeDecision: getTranscodeDecision(record),
   }
 }
 
@@ -1052,6 +1057,29 @@ const DECISIONS = {
   copy: 'copy',
   transcode: 'transcode',
 }
+
+// The whole stream's decision in Plex's words, as Tautulli gives it. Null when
+// Tracearr has none.
+export function getTranscodeDecision(stream: {
+  is_transcode?: boolean | null
+  video_decision?: TracearrDecision | null
+  audio_decision?: TracearrDecision | null
+}): string | null {
+  if (stream.is_transcode) {
+    return 'transcode'
+  }
+
+  const decisions = [stream.video_decision, stream.audio_decision]
+
+  if (decisions.includes('copy')) {
+    return 'copy'
+  }
+
+  return stream.is_transcode === false || decisions.some(Boolean)
+    ? 'direct play'
+    : null
+}
+
 const CHANNEL_LAYOUTS: Record<number, string> = {
   1: 'Mono',
   2: 'Stereo',
@@ -1161,11 +1189,7 @@ function toSession(
     subtitle_codec: stream.subtitle_info?.codec ?? '',
     thumb: toAbsoluteUrl(stream.poster_url, baseUrl),
     title: stream.media_title,
-    transcode_decision: stream.is_transcode
-      ? 'transcode'
-      : videoDecision === 'copy' || audioDecision === 'copy'
-        ? 'copy'
-        : 'direct play',
+    transcode_decision: getTranscodeDecision(stream) ?? 'direct play',
     user_id: toSourceId(user?.userId),
     user_thumb: toAbsoluteUrl(
       stream.user_avatar_url ?? stream.user_thumb,

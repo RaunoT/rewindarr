@@ -96,7 +96,53 @@
   "History": {
     "syncingTitle": "Synchronisation de l'historique",
     "syncingDescription": "L'historique de lecture de {source} n'est synchronisé qu'une fois, ce qui peut prendre quelques minutes. {count, plural, =0 {Cela vient de commencer.} one {# lecture pour l'instant, depuis {date}.} other {# lectures pour l'instant, depuis {date}.}} Cette page se met à jour toute seule.",
-    "syncingShort": "Synchronisation de l'historique…"
+    "syncingShort": "Synchronisation de l'historique…",
+    "title": "Historique",
+    "libraryLabel": "Bibliothèque",
+    "allLibraries": "Toutes les bibliothèques",
+    "noPlays": "Rien n'a encore été lu",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "poster": "Affiche de {title}",
+    "anonymous": "Anonyme",
+    "unknownUser": "Utilisateur inconnu",
+    "userLabel": "Utilisateur",
+    "allUsers": "Tous les utilisateurs",
+    "onlyMine": "Seulement les miennes",
+    "search": "Rechercher un titre",
+    "noMatches": "Aucune lecture ne correspond aux filtres",
+    "pagination": "Pages",
+    "page": "Page {page}",
+    "pageOf": "{page} sur {pageCount}",
+    "previousPage": "Page précédente",
+    "nextPage": "Page suivante",
+    "playCount": "{count, plural, one {# lecture} other {# lectures}}",
+    "episodeNumber": "S{season} · É{episode}",
+    "rowsLabel": "Lignes par page",
+    "rowsOption": "{count} par page",
+    "kindLabel": "Type",
+    "allKinds": "Lectures et demandes",
+    "plays": "Lectures",
+    "requests": "Demandes",
+    "request": "Demande",
+    "unknownTitle": "Titre inconnu",
+    "season": "Saison {season}",
+    "seasonCount": "{count, plural, one {# saison} other {# saisons}}",
+    "requestsFailed": "Impossible de charger les demandes depuis Seerr",
+    "requestStatus": {
+      "pending": "En attente",
+      "approved": "Approuvée",
+      "declined": "Refusée",
+      "failed": "Échouée",
+      "partiallyAvailable": "Disponible en partie",
+      "available": "Disponible"
+    },
+    "mediaType": {
+      "movie": "Film",
+      "show": "Série",
+      "episode": "Épisode",
+      "track": "Morceau"
+    }
   },
   "MediaServerDeeplink": {
     "available": "Disponible",
@@ -157,6 +203,7 @@
       "rewind": "Rewind",
       "dashboard": "Tableau de bord",
       "activity": "Activité",
+      "history": "Historique",
       "complete": "Terminé",
       "incomplete": "Incomplet",
       "connectionRequired": "Terminez d'abord les paramètres de connexion"
@@ -200,6 +247,9 @@
     },
     "Activity": {
       "title": "Paramètres d'activité"
+    },
+    "History": {
+      "title": "Paramètres de l'historique"
     },
     "General": {
       "title": "Paramètres généraux",

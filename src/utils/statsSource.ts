@@ -39,10 +39,12 @@ export async function isStatsSourceReachable(
 
 // The stats come from the source's play history, which is read once before a
 // period can be shown. Null when the period can be shown, otherwise how far
-// the read has got. Without libraries, every library's history counts.
+// the read has got. Without libraries, every library's history counts. It
+// waits a few seconds for the read, unless `timeout` says otherwise.
 export async function getHistoryProgress(
   since: string | Date,
   libraries?: TautulliLibrary[],
+  timeout?: number,
 ): Promise<HistoryStatus | null> {
   const sinceTime = new Date(since).getTime()
 
@@ -52,7 +54,7 @@ export async function getHistoryProgress(
 
   const readers = await getStatsSource().getHistoryReaders(libraries)
 
-  return getReadProgress(readers, sinceTime)
+  return getReadProgress(readers, sinceTime, timeout)
 }
 
 // So that pages find the history ready, instead of starting on it themselves

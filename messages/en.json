@@ -96,7 +96,53 @@
   "History": {
     "syncingTitle": "Syncing the play history",
     "syncingDescription": "The play history from {source} is synced once, which can take a few minutes. {count, plural, =0 {It has just started.} one {# play so far, back to {date}.} other {# plays so far, back to {date}.}} This page updates on its own.",
-    "syncingShort": "Syncing the play history…"
+    "syncingShort": "Syncing the play history…",
+    "title": "History",
+    "libraryLabel": "Library",
+    "allLibraries": "All libraries",
+    "noPlays": "Nothing played yet",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "poster": "Poster for {title}",
+    "anonymous": "Anonymous",
+    "unknownUser": "Unknown user",
+    "userLabel": "User",
+    "allUsers": "All users",
+    "onlyMine": "Only mine",
+    "search": "Search titles",
+    "noMatches": "No plays match the filters",
+    "pagination": "Pages",
+    "page": "Page {page}",
+    "pageOf": "{page} of {pageCount}",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "playCount": "{count, plural, one {# play} other {# plays}}",
+    "episodeNumber": "S{season} · E{episode}",
+    "rowsLabel": "Rows per page",
+    "rowsOption": "{count} per page",
+    "kindLabel": "Type",
+    "allKinds": "Plays and requests",
+    "plays": "Plays",
+    "requests": "Requests",
+    "request": "Request",
+    "unknownTitle": "Unknown title",
+    "season": "Season {season}",
+    "seasonCount": "{count, plural, one {# season} other {# seasons}}",
+    "requestsFailed": "Couldn't load the requests from Seerr",
+    "requestStatus": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "declined": "Declined",
+      "failed": "Failed",
+      "partiallyAvailable": "Partly available",
+      "available": "Available"
+    },
+    "mediaType": {
+      "movie": "Movie",
+      "show": "Show",
+      "episode": "Episode",
+      "track": "Track"
+    }
   },
   "MediaServerDeeplink": {
     "available": "Available",
@@ -157,6 +203,7 @@
       "rewind": "Rewind",
       "dashboard": "Dashboard",
       "activity": "Activity",
+      "history": "History",
       "complete": "Complete",
       "incomplete": "Incomplete",
       "connectionRequired": "Finish the Connection settings first"
@@ -200,6 +247,9 @@
     },
     "Activity": {
       "title": "Activity settings"
+    },
+    "History": {
+      "title": "History settings"
     },
     "General": {
       "title": "General settings",

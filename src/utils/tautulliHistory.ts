@@ -29,6 +29,14 @@ function toKey(value: number | string | null | undefined): string | null {
   return value ? String(value) : null
 }
 
+// Tautulli sends an episode's numbers as numbers or strings, and an empty
+// string for other media. Season 0 holds the specials.
+function toIndex(value: number | string | null | undefined): number | null {
+  const index = value === '' || value == null ? NaN : Number(value)
+
+  return Number.isInteger(index) ? index : null
+}
+
 // Tautulli gives 0 both for a play that barely started and for an item it has
 // no length for. Staying under half a percent for a minute takes an item over
 // three hours long, so a play at 0% that long has no known length.
@@ -85,6 +93,10 @@ export function toTautulliPlay(row: TautulliHistoryRow): Play | null {
     tmdbId: null,
     identityId: String(row.user_id),
     avatar: row.user_thumb || '',
+    seasonNumber:
+      mediaType === 'episode' ? toIndex(row.parent_media_index) : null,
+    episodeNumber: mediaType === 'episode' ? toIndex(row.media_index) : null,
+    transcodeDecision: row.transcode_decision || null,
   }
 }
 

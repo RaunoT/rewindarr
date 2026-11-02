@@ -30,6 +30,7 @@ function completeSettings(): Settings {
   settings.rewind.complete = true
   settings.dashboard.complete = true
   settings.activity.complete = true
+  settings.history.complete = true
 
   return settings
 }
@@ -352,12 +353,14 @@ describe('getHomeTiles', () => {
     rewind: boolean,
     activity: boolean,
     dashboard: boolean,
+    history = activity,
   ) {
     const settings = cloneDeep(DEFAULT_SETTINGS)
 
     settings.rewind.isActive = rewind
     settings.activity.isActive = activity
     settings.dashboard.isActive = dashboard
+    settings.history.isActive = history
 
     return settings
   }
@@ -366,6 +369,7 @@ describe('getHomeTiles', () => {
     expect(getHomeTiles(settingsWith(true, true, true), user, 2)).toEqual({
       rewind: true,
       activity: true,
+      history: true,
       libraries: true,
     })
   })
@@ -374,6 +378,7 @@ describe('getHomeTiles', () => {
     expect(getHomeTiles(settingsWith(false, false, false), user, 2)).toEqual({
       rewind: false,
       activity: false,
+      history: false,
       libraries: false,
     })
   })
@@ -388,6 +393,13 @@ describe('getHomeTiles', () => {
     expect(
       getHomeTiles(settingsWith(false, false, true), user, 0).libraries,
     ).toBe(false)
+  })
+
+  it('shows the history apart from the activity', () => {
+    const tiles = getHomeTiles(settingsWith(false, false, false, true), user, 0)
+
+    expect(tiles.activity).toBe(false)
+    expect(tiles.history).toBe(true)
   })
 
   it('leaves out admin-only sections for everyone but admins', () => {

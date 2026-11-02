@@ -10,6 +10,7 @@ import { canViewFeature, Viewer } from '@/utils/helpers'
 import {
   ArrowPathIcon,
   BackwardIcon,
+  ClockIcon,
   Cog6ToothIcon,
   HomeIcon,
   SignalIcon,
@@ -50,6 +51,8 @@ export default function Sidebar({ libraries, settings }: Props) {
   const dashboardQuery = dashboardParams.size
     ? `?${dashboardParams.toString()}`
     : ''
+  // The history shares the dashboard's period
+  const historyQuery = period ? `?period=${period}` : ''
 
   return (
     <aside
@@ -89,6 +92,15 @@ export default function Sidebar({ libraries, settings }: Props) {
               isActive={pathname.startsWith('/activity')}
             >
               {t('Activity.title')}
+            </SidebarLink>
+          )}
+          {canViewFeature(settings, 'history', viewer) && (
+            <SidebarLink
+              href={`/history${historyQuery}`}
+              icon={<ClockIcon />}
+              isActive={pathname.startsWith('/history')}
+            >
+              {t('History.title')}
             </SidebarLink>
           )}
           {canViewFeature(settings, 'dashboard', viewer) && (

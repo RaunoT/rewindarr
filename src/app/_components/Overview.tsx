@@ -31,6 +31,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import ActivityTile from './ActivityTile'
 import HeaderControls from './HeaderControls'
+import HistoryTile, { HistoryTileSkeleton } from './HistoryTile'
 import LoginButton from './LoginButton'
 
 type Props = {
@@ -95,7 +96,10 @@ export default async function Overview({
           source={settings.connection.statisticsSource}
           isAdmin={isAdmin}
         />
-      ) : !tiles.rewind && !tiles.activity && !tiles.libraries ? (
+      ) : !tiles.rewind &&
+        !tiles.activity &&
+        !tiles.history &&
+        !tiles.libraries ? (
         <StatusMessage
           icon={InboxIcon}
           title={t('Home.emptyTitle')}
@@ -132,6 +136,16 @@ export default async function Overview({
           )}
           {tiles.activity && (
             <ActivityTile settings={toPublicSettings(settings)} />
+          )}
+          {tiles.history && (
+            <Suspense fallback={<HistoryTileSkeleton />}>
+              <HistoryTile
+                settings={settings}
+                session={session}
+                libraries={libraries}
+                period={period}
+              />
+            </Suspense>
           )}
           {tiles.libraries &&
             libraries.map((library) => (

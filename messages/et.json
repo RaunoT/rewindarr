@@ -96,7 +96,53 @@
   "History": {
     "syncingTitle": "Esitusajaloo sünkroonimine",
     "syncingDescription": "Allika {source} esitusajalugu sünkroonitakse üks kord ja see võib võtta paar minutit. {count, plural, =0 {Sünkroonimine just algas.} one {Seni on sünkroonitud # mängimine, alates {date}.} other {Seni on sünkroonitud # mängimist, alates {date}.}} Leht uueneb ise.",
-    "syncingShort": "Esitusajaloo sünkroonimine…"
+    "syncingShort": "Esitusajaloo sünkroonimine…",
+    "title": "Ajalugu",
+    "libraryLabel": "Kogumik",
+    "allLibraries": "Kõik kogumikud",
+    "noPlays": "Midagi pole veel esitatud",
+    "today": "Täna",
+    "yesterday": "Eile",
+    "poster": "{title} poster",
+    "anonymous": "Anonüümne",
+    "unknownUser": "Tundmatu kasutaja",
+    "userLabel": "Kasutaja",
+    "allUsers": "Kõik kasutajad",
+    "onlyMine": "Ainult minu",
+    "search": "Otsi pealkirju",
+    "noMatches": "Filtritele ei vasta ükski esitus",
+    "pagination": "Lehed",
+    "page": "Leht {page}",
+    "pageOf": "{page} / {pageCount}",
+    "previousPage": "Eelmine leht",
+    "nextPage": "Järgmine leht",
+    "playCount": "{count, plural, one {# esitus} other {# esitust}}",
+    "episodeNumber": "H{season} · O{episode}",
+    "rowsLabel": "Ridu lehel",
+    "rowsOption": "{count} lehel",
+    "kindLabel": "Tüüp",
+    "allKinds": "Esitused ja soovid",
+    "plays": "Esitused",
+    "requests": "Soovid",
+    "request": "Soov",
+    "unknownTitle": "Tundmatu pealkiri",
+    "season": "{season}. hooaeg",
+    "seasonCount": "{count, plural, one {# hooaeg} other {# hooaega}}",
+    "requestsFailed": "Seerrist ei õnnestunud soove laadida",
+    "requestStatus": {
+      "pending": "Ootel",
+      "approved": "Kinnitatud",
+      "declined": "Tagasi lükatud",
+      "failed": "Ebaõnnestus",
+      "partiallyAvailable": "Osaliselt saadaval",
+      "available": "Saadaval"
+    },
+    "mediaType": {
+      "movie": "Film",
+      "show": "Sari",
+      "episode": "Osa",
+      "track": "Lugu"
+    }
   },
   "MediaServerDeeplink": {
     "available": "Saadaval",
@@ -157,6 +203,7 @@
       "rewind": "Rewind",
       "dashboard": "Edetabel",
       "activity": "Tegevus",
+      "history": "Ajalugu",
       "complete": "Lõpetatud",
       "incomplete": "Lõpetamata",
       "connectionRequired": "Lõpeta kõigepealt ühenduse seadistamine"
@@ -200,6 +247,9 @@
     },
     "Activity": {
       "title": "Tegevuse seaded"
+    },
+    "History": {
+      "title": "Ajaloo seaded"
     },
     "General": {
       "title": "Üldseaded",

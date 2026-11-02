@@ -137,7 +137,9 @@ function loadSettings(key: string): Settings {
       dropMdblistApiKey(
         migrateRatingStatistic(
           mergeWithDefaults(
-            moveItemStatistics(renameOverseerrSettings(savedSettings)),
+            completeHistorySettings(
+              moveItemStatistics(renameOverseerrSettings(savedSettings)),
+            ),
           ),
         ),
       ),
@@ -255,6 +257,21 @@ function renameOverseerrSettings(saved: Partial<Settings>): Partial<Settings> {
       seerrUrl: rest.seerrUrl ?? overseerrUrl,
       seerrApiKey: rest.seerrApiKey ?? overseerrApiKey,
     } as Settings['connection'],
+  }
+}
+
+// The history's settings page came after the others. A server set up before
+// it keeps the defaults, instead of its users waiting on an admin to save them.
+function completeHistorySettings(saved: Partial<Settings>): Partial<Settings> {
+  const isSetUp = saved.setupComplete === true || wasSetUpBeforeTracking(saved)
+
+  if (!isSetUp || saved.history?.complete !== undefined) {
+    return saved
+  }
+
+  return {
+    ...saved,
+    history: { ...saved.history, complete: true } as Settings['history'],
   }
 }
 

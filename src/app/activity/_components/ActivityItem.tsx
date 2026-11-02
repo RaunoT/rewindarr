@@ -6,6 +6,7 @@ import ImageFallback from '@/components/ImageFallback'
 import TitleDetails from '@/components/MediaItem/TitleDetails'
 import PosterImage from '@/components/PosterImage'
 import SkeletonLine from '@/components/SkeletonLine'
+import { DECISION_ICONS, getDecisionKind } from '@/components/StreamDecision'
 import { useMediaDetails } from '@/hooks/useMediaDetails'
 import { PublicSettings } from '@/types/settings'
 import { MediaServer } from '@/types/statsSource'
@@ -28,10 +29,7 @@ import {
 import { ArrowTurnDownRightIcon } from '@heroicons/react/16/solid'
 import {
   ArrowPathIcon,
-  ArrowsRightLeftIcon,
-  CheckCircleIcon,
   ChevronDownIcon,
-  CpuChipIcon,
   PauseIcon,
   PlayIcon,
   UserIcon,
@@ -41,19 +39,6 @@ import { capitalize, toUpper } from 'lodash'
 import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { ReactNode, useContext, useId, useState } from 'react'
-
-type DecisionKind = 'directPlay' | 'directStream' | 'transcode'
-
-// Green when the file plays as is, blue when only its container changes, and
-// Plex orange when the server converts it
-const DECISION_ICONS: Record<
-  DecisionKind,
-  { Icon: typeof CheckCircleIcon; className: string }
-> = {
-  directPlay: { Icon: CheckCircleIcon, className: 'text-success' },
-  directStream: { Icon: ArrowsRightLeftIcon, className: 'text-sky-400' },
-  transcode: { Icon: CpuChipIcon, className: 'text-plex' },
-}
 
 type ActivityItemProps = {
   session: TautulliSession
@@ -432,20 +417,6 @@ export default function ActivityItem({
 // Tautulli sends 0 or 1, Tracearr a boolean
 function isAtmos(value?: number | boolean) {
   return Number(value) === 1
-}
-
-// Plex's decisions, grouped by how much work they are for the server
-function getDecisionKind(decision?: string): DecisionKind | undefined {
-  switch (decision) {
-    case 'direct play':
-      return 'directPlay'
-    case 'copy':
-      return 'directStream'
-    case 'transcode':
-    // Burning in subtitles is a transcode too
-    case 'burn':
-      return 'transcode'
-  }
 }
 
 function isTranscoding(decision?: string) {

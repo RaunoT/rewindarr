@@ -59,6 +59,7 @@ export default function PeriodSelect({ settings }: Props) {
 
     // A new list starts from its first rows again
     params.delete('limit')
+    params.delete('page')
 
     if (newPeriod) {
       params.set('period', newPeriod)
