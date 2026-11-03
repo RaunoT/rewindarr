@@ -1,6 +1,7 @@
 import { Play, PlayMediaType } from '@/types/playHistory'
 import { TautulliHistoryRow, TautulliLibrary } from '@/types/tautulli'
 import fetchTautulli from './fetchTautulli'
+import { toIndex } from './formatting'
 import getSettings from './getSettings'
 import {
   dropStaleHistories,
@@ -27,14 +28,6 @@ const UNKNOWN_LENGTH_PLAY_MS = 60 * 1000
 
 function toKey(value: number | string | null | undefined): string | null {
   return value ? String(value) : null
-}
-
-// Tautulli sends an episode's numbers as numbers or strings, and an empty
-// string for other media. Season 0 holds the specials.
-function toIndex(value: number | string | null | undefined): number | null {
-  const index = value === '' || value == null ? NaN : Number(value)
-
-  return Number.isInteger(index) ? index : null
 }
 
 // Tautulli gives 0 both for a play that barely started and for an item it has

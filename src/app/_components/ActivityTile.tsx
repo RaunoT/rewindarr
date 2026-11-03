@@ -1,10 +1,14 @@
 'use client'
 
 import getActivity from '@/app/activity/_actions/getActivity'
-import { MediaIcon } from '@/components/icons'
+import PlaybackOverlay from '@/components/PlaybackOverlay'
 import SkeletonLine from '@/components/SkeletonLine'
+import { UserAvatar } from '@/components/UserBadge'
+import { useMediaDetails } from '@/hooks/useMediaDetails'
 import { PublicSettings } from '@/types/settings'
+import { TautulliSession } from '@/types/tautulli'
 import { STATS_SOURCE_NAMES } from '@/utils/constants'
+import { toIndex } from '@/utils/formatting'
 import {
   ChevronRightIcon,
   ExclamationTriangleIcon,
@@ -14,6 +18,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
+import TileItem, { TILE_ITEM_COUNT } from './TileItem'
 
 type Props = {
   settings: PublicSettings
@@ -35,18 +40,29 @@ export default function ActivityTile({ settings }: Props) {
   return (
     <Link
       href='/activity'
-      className='glass-sheet group focus-visible:focus-ring flex flex-col justify-between gap-4 transition-colors hover:bg-white/5'
+      className='glass-sheet group focus-visible:focus-ring flex flex-col gap-4 transition-colors hover:bg-white/5'
     >
       <div className='flex items-center justify-between gap-3'>
         <h2 className='flex items-center gap-2 font-semibold'>
           <SignalIcon className='size-5 text-neutral-400' />
           {t('Activity.title')}
         </h2>
-        <ChevronRightIcon className='size-4 text-neutral-500 transition-transform group-hover:translate-x-0.5' />
+        <div className='flex shrink-0 items-center gap-1 text-xs text-neutral-400'>
+          {isLoading ? (
+            <SkeletonLine width='w-16' />
+          ) : (
+            !isUnavailable &&
+            !!data?.stream_count && (
+              <span className='flex items-center gap-1.5'>
+                <LiveDot />
+                {t('Home.streams', { count: data.stream_count })}
+              </span>
+            )
+          )}
+          <ChevronRightIcon className='size-4 shrink-0 text-neutral-500 transition-transform group-hover:translate-x-0.5' />
+        </div>
       </div>
-      {isLoading ? (
-        <SkeletonLine className='text-2xl' width='w-32' />
-      ) : isUnavailable ? (
+      {isUnavailable ? (
         <p className='flex items-center gap-2 text-sm text-red-300'>
           <ExclamationTriangleIcon className='size-5 shrink-0' />
           {isError
@@ -57,39 +73,87 @@ export default function ActivityTile({ settings }: Props) {
               })}
         </p>
       ) : (
-        <p className='text-2xl font-semibold tracking-tight'>
-          {t('Home.streams', { count: data?.stream_count ?? 0 })}
-        </p>
+        !isLoading &&
+        !data?.stream_count && (
+          // Big and at the bottom, so the empty tile doesn't look unfinished
+          <p className='mt-auto text-2xl font-semibold tracking-tight'>
+            {t('Home.streams', { count: 0 })}
+          </p>
+        )
       )}
       {!isUnavailable && !!data?.sessions.length && (
-        <ul className='space-y-1 text-sm'>
-          {data.sessions.slice(0, 3).map((item, index) => {
-            const isAnonymous =
-              settings.general.isAnonymized &&
-              String(item.user_id) !== session?.user.id
-
-            return (
-              <li
-                key={item.session_key}
-                className='flex min-w-0 items-center gap-2'
-              >
-                <MediaIcon
-                  type={item.media_type}
-                  className='size-4 shrink-0 text-neutral-400'
-                />
-                <span className='truncate'>
-                  {item.grandparent_title || item.title}
-                </span>
-                <span className='max-w-1/2 shrink-0 truncate text-neutral-400'>
-                  {isAnonymous
-                    ? t('Activity.anonymous', { number: index + 1 })
-                    : item.friendly_name}
-                </span>
-              </li>
-            )
-          })}
+        <ul className='space-y-2 text-sm'>
+          {data.sessions.slice(0, TILE_ITEM_COUNT).map((item, index) => (
+            <ActivityTileItem
+              key={item.session_key}
+              session={item}
+              index={index}
+              settings={settings}
+              userId={session?.user.id}
+            />
+          ))}
         </ul>
       )}
     </Link>
+  )
+}
+
+type ItemProps = {
+  session: TautulliSession
+  index: number
+  settings: PublicSettings
+  // The signed-in user's
+  userId?: string
+}
+
+// The poster is found like the activity page's, which shares the query
+function ActivityTileItem({ session, index, settings, userId }: ItemProps) {
+  const t = useTranslations()
+  const { posterUrl, isPosterLoading, details } = useMediaDetails(
+    session,
+    settings,
+  )
+  const isOwn = String(session.user_id) === userId
+  const isAnonymous = settings.general.isAnonymized && !isOwn
+  const user = {
+    name: isAnonymous
+      ? t('Activity.anonymous', { number: index + 1 })
+      : session.friendly_name,
+    avatar: session.user_thumb,
+    isOwn,
+    isAnonymous,
+  }
+  const season = toIndex(session.parent_media_index)
+  const episode = toIndex(session.media_index)
+
+  return (
+    <TileItem
+      posters={[posterUrl, details?.poster]}
+      type={session.media_type}
+      isPosterLoading={isPosterLoading}
+      title={session.grandparent_title || session.title}
+      detail={
+        session.media_type === 'episode' && season !== null && episode !== null
+          ? t('History.episodeNumber', { season, episode })
+          : session.media_type === 'track' && session.grandparent_title
+            ? session.title
+            : null
+      }
+      aside={<UserAvatar user={user} className='size-6' isOwnMarked />}
+      posterOverlay={
+        <PlaybackOverlay state={session.state} className='size-3.5' />
+      }
+      hasGlow={index === 0}
+    />
+  )
+}
+
+// Pulses while something plays
+function LiveDot() {
+  return (
+    <span className='relative flex size-2' aria-hidden='true'>
+      <span className='bg-success absolute inline-flex size-full rounded-full opacity-75 motion-safe:animate-ping' />
+      <span className='bg-success relative inline-flex size-2 rounded-full' />
+    </span>
   )
 }

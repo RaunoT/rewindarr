@@ -50,7 +50,6 @@
     "streamDetails": "Détails du flux",
     "noActivity": "Aucune lecture en cours",
     "loadError": "Impossible de charger l'activité",
-    "playing": "En lecture",
     "paused": "En pause",
     "buffering": "Mise en mémoire tampon",
     "endsAt": "Se termine à {time}",

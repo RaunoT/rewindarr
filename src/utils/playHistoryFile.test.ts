@@ -166,7 +166,7 @@ describe('playHistoryFile', () => {
 
     const file = readFile() as { histories: { plays: object[] }[] }
 
-    writeFile({ ...file, version: 4 })
+    writeFile({ ...file, version: 5 })
 
     await expect(readHistoryFile()).resolves.toEqual(new Map())
 
@@ -230,6 +230,16 @@ describe('playHistoryFile', () => {
         laterFields.every((field) => item[field as keyof typeof item] === null),
       ),
     ).toBe(true)
+    expect(history?.rebuildAt).toBe(0)
+  })
+
+  it("reads a history with Tracearr's album posters again soon", async () => {
+    await writeHistoryFile([[KEY, snapshot]])
+    writeFile({ ...(readFile() as object), version: 3 })
+
+    const history = (await readHistoryFile()).get(KEY)
+
+    expect(history?.plays).toHaveLength(snapshot.plays.length)
     expect(history?.rebuildAt).toBe(0)
   })
 

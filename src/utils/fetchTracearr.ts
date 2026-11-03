@@ -241,6 +241,42 @@ function toAbsoluteUrl(url: string | null, baseUrl: string): string {
   return url.startsWith('/') ? `${baseUrl}${url}` : url
 }
 
+// Plex artwork Tracearr can proxy, which needs the timestamp on the end
+const PLEX_THUMB_PATH = /^\/library\/metadata\/\d+\/thumb\/(\d+)$/
+
+// A track's poster is its album's, so the artist's is asked for instead, as
+// for Tautulli. Plex ignores the timestamp, but Tracearr only proxies paths
+// that have one, so the album's is kept. Jellyfin's are left as they are.
+export function getPosterUrl(
+  media: Pick<
+    TracearrStream,
+    'media_type' | 'poster_url' | 'grandparent_rating_key'
+  >,
+  baseUrl: string,
+): string {
+  const { media_type, poster_url, grandparent_rating_key } = media
+  const [path, query] = poster_url?.split('?') ?? []
+  const params = new URLSearchParams(query)
+  const timestamp = PLEX_THUMB_PATH.exec(params.get('url') ?? '')?.[1]
+
+  if (
+    media_type !== 'track' ||
+    !timestamp ||
+    !/^\d+$/.test(grandparent_rating_key ?? '')
+  ) {
+    return toAbsoluteUrl(poster_url, baseUrl)
+  }
+
+  params.set(
+    'url',
+    `/library/metadata/${grandparent_rating_key}/thumb/${timestamp}`,
+  )
+  // The album's version, which says nothing about the artist's
+  params.delete('v')
+
+  return toAbsoluteUrl(`${path}?${params.toString()}`, baseUrl)
+}
+
 type FetchOptions = {
   // Waits for its share of the rate limit, for requests that come in long runs
   paced?: boolean
@@ -658,7 +694,7 @@ function toPlay(record: TracearrHistoryRecord, baseUrl: string): Play | null {
     showTitle: record.show_title,
     artistName: record.artist_name,
     year: record.year,
-    thumb: toAbsoluteUrl(record.poster_url, baseUrl),
+    thumb: getPosterUrl(record, baseUrl),
     ratingKey: record.rating_key,
     grandparentRatingKey: record.grandparent_rating_key,
     mediaId: record.media_id,
@@ -1145,7 +1181,9 @@ function toSession(
     grandparent_title:
       (isEpisode ? stream.show_title : stream.artist_name) ?? '',
     guids: toGuids(stream),
+    media_index: isEpisode ? stream.episode_number : null,
     media_type: stream.media_type,
+    parent_media_index: isEpisode ? stream.season_number : null,
     parent_rating_key: toSourceId(stream.parent_rating_key) || undefined,
     parent_title: isEpisode
       ? stream.season_number !== null
@@ -1188,7 +1226,7 @@ function toSession(
     stream_video_dynamic_range: stream.stream_video_details?.dynamicRange ?? '',
     stream_video_full_resolution: streamHeight ? `${streamHeight}p` : '',
     subtitle_codec: stream.subtitle_info?.codec ?? '',
-    thumb: toAbsoluteUrl(stream.poster_url, baseUrl),
+    thumb: getPosterUrl(stream, baseUrl),
     title: stream.media_title,
     transcode_decision: getTranscodeDecision(stream) ?? 'direct play',
     user_id: toSourceId(user?.userId),

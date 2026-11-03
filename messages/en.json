@@ -50,7 +50,6 @@
     "streamDetails": "Stream details",
     "noActivity": "No active streams",
     "loadError": "Couldn't load activity",
-    "playing": "Playing",
     "paused": "Paused",
     "buffering": "Buffering",
     "endsAt": "Ends at {time}",

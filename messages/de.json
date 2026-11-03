@@ -50,7 +50,6 @@
     "streamDetails": "Stream-Details",
     "noActivity": "Keine aktiven Streams",
     "loadError": "Aktivität konnte nicht geladen werden",
-    "playing": "Läuft",
     "paused": "Pausiert",
     "buffering": "Puffert",
     "endsAt": "Endet um {time}",

@@ -47,6 +47,11 @@
   @apply w-full max-w-3xl;
 }
 
+/* The home page's, wider for its tiles */
+@utility page-width-wide {
+  @apply w-full max-w-6xl;
+}
+
 @utility focus-ring {
   @apply ring-2 ring-neutral-200 focus-visible:outline-none;
 }

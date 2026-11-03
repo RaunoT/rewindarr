@@ -8,11 +8,11 @@ import zlib from 'zlib'
 
 const gzip = promisify(zlib.gzip)
 const gunzip = promisify(zlib.gunzip)
-const VERSION = 3
-// Their plays miss what came later, such as the percent complete in version 2
-// and the episode numbers and streams in 3, so their histories
-// are read again
-const PREVIOUS_VERSIONS = [1, 2]
+const VERSION = 4
+// Their plays miss what came later, such as the percent complete in version 2,
+// the episode numbers and streams in 3, and Tracearr's artist posters in 4,
+// so their histories are read again
+const PREVIOUS_VERSIONS = [1, 2, 3]
 
 export type PlaysSnapshot = {
   plays: Play[]
