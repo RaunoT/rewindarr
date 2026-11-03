@@ -148,9 +148,13 @@ describe('hasRewindPlays', () => {
   }
 
   it('is false when nothing was played', () => {
-    expect(hasRewindPlays({ shows: none, movies: none, audio: none })).toBe(
-      false,
-    )
+    expect(
+      hasRewindPlays({
+        shows: none,
+        movies: none,
+        audio: { ...none, topTrack: null },
+      }),
+    ).toBe(false)
   })
 
   it('is true when any media type has plays', () => {
@@ -158,7 +162,7 @@ describe('hasRewindPlays', () => {
       hasRewindPlays({
         shows: none,
         movies: none,
-        audio: { ...none, count: 3 },
+        audio: { ...none, count: 3, topTrack: null },
       }),
     ).toBe(true)
   })
@@ -189,7 +193,7 @@ describe('getRewindBreakdown', () => {
           duration_value: 10800,
           server_duration_value: 10000,
         },
-        audio: none,
+        audio: { ...none, topTrack: null },
       }),
     ).toEqual([
       { type: 'movie', value: '3 hrs', share: 0.75, serverShare: 0.25 },
@@ -207,7 +211,7 @@ describe('getRewindBreakdown', () => {
           server_duration_value: 3600,
         },
         movies: none,
-        audio: { ...none, server_duration_value: 3600 },
+        audio: { ...none, server_duration_value: 3600, topTrack: null },
       }),
     ).toEqual([
       { type: 'show', value: '1 hr', share: 1, serverShare: 0.5 },
@@ -225,7 +229,12 @@ describe('getRewindBreakdown', () => {
           server_duration_value: null,
         },
         movies: none,
-        audio: { ...none, duration: '5 mins', duration_value: 300 },
+        audio: {
+          ...none,
+          duration: '5 mins',
+          duration_value: 300,
+          topTrack: null,
+        },
       }),
     ).toEqual([
       { type: 'artist', value: '5 mins', share: 1, serverShare: null },
@@ -237,7 +246,7 @@ describe('getRewindBreakdown', () => {
       getRewindBreakdown({
         shows: { ...none, server_duration_value: 3600 },
         movies: { ...none, server_duration_value: 3600 },
-        audio: none,
+        audio: { ...none, topTrack: null },
       }),
     ).toEqual([])
   })

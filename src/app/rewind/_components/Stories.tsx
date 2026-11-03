@@ -4,8 +4,14 @@ import {
   readStorage,
   writeStorage,
 } from '@/app/_components/GlobalContextProvider'
+import useStoryMusic from '@/hooks/useStoryMusic'
 import { trackEvent } from '@/utils/analytics'
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  SpeakerWaveIcon,
+  SpeakerXMarkIcon,
+} from '@heroicons/react/24/outline'
 import { MotionConfig } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import {
@@ -19,6 +25,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from 'react'
 
 type StoryStep = {
@@ -42,6 +49,8 @@ type Story = {
   id: string
   type: 'component'
   component: () => ReactNode
+  // What plays during the story, in order of preference
+  music?: string[]
 }
 
 type Props = {
@@ -53,6 +62,8 @@ type Props = {
 }
 
 const INTRO_SEEN_KEY = 'rewindIntroSeen'
+const SOUND_KEY = 'rewindSound'
+const NO_MUSIC: string[] = []
 // A longer press or a drag doesn't count as a tap
 const TAP_MAX_DURATION = 500
 const TAP_MAX_DISTANCE = 10
@@ -80,18 +91,42 @@ function isInteractiveTarget(target: EventTarget | null) {
   return target instanceof Element && !!target.closest(INTERACTIVE_SELECTOR)
 }
 
+function subscribeToVisibility(onChange: () => void) {
+  document.addEventListener('visibilitychange', onChange)
+
+  return () => document.removeEventListener('visibilitychange', onChange)
+}
+
+function getIsHidden() {
+  return document.hidden
+}
+
+// Counts as hidden until hydrated, so nothing plays before then
+function getServerIsHidden() {
+  return true
+}
+
 export default function Stories({ stories }: Props) {
   const t = useTranslations('Rewind.Stories')
   const [currentIndex, setCurrentIndex] = useState(0)
   // Unknown until mounted, so the first story waits for it
   const [isIntroShown, setIsIntroShown] = useState<boolean | null>(null)
+  const [isSoundOn, setIsSoundOn] = useState(false)
+  // The browser wouldn't start the music before the visitor interacted
+  const [isSoundBlocked, setIsSoundBlocked] = useState(false)
   const [announcement, setAnnouncement] = useState('')
   const [step, setStep] = useState(0)
   // The steps of the current story's statements
   const [steps, setSteps] = useState<number[]>([])
+  const isHidden = useSyncExternalStore(
+    subscribeToVisibility,
+    getIsHidden,
+    getServerIsHidden,
+  )
   const introTitleId = useId()
   const slideRef = useRef<HTMLDivElement>(null)
   const introButtonRef = useRef<HTMLButtonElement>(null)
+  const soundButtonRef = useRef<HTMLButtonElement>(null)
   const shouldRestoreFocusRef = useRef(false)
   const shouldSeekToEndRef = useRef(false)
   const trackedIndexRef = useRef<number | null>(null)
@@ -104,6 +139,16 @@ export default function Stories({ stories }: Props) {
   } | null>(null)
   const currentStory = stories[currentIndex]
   const currentStoryId = currentStory?.id
+  const musicUrls = useMemo(
+    () => [...new Set(stories.flatMap((story) => story.music ?? []))],
+    [stories],
+  )
+  const waitForInteraction = useCallback(() => setIsSoundBlocked(true), [])
+  const { unlock: unlockMusic } = useStoryMusic({
+    sources: currentStory?.music ?? NO_MUSIC,
+    isPlaying: isSoundOn && !isHidden && isIntroShown === false,
+    onBlocked: waitForInteraction,
+  })
   // A statement that is left out leaves a gap in the steps, which is skipped
   const storySteps = useMemo(
     () => [...new Set(steps)].sort((a, b) => a - b),
@@ -171,7 +216,25 @@ export default function Stories({ stories }: Props) {
     // The slide can only take focus once it's no longer inert
     shouldRestoreFocusRef.current = true
     setIsIntroShown(false)
-  }, [])
+
+    // The music waits for the intro, and this click lets it start
+    if (isSoundOn) {
+      unlockMusic(musicUrls)
+    }
+  }, [isSoundOn, unlockMusic, musicUrls])
+  // Music that waits for a click shows as off, so the button starts it
+  const isSoundAudible = isSoundOn && !isSoundBlocked
+  const toggleSound = useCallback(() => {
+    const isOn = !isSoundAudible
+
+    if (isOn) {
+      unlockMusic(musicUrls)
+    }
+
+    setIsSoundOn(isOn)
+    setIsSoundBlocked(false)
+    writeStorage(SOUND_KEY, isOn ? 'on' : 'off')
+  }, [isSoundAudible, unlockMusic, musicUrls])
   const handlePointerDown = useCallback((e: PointerEvent<HTMLDivElement>) => {
     tapStartRef.current =
       !e.isPrimary ||
@@ -229,7 +292,40 @@ export default function Stories({ stories }: Props) {
     setIsIntroShown(
       window.matchMedia(TOUCH_QUERY).matches && !readStorage(INTRO_SEEN_KEY),
     )
+    // On unless the visitor turned it off
+    setIsSoundOn(readStorage(SOUND_KEY) !== 'off')
   }, [])
+
+  // Browsers only start audio on a click or a key press, so blocked music
+  // starts on the visitor's first one, wherever it is
+  useEffect(() => {
+    if (!isSoundBlocked || !isSoundOn) {
+      return
+    }
+
+    const listeners = new AbortController()
+    const start = (e: Event) => {
+      // The sound button has its own say
+      if (soundButtonRef.current?.contains(e.target as Node)) {
+        return
+      }
+
+      listeners.abort()
+      setIsSoundBlocked(false)
+      unlockMusic(musicUrls)
+    }
+
+    document.addEventListener('click', start, {
+      capture: true,
+      signal: listeners.signal,
+    })
+    document.addEventListener('keydown', start, {
+      capture: true,
+      signal: listeners.signal,
+    })
+
+    return () => listeners.abort()
+  }, [isSoundBlocked, isSoundOn, unlockMusic, musicUrls])
 
   useEffect(() => {
     if (isIntroShown) {
@@ -367,7 +463,7 @@ export default function Stories({ stories }: Props) {
             role='dialog'
             aria-modal='true'
             aria-labelledby={introTitleId}
-            className='absolute -inset-5 z-30 flex flex-col rounded-3xl bg-black/80 backdrop-blur-sm'
+            className='absolute -inset-5 z-30 flex flex-col rounded-3xl bg-neutral-950/90 backdrop-blur-md'
             onKeyDown={(e) => {
               // "Got it" is its only control, so focus stays on it
               if (e.key === 'Tab') {
@@ -381,19 +477,21 @@ export default function Stories({ stories }: Props) {
             >
               {t('introTitle')}
             </h2>
-            {/* Matches the slide's tap areas: the left third goes back */}
-            <div className='flex flex-1 px-5 text-center text-neutral-200'>
-              <div className='flex w-1/3 flex-col items-center justify-center gap-3 border-r border-dashed border-white/30 px-2'>
-                <span className='flex size-12 items-center justify-center rounded-full bg-white/10'>
+            {/* Matches the slide's tap areas: the left third goes back. The
+                labels hang below the icons, so both line up however they
+                wrap. */}
+            <div className='flex flex-1 gap-2 px-5 py-6 text-center'>
+              <div className='intro-zone w-1/3'>
+                <span className='intro-zone-icon'>
                   <ChevronLeftIcon className='size-6' />
                 </span>
-                {t('introBack')}
+                <span className='intro-zone-label'>{t('introBack')}</span>
               </div>
-              <div className='flex flex-1 flex-col items-center justify-center gap-3 px-2'>
-                <span className='flex size-12 items-center justify-center rounded-full bg-white/10'>
+              <div className='intro-zone flex-1'>
+                <span className='intro-zone-icon'>
                   <ChevronRightIcon className='size-6' />
                 </span>
-                {t('introForward')}
+                <span className='intro-zone-label'>{t('introForward')}</span>
               </div>
             </div>
             <div className='flex justify-center px-6 pb-12'>
@@ -409,7 +507,7 @@ export default function Stories({ stories }: Props) {
           </div>
         )}
 
-        <div className='mt-4 flex justify-center' inert={!!isIntroShown}>
+        <div className='mt-4 flex justify-between gap-2' inert={!!isIntroShown}>
           <div className='icon-button-group'>
             <button
               className='icon-button'
@@ -428,6 +526,23 @@ export default function Stories({ stories }: Props) {
               <ChevronRightIcon className='size-5' />
             </button>
           </div>
+          {musicUrls.length > 0 && (
+            <div className='icon-button-group'>
+              <button
+                ref={soundButtonRef}
+                className='icon-button'
+                onClick={toggleSound}
+                aria-pressed={isSoundAudible}
+                aria-label={t('sound')}
+              >
+                {isSoundAudible ? (
+                  <SpeakerWaveIcon className='size-5' />
+                ) : (
+                  <SpeakerXMarkIcon className='size-5' />
+                )}
+              </button>
+            </div>
+          )}
         </div>
 
         <div className='sr-only' aria-live='polite' aria-atomic='true'>
