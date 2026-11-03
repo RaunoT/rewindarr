@@ -3,8 +3,8 @@ import { TautulliItemRow } from '@/types/tautulli'
 import { maxBy, omit, orderBy, sumBy } from 'lodash'
 import {
   fetchTmdbDetails,
+  GetSourceData,
   searchTmdbId,
-  SourceMediaData,
   TmdbMediaType,
 } from './getMediaAdditionalData'
 import { LOOKUP_CONCURRENCY, mapWithLimit } from './topPeople'
@@ -72,13 +72,13 @@ async function getTmdbGenres(
 export async function getGenres(
   item: TautulliItemRow,
   type: TmdbMediaType,
-  getSourceData: (item: TautulliItemRow) => Promise<SourceMediaData>,
+  getSourceData: GetSourceData,
 ): Promise<string[]> {
   if (item.tmdb_id) {
     return getTmdbGenres(type, item.tmdb_id)
   }
 
-  const source = await getSourceData(item)
+  const source = await getSourceData(item, type)
 
   if (source.genres) {
     return source.genres
@@ -260,7 +260,7 @@ export async function getTopGenres(
   identityId: string,
   // Null when the match isn't asked for
   candidates: MatchCandidate[] | null,
-  getSourceData: (item: TautulliItemRow) => Promise<SourceMediaData>,
+  getSourceData: GetSourceData,
 ): Promise<Genres> {
   const lookups = new Set(titles.filter((title) => title.durations[identityId]))
 

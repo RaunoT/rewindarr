@@ -171,8 +171,11 @@ export type TracearrMedia = {
   imdb_id: string | null
   tmdb_id: number | null
   tvdb_id: number | null
+  // A row for each library item the media has been, a re-added one included
   availability: {
     server_id: string
+    rating_key?: string | null
+    added_at?: string | null
     removed_at: string | null
   }[]
 }

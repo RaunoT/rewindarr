@@ -22,7 +22,7 @@ import {
   TracearrUser,
   TracearrUserAccount,
 } from '@/types/tracearr'
-import { minBy, pick, sumBy } from 'lodash'
+import { maxBy, minBy, pick, sumBy } from 'lodash'
 import { unstable_rethrow } from 'next/navigation'
 import qs from 'qs'
 import { SavedMediaData, SourceMediaData } from './getMediaAdditionalData'
@@ -1047,7 +1047,8 @@ export async function getTracearrLibrariesSize(
 
 // Whether the item was removed from the media server, and its IDs. The saved IDs
 // and year stand in while Tracearr is down, so a show isn't looked up by its
-// title alone.
+// title alone. Items removed before Tracearr first synced the libraries have no
+// availability for the server at all, which only counts once it has synced.
 export async function getTracearrMedia(
   mediaId?: string | null,
 ): Promise<Omit<SourceMediaData, 'thumb'>> {
@@ -1078,13 +1079,22 @@ export async function getTracearrMedia(
     },
     year: media.year || null,
   }
+  // The newest of the items still on the server is the one to open
+  const ratingKey = maxBy(
+    availability.filter((item) => !item.removed_at && item.rating_key),
+    (item) => Date.parse(item.added_at ?? '') || 0,
+  )?.rating_key
 
   void saveSnapshot(key, mediaData)
 
   return {
-    isDeleted:
-      availability.length > 0 && availability.every((item) => item.removed_at),
+    isDeleted: availability.length
+      ? availability.every((item) => item.removed_at)
+      : Array.isArray(media.availability) &&
+        !!serverId &&
+        !!(await getLibraryRollups())?.length,
     ...mediaData,
+    ...(ratingKey && { ratingKey: toSourceId(ratingKey) }),
   }
 }
 

@@ -99,6 +99,45 @@ describe('fetchTautulli', () => {
     expect(errorLogs()).toContain('Invalid apikey')
   })
 
+  describe('for something that is not there', () => {
+    const missing = () =>
+      Response.json(
+        {
+          response: {
+            result: 'error',
+            message: "Unable to retrieve metadata for rating_key '10'",
+            data: {},
+          },
+        },
+        { status: 400 },
+      )
+
+    it('returns a success without data when the message says so', async () => {
+      fetchMock.mockResolvedValue(missing())
+
+      const res = await fetchTautulli(
+        'get_metadata',
+        { rating_key: 10 },
+        true,
+        { missingMessage: /^Unable to retrieve metadata/ },
+      )
+
+      expect(res?.response).toMatchObject({ result: 'success', data: {} })
+      expect(errorLogs()).toBe('')
+    })
+
+    it('returns null for any other error', async () => {
+      fetchMock.mockResolvedValue(missing())
+
+      await expect(fetchTautulli('get_metadata')).resolves.toBeNull()
+      await expect(
+        fetchTautulli('get_metadata', {}, true, {
+          missingMessage: /^Invalid apikey/,
+        }),
+      ).resolves.toBeNull()
+    })
+  })
+
   it('returns null for a body without a response', async () => {
     fetchMock.mockResolvedValue(Response.json({ unexpected: true }))
 

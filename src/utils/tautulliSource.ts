@@ -19,13 +19,15 @@ import { getServerSession } from 'next-auth'
 import { cache } from 'react'
 import fetchTautulli from './fetchTautulli'
 import {
+  MediaIds,
   parseGuids,
   SavedMediaData,
   SourceMediaData,
+  TmdbMediaType,
 } from './getMediaAdditionalData'
 import getSettings from './getSettings'
 import { LibrariesSize, sumLibrariesSize } from './librariesSize'
-import { createPlayStats, EMPTY_ROW, StatsUser } from './playStats'
+import { createPlayStats, EMPTY_ROW, StatsUser, toSourceId } from './playStats'
 import {
   getSnapshot,
   isListOf,
@@ -267,23 +269,112 @@ async function getActivity(): Promise<TautulliActivity | null> {
   return res?.response?.data ?? null
 }
 
+type TautulliSearchResult = TautulliMetadata & {
+  rating_key?: number | string
+  title?: string
+}
+
+type TautulliSearch = {
+  results_list?: Partial<Record<string, TautulliSearchResult[]>>
+}
+
+const SEARCH_LIMIT = 20
+
+// Empty for an item Plex no longer has, null when Tautulli couldn't be asked
+async function fetchMetadata(
+  ratingKey: number | string,
+): Promise<TautulliMetadata | null> {
+  const res = await fetchTautulli<TautulliMetadata>(
+    'get_metadata',
+    { rating_key: ratingKey },
+    true,
+    // Before 2.18 Tautulli answered with a success without data
+    { missingMessage: /^Unable to retrieve metadata/ },
+  )
+
+  return res?.response?.data ?? null
+}
+
+function isMatchingIds(result: TautulliSearchResult, ids: MediaIds): boolean {
+  const resultIds = parseGuids(Array.isArray(result.guids) ? result.guids : [])
+
+  return (
+    (!!ids.imdb && ids.imdb === resultIds.imdb) ||
+    (!!ids.tmdb && ids.tmdb === resultIds.tmdb) ||
+    (!!ids.tvdb && ids.tvdb === resultIds.tvdb)
+  )
+}
+
+// Plex gives a re-added item a new rating key, and Tautulli's plays keep the
+// old one. The title finds it, and its IDs or year tell it apart from others
+// of the same name. Without either, only a title that's the only one counts.
+async function findReaddedRatingKey(
+  item: TautulliItemRow,
+  type: TmdbMediaType,
+  saved?: SavedMediaData | null,
+): Promise<number | string | null> {
+  if (!item.title) {
+    return null
+  }
+
+  const res = await fetchTautulli<TautulliSearch>(
+    'search',
+    { query: item.title, limit: SEARCH_LIMIT },
+    true,
+  )
+  const title = item.title.trim().toLowerCase()
+  const results = (
+    res?.response?.data?.results_list?.[type === 'movie' ? 'movie' : 'show'] ??
+    []
+  ).filter(
+    (result) =>
+      result.rating_key && result.title?.trim().toLowerCase() === title,
+  )
+  const knownIds: MediaIds = {
+    imdb: saved?.ids?.imdb || item.imdb_id || null,
+    tmdb: saved?.ids?.tmdb || item.tmdb_id || null,
+    tvdb: saved?.ids?.tvdb || item.tvdb_id || null,
+  }
+  const year = saved?.year || item.year
+  const match =
+    knownIds.imdb || knownIds.tmdb || knownIds.tvdb
+      ? results.find((result) => isMatchingIds(result, knownIds))
+      : year
+        ? results.find((result) => Number(result.year) === year)
+        : results.length === 1
+          ? results[0]
+          : undefined
+
+  return match?.rating_key ?? null
+}
+
 // The saved IDs and year stand in while Tautulli is down, so a show isn't
 // looked up by its title alone
 export async function getTautulliMediaData(
   item: TautulliItemRow,
+  type: TmdbMediaType,
 ): Promise<SourceMediaData> {
   const key = `${getTautulliKey()}|media|${item.rating_key}`
-  const res = await fetchTautulli<TautulliMetadata>(
-    'get_metadata',
-    { rating_key: item.rating_key },
-    true,
-  )
-  const metadata = res?.response?.data
+
+  let metadata = await fetchMetadata(item.rating_key)
 
   if (!metadata) {
     const saved = await getSnapshot(key, isObject<SavedMediaData>)
 
     return { thumb: '', isDeleted: false, ids: saved?.ids, year: saved?.year }
+  }
+
+  let ratingKey: number | string | null = null
+
+  if (Object.keys(metadata).length === 0) {
+    const saved = await getSnapshot(key, isObject<SavedMediaData>)
+    const readdedKey = await findReaddedRatingKey(item, type, saved)
+    const readded = readdedKey ? await fetchMetadata(readdedKey) : null
+
+    if (readded && Object.keys(readded).length > 0) {
+      metadata = readded
+      ratingKey = toSourceId(String(readdedKey))
+    }
   }
 
   const isDeleted = Object.keys(metadata).length === 0
@@ -307,6 +398,7 @@ export async function getTautulliMediaData(
       },
       genres: toNames(metadata.genres),
     }),
+    ...(ratingKey && { ratingKey }),
   }
 }
 

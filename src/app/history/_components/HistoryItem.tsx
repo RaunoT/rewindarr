@@ -25,6 +25,26 @@ type Props = {
 
 const TYPES = { movie: 'movie', episode: 'show', track: 'artist' } as const
 
+// A deleted item has nothing left to open in the media server. A re-added one
+// has a new rating key, and so do its episodes, which the show's stands in for.
+function getRatingKey(
+  play: HistoryPlay,
+  item: TautulliItemRow | null | undefined,
+): number | string | null {
+  if (item?.is_deleted) {
+    return null
+  }
+
+  const playedKey =
+    play.mediaType === 'movie' ? play.ratingKey : play.grandparentRatingKey
+
+  if (item?.rating_key && playedKey && String(item.rating_key) !== playedKey) {
+    return item.rating_key
+  }
+
+  return play.ratingKey
+}
+
 // The show or artist leads, and an episode goes by its numbers, which say
 // more at a glance than its title
 export default function HistoryItem({
@@ -38,8 +58,7 @@ export default function HistoryItem({
   const t = useTranslations()
   const locale = useLocale()
   const { mediaType, percentComplete, seasonNumber, episodeNumber } = play
-  // A deleted item has nothing left to open in the media server
-  const ratingKey = item?.is_deleted ? null : play.ratingKey
+  const ratingKey = getRatingKey(play, item)
   const name = play.showTitle || play.artistName || play.title
   const episode =
     seasonNumber !== null && episodeNumber !== null
