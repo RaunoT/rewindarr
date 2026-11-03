@@ -355,7 +355,6 @@ async function HistoryContent({
                       item={entry.item}
                       mediaServer={mediaServer}
                       settings={publicSettings}
-                      isOwn={isOwn}
                       isAnonymous={isAnonymous}
                       isUserShown={isUserShown}
                     />
@@ -366,7 +365,6 @@ async function HistoryContent({
                       item={entry.item}
                       mediaServer={mediaServer}
                       settings={publicSettings}
-                      isOwn={isOwn}
                       isAnonymous={isAnonymous}
                       isUserShown={isUserShown}
                     />

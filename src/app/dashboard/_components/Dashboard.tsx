@@ -22,7 +22,6 @@ type Props = {
   mediaServer?: MediaServer | null
   count?: string
   settings: PublicSettings
-  loggedInUserId?: string
   // The limit "Show more" leads to, left out when there's nothing more
   nextLimit?: number
   // Shown in the card instead of the items, such as while they can't be read yet
@@ -38,7 +37,6 @@ export default async function Dashboard({
   mediaServer = null,
   count,
   settings,
-  loggedInUserId,
   nextLimit,
   status,
 }: Props) {
@@ -114,7 +112,6 @@ export default async function Dashboard({
               type={type}
               mediaServer={mediaServer}
               settings={settings}
-              loggedInUserId={loggedInUserId}
             />
             {/* Into the card's padding, so the button has as much room below as above */}
             {nextLimit && (

@@ -14,7 +14,6 @@ type Props = {
   item: TautulliItemRow | null | undefined
   mediaServer: MediaServer | null
   settings: PublicSettings
-  isOwn: boolean
   isAnonymous: boolean
   // Left out of one user's history, where it's the same on every card
   isUserShown: boolean
@@ -28,7 +27,6 @@ export default function HistoryRequestItem({
   item,
   mediaServer,
   settings,
-  isOwn,
   isAnonymous,
   isUserShown,
 }: Props) {
@@ -79,7 +77,6 @@ export default function HistoryRequestItem({
                 ? t('History.anonymous')
                 : request.userName || t('History.unknownUser'),
               avatar: request.avatar,
-              isOwn,
               isAnonymous,
             }
           : null

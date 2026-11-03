@@ -368,6 +368,7 @@
       "duration": "Pasaste <duration>{durationValue}</duration> escuchando <audio>música</audio>",
       "count": "¡Escuchaste <count>{countValue, number}</count> <tracks>{countValue, plural, one {canción} other {canciones}}</tracks> en total!",
       "favorite": "Lo que más escuchaste fue",
+      "only": "El único artista que escuchaste fue",
       "noData": "No escuchaste <audio>música</audio> en <from>{serverName}</from>"
     },
     "Libraries": {
@@ -383,6 +384,7 @@
       "duration": "Las <library>series</library> ocuparon <duration>{durationValue}</duration> de tu tiempo en <plex>{serverName}.</plex>",
       "count": "¡Viste <count>{countValue, number}</count> <episodes>{countValue, plural, one {episodio} other {episodios}}</episodes> en total!",
       "favorite": "Lo que más viste fue",
+      "only": "La única serie que viste fue",
       "noData": "No viste ninguna <shows>serie</shows> en <plex>{serverName}</plex> <emoji>😥</emoji>"
     },
     "Requests": {
@@ -401,6 +403,7 @@
       "duration": "Pasaste <duration>{durationValue}</duration> de tu tiempo viendo <movies>películas</movies>",
       "count": "¡Viste <count>{countValue, number}</count> <movies>{countValue, plural, one {película} other {películas}}</movies> en total!",
       "favorite": "Lo que más viste fue",
+      "only": "La única película que viste fue",
       "noData": "No viste ninguna <movies>película</movies> en <plex>{serverName}</plex> <emoji>😵‍💫</emoji>"
     },
     "People": {

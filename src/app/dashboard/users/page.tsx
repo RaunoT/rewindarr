@@ -106,7 +106,6 @@ async function DashboardUsersContent({
       totalSize={usersCount}
       type='users'
       settings={toPublicSettings(settings)}
-      loggedInUserId={loggedInUserId}
       nextLimit={getNextItemsLimit(limit, !!usersData?.hasMore)}
     />
   )

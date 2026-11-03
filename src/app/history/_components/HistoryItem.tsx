@@ -21,8 +21,6 @@ type Props = {
   item: TautulliItemRow | null | undefined
   mediaServer: MediaServer | null
   settings: PublicSettings
-  // Whether the signed-in user played it
-  isOwn: boolean
   // Who played it stays hidden, as on the activity page
   isAnonymous: boolean
   // Left out of one user's history, where it's the same on every card
@@ -141,7 +139,6 @@ export default function HistoryItem({
   item,
   mediaServer,
   settings,
-  isOwn,
   isAnonymous,
   isUserShown,
 }: Props) {
@@ -196,7 +193,6 @@ export default function HistoryItem({
             ? t('History.anonymous')
             : play.userName || t('History.unknownUser'),
           avatar: play.avatar,
-          isOwn,
           isAnonymous,
         }
       : null,

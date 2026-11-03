@@ -49,7 +49,6 @@ export default async function HistoryTile({
                 ? t('History.anonymous')
                 : play.userName || t('History.unknownUser'),
               avatar: play.avatar,
-              isOwn,
               isAnonymous,
             }
 
@@ -77,9 +76,7 @@ export default async function HistoryTile({
                     isNewest={index === 0}
                   />
                 }
-                aside={
-                  <UserAvatar user={user} className='size-6' isOwnMarked />
-                }
+                aside={<UserAvatar user={user} className='size-6' />}
                 hasGlow={index === 0}
               />
             )

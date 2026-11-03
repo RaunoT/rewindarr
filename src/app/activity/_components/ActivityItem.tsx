@@ -317,7 +317,6 @@ export default function ActivityItem({
           ? t('anonymous', { number: index + 1 })
           : friendly_name,
         avatar: session.user_thumb,
-        isOwn: isCurrentUser,
         isAnonymous,
       }}
       stats={
