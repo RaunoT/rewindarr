@@ -1,11 +1,12 @@
 'use client'
 
-import { LoginErrorCode, toLoginErrorCode } from '@/lib/loginError'
+import { LoginErrorCode } from '@/lib/loginError'
 import clsx from 'clsx'
-import { signIn } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { FormEvent, useState } from 'react'
+import JellyfinQuickConnect from './JellyfinQuickConnect'
 import LoginWithJellyfinLabel from './LoginWithJellyfinLabel'
+import signInWithJellyfin from './signInWithJellyfin'
 
 type Props = {
   className?: string
@@ -15,6 +16,7 @@ export default function JellyfinLoginForm({ className }: Props) {
   const t = useTranslations('Home')
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<LoginErrorCode | null>(null)
+  const [isQuickConnect, setIsQuickConnect] = useState<boolean>(false)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -23,31 +25,21 @@ export default function JellyfinLoginForm({ className }: Props) {
 
     setIsLoading(true)
     setError(null)
-
-    try {
-      // Without `redirect: false` a failed sign-in reloads the page and the
-      // reason is lost.
-      const res = await signIn('jellyfin', {
+    setError(
+      await signInWithJellyfin('jellyfin', {
         username: formData.get('username'),
         password: formData.get('password'),
-        callbackUrl: '/',
-        redirect: false,
-      })
+      }),
+    )
+    setIsLoading(false)
+  }
 
-      if (!res?.ok || res.error) {
-        setError(toLoginErrorCode(res?.error))
-        setIsLoading(false)
-
-        return
-      }
-
-      // A full load, as the layout also renders from the session
-      window.location.replace(res.url ?? '/')
-    } catch (error) {
-      console.error('[AUTH] - Error during sign-in!', error)
-      setError('unknown')
-      setIsLoading(false)
-    }
+  if (isQuickConnect) {
+    return (
+      <div className={clsx('w-full', className)}>
+        <JellyfinQuickConnect onCancel={() => setIsQuickConnect(false)} />
+      </div>
+    )
   }
 
   return (
@@ -87,6 +79,14 @@ export default function JellyfinLoginForm({ className }: Props) {
           {t(`loginError.${error}`)}
         </p>
       )}
+      <button
+        type='button'
+        className='link mx-auto w-fit text-sm'
+        onClick={() => setIsQuickConnect(true)}
+        disabled={isLoading}
+      >
+        {t('useQuickConnect')}
+      </button>
     </form>
   )
 }

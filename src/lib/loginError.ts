@@ -7,6 +7,8 @@ export const LOGIN_ERROR_CODES = [
   'plexAccount',
   'jellyfinUnavailable',
   'jellyfinCredentials',
+  'jellyfinQuickConnectDisabled',
+  'jellyfinQuickConnectExpired',
   'noAccess',
   'unknown',
 ] as const

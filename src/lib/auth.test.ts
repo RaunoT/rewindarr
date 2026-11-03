@@ -9,6 +9,7 @@ import getSettings from '../utils/getSettings'
 import { getServerUser } from '../utils/statsSource'
 import {
   authOptions,
+  authorizeJellyfinQuickConnect,
   authorizeJellyfinUser,
   authorizePlexUser,
   MAX_CACHED_CHECKS,
@@ -272,6 +273,69 @@ describe('authorizeJellyfinUser', () => {
 
     await expect(
       loginErrorCode(authorizeJellyfinUser('jane', 'secret')),
+    ).resolves.toBe('noAccess')
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('authorizeJellyfinQuickConnect', () => {
+  const JELLYFIN_USER = {
+    Id: 'eeccd0072d56458298fc1eb02f4ac421',
+    Name: 'jane',
+    Policy: { IsAdministrator: false },
+  }
+
+  beforeEach(() => {
+    vi.mocked(getSettings).mockReturnValue(jellyfinSettings())
+    vi.mocked(getServerUser).mockResolvedValue({
+      status: 'member',
+      isAdmin: null,
+    })
+    fetchMock.mockImplementation(async (url: string) =>
+      url.endsWith('/Users/AuthenticateWithQuickConnect')
+        ? Response.json({ User: JELLYFIN_USER, AccessToken: 'jf-token' })
+        : new Response(null, { status: 204 }),
+    )
+  })
+
+  it('signs in with the secret and ends the session it starts', async () => {
+    await expect(authorizeJellyfinQuickConnect('ABC123')).resolves.toEqual({
+      id: 'eeccd0072d56458298fc1eb02f4ac421',
+      name: 'jane',
+      isAdmin: false,
+    })
+
+    const [[signInUrl, signIn], [logOutUrl, logOut]] = fetchMock.mock.calls
+
+    expect(signInUrl).toBe(
+      'http://jellyfin:8096/Users/AuthenticateWithQuickConnect',
+    )
+    expect(JSON.parse(signIn.body)).toEqual({ Secret: 'ABC123' })
+    expect(logOutUrl).toBe('http://jellyfin:8096/Sessions/Logout')
+    expect(logOut.headers.Authorization).toContain('Token="jf-token"')
+  })
+
+  it('fails with jellyfinQuickConnectExpired for an unknown secret', async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 404 }))
+
+    await expect(
+      loginErrorCode(authorizeJellyfinQuickConnect('ABC123')),
+    ).resolves.toBe('jellyfinQuickConnectExpired')
+  })
+
+  it('fails with noAccess for a user outside the server', async () => {
+    vi.mocked(getServerUser).mockResolvedValue({ status: 'notMember' })
+
+    await expect(
+      loginErrorCode(authorizeJellyfinQuickConnect('ABC123')),
+    ).resolves.toBe('noAccess')
+  })
+
+  it('fails with noAccess when the server is Plex', async () => {
+    vi.mocked(getSettings).mockReturnValue(cloneDeep(DEFAULT_SETTINGS))
+
+    await expect(
+      loginErrorCode(authorizeJellyfinQuickConnect('ABC123')),
     ).resolves.toBe('noAccess')
     expect(fetchMock).not.toHaveBeenCalled()
   })
