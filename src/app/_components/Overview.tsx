@@ -265,7 +265,10 @@ async function LibraryTile({
           <AutoRefresh />
         </p>
       ) : (
-        <p className='text-sm text-neutral-400'>{t('Dashboard.noActivity')}</p>
+        // Big and at the bottom, like the activity tile's
+        <p className='mt-auto text-2xl font-semibold tracking-tight text-neutral-400'>
+          {t('Dashboard.noActivity')}
+        </p>
       )}
     </Link>
   )

@@ -51,11 +51,11 @@ export default function ActivityTile({ settings }: Props) {
           {isLoading ? (
             <SkeletonLine width='w-16' />
           ) : (
-            !isUnavailable &&
-            !!data?.stream_count && (
+            !isUnavailable && (
               <span className='flex items-center gap-1.5'>
-                <LiveDot />
-                {t('Home.streams', { count: data.stream_count })}
+                <LiveDot isPlaying={!!data?.stream_count} />
+                {!!data?.stream_count &&
+                  t('Home.streams', { count: data.stream_count })}
               </span>
             )
           )}
@@ -149,10 +149,12 @@ function ActivityTileItem({ session, index, settings, userId }: ItemProps) {
 }
 
 // Pulses while something plays
-function LiveDot() {
+function LiveDot({ isPlaying }: { isPlaying: boolean }) {
   return (
     <span className='relative flex size-2' aria-hidden='true'>
-      <span className='bg-success absolute inline-flex size-full rounded-full opacity-75 motion-safe:animate-ping' />
+      {isPlaying && (
+        <span className='bg-success absolute inline-flex size-full rounded-full opacity-75 motion-safe:animate-ping' />
+      )}
       <span className='bg-success relative inline-flex size-2 rounded-full' />
     </span>
   )
