@@ -7,6 +7,7 @@ import {
   getHistoryPage,
   getPageNumbers,
   getRecentPlays,
+  groupBinges,
   HistoryPage,
   parsePage,
 } from './getHistory'
@@ -146,6 +147,70 @@ describe('getRecentPlays', () => {
     expect(plays).toEqual([])
     expect(progress).toBe(status)
     expect(getHistoryPlays).not.toHaveBeenCalled()
+  })
+})
+
+describe('groupBinges', () => {
+  const HOUR = 60 * 60 * 1000
+  const episode = (id: string, hoursAgo: number, overrides = {}) =>
+    play(id, NOW - hoursAgo * HOUR, {
+      mediaType: 'episode',
+      showTitle: 'Severance',
+      grandparentRatingKey: '7',
+      ...overrides,
+    })
+  const entries = (...plays: HistoryPlay[]) =>
+    plays.map((item) => ({
+      kind: 'play' as const,
+      time: item.startedAt,
+      play: item,
+    }))
+
+  it("groups a user's episodes of one show played in a row", () => {
+    const result = groupBinges(
+      entries(episode('3', 1), episode('2', 2), episode('1', 3)),
+    )
+
+    expect(result).toHaveLength(1)
+    expect(result[0]).toMatchObject({ play: { id: '3' } })
+    expect(
+      result[0].kind === 'play' && result[0].binge?.map((item) => item.id),
+    ).toEqual(['3', '2', '1'])
+  })
+
+  it('ends a binge at another show, user, day or a movie', () => {
+    const result = groupBinges(
+      entries(
+        episode('6', 1),
+        episode('5', 2, { grandparentRatingKey: '8' }),
+        episode('4', 3, { userId: '2' }),
+        play('3', NOW - 4 * HOUR, { mediaType: 'movie' }),
+        play('2', NOW - 5 * HOUR, { mediaType: 'movie' }),
+        episode('1', 30),
+      ),
+    )
+
+    expect(result).toHaveLength(6)
+    expect(result.every((entry) => !('binge' in entry))).toBe(true)
+  })
+
+  it("keeps apart plays whose show isn't known", () => {
+    const unknown = { grandparentRatingKey: null, showTitle: null }
+    const result = groupBinges(
+      entries(episode('2', 1, unknown), episode('1', 2, unknown)),
+    )
+
+    expect(result).toHaveLength(2)
+  })
+
+  it('ends a binge at a request between its plays', () => {
+    const result = groupBinges([
+      ...entries(episode('2', 1)),
+      { kind: 'request', time: NOW - 1.5 * HOUR, request: request(1, 0) },
+      ...entries(episode('1', 2)),
+    ])
+
+    expect(result).toHaveLength(3)
   })
 })
 

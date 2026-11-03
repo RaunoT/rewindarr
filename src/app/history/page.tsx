@@ -7,7 +7,7 @@ import StatusMessage from '@/components/StatusMessage'
 import Totals, { Total, TotalsSkeleton } from '@/components/Totals'
 import { authOptions } from '@/lib/auth'
 import { DashboardSearchParams } from '@/types/dashboard'
-import { HistoryKind, HistoryTotals } from '@/types/history'
+import { HistoryEntry, HistoryKind, HistoryTotals } from '@/types/history'
 import { Settings } from '@/types/settings'
 import { HISTORY_PAGE_SIZE_COOKIE_NAME } from '@/utils/constants'
 import { secondsToTime } from '@/utils/formatting'
@@ -38,10 +38,15 @@ import {
   MoonIcon,
   PlayIcon,
 } from '@heroicons/react/24/outline'
-import { kebabCase, sortBy } from 'lodash'
+import { kebabCase, sortBy, upperFirst } from 'lodash'
 import { Metadata } from 'next'
 import { getServerSession, Session } from 'next-auth'
-import { getFormatter, getTranslations } from 'next-intl/server'
+import {
+  getFormatter,
+  getLocale,
+  getNow,
+  getTranslations,
+} from 'next-intl/server'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -96,6 +101,60 @@ async function getUserOptions(
     })),
     (option) => option.label.toLowerCase(),
   )
+}
+
+type HistoryDay = {
+  key: string
+  date: Date
+  entries: HistoryEntry[]
+}
+
+// The entries under a heading for each day, in the server's timezone like
+// their times. A day split between pages gets one on each.
+function groupByDay(entries: HistoryEntry[]): HistoryDay[] {
+  const days: HistoryDay[] = []
+
+  for (const entry of entries) {
+    const date = new Date(entry.time)
+    const key = date.toDateString()
+    const day = days.at(-1)
+
+    if (day?.key === key) {
+      day.entries.push(entry)
+    } else {
+      days.push({ key, date, entries: [entry] })
+    }
+  }
+
+  return days
+}
+
+function startOfDay(date: Date): number {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
+}
+
+// Today and yesterday by name, other days by their date, with the year when
+// it isn't this one's
+function getDayLabel(date: Date, now: Date, locale: string): string {
+  const daysAgo = Math.round(
+    (startOfDay(now) - startOfDay(date)) / (24 * 60 * 60 * 1000),
+  )
+
+  if (daysAgo === 0 || daysAgo === 1) {
+    return upperFirst(
+      new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(
+        -daysAgo,
+        'day',
+      ),
+    )
+  }
+
+  return new Intl.DateTimeFormat(locale, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric',
+  }).format(date)
 }
 
 type TotalsProps = {
@@ -243,6 +302,9 @@ async function HistoryContent({
   const userId = session?.user.id
   const { isAnonymized } = settings.general
   const publicSettings = toPublicSettings(settings)
+  // One user's history would show them on every card
+  const isUserShown = filter.userIds?.length !== 1
+  const [locale, now] = await Promise.all([getLocale(), getNow()])
 
   function getHref(page: number) {
     const pageParams = new URLSearchParams(params)
@@ -268,34 +330,50 @@ async function HistoryContent({
             <AutoRefresh />
           </>
         )}
-        <ul className='flex flex-col overflow-hidden text-white'>
-          {entries.map((entry) => {
-            const entryUserId =
-              entry.kind === 'play' ? entry.play.userId : entry.request.userId
-            const isOwn = !!userId && entryUserId === userId
-            const isAnonymous = isAnonymized && !isOwn
+        <ol className='flex flex-col gap-5'>
+          {groupByDay(entries).map((day) => (
+            <li key={day.key}>
+              {/* Stays at the top while its day scrolls by, until the next
+                  day's pushes it out */}
+              <h2 className='glass-pill sticky top-4 z-20 mb-3 w-fit bg-neutral-900/70 px-3 py-1 text-sm font-medium text-neutral-300'>
+                {getDayLabel(day.date, now, locale)}
+              </h2>
+              <ul className='flex flex-col text-white'>
+                {day.entries.map((entry) => {
+                  const entryUserId =
+                    entry.kind === 'play'
+                      ? entry.play.userId
+                      : entry.request.userId
+                  const isOwn = !!userId && entryUserId === userId
+                  const isAnonymous = isAnonymized && !isOwn
 
-            return entry.kind === 'play' ? (
-              <HistoryItem
-                key={`play-${entry.play.id}`}
-                play={entry.play}
-                item={entry.item}
-                mediaServer={mediaServer}
-                settings={publicSettings}
-                isAnonymous={isAnonymous}
-              />
-            ) : (
-              <HistoryRequestItem
-                key={`request-${entry.request.id}`}
-                request={entry.request}
-                item={entry.item}
-                mediaServer={mediaServer}
-                settings={publicSettings}
-                isAnonymous={isAnonymous}
-              />
-            )
-          })}
-        </ul>
+                  return entry.kind === 'play' ? (
+                    <HistoryItem
+                      key={`play-${entry.play.id}`}
+                      play={entry.play}
+                      binge={entry.binge}
+                      item={entry.item}
+                      mediaServer={mediaServer}
+                      settings={publicSettings}
+                      isAnonymous={isAnonymous}
+                      isUserShown={isUserShown}
+                    />
+                  ) : (
+                    <HistoryRequestItem
+                      key={`request-${entry.request.id}`}
+                      request={entry.request}
+                      item={entry.item}
+                      mediaServer={mediaServer}
+                      settings={publicSettings}
+                      isAnonymous={isAnonymous}
+                      isUserShown={isUserShown}
+                    />
+                  )
+                })}
+              </ul>
+            </li>
+          ))}
+        </ol>
         <HistoryPagination
           page={page}
           pageCount={pageCount}

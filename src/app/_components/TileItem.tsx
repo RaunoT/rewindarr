@@ -13,7 +13,8 @@ type Props = {
   type: string
   isPosterLoading?: boolean
   title: string
-  // Under the title, such as an episode's numbers or a track's title
+  // Small above the title, such as an episode's numbers or a track's title,
+  // like a media card's on phones
   detail?: string | null
   // Before the poster, such as when it was played
   lead?: ReactNode
@@ -57,7 +58,9 @@ export default function TileItem({
       <span className='flex min-w-0 flex-1 flex-col'>
         <span className='truncate'>{title}</span>
         {detail && (
-          <span className='truncate text-xs text-neutral-400'>{detail}</span>
+          <span className='order-first truncate text-xs text-neutral-400'>
+            {detail}
+          </span>
         )}
       </span>
       {aside}

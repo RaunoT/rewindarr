@@ -109,6 +109,11 @@
     "previousPage": "Página anterior",
     "nextPage": "Página siguiente",
     "episodeNumber": "T{season} · E{episode}",
+    "episodeOnly": "E{episode}",
+    "episodeRange": "T{season} · E{first}–E{last}",
+    "range": "{from} – {to}",
+    "episodeCount": "{count, plural, one {# episodio} other {# episodios}}",
+    "trackCount": "{count, plural, one {# canción} other {# canciones}}",
     "rowsLabel": "Filas por página",
     "rowsOption": "{count} por página",
     "kindLabel": "Tipo",
@@ -130,8 +135,7 @@
     "requestStatusLabel": "{status}: abrir {title} en Seerr"
   },
   "MediaServerDeeplink": {
-    "available": "Disponible",
-    "availableLabel": "Disponible: abrir {title} en {server}"
+    "openLabel": "Abrir {title} en {server}"
   },
   "PeriodSelectContent": {
     "7days": "7 días",

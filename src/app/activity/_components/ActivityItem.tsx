@@ -172,6 +172,39 @@ export default function ActivityItem({
     setIsDetailsHidden(isExpanded)
   }
 
+  // How the stream gets there, which opens the rest. Its colour shows when the
+  // details are worth a look. Phones get just the icons. Taps 10px above and
+  // below count too, for a 40px tap area.
+  function decisionToggle(isIconOnly: boolean) {
+    return (
+      <button
+        type='button'
+        className={clsx(
+          'icon-stat-wrapper focus-visible:focus-ring relative cursor-pointer pr-2 transition-colors after:absolute after:-inset-y-2.5 hover:bg-white/10',
+          // The narrow pill gets 10px more on the sides too
+          isIconOnly ? 'after:-inset-x-2.5' : 'after:inset-x-0',
+        )}
+        aria-expanded={isExpanded}
+        aria-controls={detailsId}
+        onClick={toggleDetails}
+      >
+        {decisionIcon && (
+          <decisionIcon.Icon
+            className={decisionIcon.className}
+            aria-hidden='true'
+          />
+        )}
+        <span className={clsx(isIconOnly && 'sr-only')}>
+          {capitalize(formatDecision(transcode_decision))}
+        </span>
+        <span className='sr-only'>{` (${t('streamDetails')})`}</span>
+        <ChevronDownIcon
+          className={clsx('transition-transform', isExpanded && 'rotate-180')}
+        />
+      </button>
+    )
+  }
+
   // Stream info: what is playing first, then how it gets there
   const streamDetails = isExpanded && (
     <ul
@@ -294,29 +327,9 @@ export default function ActivityItem({
               <span className='truncate'>{device}</span>
             </li>
           )}
-          {/* How the stream gets there, which opens the rest. Its colour
-              shows when the details are worth a look. Taps 10px above and
-              below count too, for a 40px tap area. */}
-          <li>
-            <button
-              type='button'
-              className='icon-stat-wrapper focus-visible:focus-ring relative cursor-pointer pr-2 transition-colors after:absolute after:inset-x-0 after:-inset-y-2.5 hover:bg-white/10'
-              aria-expanded={isExpanded}
-              aria-controls={detailsId}
-              onClick={toggleDetails}
-            >
-              {decisionIcon && (
-                <decisionIcon.Icon className={decisionIcon.className} />
-              )}
-              {capitalize(formatDecision(transcode_decision))}
-              <span className='sr-only'>{` (${t('streamDetails')})`}</span>
-              <ChevronDownIcon
-                className={clsx(
-                  'transition-transform',
-                  isExpanded && 'rotate-180',
-                )}
-              />
-            </button>
+          {/* Phones have its icon next to the title instead */}
+          <li className={clsx(decisionIcon && 'max-sm:hidden')}>
+            {decisionToggle(false)}
           </li>
         </>
       }
@@ -338,16 +351,30 @@ export default function ActivityItem({
           </>
         )
       }
+      phoneAside={decisionIcon && decisionToggle(true)}
       settings={settings}
       footer={streamDetails}
     >
       {position && (
-        <div className='flex items-center gap-3 text-xs text-neutral-400 tabular-nums sm:text-sm'>
-          <ProgressBar
-            value={Number(session.progress_percent) / 100}
-            className='flex-1'
-          />
-          {formatPercent(Number(session.progress_percent), locale)}
+        <div className='text-xs text-neutral-400 tabular-nums sm:text-sm'>
+          <div className='flex items-center gap-3'>
+            <ProgressBar
+              value={Number(session.progress_percent) / 100}
+              className='flex-1'
+            />
+            <span className='max-sm:hidden'>
+              {formatPercent(Number(session.progress_percent), locale)}
+            </span>
+          </div>
+          {/* Phones put the times under the bar, so the title gets its row */}
+          <div className='mt-1.5 flex justify-between gap-3 sm:hidden'>
+            <span>{position}</span>
+            {eta && (
+              <span className='text-neutral-200'>
+                {t('endsAt', { time: eta })}
+              </span>
+            )}
+          </div>
         </div>
       )}
     </MediaCard>

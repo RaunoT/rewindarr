@@ -243,6 +243,24 @@
     @apply relative aspect-2/3 w-16 shrink-0 overflow-hidden rounded-md! shadow-lg ring-1 shadow-black/40 ring-white/10 sm:w-18;
   }
 
+  /* A title and its poster open the same item, so hovering either lights up
+     both */
+  .media-link-group {
+    .poster {
+      @apply transition-[filter];
+    }
+
+    &:has([data-media-link]:hover) {
+      .poster {
+        @apply brightness-115;
+      }
+
+      .media-link-title {
+        @apply underline decoration-white/40 underline-offset-4;
+      }
+    }
+  }
+
   .link {
     @apply text-neutral-400 transition-colors hover:text-white;
   }

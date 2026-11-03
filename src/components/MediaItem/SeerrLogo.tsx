@@ -1,6 +1,10 @@
+'use client'
+
 import { useId } from 'react'
 
-// Seerr's mark from its repository (MIT), in its own gradient
+// Seerr's mark from its repository (MIT), in its own gradient. A client
+// component, so a logo rendered twice, as cards do for phones, gets a gradient
+// ID each, and the visible one doesn't point at the hidden one's.
 export default function SeerrLogo() {
   const gradientId = useId()
 

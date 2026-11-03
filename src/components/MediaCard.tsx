@@ -1,4 +1,4 @@
-import MediaServerDeeplink from '@/components/MediaItem/MediaServerDeeplink'
+import MediaServerLink from '@/components/MediaItem/MediaServerLink'
 import SiteLogo from '@/components/MediaItem/SiteLogo'
 import TitleDetails, {
   TitleDetailsData,
@@ -44,15 +44,22 @@ type Props = {
   posterOverlay?: ReactNode
   // For the items in view as the page loads
   isPriority?: boolean
-  user: BadgeUser
+  // How far a play got, from 0 to 100, under the poster on phones. Wider cards
+  // have it in the stats, which the caller adds.
+  progress?: number | null
+  // Left out when it's the same on every card, as in one user's history
+  user?: BadgeUser | null
   // After the user's, such as the watch time and how it played
   stats?: ReactNode
   // First among the links, such as a request's status in Seerr
   action?: ReactNode
-  // The item in the media server, as a button among the links
+  // The item in the media server, which the title and poster open
   deeplink?: { mediaServer: MediaServer; ratingKey: number | string } | null
   // Two lines on the right, such as a play's date over its time
   aside: ReactNode
+  // On phones, in place of the aside next to the title, for a card that shows
+  // the aside in its children there
+  phoneAside?: ReactNode
   settings: PublicSettings
   // Under the title and stats, such as a stream's progress
   children?: ReactNode
@@ -75,11 +82,13 @@ export default function MediaCard({
   isPosterLoading,
   posterOverlay,
   isPriority,
+  progress,
   user,
   stats,
   action,
   deeplink,
   aside,
+  phoneAside,
   settings,
   children,
   footer,
@@ -100,6 +109,51 @@ export default function MediaCard({
   const ratedSites = item ? getRatedSites(item, titleStats) : []
   const externalLinks = links.filter(({ site }) => !ratedSites.includes(site))
   const ratingLinks = Object.fromEntries(links.map((link) => [link.site, link]))
+  const hasLinks = !!action || externalLinks.length > 0
+  const linksBlock = (className: string) => (
+    <div
+      className={clsx(
+        'relative z-10 flex shrink-0 flex-wrap items-center gap-x-1.5 gap-y-2.5',
+        className,
+      )}
+    >
+      {action}
+      {externalLinks.map(({ site, href, isSearch }) => (
+        <a
+          key={site}
+          href={href}
+          target='_blank'
+          rel='noopener noreferrer'
+          className='button-card'
+          aria-label={t(
+            isSearch
+              ? 'MediaItem.externalSearchLabel'
+              : 'MediaItem.externalLinkLabel',
+            { title: name, site: EXTERNAL_LINK_NAMES[site] },
+          )}
+        >
+          {/* Just the logo, the label carries the name */}
+          <SiteLogo site={site} />
+        </a>
+      ))}
+    </div>
+  )
+  const poster = (
+    <MediaCardPoster
+      srcs={
+        isVideo && settings.general.isPostersTmdbOnly
+          ? [item?.tmdb_poster, ...posters]
+          : [...posters, item?.tmdb_poster]
+      }
+      type={mediaType}
+      alt={t('History.poster', { title: name })}
+      isLoading={isPosterLoading}
+      priority={isPriority}
+      progress={progress}
+    >
+      {posterOverlay}
+    </MediaCardPoster>
+  )
   const asideBlock = (className: string) => (
     <div
       className={clsx(
@@ -112,45 +166,66 @@ export default function MediaCard({
   )
 
   return (
-    // With more under it, the poster stays level with the title
+    // With more under it, the poster stays level with the title, and always on
+    // phones, where the title and stats wrap to different heights
     <li
       className={clsx(
         'flex flex-wrap gap-3 py-2.5 not-first:border-t not-first:border-white/10 first:pt-0 last:pb-0 sm:gap-4',
-        children ? 'items-start' : 'items-center',
+        children ? 'items-start' : 'items-start sm:items-center',
+        deeplink && 'media-link-group',
       )}
     >
-      <MediaCardPoster
-        srcs={
-          isVideo && settings.general.isPostersTmdbOnly
-            ? [item?.tmdb_poster, ...posters]
-            : [...posters, item?.tmdb_poster]
-        }
-        type={mediaType}
-        alt={t('History.poster', { title: name })}
-        isLoading={isPosterLoading}
-        priority={isPriority}
-      >
-        {posterOverlay}
-      </MediaCardPoster>
+      {deeplink ? (
+        <MediaServerLink
+          title={name}
+          mediaServer={deeplink.mediaServer}
+          ratingKey={deeplink.ratingKey}
+          isDuplicate
+          className='shrink-0'
+        >
+          {poster}
+        </MediaServerLink>
+      ) : (
+        poster
+      )}
       {/* Wide cards put the links level with the title, narrow ones under the
-          stats. On phones these wrappers step aside, so the links wrap onto a
-          row of their own, like the dashboard's. */}
+          stats and phones at the end of the stats. On phones these wrappers step
+          aside, so the children get the card's width under the poster. */}
       <div className='@container min-w-0 flex-1 max-sm:contents'>
         <div className='flex flex-col gap-2 max-sm:contents @md:flex-row @md:items-start @md:gap-4'>
           <div className='min-w-0 flex-1'>
             <div className='flex items-start justify-between gap-3'>
               <div className='min-w-0'>
+                {/* On phones the name can take two lines, and the detail goes
+                    small above it, as in the home tiles, so it never splits */}
                 <h3
-                  className='truncate leading-snug font-medium sm:text-lg'
+                  className='truncate leading-snug font-medium max-sm:flex max-sm:flex-col max-sm:whitespace-normal sm:text-lg'
                   title={fullTitle}
                 >
-                  {name}
+                  {deeplink ? (
+                    <MediaServerLink
+                      title={name}
+                      mediaServer={deeplink.mediaServer}
+                      ratingKey={deeplink.ratingKey}
+                      className='media-link-title max-sm:line-clamp-2'
+                    >
+                      {name}
+                    </MediaServerLink>
+                  ) : (
+                    <span className='max-sm:line-clamp-2'>{name}</span>
+                  )}
                   {detail && (
-                    <span className='font-normal text-neutral-400'>{` · ${detail}`}</span>
+                    <span className='font-normal text-neutral-400 max-sm:order-first max-sm:truncate max-sm:text-xs'>
+                      <span className='max-sm:hidden'>{' · '}</span>
+                      {detail}
+                    </span>
                   )}
                 </h3>
               </div>
-              {asideBlock('@md:hidden')}
+              {asideBlock('max-sm:hidden @md:hidden')}
+              <div className='shrink-0 sm:hidden'>
+                {phoneAside ?? asideBlock('')}
+              </div>
             </div>
             {isVideo &&
               (isItemLoading ? (
@@ -169,45 +244,21 @@ export default function MediaCard({
                 )
               ))}
             <ul className='icon-stats-container mt-2 max-sm:gap-x-2.5'>
-              <li className={STAT_PILL}>
-                <UserBadge user={user} />
-              </li>
+              {user && (
+                <li className={STAT_PILL}>
+                  <UserBadge user={user} />
+                </li>
+              )}
               {stats}
+              {/* Phones end the stats with the links, so nothing floats next
+                  to the title */}
+              {hasLinks && <li className='sm:hidden'>{linksBlock('')}</li>}
             </ul>
           </div>
           {/* Wide cards have a column for the links with the date under
-              them. On phones it steps aside too, so the links get the last row. */}
-          <div className='flex shrink-0 flex-col gap-2 max-sm:contents @md:items-end'>
-            {(action || deeplink || externalLinks.length > 0) && (
-              <div className='relative z-10 flex shrink-0 flex-wrap items-center gap-x-1.5 gap-y-2.5 max-sm:order-last max-sm:basis-full max-sm:*:flex-1 max-sm:*:justify-center @md:mt-0.5 @md:max-w-56 @md:justify-end'>
-                {action}
-                {deeplink && (
-                  <MediaServerDeeplink
-                    title={name}
-                    mediaServer={deeplink.mediaServer}
-                    ratingKey={deeplink.ratingKey}
-                  />
-                )}
-                {externalLinks.map(({ site, href, isSearch }) => (
-                  <a
-                    key={site}
-                    href={href}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='button-card'
-                    aria-label={t(
-                      isSearch
-                        ? 'MediaItem.externalSearchLabel'
-                        : 'MediaItem.externalLinkLabel',
-                      { title: name, site: EXTERNAL_LINK_NAMES[site] },
-                    )}
-                  >
-                    {/* Just the logo, the label carries the name */}
-                    <SiteLogo site={site} />
-                  </a>
-                ))}
-              </div>
-            )}
+              them. Phones have them among the stats. */}
+          <div className='flex shrink-0 flex-col gap-2 max-sm:hidden @md:items-end'>
+            {hasLinks && linksBlock('@md:mt-0.5 @md:max-w-56 @md:justify-end')}
             {asideBlock('hidden @md:block')}
           </div>
         </div>
@@ -215,7 +266,9 @@ export default function MediaCard({
           <div className='max-sm:basis-full sm:mt-3'>{children}</div>
         )}
       </div>
-      {footer && <div className='order-last basis-full'>{footer}</div>}
+      {/* Without a minimum width, a truncated line would stretch it to its
+          full length */}
+      {footer && <div className='order-last min-w-0 basis-full'>{footer}</div>}
     </li>
   )
 }
