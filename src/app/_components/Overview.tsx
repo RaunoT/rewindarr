@@ -285,12 +285,15 @@ function LibraryTileSkeleton({ library }: { library: TautulliLibrary }) {
           <div className='min-w-0 flex-1'>
             <SkeletonLine className='text-xs' width='w-28' />
             <SkeletonLine width='w-2/3' />
-            <div className='skeleton mt-1.5 h-5 w-20 sm:h-6' />
+            <div className='skeleton mt-1.5 h-5 w-20' />
           </div>
         </div>
         <div className='space-y-1 text-sm'>
           {[...Array(TILE_ITEM_COUNT - 1)].map((_, i) => (
-            <SkeletonLine key={i} width={i ? 'w-1/3' : 'w-1/2'} />
+            <div key={i} className='flex items-center gap-3'>
+              <SkeletonLine className='flex-1' width={i ? 'w-1/3' : 'w-1/2'} />
+              <SkeletonLine className='text-xs' width='w-12' />
+            </div>
           ))}
         </div>
       </div>

@@ -106,7 +106,9 @@ export function HistoryTileSkeleton() {
               className='w-14 shrink-0 justify-end text-xs'
               width='w-10'
             />
-            <span className='w-2 shrink-0' />
+            <span className='flex w-2 shrink-0 justify-center'>
+              <span className='skeleton size-2' />
+            </span>
           </>
         }
       />
