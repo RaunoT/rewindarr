@@ -358,7 +358,7 @@ export default function ActivityItem({
 const TYPES = { movie: 'movie', episode: 'show', track: 'artist' } as const
 
 function isPresent(value?: number | string | null): value is number | string {
-  return value !== null && value !== ''
+  return value != null && value !== ''
 }
 
 // Tautulli sends 0 or 1, Tracearr a boolean
