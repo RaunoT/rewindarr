@@ -20,7 +20,7 @@ import {
 } from '@/types/tautulli'
 import { countBy, groupBy, mapValues, orderBy, sumBy, uniqBy } from 'lodash'
 import getMediaAdditionalData, {
-  SourceMediaData,
+  GetSourceData,
   TmdbMediaType,
 } from './getMediaAdditionalData'
 import getSettings from './getSettings'
@@ -87,7 +87,7 @@ export type PlaysProvider = {
   ) => Promise<Play[]>
   // The users a ranking can list
   getUsers: () => Promise<StatsUser[]>
-  getMediaData: (item: TautulliItemRow) => Promise<SourceMediaData>
+  getMediaData: GetSourceData
 }
 
 export type PlayStats = Pick<

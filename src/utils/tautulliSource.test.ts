@@ -64,7 +64,7 @@ describe('getTautulliMediaData', () => {
   it('reads the poster from the cached metadata', async () => {
     fetchMock.mockResolvedValue(tautulliData({ thumb: '/plex/thumb' }))
 
-    await expect(getTautulliMediaData(item)).resolves.toEqual({
+    await expect(getTautulliMediaData(item, 'movie')).resolves.toEqual({
       thumb: '/plex/thumb',
       isDeleted: false,
       ids: { imdb: null, tmdb: null, tvdb: null },
@@ -76,6 +76,7 @@ describe('getTautulliMediaData', () => {
       'get_metadata',
       { rating_key: 10 },
       true,
+      { missingMessage: expect.any(RegExp) },
     )
   })
 
@@ -87,7 +88,7 @@ describe('getTautulliMediaData', () => {
       }),
     )
 
-    const data = await getTautulliMediaData(item)
+    const data = await getTautulliMediaData(item, 'movie')
 
     expect(data.ids).toEqual({ imdb: 'tt5753856', tmdb: 70523, tvdb: 334824 })
     expect(data.year).toBe(2017)
@@ -101,7 +102,7 @@ describe('getTautulliMediaData', () => {
       }),
     )
 
-    const data = await getTautulliMediaData(item)
+    const data = await getTautulliMediaData(item, 'movie')
 
     expect(data.credits).toEqual({
       directors: ['Christopher Nolan'],
@@ -112,7 +113,7 @@ describe('getTautulliMediaData', () => {
   it("reads the item's genres from the metadata", async () => {
     fetchMock.mockResolvedValue(tautulliData({ genres: ['Action', 'Crime'] }))
 
-    const data = await getTautulliMediaData(item)
+    const data = await getTautulliMediaData(item, 'movie')
 
     expect(data.genres).toEqual(['Action', 'Crime'])
   })
@@ -120,7 +121,7 @@ describe('getTautulliMediaData', () => {
   it('marks an item Tautulli no longer has as deleted', async () => {
     fetchMock.mockResolvedValue(tautulliData({}))
 
-    const data = await getTautulliMediaData(item)
+    const data = await getTautulliMediaData(item, 'movie')
 
     expect(data.isDeleted).toBe(true)
     // So TMDB's credits and genres stand in
@@ -128,10 +129,91 @@ describe('getTautulliMediaData', () => {
     expect(data.genres).toBeUndefined()
   })
 
+  describe('when the item was re-added', () => {
+    const movie = {
+      rating_key: 10,
+      title: 'The Dark Knight',
+      year: 2008,
+    } as TautulliItemRow
+
+    // Only rating key 20 is still on the server
+    function route(results: Record<string, unknown[]>) {
+      fetchMock.mockImplementation(async (cmd, params) =>
+        cmd === 'search'
+          ? tautulliData({ results_list: results })
+          : tautulliData(
+              String(params?.rating_key) === '20' ? { thumb: '/new' } : {},
+            ),
+      )
+    }
+
+    it('finds it by its title and year', async () => {
+      route({
+        movie: [
+          { rating_key: '30', title: 'The Dark Knight', year: '2011' },
+          { rating_key: '20', title: 'The Dark Knight', year: '2008' },
+        ],
+      })
+
+      await expect(getTautulliMediaData(movie, 'movie')).resolves.toMatchObject(
+        { isDeleted: false, thumb: '/new', ratingKey: 20 },
+      )
+    })
+
+    it('finds it by its saved IDs', async () => {
+      vi.mocked(getSnapshot).mockResolvedValue({
+        ids: { imdb: null, tmdb: 155, tvdb: null },
+        year: null,
+      } as never)
+      route({
+        movie: [
+          { rating_key: '30', title: 'The Dark Knight', guids: ['tmdb://1'] },
+          { rating_key: '20', title: 'The Dark Knight', guids: ['tmdb://155'] },
+        ],
+      })
+
+      await expect(getTautulliMediaData(movie, 'movie')).resolves.toMatchObject(
+        { isDeleted: false, ratingKey: 20 },
+      )
+    })
+
+    it('leaves it deleted when nothing matches', async () => {
+      route({
+        movie: [{ rating_key: '20', title: 'The Dark Knight', year: '2011' }],
+        show: [{ rating_key: '20', title: 'The Dark Knight', year: '2008' }],
+      })
+
+      const data = await getTautulliMediaData(movie, 'movie')
+
+      expect(data.isDeleted).toBe(true)
+      expect(data.ratingKey).toBeUndefined()
+    })
+
+    it('takes a show without a year only when its title is the only one', async () => {
+      const show = { rating_key: 10, title: 'Shrinking' } as TautulliItemRow
+
+      route({ show: [{ rating_key: '20', title: 'Shrinking' }] })
+      await expect(getTautulliMediaData(show, 'tv')).resolves.toMatchObject({
+        isDeleted: false,
+        ratingKey: 20,
+      })
+
+      route({
+        show: [
+          { rating_key: '20', title: 'Shrinking' },
+          { rating_key: '30', title: 'Shrinking' },
+        ],
+      })
+      await expect(getTautulliMediaData(show, 'tv')).resolves.toMatchObject({
+        isDeleted: true,
+      })
+    })
+  })
+
   it('does not mark an item deleted when the lookup fails', async () => {
     fetchMock.mockResolvedValue(null)
 
-    const data = await getTautulliMediaData(item)
+    const data = await getTautulliMediaData(item, 'movie')
 
     expect(data.isDeleted).toBe(false)
   })
@@ -458,7 +540,7 @@ describe('while Tautulli is down', () => {
         }),
       )
 
-      await getTautulliMediaData(item)
+      await getTautulliMediaData(item, 'movie')
 
       expect(saveSnapshot).toHaveBeenCalledWith(`${KEY}|media|10`, media)
     })
@@ -466,7 +548,7 @@ describe('while Tautulli is down', () => {
     it('does not save the IDs of a deleted item', async () => {
       fetchMock.mockResolvedValue(tautulliData({}))
 
-      await getTautulliMediaData(item)
+      await getTautulliMediaData(item, 'movie')
 
       expect(saveSnapshot).not.toHaveBeenCalled()
     })
@@ -475,7 +557,7 @@ describe('while Tautulli is down', () => {
       fetchMock.mockResolvedValue(null)
       useSnapshot({ [`${KEY}|media|10`]: media })
 
-      await expect(getTautulliMediaData(item)).resolves.toEqual({
+      await expect(getTautulliMediaData(item, 'movie')).resolves.toEqual({
         thumb: '',
         isDeleted: false,
         ...media,

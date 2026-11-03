@@ -14,12 +14,19 @@ type QueryParams = {
   [key: string]: string | number
 }
 
+type FetchOptions = {
+  // The error Tautulli answers with when what was asked for isn't there,
+  // which comes back as a success without data
+  missingMessage?: RegExp
+}
+
 const REQUEST_TIMEOUT_MS = 30_000
 
 export default async function fetchTautulli<T>(
   query: string,
   params?: QueryParams,
   cache: boolean = false,
+  { missingMessage }: FetchOptions = {},
 ): Promise<TautulliResponse<T> | null> {
   const settings = getSettings()
   const tautulliUrl = settings.connection.tautulliUrl
@@ -53,7 +60,8 @@ export default async function fetchTautulli<T>(
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     })
 
-    if (!res.ok) {
+    // Tautulli answers with a 400 when something isn't there
+    if (!res.ok && !(missingMessage && res.status === 400)) {
       if (isGatewayError(res.status)) {
         markHostDown(tautulliUrl)
       }
@@ -70,6 +78,12 @@ export default async function fetchTautulli<T>(
     const data: TautulliResponse<T> = await res.json()
 
     if (data?.response?.result !== 'success') {
+      if (missingMessage?.test(data?.response?.message ?? '')) {
+        return {
+          response: { ...data.response, result: 'success', data: {} as T },
+        }
+      }
+
       console.error(
         `[TAUTULLI] - API returned an error! The query was '${query}'.\n`,
         data?.response?.message ?? 'Unexpected response',

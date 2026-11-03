@@ -788,6 +788,71 @@ describe('malformed responses', () => {
     })
   })
 
+  it('marks media as deleted when the synced server never had it', async () => {
+    route({
+      servers: () => ({ data: [plexServer('s1')] }),
+      libraries: () => ({
+        data: [{ server_id: 's1', library_id: 'l1', item_count: 1 }],
+      }),
+      'media/m1': () => ({
+        id: 'm1',
+        availability: [{ server_id: 's2', removed_at: null }],
+      }),
+    })
+
+    const { getTracearrMedia } = await load()
+
+    await expect(getTracearrMedia('m1')).resolves.toMatchObject({
+      isDeleted: true,
+    })
+  })
+
+  it('gives the rating key of the newest item still on the server', async () => {
+    route({
+      servers: () => ({ data: [plexServer('s1')] }),
+      'media/m1': () => ({
+        id: 'm1',
+        availability: [
+          { server_id: 's1', rating_key: '10', removed_at: '2026-10-31' },
+          {
+            server_id: 's1',
+            rating_key: '20',
+            added_at: '2026-09-01',
+            removed_at: null,
+          },
+          {
+            server_id: 's1',
+            rating_key: '30',
+            added_at: '2026-10-31',
+            removed_at: null,
+          },
+          { server_id: 's2', rating_key: 'abc', removed_at: null },
+        ],
+      }),
+    })
+
+    const { getTracearrMedia } = await load()
+
+    await expect(getTracearrMedia('m1')).resolves.toMatchObject({
+      isDeleted: false,
+      ratingKey: 30,
+    })
+  })
+
+  it('does not mark media as deleted before the libraries are synced', async () => {
+    route({
+      servers: () => ({ data: [plexServer('s1')] }),
+      libraries: () => ({ data: [] }),
+      'media/m1': () => ({ id: 'm1', availability: [] }),
+    })
+
+    const { getTracearrMedia } = await load()
+
+    await expect(getTracearrMedia('m1')).resolves.toMatchObject({
+      isDeleted: false,
+    })
+  })
+
   it("reads the item's own IDs and year", async () => {
     route({
       servers: () => ({ data: [plexServer('s1')] }),
