@@ -50,7 +50,6 @@
     "streamDetails": "Detalles de la transmisión",
     "noActivity": "No hay reproducciones activas",
     "loadError": "No se pudo cargar la actividad",
-    "playing": "Reproduciendo",
     "paused": "En pausa",
     "buffering": "En búfer",
     "endsAt": "Hora de fin: {time}",

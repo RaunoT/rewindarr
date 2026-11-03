@@ -2,6 +2,7 @@
 
 import { GlobalContext } from '@/app/_components/GlobalContextProvider'
 import TitleDetails from '@/components/MediaItem/TitleDetails'
+import PlaybackOverlay from '@/components/PlaybackOverlay'
 import PosterImage from '@/components/PosterImage'
 import SkeletonLine from '@/components/SkeletonLine'
 import { DECISION_ICONS, getDecisionKind } from '@/components/StreamDecision'
@@ -26,13 +27,7 @@ import {
   millisecondsToTimeString,
 } from '@/utils/formatting'
 import { ArrowTurnDownRightIcon } from '@heroicons/react/16/solid'
-import {
-  ArrowPathIcon,
-  ChevronDownIcon,
-  DeviceTabletIcon,
-  PauseIcon,
-  PlayIcon,
-} from '@heroicons/react/24/outline'
+import { ChevronDownIcon, DeviceTabletIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { capitalize, toUpper } from 'lodash'
 import { useSession } from 'next-auth/react'
@@ -148,9 +143,6 @@ export default function ActivityItem({
   const eta = calculateETA(session.duration, session.view_offset, locale)
   // The player's name is a stream detail, so it hides with them
   const device = isExpanded ? formatDevice(product, player) : product || player
-  // Only Tautulli reports buffering, and anything unexpected reads as paused
-  const playbackState =
-    state === 'playing' || state === 'buffering' ? state : 'paused'
   const decisionKind = getDecisionKind(transcode_decision)
   const decisionIcon = decisionKind && DECISION_ICONS[decisionKind]
 
@@ -178,6 +170,9 @@ export default function ActivityItem({
               sizes='6rem'
               priority
             />
+          )}
+          {!isPosterLoading && (
+            <PlaybackOverlay state={state} className='size-7' />
           )}
         </div>
 
@@ -238,14 +233,6 @@ export default function ActivityItem({
                 <span className='truncate'>{device}</span>
               </li>
             )}
-            <li className='icon-stat-wrapper'>
-              {playbackState === 'playing' && <PlayIcon />}
-              {playbackState === 'buffering' && (
-                <ArrowPathIcon className='motion-safe:animate-spin' />
-              )}
-              {playbackState === 'paused' && <PauseIcon />}
-              {t(playbackState)}
-            </li>
             {/* How the stream gets there, which opens the rest. Its colour
                 shows when the details are worth a look. Taps 10px above and
                 below count too, for a 40px tap area. */}

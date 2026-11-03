@@ -1,16 +1,17 @@
 import AutoRefresh from '@/components/AutoRefresh'
-import { MediaIcon } from '@/components/icons'
 import SkeletonLine from '@/components/SkeletonLine'
+import { UserAvatar } from '@/components/UserBadge'
 import { DashboardSearchParams } from '@/types/dashboard'
 import { Settings } from '@/types/settings'
 import { TautulliLibrary } from '@/types/tautulli'
 import { getRecentPlays } from '@/utils/getHistory'
+import { getImageProxyUrl } from '@/utils/imageProxy'
 import { ChevronRightIcon, ClockIcon } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
 import { Session } from 'next-auth'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getNow, getTranslations } from 'next-intl/server'
 import Link from 'next/link'
-
-const PLAY_COUNT = 3
+import TileItem, { TILE_ITEM_COUNT, TileItemsSkeleton } from './TileItem'
 
 type Props = {
   settings: Settings
@@ -28,7 +29,9 @@ export default async function HistoryTile({
   period,
 }: Props) {
   const t = await getTranslations()
-  const { plays, progress } = await getRecentPlays(PLAY_COUNT, libraries)
+  const { plays, progress } = await getRecentPlays(TILE_ITEM_COUNT, libraries)
+  const locale = await getLocale()
+  const now = await getNow()
 
   return (
     <Link
@@ -37,25 +40,48 @@ export default async function HistoryTile({
     >
       <HistoryTileHeading />
       {plays.length ? (
-        <ul className='space-y-1 text-sm'>
-          {plays.slice(0, PLAY_COUNT).map((play) => {
+        <ul className='space-y-2 text-sm'>
+          {plays.slice(0, TILE_ITEM_COUNT).map((play, index) => {
             const isOwn = !!session && play.userId === session.user.id
+            const isAnonymous = settings.general.isAnonymized && !isOwn
+            const user = {
+              name: isAnonymous
+                ? t('History.anonymous')
+                : play.userName || t('History.unknownUser'),
+              avatar: play.avatar,
+              isOwn,
+              isAnonymous,
+            }
 
             return (
-              <li key={play.id} className='flex min-w-0 items-center gap-2'>
-                <MediaIcon
-                  type={play.mediaType}
-                  className='size-4 shrink-0 text-neutral-400'
-                />
-                <span className='truncate'>
-                  {play.showTitle || play.artistName || play.title}
-                </span>
-                <span className='max-w-1/2 shrink-0 truncate text-neutral-400'>
-                  {settings.general.isAnonymized && !isOwn
-                    ? t('History.anonymous')
-                    : play.userName || t('History.unknownUser')}
-                </span>
-              </li>
+              <TileItem
+                key={play.id}
+                posters={[play.thumb && getImageProxyUrl(play.thumb)]}
+                type={play.mediaType}
+                title={play.showTitle || play.artistName || play.title}
+                detail={
+                  play.seasonNumber !== null && play.episodeNumber !== null
+                    ? t('History.episodeNumber', {
+                        season: play.seasonNumber,
+                        episode: play.episodeNumber,
+                      })
+                    : play.mediaType === 'track' && play.artistName
+                      ? play.title
+                      : null
+                }
+                lead={
+                  <TimelineMark
+                    time={new Date(play.startedAt)}
+                    now={now}
+                    locale={locale}
+                    isNewest={index === 0}
+                  />
+                }
+                aside={
+                  <UserAvatar user={user} className='size-6' isOwnMarked />
+                }
+                hasGlow={index === 0}
+              />
             )
           })}
         </ul>
@@ -76,11 +102,17 @@ export function HistoryTileSkeleton() {
   return (
     <div className='glass-sheet flex flex-col gap-4'>
       <HistoryTileHeading />
-      <div className='space-y-1 text-sm'>
-        {[...Array(PLAY_COUNT)].map((_, i) => (
-          <SkeletonLine key={i} width={i % 2 ? 'w-1/2' : 'w-2/3'} />
-        ))}
-      </div>
+      <TileItemsSkeleton
+        lead={
+          <>
+            <SkeletonLine
+              className='w-14 shrink-0 justify-end text-xs'
+              width='w-10'
+            />
+            <span className='w-2 shrink-0' />
+          </>
+        }
+      />
     </div>
   )
 }
@@ -96,5 +128,54 @@ async function HistoryTileHeading() {
       </h2>
       <ChevronRightIcon className='size-4 text-neutral-500 transition-transform group-hover:translate-x-0.5' />
     </div>
+  )
+}
+
+type TimelineMarkProps = {
+  time: Date
+  now: Date
+  locale: string
+  // The newest play's dot lights up
+  isNewest: boolean
+}
+
+// When the play started, on a line through the plays: today's by the clock,
+// older ones by the date. In the server's timezone, like the history page.
+function TimelineMark({ time, now, locale, isNewest }: TimelineMarkProps) {
+  const isToday = time.toDateString() === now.toDateString()
+
+  return (
+    <>
+      <time
+        dateTime={time.toISOString()}
+        title={new Intl.DateTimeFormat(locale, {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        }).format(time)}
+        className='w-14 shrink-0 text-right text-xs whitespace-nowrap text-neutral-400 tabular-nums'
+      >
+        {new Intl.DateTimeFormat(
+          locale,
+          isToday
+            ? { hour: 'numeric', minute: '2-digit' }
+            : { day: 'numeric', month: 'short' },
+        ).format(time)}
+      </time>
+      <span
+        aria-hidden='true'
+        className='relative flex w-2 shrink-0 justify-center self-stretch'
+      >
+        {/* Through the gap to the next row, from the first dot to the last */}
+        <span className='absolute top-0 -bottom-2 w-px bg-white/15 group-first/tile-item:top-1/2 group-last/tile-item:bottom-1/2' />
+        <span
+          className={clsx(
+            'relative size-2 self-center rounded-full',
+            isNewest
+              ? 'bg-white shadow-[0_0_8px_rgb(255_255_255/60%)]'
+              : 'bg-neutral-500',
+          )}
+        />
+      </span>
+    </>
   )
 }

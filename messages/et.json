@@ -50,7 +50,6 @@
     "streamDetails": "Voo üksikasjad",
     "noActivity": "Ühtegi aktiivset voogu pole",
     "loadError": "Tegevust ei õnnestunud laadida",
-    "playing": "Mängib",
     "paused": "Pausil",
     "buffering": "Puhverdab",
     "endsAt": "Lõpeb {time}",

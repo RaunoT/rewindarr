@@ -21,25 +21,9 @@ type Props = {
 // A user's avatar and name, for inside a stat pill, the same in the history
 // and the activity
 export default function UserBadge({ user, priority }: Props) {
-  const t = useTranslations()
-
   return (
     <>
-      <span className='relative size-4 shrink-0 overflow-hidden rounded-full'>
-        {user.isAnonymous ? (
-          <ImageFallback alt={t('Activity.anonymousAvatar')}>
-            <UserIcon className='size-[60cqw]' />
-          </ImageFallback>
-        ) : (
-          <Avatar
-            src={user.avatar}
-            name={user.name}
-            alt={t('Common.profilePictureAlt', { name: user.name })}
-            sizes='2rem'
-            priority={priority}
-          />
-        )}
-      </span>
+      <UserAvatar user={user} priority={priority} className='size-4' />
       <span
         className={clsx(
           'max-w-40 truncate',
@@ -49,5 +33,45 @@ export default function UserBadge({ user, priority }: Props) {
         {user.name}
       </span>
     </>
+  )
+}
+
+type UserAvatarProps = Props & {
+  // Sets the size
+  className: string
+  // Without the name beside it, the signed-in user's gets a gold ring
+  isOwnMarked?: boolean
+}
+
+export function UserAvatar({
+  user,
+  priority,
+  className,
+  isOwnMarked,
+}: UserAvatarProps) {
+  const t = useTranslations()
+
+  return (
+    <span
+      className={clsx(
+        'relative shrink-0 overflow-hidden rounded-full',
+        isOwnMarked && user.isOwn && 'ring-plex ring-2',
+        className,
+      )}
+    >
+      {user.isAnonymous ? (
+        <ImageFallback alt={t('Activity.anonymousAvatar')}>
+          <UserIcon className='size-[60cqw]' />
+        </ImageFallback>
+      ) : (
+        <Avatar
+          src={user.avatar}
+          name={user.name}
+          alt={t('Common.profilePictureAlt', { name: user.name })}
+          sizes='2rem'
+          priority={priority}
+        />
+      )}
+    </span>
   )
 }

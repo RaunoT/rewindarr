@@ -312,3 +312,13 @@ export function getInitials(name: string): string {
 
   return (first + last).toLocaleUpperCase()
 }
+
+// Tautulli sends an episode's numbers as numbers or strings, and an empty
+// string for other media. Season 0 holds the specials.
+export function toIndex(
+  value: number | string | null | undefined,
+): number | null {
+  const index = value === '' || value == null ? NaN : Number(value)
+
+  return Number.isInteger(index) ? index : null
+}

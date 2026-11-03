@@ -4,7 +4,9 @@ import { StatisticsSource } from '@/types/settings'
 import { STATS_SOURCE_NAMES } from '@/utils/constants'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { useQuery } from '@tanstack/react-query'
+import clsx from 'clsx'
 import { useFormatter, useNow, useTranslations } from 'next-intl'
+import { usePathname } from 'next/navigation'
 import getSourceOutage from '../_actions/getSourceOutage'
 
 type Props = {
@@ -20,6 +22,8 @@ export default function SourceOutageNotice({ source }: Props) {
   const t = useTranslations('Error')
   const format = useFormatter()
   const now = useNow({ updateInterval: POLL_INTERVAL })
+  // As wide as the page's content
+  const isWide = usePathname() === '/'
   const { data: outage } = useQuery({
     queryKey: ['sourceOutage'],
     queryFn: () => getSourceOutage(),
@@ -36,7 +40,10 @@ export default function SourceOutageNotice({ source }: Props) {
   return (
     <div
       role='status'
-      className='page-width glass animate-fade-in mb-4 flex items-start gap-3 rounded-2xl px-4 py-3 text-sm text-neutral-200'
+      className={clsx(
+        'glass animate-fade-in mb-4 flex items-start gap-3 rounded-2xl px-4 py-3 text-sm text-neutral-200',
+        isWide ? 'page-width-wide' : 'page-width',
+      )}
     >
       <ExclamationTriangleIcon
         className='text-warning size-5 shrink-0'

@@ -1756,3 +1756,61 @@ describe('getTranscodeDecision', () => {
     ).toBeNull()
   })
 })
+
+describe('getPosterUrl', () => {
+  const BASE = 'http://tracearr:3000'
+  const ALBUM_POSTER =
+    '/api/v1/images/proxy?server=s1&url=%2Flibrary%2Fmetadata%2F35934%2Fthumb%2F1769736234&width=360&height=540&fallback=poster&v=79763dc3'
+
+  it("asks for a Plex track's artist instead of its album", async () => {
+    const { getPosterUrl } = await load()
+    const url = new URL(
+      getPosterUrl(
+        {
+          media_type: 'track',
+          poster_url: ALBUM_POSTER,
+          grandparent_rating_key: '32148',
+        },
+        BASE,
+      ),
+    )
+
+    expect(url.origin).toBe(BASE)
+    expect(url.searchParams.get('url')).toBe(
+      '/library/metadata/32148/thumb/1769736234',
+    )
+    expect(url.searchParams.get('width')).toBe('360')
+    expect(url.searchParams.has('v')).toBe(false)
+  })
+
+  it('leaves other media and posters it cannot read alone', async () => {
+    const { getPosterUrl } = await load()
+
+    expect(
+      getPosterUrl(
+        {
+          media_type: 'episode',
+          poster_url: ALBUM_POSTER,
+          grandparent_rating_key: '32148',
+        },
+        BASE,
+      ),
+    ).toBe(`${BASE}${ALBUM_POSTER}`)
+    expect(
+      getPosterUrl(
+        {
+          media_type: 'track',
+          poster_url: '/api/v1/images/proxy?server=s1&url=abc123',
+          grandparent_rating_key: 'f00d',
+        },
+        BASE,
+      ),
+    ).toBe(`${BASE}/api/v1/images/proxy?server=s1&url=abc123`)
+    expect(
+      getPosterUrl(
+        { media_type: 'track', poster_url: null, grandparent_rating_key: '1' },
+        BASE,
+      ),
+    ).toBe('')
+  })
+})
