@@ -61,7 +61,8 @@ export type QuickConnectRequest = {
 
 export type QuickConnectState = 'waiting' | 'authorized' | 'expired'
 
-// The path is left out of the log, as Quick Connect's holds the secret
+// The path is left out of the log, as the Quick Connect status path holds
+// the secret
 async function request(
   url: string,
   path: string,
