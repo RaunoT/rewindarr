@@ -3,6 +3,7 @@
 import { TitleDetailsData } from '@/components/MediaItem/TitleDetails'
 import { authOptions } from '@/lib/auth'
 import { TautulliItemRow } from '@/types/tautulli'
+import { LinkedItem } from '@/utils/externalLinks'
 import fetchTmdb from '@/utils/fetchTmdb'
 import getMediaAdditionalData, {
   MediaIds,
@@ -12,9 +13,11 @@ import getSettings from '@/utils/getSettings'
 import { canViewFeature, getViewer } from '@/utils/helpers'
 import { getServerSession } from 'next-auth'
 
-export type MediaDetails = TitleDetailsData & {
-  poster: string | null
-}
+// With the IDs for the title's links, like a dashboard item's
+export type MediaDetails = TitleDetailsData &
+  LinkedItem & {
+    poster: string | null
+  }
 
 type MediaQuery = {
   type: 'movie' | 'tv'
@@ -120,5 +123,10 @@ export default async function getMediaDetails({
     imdb_rating: details.imdb_rating,
     rotten_tomatoes_rating: details.rotten_tomatoes_rating,
     rotten_tomatoes_audience_rating: details.rotten_tomatoes_audience_rating,
+    title,
+    tmdb_id: details.tmdb_id,
+    imdb_id: details.imdb_id,
+    tvdb_id: details.tvdb_id,
+    rotten_tomatoes_url: details.rotten_tomatoes_url,
   }
 }

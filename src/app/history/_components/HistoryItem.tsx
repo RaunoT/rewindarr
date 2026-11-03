@@ -1,14 +1,15 @@
 import { STAT_ICONS } from '@/components/icons'
+import MediaCard, { STAT_PILL } from '@/components/MediaCard'
+import ProgressBar from '@/components/ProgressBar'
 import { DECISION_ICONS, getDecisionKind } from '@/components/StreamDecision'
 import { PublicSettings } from '@/types/settings'
 import { HistoryPlay, MediaServer } from '@/types/statsSource'
 import { TautulliItemRow } from '@/types/tautulli'
-import { generateDeeplinkUrl } from '@/utils/deeplink'
 import { formatPercent, secondsToTime } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import clsx from 'clsx'
 import { useLocale, useTranslations } from 'next-intl'
-import HistoryCard, { STAT_PILL } from './HistoryCard'
+import HistoryTime from './HistoryTime'
 
 type Props = {
   play: HistoryPlay
@@ -59,24 +60,17 @@ export default function HistoryItem({
   const fullTitle = [name, episode, name !== play.title && play.title]
     .filter(Boolean)
     .join(' · ')
-  const percent =
-    percentComplete !== null ? formatPercent(percentComplete, locale) : null
   const decisionKind = getDecisionKind(play.transcodeDecision)
   const decision = decisionKind && DECISION_ICONS[decisionKind]
 
   return (
-    <HistoryCard
+    <MediaCard
       type={TYPES[mediaType]}
       mediaType={mediaType}
       item={item}
       name={name}
       detail={detail}
       fullTitle={fullTitle}
-      href={
-        mediaServer && ratingKey
-          ? generateDeeplinkUrl(ratingKey, mediaServer, false)
-          : null
-      }
       posters={[play.thumb && getImageProxyUrl(play.thumb)]}
       user={{
         name: isAnonymous
@@ -91,10 +85,13 @@ export default function HistoryItem({
           <li className={STAT_PILL}>
             <STAT_ICONS.duration />
             {secondsToTime(play.durationMs / 1000, t)}
-            {percent && (
-              <span className='text-neutral-400'>{` · ${percent}`}</span>
-            )}
           </li>
+          {percentComplete !== null && (
+            <li className={clsx(STAT_PILL, 'gap-1.5')}>
+              <ProgressBar value={percentComplete / 100} className='w-8' />
+              {formatPercent(percentComplete, locale)}
+            </li>
+          )}
           {decision && (
             <li className={STAT_PILL}>
               <decision.Icon className={clsx(decision.className)} />
@@ -104,7 +101,7 @@ export default function HistoryItem({
         </>
       }
       deeplink={mediaServer && ratingKey ? { mediaServer, ratingKey } : null}
-      time={new Date(play.startedAt)}
+      aside={<HistoryTime time={new Date(play.startedAt)} />}
       settings={settings}
     />
   )

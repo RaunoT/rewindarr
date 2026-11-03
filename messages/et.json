@@ -126,7 +126,8 @@
       "failed": "Ebaõnnestus",
       "partiallyAvailable": "Osaliselt saadaval",
       "available": "Saadaval"
-    }
+    },
+    "requestStatusLabel": "{status}: ava {title} Seerris"
   },
   "MediaServerDeeplink": {
     "available": "Saadaval",

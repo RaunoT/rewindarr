@@ -2,7 +2,7 @@ import { ExternalLink } from '@/types/settings'
 import { TautulliItemRow } from '@/types/tautulli'
 import { EXTERNAL_LINKS } from './constants'
 
-type LinkedItem = Pick<
+export type LinkedItem = Pick<
   TautulliItemRow,
   'title' | 'tmdb_id' | 'imdb_id' | 'tvdb_id' | 'rotten_tomatoes_url'
 >

@@ -72,7 +72,7 @@ export default function Activities({ settings, mediaServer }: Props) {
   }
 
   return (
-    <ul className='divide-y divide-white/10'>
+    <ul className='flex flex-col text-white'>
       {data.sessions.map((session, index) => (
         <ActivityItem
           key={session.session_key}
