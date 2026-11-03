@@ -13,6 +13,7 @@ import { getMediaServerName } from '@/utils/mediaServerName'
 import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
 import { useActionState, useState } from 'react'
+import { Switch } from 'react-aria-components'
 import SettingsForm from '../../_components/SettingsForm'
 import saveConnectionSettings from '../_actions/updateConnectionSettings'
 import PlayHistory from './PlayHistory'
@@ -80,6 +81,9 @@ export default function ConnectionSettingsForm({
       )?.server_type ?? connectionSettings.mediaServerType)
     : 'plex'
   const isJellyfin = mediaServerType === 'jellyfin'
+  const sameTypeServerCount = tracearrServers.filter(
+    (server) => server.server_type === mediaServerType,
+  ).length
   const mediaServerName = getMediaServerName(mediaServerType)
 
   return (
@@ -214,6 +218,22 @@ export default function ConnectionSettingsForm({
               <span className='label-wrapper'>{t('Connection.server')}</span>
             </span>
           </label>
+        )}
+        {sameTypeServerCount > 1 && (
+          <Switch
+            key={`all-servers-${connectionSettings.tracearrAllServers}`}
+            className={clsx('switch items-start', { hidden: !isTracearr })}
+            name='tracearrAllServers'
+            defaultSelected={connectionSettings.tracearrAllServers}
+          >
+            <div className='indicator'></div>
+            <span className='label'>
+              <span className='label-wrapper'>
+                {t('Connection.allServers', { server: mediaServerName })}
+              </span>
+              <small>{t('Connection.allServersHelp')}</small>
+            </span>
+          </Switch>
         )}
       </section>
       {/* Tautulli finds Plex itself, so its URL is only for the token */}

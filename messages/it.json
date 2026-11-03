@@ -207,6 +207,8 @@
       "chooseServer": "Scegli un server",
       "token": "Token (facoltativo)",
       "tokenDescription": "Permette al Rewind di riprodurre musica dalla tua libreria. <link>Come trovarlo?</link>",
+      "allServers": "Conta le riproduzioni di tutti i server {server}",
+      "allServersHelp": "Per chi guarda su più server. Collega prima gli account di ogni persona in Tracearr. Utenti, librerie e link restano quelli di questo server.",
       "optionalService": "{service} (facoltativo)",
       "plexUrlHelp": "Aggiunge link che aprono i titoli in Plex",
       "jellyfinUrlHelp": "Per l'accesso e per i link che aprono i titoli in Jellyfin",

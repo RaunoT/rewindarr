@@ -34,6 +34,7 @@ const baseSchema = z.object({
   tracearrUrl: z.string().url().or(z.literal('')),
   tracearrApiKey: z.string(),
   tracearrServerId: z.string(),
+  tracearrAllServers: z.boolean(),
   seerrUrl: z.string().url().optional().or(z.literal('')),
   seerrApiKey: z.string().optional(),
   mediaServerType: z.enum(['plex', 'jellyfin']),
@@ -133,6 +134,7 @@ async function testAndSave(
     tracearrUrl: normalizeUrl(formData.get('tracearrUrl') as string),
     tracearrApiKey: formData.get('tracearrApiKey') as string,
     tracearrServerId: (formData.get('tracearrServerId') as string | null) ?? '',
+    tracearrAllServers: formData.get('tracearrAllServers') === 'on',
     seerrUrl: normalizeUrl(formData.get('seerrUrl') as string),
     seerrApiKey: formData.get('seerrApiKey') as string,
     // Tautulli only tracks Plex. Tracearr's is set from the chosen server.
