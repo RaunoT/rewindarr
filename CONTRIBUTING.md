@@ -115,7 +115,7 @@ The screenshots in `.github/screenshots` use made-up data, so they don't show an
    }
    ```
 
-3. Take the screenshots in a 1152×720 window at 2× scale, with the Next.js dev badge hidden, and save them as WebP:
+3. Take the screenshots in a 1280×720 window at 2× scale, with the Next.js dev badge hidden, and save them as WebP:
 
    ```bash
    cwebp -q 82 -m 6 home.png -o .github/screenshots/home.webp
