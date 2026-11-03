@@ -20,7 +20,7 @@ const PAGE_LINK_IDLE = 'text-neutral-300 hover:bg-white/10 hover:text-white'
 
 // The pages in the middle and the rows per page at the end, like under a
 // table. On phones the page numbers don't fit next to the rows per page, so
-// only the arrows go at the start.
+// only the arrows and where you are go at the start.
 export default function HistoryPagination({
   page,
   pageCount,
@@ -50,6 +50,9 @@ export default function HistoryPagination({
             getHref={getHref}
             className='max-sm:hidden'
           />
+          <span className='px-2 text-sm text-neutral-300 tabular-nums sm:hidden'>
+            {t('pageOf', { page, pageCount })}
+          </span>
           <ArrowLink
             href={page < pageCount ? getHref(page + 1) : null}
             label={t('nextPage')}

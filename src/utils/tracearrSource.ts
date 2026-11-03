@@ -72,15 +72,20 @@ export async function getTracearrMediaData(
 
 async function getTracearrInactiveUser(
   userId: string,
-): Promise<TautulliItemRow> {
+): Promise<TautulliItemRow | null> {
   const users = await getTracearrUsers()
   const user = users.find((user) => user.user_id === userId)
 
+  // A user Tracearr doesn't list would get an empty row in the rankings
+  if (!user) {
+    return null
+  }
+
   return {
     ...EMPTY_ROW,
-    user: user?.username ?? '',
-    friendly_name: user?.friendly_name ?? '',
-    user_thumb: user?.user_thumb ?? '',
+    user: user.username,
+    friendly_name: user.friendly_name,
+    user_thumb: user.user_thumb,
     user_id: toSourceId(userId),
   }
 }

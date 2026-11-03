@@ -99,6 +99,7 @@
     "noMatches": "No plays match the filters",
     "pagination": "Pages",
     "page": "Page {page}",
+    "pageOf": "{page} of {pageCount}",
     "previousPage": "Previous page",
     "nextPage": "Next page",
     "episodeNumber": "S{season} · E{episode}",

@@ -99,6 +99,7 @@
     "noMatches": "Ninguna reproducción coincide con los filtros",
     "pagination": "Páginas",
     "page": "Página {page}",
+    "pageOf": "{page} de {pageCount}",
     "previousPage": "Página anterior",
     "nextPage": "Página siguiente",
     "episodeNumber": "T{season} · E{episode}",

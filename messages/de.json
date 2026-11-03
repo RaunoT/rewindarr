@@ -99,6 +99,7 @@
     "noMatches": "Keine Wiedergaben passen zu den Filtern",
     "pagination": "Seiten",
     "page": "Seite {page}",
+    "pageOf": "{page} von {pageCount}",
     "previousPage": "Vorherige Seite",
     "nextPage": "Nächste Seite",
     "episodeNumber": "S{season} · F{episode}",

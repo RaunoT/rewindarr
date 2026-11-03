@@ -99,6 +99,7 @@
     "noMatches": "Aucune lecture ne correspond aux filtres",
     "pagination": "Pages",
     "page": "Page {page}",
+    "pageOf": "{page} sur {pageCount}",
     "previousPage": "Page précédente",
     "nextPage": "Page suivante",
     "episodeNumber": "S{season} · É{episode}",

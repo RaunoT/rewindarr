@@ -99,6 +99,7 @@
     "noMatches": "Filtritele ei vasta ükski esitus",
     "pagination": "Lehed",
     "page": "Leht {page}",
+    "pageOf": "{page} / {pageCount}",
     "previousPage": "Eelmine leht",
     "nextPage": "Järgmine leht",
     "episodeNumber": "H{season} · O{episode}",
