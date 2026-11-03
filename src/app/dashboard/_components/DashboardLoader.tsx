@@ -5,10 +5,8 @@ import { ItemStatistics, PublicSettings } from '@/types/settings'
 import { TautulliMediaType } from '@/types/tautulli'
 import { DASHBOARD_PAGE_SIZE, RATING_STATISTICS } from '@/utils/constants'
 import clsx from 'clsx'
-import { ReactNode } from 'react'
 
 type Props = {
-  toolbar: ReactNode
   type: TautulliMediaType | 'users'
   settings: PublicSettings
   rows?: number
@@ -17,7 +15,6 @@ type Props = {
 // Built like the real rows for this library and the chosen statistics, so
 // nothing moves once the data arrives
 export default function DashboardLoader({
-  toolbar,
   type,
   settings,
   rows = DASHBOARD_PAGE_SIZE,
@@ -35,7 +32,6 @@ export default function DashboardLoader({
 
   return (
     <div className='flex flex-1 flex-col'>
-      {toolbar}
       <TotalsSkeleton count={totalsCount} />
 
       <CardWrapper>

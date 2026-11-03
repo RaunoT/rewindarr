@@ -23,7 +23,6 @@ type Props = {
   count?: string
   settings: PublicSettings
   loggedInUserId?: string
-  toolbar: ReactNode
   // The limit "Show more" leads to, left out when there's nothing more
   nextLimit?: number
   // Shown in the card instead of the items, such as while they can't be read yet
@@ -40,7 +39,6 @@ export default async function Dashboard({
   count,
   settings,
   loggedInUserId,
-  toolbar,
   nextLimit,
   status,
 }: Props) {
@@ -106,7 +104,6 @@ export default async function Dashboard({
 
   return (
     <>
-      {toolbar}
       <Totals totals={totals} />
 
       <CardWrapper>

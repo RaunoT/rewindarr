@@ -23,7 +23,7 @@ import { Metadata } from 'next'
 import { getServerSession } from 'next-auth'
 import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
-import { ReactNode, Suspense } from 'react'
+import { Suspense } from 'react'
 import Dashboard from '../_components/Dashboard'
 import DashboardLoader from '../_components/DashboardLoader'
 import DashboardToolbar from '../_components/DashboardToolbar'
@@ -57,11 +57,9 @@ async function getTotalDuration(
 async function DashboardUsersContent({
   periodSp,
   limit,
-  toolbar,
 }: {
   periodSp: DashboardSearchParams['period']
   limit: number
-  toolbar: ReactNode
 }) {
   const settings = getSettings()
   const t = await getTranslations()
@@ -83,7 +81,6 @@ async function DashboardUsersContent({
       <Dashboard
         type='users'
         settings={toPublicSettings(settings)}
-        toolbar={toolbar}
         status={<HistoryReading progress={progress} isInCard />}
       />
     )
@@ -110,7 +107,6 @@ async function DashboardUsersContent({
       type='users'
       settings={toPublicSettings(settings)}
       loggedInUserId={loggedInUserId}
-      toolbar={toolbar}
       nextLimit={getNextItemsLimit(limit, !!usersData?.hasMore)}
     />
   )
@@ -124,26 +120,19 @@ export default async function DashboardUsersPage({ searchParams }: Props) {
   const { period, limit } = await searchParams
   const itemsLimit = getItemsLimit(limit)
   const settings = toPublicSettings(getSettings())
-  const toolbar = <DashboardToolbar settings={settings} isUsers />
 
   return (
-    <Suspense
-      fallback={
-        <DashboardLoader
-          toolbar={toolbar}
-          type='users'
-          settings={settings}
-          rows={itemsLimit}
-        />
-      }
-      // Without the limit, so "Show more" keeps the list up while it loads
-      key={period}
-    >
-      <DashboardUsersContent
-        periodSp={period}
-        limit={itemsLimit}
-        toolbar={toolbar}
-      />
-    </Suspense>
+    <>
+      <DashboardToolbar settings={settings} isUsers />
+      <Suspense
+        fallback={
+          <DashboardLoader type='users' settings={settings} rows={itemsLimit} />
+        }
+        // Without the limit, so "Show more" keeps the list up while it loads
+        key={period}
+      >
+        <DashboardUsersContent periodSp={period} limit={itemsLimit} />
+      </Suspense>
+    </>
   )
 }

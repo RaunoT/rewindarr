@@ -9,8 +9,8 @@ type Props = {
   isUsers?: boolean
 }
 
-// Rendered by both the dashboard and its loader, so the filters stay on
-// screen while a new period or filter loads
+// Rendered outside the list's Suspense, so the filters stay mounted, and an
+// open filter panel stays open, while a new period or filter loads
 export default function DashboardToolbar({
   settings,
   personalFilter = false,
