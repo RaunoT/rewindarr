@@ -1,9 +1,11 @@
 import { STAT_ICONS } from '@/components/icons'
+import MediaCard from '@/components/MediaCard'
+import SeerrLogo from '@/components/MediaItem/SeerrLogo'
 import { HistoryRequest } from '@/types/history'
 import { PublicSettings } from '@/types/settings'
 import { TautulliItemRow } from '@/types/tautulli'
 import { useTranslations } from 'next-intl'
-import HistoryCard, { STAT_PILL } from './HistoryCard'
+import HistoryTime from './HistoryTime'
 
 type Props = {
   request: HistoryRequest
@@ -14,8 +16,8 @@ type Props = {
   isAnonymous: boolean
 }
 
-// Built like a play's card, with Seerr's request icon and the request's
-// status where the play's watch time and stream go
+// Built like a play's card, with the request's status in Seerr where a play
+// has its media server's button
 export default function HistoryRequestItem({
   request,
   item,
@@ -26,6 +28,7 @@ export default function HistoryRequestItem({
   const t = useTranslations()
   const { mediaType, seasons } = request
   const title = request.title || t('History.unknownTitle')
+  const status = t(`History.requestStatus.${request.status}`)
   const detail =
     mediaType === 'tv' && seasons.length
       ? seasons.length === 1
@@ -34,15 +37,24 @@ export default function HistoryRequestItem({
       : null
 
   return (
-    <HistoryCard
+    <MediaCard
       type={mediaType === 'tv' ? 'show' : 'movie'}
       mediaType={mediaType === 'tv' ? 'show' : 'movie'}
       item={item}
       name={title}
       detail={detail}
       fullTitle={detail ? `${title} · ${detail}` : title}
-      href={`${settings.connection.seerrUrl}/${mediaType}/${request.tmdbId}`}
       posters={[request.poster]}
+      // Tells it apart from the plays, like a stream's pause on the activity
+      posterOverlay={
+        <span
+          role='img'
+          aria-label={t('History.request')}
+          className='absolute inset-0 flex items-center justify-center bg-black/60'
+        >
+          <STAT_ICONS.requests className='size-7 drop-shadow' />
+        </span>
+      }
       user={{
         name: isAnonymous
           ? t('History.anonymous')
@@ -51,14 +63,19 @@ export default function HistoryRequestItem({
         isOwn,
         isAnonymous,
       }}
-      stats={
-        <li className={STAT_PILL}>
-          <STAT_ICONS.requests />
-          <span className='sr-only'>{`${t('History.request')}: `}</span>
-          {t(`History.requestStatus.${request.status}`)}
-        </li>
+      action={
+        <a
+          href={`${settings.connection.seerrUrl}/${mediaType}/${request.tmdbId}`}
+          target='_blank'
+          rel='noopener noreferrer'
+          className='button-card'
+          aria-label={t('History.requestStatusLabel', { status, title })}
+        >
+          <SeerrLogo />
+          {status}
+        </a>
       }
-      time={new Date(request.createdAt)}
+      aside={<HistoryTime time={new Date(request.createdAt)} />}
       settings={settings}
     />
   )

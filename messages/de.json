@@ -126,7 +126,8 @@
       "failed": "Fehlgeschlagen",
       "partiallyAvailable": "Teilweise verfügbar",
       "available": "Verfügbar"
-    }
+    },
+    "requestStatusLabel": "{status}: {title} in Seerr öffnen"
   },
   "MediaServerDeeplink": {
     "available": "Verfügbar",
