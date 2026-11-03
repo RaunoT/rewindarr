@@ -19,7 +19,7 @@ export default function HistorySkeleton({
         {[...Array(rows)].map((_, i) => (
           <li
             key={i}
-            className='flex items-center gap-3 py-2.5 not-first:border-t not-first:border-white/10 first:pt-0 last:pb-0 sm:gap-4'
+            className='flex items-start gap-3 py-2.5 not-first:border-t not-first:border-white/10 first:pt-0 last:pb-0 sm:items-center sm:gap-4'
           >
             {/* Phones show how far a play got under the poster */}
             <div className='flex shrink-0 flex-col gap-1.5'>
@@ -33,11 +33,14 @@ export default function HistorySkeleton({
               <div className='flex flex-col gap-2 @md:flex-row @md:items-start @md:gap-4'>
                 <div className='min-w-0 flex-1'>
                   <div className='flex items-start justify-between gap-3'>
-                    <div className='min-w-0 flex-1'>
+                    <div className='min-w-0 flex-1 leading-snug sm:text-lg'>
+                      {/* Phones put the episode's numbers small above the
+                          name */}
                       <SkeletonLine
-                        className='leading-snug sm:text-lg'
-                        width='w-2/3 sm:w-1/2'
+                        className='text-xs sm:hidden'
+                        width='w-12'
                       />
+                      <SkeletonLine width='w-2/3 sm:w-1/2' />
                     </div>
                     <div className='flex shrink-0 @md:hidden'>
                       <SkeletonTime />

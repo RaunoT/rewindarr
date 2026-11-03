@@ -88,7 +88,8 @@ export default function ActivityTile({ settings }: Props) {
         )
       )}
       {!isUnavailable && !!data?.sessions.length && (
-        <ul className='space-y-2 text-sm'>
+        // At the bottom, like the empty tile's text
+        <ul className='mt-auto space-y-2 text-sm'>
           {data.sessions.slice(0, TILE_ITEM_COUNT).map((item, index) => (
             <ActivityTileItem
               key={item.session_key}

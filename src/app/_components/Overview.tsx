@@ -49,7 +49,6 @@ export default async function Overview({
   libraries,
 }: Props) {
   const t = await getTranslations()
-  const firstName = session?.user.name?.split(' ')[0]
   const isAdmin = !!session?.user.isAdmin
   const tiles = getHomeTiles(
     settings,
@@ -71,27 +70,7 @@ export default async function Overview({
 
   return (
     <div className='page-width-wide'>
-      <header
-        data-page-header
-        className='mb-4 flex min-h-10 items-center justify-between gap-3'
-      >
-        <h1 className='truncate text-2xl font-bold tracking-tight sm:text-3xl'>
-          {firstName
-            ? t('Home.greeting', { name: firstName })
-            : settings.general.serverName || t('Home.title')}
-        </h1>
-        <div className='flex items-center gap-3'>
-          {!session && (
-            <Suspense>
-              <LoginButton
-                siteUrl={getSiteUrl()}
-                mediaServerType={settings.connection.mediaServerType}
-              />
-            </Suspense>
-          )}
-          <HeaderControls className='lg:group-data-[sidebar]/app:hidden' />
-        </div>
-      </header>
+      <OverviewHeader settings={settings} session={session} />
 
       {libraries === null ? (
         <SourceUnreachable
@@ -120,27 +99,7 @@ export default async function Overview({
         />
       ) : (
         <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-          {tiles.rewind && (
-            <div className='glass-sheet flex flex-col justify-between gap-4'>
-              {/* Plex gold glowing up from a corner */}
-              <div
-                aria-hidden='true'
-                className='from-plex/25 pointer-events-none absolute inset-0 -z-10 rounded-3xl bg-radial-[at_100%_100%] to-transparent to-70%'
-              />
-              <div>
-                <h2 className='flex items-center gap-2 font-semibold'>
-                  <BackwardIcon className='size-5 text-neutral-400' />
-                  {t('Rewind.title')}
-                </h2>
-                <p className='mt-4 max-w-md text-xl font-semibold tracking-tight sm:text-2xl'>
-                  {t('Home.rewindDescription')}
-                </p>
-              </div>
-              <Link href='/rewind' className='button'>
-                {t('Home.rewind')}
-              </Link>
-            </div>
-          )}
+          {tiles.rewind && <RewindTile />}
           {tiles.activity && (
             <ActivityTile settings={toPublicSettings(settings)} />
           )}
@@ -170,6 +129,94 @@ export default async function Overview({
             ))}
         </div>
       )}
+    </div>
+  )
+}
+
+type OverviewSkeletonProps = {
+  settings: Settings
+  session: Session | null
+}
+
+// The page while the libraries load, built like it with the tiles' own
+// skeletons, so they don't change once it arrives. The libraries' names
+// aren't known yet, so their tiles go by the settings.
+export function OverviewSkeleton({ settings, session }: OverviewSkeletonProps) {
+  const tiles = getHomeTiles(
+    settings,
+    getViewer(session),
+    settings.general.activeLibraries.length,
+  )
+
+  return (
+    <div className='page-width-wide'>
+      <OverviewHeader settings={settings} session={session} />
+      <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+        {tiles.rewind && <RewindTile />}
+        {tiles.activity && (
+          <ActivityTile settings={toPublicSettings(settings)} />
+        )}
+        {tiles.history && <HistoryTileSkeleton />}
+        {tiles.libraries &&
+          settings.general.activeLibraries.map((library) => (
+            <LibraryTileSkeleton key={library} />
+          ))}
+      </div>
+    </div>
+  )
+}
+
+async function OverviewHeader({ settings, session }: OverviewSkeletonProps) {
+  const t = await getTranslations('Home')
+  const firstName = session?.user.name?.split(' ')[0]
+
+  return (
+    <header
+      data-page-header
+      className='mb-4 flex min-h-10 items-center justify-between gap-3'
+    >
+      <h1 className='truncate text-2xl font-bold tracking-tight sm:text-3xl'>
+        {firstName
+          ? t('greeting', { name: firstName })
+          : settings.general.serverName || t('title')}
+      </h1>
+      <div className='flex items-center gap-3'>
+        {!session && (
+          <Suspense>
+            <LoginButton
+              siteUrl={getSiteUrl()}
+              mediaServerType={settings.connection.mediaServerType}
+            />
+          </Suspense>
+        )}
+        <HeaderControls className='lg:group-data-[sidebar]/app:hidden' />
+      </div>
+    </header>
+  )
+}
+
+async function RewindTile() {
+  const t = await getTranslations()
+
+  return (
+    <div className='glass-sheet flex flex-col justify-between gap-4'>
+      {/* Plex gold glowing up from a corner */}
+      <div
+        aria-hidden='true'
+        className='from-plex/25 pointer-events-none absolute inset-0 -z-10 rounded-3xl bg-radial-[at_100%_100%] to-transparent to-70%'
+      />
+      <div>
+        <h2 className='flex items-center gap-2 font-semibold'>
+          <BackwardIcon className='size-5 text-neutral-400' />
+          {t('Rewind.title')}
+        </h2>
+        <p className='mt-4 max-w-md text-xl font-semibold tracking-tight sm:text-2xl'>
+          {t('Home.rewindDescription')}
+        </p>
+      </div>
+      <Link href='/rewind' className='button'>
+        {t('Home.rewind')}
+      </Link>
     </div>
   )
 }
@@ -274,11 +321,12 @@ async function LibraryTile({
   )
 }
 
-// Built like a loaded tile, so nothing moves once the data arrives
-function LibraryTileSkeleton({ library }: { library: TautulliLibrary }) {
+// Built like a loaded tile, so nothing moves once the data arrives. Without
+// the library, its name is a skeleton too.
+function LibraryTileSkeleton({ library }: { library?: TautulliLibrary }) {
   return (
     <div className='glass-sheet flex flex-col gap-4'>
-      <TileHeading name={library.section_name} type={library.section_type} />
+      <TileHeading name={library?.section_name} type={library?.section_type} />
       <div className='flex flex-col gap-3'>
         <div className='flex items-center gap-3'>
           <div className='skeleton poster w-12' />
@@ -311,14 +359,26 @@ function getPoster(item: TautulliItemRow) {
     : getImageProxyUrl(item.thumb)
 }
 
-function TileHeading({ name, type }: { name: string; type?: string }) {
+function TileHeading({ name, type }: { name?: string; type?: string }) {
   return (
     <div className='flex items-center justify-between gap-3'>
       <h2 className='flex min-w-0 items-center gap-2 font-semibold'>
-        {type && (
-          <MediaIcon type={type} className='size-5 shrink-0 text-neutral-400' />
+        {name ? (
+          <>
+            {type && (
+              <MediaIcon
+                type={type}
+                className='size-5 shrink-0 text-neutral-400'
+              />
+            )}
+            <span className='truncate'>{name}</span>
+          </>
+        ) : (
+          <>
+            <span className='skeleton size-5 shrink-0' />
+            <SkeletonLine width='w-24' />
+          </>
         )}
-        <span className='truncate'>{name}</span>
       </h2>
       <ChevronRightIcon className='size-4 shrink-0 text-neutral-500 transition-transform group-hover:translate-x-0.5' />
     </div>
