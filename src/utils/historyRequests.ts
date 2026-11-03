@@ -8,6 +8,7 @@ import {
 } from './fetchSeerr'
 import fetchTmdb from './fetchTmdb'
 import getSettings from './getSettings'
+import { normalizeJellyfinId } from './mediaServer'
 import { getUsers } from './statsSource'
 
 type TmdbTitle = {
@@ -75,6 +76,7 @@ export async function getHistoryRequests(
     const mediaUserIds = getMediaUserIds(request.requestedBy)
     const userId = mediaUserIds.find((id) => usersById.has(id))
     const user = userId ? usersById.get(userId) : undefined
+    const jellyfinId = request.media?.jellyfinMediaId
 
     // An excluded user stays excluded once they're no longer listed, as
     // Tautulli leaves out inactive users
@@ -96,6 +98,12 @@ export async function getHistoryRequests(
           .map((season) => season.seasonNumber)
           .sort((a, b) => a - b),
         status: getRequestStatus(request),
+        ratingKey:
+          settings.connection.mediaServerType === 'jellyfin'
+            ? jellyfinId
+              ? normalizeJellyfinId(jellyfinId)
+              : null
+            : request.media?.ratingKey || null,
         userId: userId ?? '',
         userName:
           user?.friendly_name ||

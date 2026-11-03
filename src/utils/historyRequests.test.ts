@@ -103,6 +103,33 @@ describe('getHistoryRequests', () => {
     })
   })
 
+  it("keeps the title's ID in the media server", async () => {
+    const media = {
+      tmdbId: 1,
+      status: 5,
+      ratingKey: '123',
+      jellyfinMediaId: '5F3A-B2',
+    }
+
+    vi.mocked(fetchSeerrStats).mockResolvedValue([
+      seerrRequest({ media }),
+      seerrRequest({ id: 2 }),
+    ])
+
+    const requests = await getHistoryRequests('2026-01-01')
+
+    expect(requests?.map((request) => request.ratingKey)).toEqual(['123', null])
+
+    withSettings((settings) => {
+      settings.connection.mediaServerType = 'jellyfin'
+    })
+    vi.mocked(fetchSeerrStats).mockResolvedValue([seerrRequest({ media })])
+
+    const [request] = (await getHistoryRequests('2026-01-01')) ?? []
+
+    expect(request.ratingKey).toBe('5f3ab2')
+  })
+
   it("keeps Seerr's name for a user who isn't on the media server", async () => {
     vi.mocked(fetchSeerrStats).mockResolvedValue([
       seerrRequest({

@@ -66,6 +66,7 @@ function request(
     tmdbId: id,
     seasons: [],
     status: 'available',
+    ratingKey: null,
     userId: '1',
     userName: 'Alice',
     avatar: '',

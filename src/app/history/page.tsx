@@ -290,6 +290,7 @@ async function HistoryContent({
                 key={`request-${entry.request.id}`}
                 request={entry.request}
                 item={entry.item}
+                mediaServer={mediaServer}
                 settings={publicSettings}
                 isOwn={isOwn}
                 isAnonymous={isAnonymous}

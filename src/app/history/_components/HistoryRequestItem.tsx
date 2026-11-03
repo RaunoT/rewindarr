@@ -3,6 +3,7 @@ import MediaCard from '@/components/MediaCard'
 import SeerrLogo from '@/components/MediaItem/SeerrLogo'
 import { HistoryRequest } from '@/types/history'
 import { PublicSettings } from '@/types/settings'
+import { MediaServer } from '@/types/statsSource'
 import { TautulliItemRow } from '@/types/tautulli'
 import { useTranslations } from 'next-intl'
 import HistoryTime from './HistoryTime'
@@ -11,16 +12,18 @@ type Props = {
   request: HistoryRequest
   // The title's year, ratings and IDs
   item: TautulliItemRow | null | undefined
+  mediaServer: MediaServer | null
   settings: PublicSettings
   isOwn: boolean
   isAnonymous: boolean
 }
 
 // Built like a play's card, with the request's status in Seerr where a play
-// has its media server's button
+// has its media server's button. Once it's all there, it gets that button too.
 export default function HistoryRequestItem({
   request,
   item,
+  mediaServer,
   settings,
   isOwn,
   isAnonymous,
@@ -34,6 +37,10 @@ export default function HistoryRequestItem({
       ? seasons.length === 1
         ? t('History.season', { season: seasons[0] })
         : t('History.seasonCount', { count: seasons.length })
+      : null
+  const deeplink =
+    request.status === 'available' && mediaServer && request.ratingKey
+      ? { mediaServer, ratingKey: request.ratingKey }
       : null
 
   return (
@@ -64,17 +71,20 @@ export default function HistoryRequestItem({
         isAnonymous,
       }}
       action={
-        <a
-          href={`${settings.connection.seerrUrl}/${mediaType}/${request.tmdbId}`}
-          target='_blank'
-          rel='noopener noreferrer'
-          className='button-card'
-          aria-label={t('History.requestStatusLabel', { status, title })}
-        >
-          <SeerrLogo />
-          {status}
-        </a>
+        !deeplink && (
+          <a
+            href={`${settings.connection.seerrUrl}/${mediaType}/${request.tmdbId}`}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='button-card'
+            aria-label={t('History.requestStatusLabel', { status, title })}
+          >
+            <SeerrLogo />
+            {status}
+          </a>
+        )
       }
+      deeplink={deeplink}
       aside={<HistoryTime time={new Date(request.createdAt)} />}
       settings={settings}
     />

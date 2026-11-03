@@ -32,6 +32,9 @@ export type SeerrRequestItem = {
     tmdbId: number | null
     // 1 unknown, 2 pending, 3 processing, 4 partly and 5 fully available
     status?: number
+    // The title's ID in Plex or Jellyfin, once it's there
+    ratingKey?: string | null
+    jellyfinMediaId?: string | null
   }
   // A show's requested seasons
   seasons?: { seasonNumber: number }[]
