@@ -1,5 +1,6 @@
 'use client'
 
+import { MediaIcon } from '@/components/icons'
 import { TautulliLibrary } from '@/types/tautulli'
 import {
   Bars2Icon,
@@ -74,6 +75,10 @@ export default function SortableLibrary({
         className='checkbox-wrapper flex-1'
       >
         <div className='checkbox' aria-hidden='true'></div>
+        <MediaIcon
+          type={library.section_type}
+          className='size-5 shrink-0 text-neutral-400'
+        />
         {library.section_name}
       </Checkbox>
     </Reorder.Item>

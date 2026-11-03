@@ -276,6 +276,7 @@
   },
   "Common": {
     "dismiss": "Dismiss",
+    "none": "None",
     "enabled": "Enabled",
     "adminOnly": "Admins only",
     "status": "Status",

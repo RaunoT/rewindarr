@@ -276,6 +276,7 @@
   },
   "Common": {
     "dismiss": "Sulge",
+    "none": "Puudub",
     "enabled": "Aktiveeritud",
     "adminOnly": "Ainult administraatoritele",
     "status": "Olek",

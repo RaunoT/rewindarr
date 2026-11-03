@@ -38,9 +38,10 @@ export default async function GeneralSettingsPage() {
       settings={toPublicSettings(settings)}
       libraries={libraries}
       // Emails and other account details stay on the server.
-      users={users.map(({ user_id, friendly_name }) => ({
+      users={users.map(({ user_id, friendly_name, thumb, user_thumb }) => ({
         user_id,
         friendly_name,
+        avatar: user_thumb || thumb,
       }))}
     />
   )
