@@ -7,8 +7,6 @@ import { useTranslations } from 'next-intl'
 export type BadgeUser = {
   name: string
   avatar: string
-  // The signed-in user, in Plex gold
-  isOwn: boolean
   // Who it is stays hidden, with an icon for the avatar
   isAnonymous: boolean
 }
@@ -24,14 +22,7 @@ export default function UserBadge({ user, priority }: Props) {
   return (
     <>
       <UserAvatar user={user} priority={priority} className='size-4' />
-      <span
-        className={clsx(
-          'max-w-40 truncate',
-          user.isOwn && 'text-plex font-medium',
-        )}
-      >
-        {user.name}
-      </span>
+      <span className='max-w-40 truncate'>{user.name}</span>
     </>
   )
 }
@@ -39,23 +30,15 @@ export default function UserBadge({ user, priority }: Props) {
 type UserAvatarProps = Props & {
   // Sets the size
   className: string
-  // Without the name beside it, the signed-in user's gets a gold ring
-  isOwnMarked?: boolean
 }
 
-export function UserAvatar({
-  user,
-  priority,
-  className,
-  isOwnMarked,
-}: UserAvatarProps) {
+export function UserAvatar({ user, priority, className }: UserAvatarProps) {
   const t = useTranslations()
 
   return (
     <span
       className={clsx(
         'relative shrink-0 overflow-hidden rounded-full',
-        isOwnMarked && user.isOwn && 'ring-plex ring-2',
         className,
       )}
     >

@@ -120,7 +120,6 @@ function ActivityTileItem({ session, index, settings, userId }: ItemProps) {
       ? t('Activity.anonymous', { number: index + 1 })
       : session.friendly_name,
     avatar: session.user_thumb,
-    isOwn,
     isAnonymous,
   }
   const season = toIndex(session.parent_media_index)
@@ -139,7 +138,7 @@ function ActivityTileItem({ session, index, settings, userId }: ItemProps) {
             ? session.title
             : null
       }
-      aside={<UserAvatar user={user} className='size-6' isOwnMarked />}
+      aside={<UserAvatar user={user} className='size-6' />}
       posterOverlay={
         <PlaybackOverlay state={session.state} className='size-3.5' />
       }
