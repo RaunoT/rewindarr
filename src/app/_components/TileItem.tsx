@@ -65,7 +65,8 @@ export default function TileItem({
   )
 }
 
-// The lead stands in for the loaded rows' own
+// `lead` is a placeholder for what the loaded rows show before their poster,
+// such as History's time, so nothing moves when they arrive
 export function TileItemsSkeleton({ lead }: { lead?: ReactNode }) {
   return (
     <ul className='space-y-2 text-sm'>
