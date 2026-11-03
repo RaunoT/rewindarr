@@ -47,7 +47,12 @@ function LocaleFlag({ code }: { code: string }) {
 }
 
 function getLocaleName(code: string) {
-  const name = new Intl.DisplayNames(code, { type: 'language' }).of(code)
+  // "English (UK)" rather than "British English"
+  const name = new Intl.DisplayNames(code, {
+    type: 'language',
+    languageDisplay: 'standard',
+    style: 'short',
+  }).of(code)
 
   return name ? name.charAt(0).toLocaleUpperCase(code) + name.slice(1) : code
 }
