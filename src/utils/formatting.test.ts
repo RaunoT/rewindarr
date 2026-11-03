@@ -1,6 +1,6 @@
 import { createTranslator } from 'next-intl'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import en from '../../messages/en.json'
+import en from '../../messages/en-GB.json'
 import {
   calculateETA,
   formatBitrate,

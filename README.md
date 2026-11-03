@@ -31,7 +31,7 @@ Present [Plex](https://plex.tv) and [Jellyfin](https://jellyfin.org) user statis
 - 🔐 Log in with Plex or Jellyfin - secure login and session management with the account you already use for your media server.
 - 🚀 PWA support - installable on mobile devices and desktops.
 - 🐳 Easy deployment - run the application in a containerized environment with [Docker](https://www.docker.com).
-- 🌐 Multi-language support - currently supporting English, Estonian, French, German, Italian and Spanish. See [translations](#translations) for more information.
+- 🌐 Multi-language support - currently supporting English (UK and US), Estonian, French, German, Italian and Spanish. See [translations](#translations) for more information.
 
 Keep an eye on the [issues page](https://github.com/RaunoT/rewindarr/issues) to see what new features have already been requested or to make your own request!
 
@@ -78,9 +78,9 @@ For those that need it, a simple status page is also available at `/api/status`.
 
 ## Translations
 
-The application follows the browser's language when it's one of the supported ones, and falls back to English otherwise. A language picked from the language menu takes precedence over the browser's.
+The application follows the browser's language when it's one of the supported ones, and falls back to UK English otherwise. A language picked from the language menu takes precedence over the browser's.
 
-To help translate the application to your language, create a new `<language-code>.json` in the `messages` directory and translate the strings, using `en.json` as a reference. Once the translation is complete, create a pull request for review.
+To help translate the application to your language, create a new `<language-code>.json` in the `messages` directory and translate the strings, using `en-GB.json` as a reference. Once the translation is complete, create a pull request for review.
 
 ## Donate
 

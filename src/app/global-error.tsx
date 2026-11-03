@@ -75,7 +75,7 @@ export default function GlobalError({ error, reset }: Props) {
   const [messages, setMessages] = useState(ENGLISH_MESSAGES)
 
   useEffect(() => {
-    if (locale === 'en') {
+    if (locale.startsWith('en-')) {
       return
     }
 

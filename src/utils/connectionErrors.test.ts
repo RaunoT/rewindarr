@@ -1,6 +1,6 @@
 import { createTranslator } from 'next-intl'
 import { describe, expect, it } from 'vitest'
-import en from '../../messages/en.json'
+import en from '../../messages/en-GB.json'
 import {
   ConnectionError,
   getFetchError,

@@ -143,7 +143,7 @@ pnpm build
 
 - Do your best to check for spelling errors and grammatical mistakes.
 
-- Put user-facing text in `messages/*.json` instead of in the components, and add each new key to every language file, using `en.json` as the reference.
+- Put user-facing text in `messages/*.json` instead of in the components, and add each new key to every language file, using `en-GB.json` as the reference (`en-US.json` only changes the spelling).
 
 - Make sure to test your changes on different screen sizes to ensure responsiveness.
 
