@@ -1,15 +1,17 @@
 'use client'
 
 import DatePicker from '@/components/DatePicker'
+import { STAT_ICONS } from '@/components/icons'
+import MultiSelect from '@/components/MultiSelect'
 import {
   DashboardSettings,
   PublicSettings,
   SettingsFormInitialState,
 } from '@/types/settings'
-import { sortByLabel } from '@/utils/helpers'
-import { useLocale, useTranslations } from 'next-intl'
+import { HashtagIcon } from '@heroicons/react/24/outline'
+import { useTranslations } from 'next-intl'
 import { useActionState, useState } from 'react'
-import { Checkbox, CheckboxGroup, Label, Switch } from 'react-aria-components'
+import { Switch } from 'react-aria-components'
 import SettingsForm from '../../_components/SettingsForm'
 import saveDashboardSettings from '../_actions/updateDashboardSettings'
 
@@ -23,18 +25,25 @@ export default function DashboardSettingsForm({ settings }: Props) {
   const isSeerrActive = settings.connection.isSeerrActive
   const t = useTranslations('Settings.Dashboard')
   const tCommon = useTranslations('Common')
-  const locale = useLocale()
-  const totalStatisticOptions = sortByLabel(
-    [
-      { value: 'size', label: tCommon('size') },
-      { value: 'duration', label: tCommon('duration') },
-      { value: 'count', label: tCommon('count') },
-      ...(isSeerrActive
-        ? [{ value: 'requests', label: tCommon('requests') }]
-        : []),
-    ],
-    locale,
-  )
+  // In the order they show on the dashboard
+  const totalStatisticOptions = [
+    {
+      value: 'duration',
+      label: tCommon('duration'),
+      icon: <STAT_ICONS.duration />,
+    },
+    ...(isSeerrActive
+      ? [
+          {
+            value: 'requests',
+            label: tCommon('requests'),
+            icon: <STAT_ICONS.requests />,
+          },
+        ]
+      : []),
+    { value: 'count', label: tCommon('count'), icon: <HashtagIcon /> },
+    { value: 'size', label: tCommon('size'), icon: <STAT_ICONS.size /> },
+  ]
   const [isActive, setIsActive] = useState<boolean>(settings.dashboard.isActive)
   const initialState: DashboardFormState = {
     message: '',
@@ -102,30 +111,16 @@ export default function DashboardSettingsForm({ settings }: Props) {
         <>
           <section className='group-settings group'>
             <h2 className='heading-settings'>{t('statistics')}</h2>
-            <CheckboxGroup
+            <MultiSelect
               key={`total-stats-${dashboardSettings.activeTotalStatistics.join(
                 ',',
               )}`}
-              className='input-wrapper'
+              label={t('totals')}
               name='activeTotalStatistics'
+              options={totalStatisticOptions}
               defaultValue={dashboardSettings.activeTotalStatistics}
-            >
-              <div className='peer checkbox-grid'>
-                {totalStatisticOptions.map(({ value, label }) => (
-                  <Checkbox
-                    key={`total-${value}`}
-                    value={value}
-                    className='checkbox-wrapper'
-                  >
-                    <div className='checkbox' aria-hidden='true'></div>
-                    {label}
-                  </Checkbox>
-                ))}
-              </div>
-              <Label className='label label--start'>
-                <span className='label-wrapper'>{t('totals')}</span>
-              </Label>
-            </CheckboxGroup>
+              placeholder={tCommon('none')}
+            />
           </section>
           <section className='group-settings group'>
             <h2 className='heading-settings'>{tCommon('defaults')}</h2>

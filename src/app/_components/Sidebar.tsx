@@ -10,6 +10,7 @@ import { canViewFeature, Viewer } from '@/utils/helpers'
 import {
   ArrowPathIcon,
   BackwardIcon,
+  ClockIcon,
   Cog6ToothIcon,
   HomeIcon,
   SignalIcon,
@@ -50,6 +51,8 @@ export default function Sidebar({ libraries, settings }: Props) {
   const dashboardQuery = dashboardParams.size
     ? `?${dashboardParams.toString()}`
     : ''
+  // The history shares the dashboard's period
+  const historyQuery = period ? `?period=${period}` : ''
 
   return (
     <aside
@@ -91,11 +94,23 @@ export default function Sidebar({ libraries, settings }: Props) {
               {t('Activity.title')}
             </SidebarLink>
           )}
+          {canViewFeature(settings, 'history', viewer) && (
+            <SidebarLink
+              href={`/history${historyQuery}`}
+              icon={<ClockIcon />}
+              isActive={pathname.startsWith('/history')}
+            >
+              {t('History.title')}
+            </SidebarLink>
+          )}
           {canViewFeature(settings, 'dashboard', viewer) && (
             <Suspense
               fallback={
                 <DashboardLinksSkeleton
-                  count={settings.general.activeLibraries.length}
+                  count={
+                    settings.general.activeLibraries.length +
+                    Number(settings.dashboard.isUsersPageActive)
+                  }
                 />
               }
             >
@@ -205,8 +220,8 @@ function DashboardLinks({
   )
 }
 
-// One row for each library the settings list, so the links don't shift much
-// once they load
+// One row for each library the settings list and the users page, so the
+// links don't shift much once they load
 function DashboardLinksSkeleton({ count }: { count: number }) {
   return (
     <>

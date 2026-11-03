@@ -4,8 +4,8 @@ import { omit, orderBy, sumBy } from 'lodash'
 import fetchTmdb from './fetchTmdb'
 import {
   Credits,
+  GetSourceData,
   searchTmdbId,
-  SourceMediaData,
   TmdbMediaType,
 } from './getMediaAdditionalData'
 
@@ -96,13 +96,13 @@ async function getTmdbCredits(
 export async function getCredits(
   item: TautulliItemRow,
   type: TmdbMediaType,
-  getSourceData: (item: TautulliItemRow) => Promise<SourceMediaData>,
+  getSourceData: GetSourceData,
 ): Promise<CreditedTitle | null> {
   if (item.tmdb_id) {
     return getTmdbCredits(item, type, item.tmdb_id)
   }
 
-  const source = await getSourceData(item)
+  const source = await getSourceData(item, type)
 
   if (source.credits) {
     return {
@@ -280,7 +280,7 @@ async function getRanking(
 // Movies and shows share one queue of lookups, which keeps to TMDB's limit.
 export async function getTopPeople(
   { movies, shows }: { movies: TautulliItemRow[]; shows: TautulliItemRow[] },
-  getSourceData: (item: TautulliItemRow) => Promise<SourceMediaData>,
+  getSourceData: GetSourceData,
 ): Promise<TopPeople> {
   const lookups = [
     ...movies.map((item) => ({ item, type: 'movie' as const })),

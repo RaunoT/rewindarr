@@ -15,15 +15,29 @@ type SeerrResponse<T> = {
 type SeerrUser = {
   // Seerr's own
   id: number
+  displayName?: string
   // Null for Seerr users without Plex
   plexId: number | null
   // Null for Seerr users without Jellyfin
   jellyfinUserId?: string | null
 }
 
-type SeerrRequestItem = {
+export type SeerrRequestItem = {
+  id: number
   createdAt: string
   type: string
+  // 1 pending, 2 approved, 3 declined, 4 failed and 5 completed
+  status?: number
+  media?: {
+    tmdbId: number | null
+    // 1 unknown, 2 pending, 3 processing, 4 partly and 5 fully available
+    status?: number
+    // The title's ID in Plex or Jellyfin, once it's there
+    ratingKey?: string | null
+    jellyfinMediaId?: string | null
+  }
+  // A show's requested seasons
+  seasons?: { seasonNumber: number }[]
   requestedBy: SeerrUser
 }
 

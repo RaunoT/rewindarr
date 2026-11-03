@@ -395,6 +395,28 @@ describe('getMediaAdditionalData', () => {
     expect(item.is_deleted).toBe(true)
   })
 
+  it('uses the rating key of the item the source has now', async () => {
+    mockTmdb({})
+
+    const [kept] = await getMediaAdditionalData([row()], 'movie', getSourceData)
+
+    expect(kept.rating_key).toBe(10)
+
+    mockSourceData({ ratingKey: 20 })
+
+    const [readded] = await getMediaAdditionalData(
+      [row()],
+      'movie',
+      getSourceData,
+    )
+
+    expect(readded.rating_key).toBe(20)
+    expect(getSourceData).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Dune' }),
+      'movie',
+    )
+  })
+
   it('adds the IMDb and Rotten Tomatoes ratings of a movie', async () => {
     mockTmdb({ 'movie/438631': {} })
     vi.mocked(getMovieRatings).mockResolvedValue({

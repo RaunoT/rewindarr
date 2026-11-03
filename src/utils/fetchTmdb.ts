@@ -39,6 +39,14 @@ export default async function fetchTmdb<T>(
         markHostDown(TMDB_API_URL)
       }
 
+      // TMDB removes titles, such as duplicates it merges, so an ID it
+      // doesn't know is an answer rather than a failure
+      if (res.status === 404) {
+        console.warn(`[TMDB] - Nothing found for '${endpoint}'.`)
+
+        return null
+      }
+
       console.error(
         `[TMDB] - API request failed. The endpoint was '${endpoint}'.\n`,
         res.status,

@@ -1,6 +1,7 @@
 import { Play, PlayMediaType } from '@/types/playHistory'
 import { TautulliHistoryRow, TautulliLibrary } from '@/types/tautulli'
 import fetchTautulli from './fetchTautulli'
+import { toIndex } from './formatting'
 import getSettings from './getSettings'
 import {
   dropStaleHistories,
@@ -85,6 +86,10 @@ export function toTautulliPlay(row: TautulliHistoryRow): Play | null {
     tmdbId: null,
     identityId: String(row.user_id),
     avatar: row.user_thumb || '',
+    seasonNumber:
+      mediaType === 'episode' ? toIndex(row.parent_media_index) : null,
+    episodeNumber: mediaType === 'episode' ? toIndex(row.media_index) : null,
+    transcodeDecision: row.transcode_decision || null,
   }
 }
 

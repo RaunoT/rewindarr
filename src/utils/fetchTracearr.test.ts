@@ -788,6 +788,71 @@ describe('malformed responses', () => {
     })
   })
 
+  it('marks media as deleted when the synced server never had it', async () => {
+    route({
+      servers: () => ({ data: [plexServer('s1')] }),
+      libraries: () => ({
+        data: [{ server_id: 's1', library_id: 'l1', item_count: 1 }],
+      }),
+      'media/m1': () => ({
+        id: 'm1',
+        availability: [{ server_id: 's2', removed_at: null }],
+      }),
+    })
+
+    const { getTracearrMedia } = await load()
+
+    await expect(getTracearrMedia('m1')).resolves.toMatchObject({
+      isDeleted: true,
+    })
+  })
+
+  it('gives the rating key of the newest item still on the server', async () => {
+    route({
+      servers: () => ({ data: [plexServer('s1')] }),
+      'media/m1': () => ({
+        id: 'm1',
+        availability: [
+          { server_id: 's1', rating_key: '10', removed_at: '2026-10-31' },
+          {
+            server_id: 's1',
+            rating_key: '20',
+            added_at: '2026-09-01',
+            removed_at: null,
+          },
+          {
+            server_id: 's1',
+            rating_key: '30',
+            added_at: '2026-10-31',
+            removed_at: null,
+          },
+          { server_id: 's2', rating_key: 'abc', removed_at: null },
+        ],
+      }),
+    })
+
+    const { getTracearrMedia } = await load()
+
+    await expect(getTracearrMedia('m1')).resolves.toMatchObject({
+      isDeleted: false,
+      ratingKey: 30,
+    })
+  })
+
+  it('does not mark media as deleted before the libraries are synced', async () => {
+    route({
+      servers: () => ({ data: [plexServer('s1')] }),
+      libraries: () => ({ data: [] }),
+      'media/m1': () => ({ id: 'm1', availability: [] }),
+    })
+
+    const { getTracearrMedia } = await load()
+
+    await expect(getTracearrMedia('m1')).resolves.toMatchObject({
+      isDeleted: false,
+    })
+  })
+
   it("reads the item's own IDs and year", async () => {
     route({
       servers: () => ({ data: [plexServer('s1')] }),
@@ -1579,6 +1644,9 @@ describe('getTracearrPlays', () => {
         tmdbId: null,
         identityId: 'u1',
         avatar: '',
+        seasonNumber: null,
+        episodeNumber: null,
+        transcodeDecision: null,
       }
     }
 
@@ -1700,5 +1768,114 @@ describe('getTracearrPlays', () => {
         expect.any(Error),
       )
     })
+  })
+})
+
+describe('getTranscodeDecision', () => {
+  it('puts the stream in Plex words, as Tautulli does', async () => {
+    const { getTranscodeDecision } = await load()
+
+    expect(
+      getTranscodeDecision({ is_transcode: true, video_decision: 'copy' }),
+    ).toBe('transcode')
+    expect(
+      getTranscodeDecision({
+        is_transcode: false,
+        video_decision: 'copy',
+        audio_decision: 'directplay',
+      }),
+    ).toBe('copy')
+    expect(
+      getTranscodeDecision({
+        is_transcode: false,
+        video_decision: 'directplay',
+      }),
+    ).toBe('direct play')
+  })
+
+  it('goes by the tracks when the stream has no decision', async () => {
+    const { getTranscodeDecision } = await load()
+
+    expect(
+      getTranscodeDecision({
+        is_transcode: null,
+        video_decision: 'copy',
+        audio_decision: 'transcode',
+      }),
+    ).toBe('transcode')
+    expect(getTranscodeDecision({ video_decision: 'transcode' })).toBe(
+      'transcode',
+    )
+  })
+
+  it('has none when Tracearr has none', async () => {
+    const { getTranscodeDecision } = await load()
+
+    expect(getTranscodeDecision({})).toBeNull()
+    expect(
+      getTranscodeDecision({
+        is_transcode: null,
+        video_decision: null,
+        audio_decision: null,
+      }),
+    ).toBeNull()
+  })
+})
+
+describe('getPosterUrl', () => {
+  const BASE = 'http://tracearr:3000'
+  const ALBUM_POSTER =
+    '/api/v1/images/proxy?server=s1&url=%2Flibrary%2Fmetadata%2F35934%2Fthumb%2F1769736234&width=360&height=540&fallback=poster&v=79763dc3'
+
+  it("asks for a Plex track's artist instead of its album", async () => {
+    const { getPosterUrl } = await load()
+    const url = new URL(
+      getPosterUrl(
+        {
+          media_type: 'track',
+          poster_url: ALBUM_POSTER,
+          grandparent_rating_key: '32148',
+        },
+        BASE,
+      ),
+    )
+
+    expect(url.origin).toBe(BASE)
+    expect(url.searchParams.get('url')).toBe(
+      '/library/metadata/32148/thumb/1769736234',
+    )
+    expect(url.searchParams.get('width')).toBe('360')
+    expect(url.searchParams.has('v')).toBe(false)
+  })
+
+  it('leaves other media and posters it cannot read alone', async () => {
+    const { getPosterUrl } = await load()
+
+    expect(
+      getPosterUrl(
+        {
+          media_type: 'episode',
+          poster_url: ALBUM_POSTER,
+          grandparent_rating_key: '32148',
+        },
+        BASE,
+      ),
+    ).toBe(`${BASE}${ALBUM_POSTER}`)
+    expect(
+      getPosterUrl(
+        {
+          media_type: 'track',
+          poster_url: '/api/v1/images/proxy?server=s1&url=abc123',
+          grandparent_rating_key: 'f00d',
+        },
+        BASE,
+      ),
+    ).toBe(`${BASE}/api/v1/images/proxy?server=s1&url=abc123`)
+    expect(
+      getPosterUrl(
+        { media_type: 'track', poster_url: null, grandparent_rating_key: '1' },
+        BASE,
+      ),
+    ).toBe('')
   })
 })

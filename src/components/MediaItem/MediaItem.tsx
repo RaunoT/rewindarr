@@ -19,8 +19,9 @@ import { motion } from 'motion/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRef } from 'react'
 import MediaItemTitle from './MediaItemTitle'
-import MediaServerDeeplink from './MediaServerDeeplink'
+import MediaServerLink from './MediaServerLink'
 import Rank from './Rank'
+import SeerrLogo from './SeerrLogo'
 import SiteLogo from './SiteLogo'
 import TitleDetails from './TitleDetails'
 
@@ -74,13 +75,44 @@ export default function MediaItem({
   const ratedSites = getRatedSites(data, activeStats)
   const externalLinks = links.filter(({ site }) => !ratedSites.includes(site))
   const ratingLinks = Object.fromEntries(links.map((link) => [link.site, link]))
+  // The title and poster open it in the media server, unless it's gone
+  const serverLink =
+    !isUsers && !data.is_deleted && mediaServer && deeplinkRatingKey
+      ? { mediaServer, ratingKey: deeplinkRatingKey }
+      : null
+  const poster = (
+    <div className='poster max-sm:w-12'>
+      {!isUsers ? (
+        <PosterImage
+          srcs={[posterSrc, data.tmdb_poster]}
+          type={type}
+          sizes='10rem'
+          priority
+        />
+      ) : isAnonymized ? (
+        <ImageFallback>
+          <UserIcon className='size-[40cqw]' />
+        </ImageFallback>
+      ) : (
+        <Avatar
+          src={data.user_thumb}
+          name={data.friendly_name}
+          sizes='10rem'
+          priority
+        />
+      )}
+    </div>
+  )
 
   return (
     <motion.li
       key={dataKey}
       // Motion animates with inline styles, which important utilities override
       // for visitors who prefer reduced motion, including during hydration.
-      className='flex items-center gap-3 py-2.5 not-first:border-t not-first:border-white/10 first:pt-0 last:pb-0 motion-reduce:transform-none! motion-reduce:opacity-100! max-sm:flex-wrap sm:gap-4'
+      className={clsx(
+        'flex items-center gap-3 py-2.5 not-first:border-t not-first:border-white/10 first:pt-0 last:pb-0 motion-reduce:transform-none! motion-reduce:opacity-100! max-sm:flex-wrap sm:gap-4',
+        serverLink && 'media-link-group',
+      )}
       variants={slideDown}
       initial='hidden'
       animate='show'
@@ -99,27 +131,18 @@ export default function MediaItem({
         )}
       >
         {isRanked && <Rank rank={rank} />}
-        <div className='poster max-sm:w-12'>
-          {!isUsers ? (
-            <PosterImage
-              srcs={[posterSrc, data.tmdb_poster]}
-              type={type}
-              sizes='10rem'
-              priority
-            />
-          ) : isAnonymized ? (
-            <ImageFallback>
-              <UserIcon className='size-[40cqw]' />
-            </ImageFallback>
-          ) : (
-            <Avatar
-              src={data.user_thumb}
-              name={data.friendly_name}
-              sizes='10rem'
-              priority
-            />
-          )}
-        </div>
+        {serverLink ? (
+          <MediaServerLink
+            title={data.title}
+            {...serverLink}
+            isDuplicate
+            className='shrink-0'
+          >
+            {poster}
+          </MediaServerLink>
+        ) : (
+          poster
+        )}
       </div>
       {/* Wide rows put the links level with the title, narrow ones under the
           stats. On phones these wrappers step aside, so the links wrap onto a
@@ -135,6 +158,7 @@ export default function MediaItem({
               type={type}
               parentRef={titleContainerRef}
               loggedInUserId={loggedInUserId}
+              serverLink={serverLink}
             />
             {/* Details about the title, kept apart from the viewing stats */}
             <TitleDetails
@@ -214,7 +238,8 @@ export default function MediaItem({
                 )}
             </ul>
           </div>
-          {/* Availability and the links share a row, split evenly on phones.
+          {/* A deleted title's request or label and the links share a row,
+              split evenly on phones.
               Wrapped rows are far enough apart that a tag's tap area never
               covers the tag above it. */}
           {(type === 'movie' || type === 'show' || type === 'artist') && (
@@ -230,7 +255,7 @@ export default function MediaItem({
                     className='button-card'
                     aria-label={t('requestLabel', { title: data.title })}
                   >
-                    <STAT_ICONS.requests />
+                    <SeerrLogo />
                     {t('request')}
                   </a>
                 ) : (
@@ -239,16 +264,7 @@ export default function MediaItem({
                     {t('deleted')}
                   </div>
                 )
-              ) : (
-                mediaServer &&
-                deeplinkRatingKey && (
-                  <MediaServerDeeplink
-                    title={data.title}
-                    mediaServer={mediaServer}
-                    ratingKey={deeplinkRatingKey}
-                  />
-                )
-              )}
+              ) : null}
               {externalLinks.map(({ site, href, isSearch }) => (
                 <a
                   key={site}

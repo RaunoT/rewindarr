@@ -14,6 +14,7 @@ import {
   getTopMediaItems,
   getTopMediaStats,
   getTopPeople,
+  getTopTrack,
   getUserTotalDuration,
   getlibrariesTotalSize,
 } from '@/utils/getRewind'
@@ -26,7 +27,9 @@ import {
   getRewindStartDate,
   getViewer,
 } from '@/utils/helpers'
+import { getPlexThemeUrl, getPlexTrackUrl } from '@/utils/plexAudio'
 import { toPublicSettings } from '@/utils/publicSettings'
+import { getMusicUrl, getThemeSongUrl } from '@/utils/rewindMusic'
 import {
   getActiveUsers,
   getHistoryProgress,
@@ -114,6 +117,7 @@ async function RewindContent({ userId }: { userId?: string }) {
     people,
     genres,
     viewers,
+    topTrack,
   ] = await Promise.all([
     getTopMediaItems(user.id, libraries),
     getTopMediaStats(user.id, libraries),
@@ -127,6 +131,7 @@ async function RewindContent({ userId }: { userId?: string }) {
     getTopPeople(user.id, libraries),
     getGenres(user.id, libraries),
     viewersRequest,
+    getTopTrack(user.id, libraries),
   ])
   // The card for the first play needs its poster and ratings looked up. Its
   // all-time watch time and plays wait for the whole history to be read.
@@ -196,6 +201,7 @@ async function RewindContent({ userId }: { userId?: string }) {
       duration_value: topMediaStats.audio.durationValue,
       server_duration_value: getServerDuration('audio'),
       percentage: topMediaStats.audio.percentage,
+      topTrack,
     },
     habits: habits,
     firstPlay: firstPlay && {
@@ -226,10 +232,31 @@ async function RewindContent({ userId }: { userId?: string }) {
     userRewind.requests = requestTotals
   }
 
+  const { isThemeMusicActive } = settings.rewind
+  const topShow = topMediaItems.shows[0]
+  const topMovie = topMediaItems.movies[0]
+
   return (
     <RewindStories
       userRewind={userRewind}
       settings={toPublicSettings(settings)}
+      music={{
+        showThemes: isThemeMusicActive
+          ? [
+              getPlexThemeUrl(settings, topShow?.rating_key),
+              getThemeSongUrl(topShow?.tvdb_id),
+            ].filter((url) => url !== null)
+          : [],
+        movieThemes: isThemeMusicActive
+          ? [getPlexThemeUrl(settings, topMovie?.rating_key)].filter(
+              (url) => url !== null,
+            )
+          : [],
+        topTrack: isThemeMusicActive
+          ? getPlexTrackUrl(settings, topTrack?.ratingKey)
+          : null,
+        track: getMusicUrl(settings),
+      }}
     />
   )
 }

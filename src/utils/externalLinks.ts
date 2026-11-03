@@ -2,7 +2,7 @@ import { ExternalLink } from '@/types/settings'
 import { TautulliItemRow } from '@/types/tautulli'
 import { EXTERNAL_LINKS } from './constants'
 
-type LinkedItem = Pick<
+export type LinkedItem = Pick<
   TautulliItemRow,
   'title' | 'tmdb_id' | 'imdb_id' | 'tvdb_id' | 'rotten_tomatoes_url'
 >
@@ -106,4 +106,31 @@ export function getRatedSites(
   }
 
   return sites
+}
+
+// The sites a title with every ID and rating gets a button for, which is what
+// skeletons hold room for
+export function getLinkButtonSites(
+  type: 'movie' | 'show',
+  activeLinks: ExternalLink[],
+  activeStats: string[],
+): ExternalLink[] {
+  const ratedSites = getRatedSites(
+    {
+      rating: '1',
+      imdb_rating: '1',
+      rotten_tomatoes_rating: 1,
+      rotten_tomatoes_audience_rating: 1,
+    },
+    activeStats,
+  )
+  const links = getExternalLinks(
+    { title: '', tmdb_id: 1, imdb_id: 'tt1', tvdb_id: 1 },
+    type,
+    activeLinks,
+  )
+
+  return links
+    .map(({ site }) => site)
+    .filter((site) => !ratedSites.includes(site))
 }

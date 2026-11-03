@@ -23,7 +23,7 @@ import { Metadata } from 'next'
 import { getServerSession } from 'next-auth'
 import { getLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
-import { ReactNode, Suspense } from 'react'
+import { Suspense } from 'react'
 import Dashboard from '../_components/Dashboard'
 import DashboardLoader from '../_components/DashboardLoader'
 import DashboardToolbar from '../_components/DashboardToolbar'
@@ -52,14 +52,12 @@ async function DashboardContent({
   personalSp,
   sortBySp,
   limit,
-  toolbar,
 }: {
   slug: string
   periodSp: DashboardSearchParams['period']
   personalSp: DashboardSearchParams['personal']
   sortBySp: DashboardSearchParams['sortBy']
   limit: number
-  toolbar: ReactNode
 }) {
   const libraries = await getLibraries()
   const library = libraries.find(
@@ -86,7 +84,6 @@ async function DashboardContent({
       <Dashboard
         type={library.section_type}
         settings={toPublicSettings(settings)}
-        toolbar={toolbar}
         status={<HistoryReading progress={progress} isInCard />}
       />
     )
@@ -132,8 +129,6 @@ async function DashboardContent({
       mediaServer={mediaServer}
       count={count}
       settings={toPublicSettings(settings)}
-      loggedInUserId={loggedInUserId}
-      toolbar={toolbar}
       nextLimit={getNextItemsLimit(limit, hasMore)}
     />
   )
@@ -157,34 +152,32 @@ export default async function DashboardPage({ searchParams, params }: Props) {
   )
   const itemsLimit = getItemsLimit(limit)
   const publicSettings = toPublicSettings(settings)
-  const toolbar = (
-    <DashboardToolbar
-      settings={publicSettings}
-      personalFilter={!!session?.user.id}
-    />
-  )
 
   return (
-    <Suspense
-      fallback={
-        <DashboardLoader
-          toolbar={toolbar}
-          type={library?.section_type ?? 'movie'}
-          settings={publicSettings}
-          rows={itemsLimit}
-        />
-      }
-      // Without the limit, so "Show more" keeps the list up while it loads
-      key={`period-${period}-personal-${personal}-sortBy-${sortBy}`}
-    >
-      <DashboardContent
-        slug={slug}
-        periodSp={period}
-        personalSp={personal}
-        sortBySp={sortBy}
-        limit={itemsLimit}
-        toolbar={toolbar}
+    <>
+      <DashboardToolbar
+        settings={publicSettings}
+        personalFilter={!!session?.user.id}
       />
-    </Suspense>
+      <Suspense
+        fallback={
+          <DashboardLoader
+            type={library?.section_type ?? 'movie'}
+            settings={publicSettings}
+            rows={itemsLimit}
+          />
+        }
+        // Without the limit, so "Show more" keeps the list up while it loads
+        key={`period-${period}-personal-${personal}-sortBy-${sortBy}`}
+      >
+        <DashboardContent
+          slug={slug}
+          periodSp={period}
+          personalSp={personal}
+          sortBySp={sortBy}
+          limit={itemsLimit}
+        />
+      </Suspense>
+    </>
   )
 }

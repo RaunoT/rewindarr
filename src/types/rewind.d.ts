@@ -15,6 +15,17 @@ type RequestCounts = {
   shows: number
 }
 
+export type TopTrack = {
+  // Null for a play the source has no rating key for
+  ratingKey: string | null
+  title: string
+  artist: string | null
+  plays: number
+  durationMs: number
+  // No other track has a play that counts
+  isOnly: boolean
+}
+
 type LibraryRewind = {
   count: number
   duration: string
@@ -48,7 +59,10 @@ export type UserRewind = {
   movies: LibraryRewind
   people: TopPeople
   genres: Genres
-  audio: LibraryRewind
+  audio: LibraryRewind & {
+    // The user's most played track, null without any
+    topTrack: TopTrack | null
+  }
   habits: {
     peakHour: number | null
     peakDayIndex: number | null

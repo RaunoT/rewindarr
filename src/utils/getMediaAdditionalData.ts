@@ -34,7 +34,14 @@ export type SourceMediaData = {
   // Only Tautulli knows them, and only for items still on the server
   credits?: Credits
   genres?: string[]
+  // The item's rating key now, when it was re-added under a new one
+  ratingKey?: number | string
 }
+
+export type GetSourceData = (
+  item: TautulliItemRow,
+  type: TmdbMediaType,
+) => Promise<SourceMediaData>
 
 // What's saved of it to stand in while the source is down
 export type SavedMediaData = Pick<SourceMediaData, 'ids' | 'year'>
@@ -145,7 +152,7 @@ async function getTmdbData(item: TautulliItemRow, type: TmdbMediaType) {
 export default async function getMediaAdditionalData(
   media: TautulliItemRow[],
   type: TmdbMediaType,
-  getSourceData: (item: TautulliItemRow) => Promise<SourceMediaData>,
+  getSourceData: GetSourceData,
 ): Promise<TautulliItemRow[]> {
   const settings = getSettings()
   const isPostersTmdbOnly = settings.general.isPostersTmdbOnly
@@ -160,7 +167,7 @@ export default async function getMediaAdditionalData(
     settings.general.activeExternalLinks.includes('rottenTomatoes')
   const additionalData = await Promise.all(
     media.map(async (row) => {
-      const source = await getSourceData(row)
+      const source = await getSourceData(row, type)
       const item = withSourceData(row, source)
       const { tmdbId, details } = await getTmdbData(item, type)
       const imdbId = item.imdb_id || details?.external_ids?.imdb_id || null
@@ -185,6 +192,7 @@ export default async function getMediaAdditionalData(
 
       return {
         year,
+        rating_key: source.ratingKey ?? row.rating_key,
         is_deleted: source.isDeleted,
         rating: details?.vote_average ? details.vote_average.toFixed(1) : null,
         imdb_rating: externalRatings.imdb,
@@ -203,6 +211,7 @@ export default async function getMediaAdditionalData(
   )
 
   media.map((mediaItem, i) => {
+    mediaItem.rating_key = additionalData[i].rating_key
     mediaItem.is_deleted = additionalData[i].is_deleted
     mediaItem.rating = additionalData[i].rating
     mediaItem.imdb_rating = additionalData[i].imdb_rating

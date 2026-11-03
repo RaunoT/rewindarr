@@ -6,8 +6,9 @@
 [<img src="https://img.shields.io/github/v/release/RaunoT/rewindarr?label=latest" alt="Rewindarr latest release">](https://github.com/RaunoT/rewindarr/releases)
 [![Rewindarr pre-release status](https://img.shields.io/github/actions/workflow/status/RaunoT/rewindarr/pre-release.yml?include_prereleases=true&label=Pre-release)](https://github.com/RaunoT/rewindarr/actions/workflows/pre-release.yml)
 [<img src="https://img.shields.io/github/v/release/RaunoT/rewindarr?include_prereleases&label=develop" alt="Rewindarr develop release">](https://github.com/RaunoT/rewindarr/releases)
+[![Rewindarr downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FRaunoT%2Frewindarr%2Fbadges%2Fdownloads.json)](https://github.com/RaunoT/rewindarr/pkgs/container/rewindarr)
 
-A rewind for your media server, inspired by the likes of [Spotify Wrapped](https://www.spotify.com/us/wrapped) and [Tautulli](https://tautulli.com).
+A rewind for your media server, inspired by the likes of [Spotify Wrapped](https://www.spotify.com/us/wrapped).
 
 Present [Plex](https://plex.tv) and [Jellyfin](https://jellyfin.org) user statistics and habits in a beautiful and organized manner, using data from [Tautulli](https://tautulli.com) or [Tracearr](https://github.com/connorgallopo/Tracearr), and [Seerr](https://seerr.dev). You can also disable the Rewind functionality and just use it as an easily sharable Dashboard for your users or vice versa!
 
@@ -30,7 +31,7 @@ Present [Plex](https://plex.tv) and [Jellyfin](https://jellyfin.org) user statis
 - 🔐 Log in with Plex or Jellyfin - secure login and session management with the account you already use for your media server.
 - 🚀 PWA support - installable on mobile devices and desktops.
 - 🐳 Easy deployment - run the application in a containerized environment with [Docker](https://www.docker.com).
-- 🌐 Multi-language support - currently supporting English, Estonian, French, German, Italian and Spanish. See [translations](#translations) for more information.
+- 🌐 Multi-language support - currently supporting English (UK and US), Estonian, French, German, Italian and Spanish. See [translations](#translations) for more information.
 
 Keep an eye on the [issues page](https://github.com/RaunoT/rewindarr/issues) to see what new features have already been requested or to make your own request!
 
@@ -41,8 +42,6 @@ Keep an eye on the [issues page](https://github.com/RaunoT/rewindarr/issues) to 
 ![Dashboard](.github/screenshots/dashboard.webp 'Dashboard')
 
 ![Rewind](.github/screenshots/rewind.webp 'Rewind')
-
-![Activity](.github/screenshots/activity.webp 'Activity')
 
 ## Getting started
 
@@ -77,9 +76,9 @@ For those that need it, a simple status page is also available at `/api/status`.
 
 ## Translations
 
-The application follows the browser's language when it's one of the supported ones, and falls back to English otherwise. A language picked from the language menu takes precedence over the browser's.
+The application follows the browser's language when it's one of the supported ones, and falls back to UK English otherwise. A language picked from the language menu takes precedence over the browser's.
 
-To help translate the application to your language, create a new `<language-code>.json` in the `messages` directory and translate the strings, using `en.json` as a reference. Once the translation is complete, create a pull request for review.
+To help translate the application to your language, create a new `<language-code>.json` in the `messages` directory and translate the strings, using `en-GB.json` as a reference. Once the translation is complete, create a pull request for review.
 
 ## Donate
 
@@ -91,10 +90,10 @@ If you like this project and wish to support it, you can do so on [GitHub Sponso
 
 ## Star History
 
-<a href="https://star-history.dera.page/#RaunoT/rewindarr&type=date&legend=top-left">
+<a href="https://star-history.dera.page/#RaunoT/plex-rewind&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=RaunoT/rewindarr&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=RaunoT/rewindarr&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=RaunoT/rewindarr&type=date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=RaunoT/plex-rewind&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=RaunoT/plex-rewind&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=RaunoT/plex-rewind&type=date&legend=top-left" />
  </picture>
 </a>

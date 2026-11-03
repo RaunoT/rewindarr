@@ -1,14 +1,13 @@
 import CardWrapper from '@/app/_components/CardWrapper'
 import SkeletonLine from '@/components/SkeletonLine'
-import { ItemStatistics, PublicSettings } from '@/types/settings'
+import { TotalsSkeleton } from '@/components/Totals'
+import { PublicSettings } from '@/types/settings'
 import { TautulliMediaType } from '@/types/tautulli'
 import { DASHBOARD_PAGE_SIZE, RATING_STATISTICS } from '@/utils/constants'
+import { getLinkButtonSites } from '@/utils/externalLinks'
 import clsx from 'clsx'
-import { ReactNode } from 'react'
-import DashboardHeader from './DashboardHeader'
 
 type Props = {
-  toolbar: ReactNode
   type: TautulliMediaType | 'users'
   settings: PublicSettings
   rows?: number
@@ -17,41 +16,28 @@ type Props = {
 // Built like the real rows for this library and the chosen statistics, so
 // nothing moves once the data arrives
 export default function DashboardLoader({
-  toolbar,
   type,
   settings,
   rows = DASHBOARD_PAGE_SIZE,
 }: Props) {
-  const isUsers = type === 'users'
   const { activeTotalStatistics } = settings.dashboard
-  const periodStats = [
-    activeTotalStatistics.includes('duration') && 'w-32',
+  // The same totals as the dashboard shows for this library
+  const totalsCount = [
+    activeTotalStatistics.includes('duration'),
     activeTotalStatistics.includes('requests') &&
       settings.connection.isSeerrActive &&
-      type !== 'artist' &&
-      'w-20',
-  ]
-  const generalStats = isUsers
-    ? [activeTotalStatistics.includes('count') && 'w-16']
-    : [
-        activeTotalStatistics.includes('size') && 'w-16',
-        activeTotalStatistics.includes('count') && 'w-24',
-      ]
+      type !== 'artist',
+    activeTotalStatistics.includes('count'),
+    activeTotalStatistics.includes('size') && type !== 'users',
+  ].filter(Boolean).length
 
   return (
     <div className='flex flex-1 flex-col'>
-      <DashboardHeader
-        periodStats={<StatSkeletons widths={periodStats} />}
-        toolbar={toolbar}
-      />
+      <TotalsSkeleton count={totalsCount} />
 
       <CardWrapper>
         <DashboardListSkeleton type={type} settings={settings} rows={rows} />
       </CardWrapper>
-
-      <ul className='icon-stats-container mt-4 justify-center gap-x-3 empty:hidden'>
-        <StatSkeletons widths={generalStats} />
-      </ul>
     </div>
   )
 }
@@ -65,34 +51,20 @@ export function DashboardListSkeleton({
   return (
     <ul className='flex flex-col overflow-hidden'>
       {[...Array(rows)].map((_, i) => (
-        <ListItem
-          key={i}
-          type={type}
-          activeStats={settings.general.activeItemStatistics}
-        />
+        <ListItem key={i} type={type} settings={settings} />
       ))}
     </ul>
   )
 }
 
-function StatSkeletons({ widths }: { widths: (string | false)[] }) {
-  return widths
-    .filter((width): width is string => !!width)
-    .map((width, i) => (
-      <li key={i} className='icon-stat-wrapper icon-stat-wrapper--clean'>
-        <div className='skeleton size-4' />
-        <SkeletonLine width={width} />
-      </li>
-    ))
-}
-
 function ListItem({
   type,
-  activeStats,
+  settings,
 }: {
   type: Props['type']
-  activeStats: ItemStatistics
+  settings: PublicSettings
 }) {
+  const activeStats = settings.general.activeItemStatistics
   const isUsers = type === 'users'
   // Users have the date of their first play there
   const hasDetails =
@@ -109,6 +81,15 @@ function ListItem({
   ]
     .filter((width): width is string => !!width)
     .slice(0, 2)
+  // Music has no links, and a site whose rating is shown opens from it
+  const linkCount =
+    type === 'movie' || type === 'show'
+      ? getLinkButtonSites(
+          type,
+          settings.general.activeExternalLinks,
+          activeStats,
+        ).length
+      : 0
 
   return (
     <li className='flex items-center gap-3 py-2.5 not-first:border-t not-first:border-white/10 first:pt-0 last:pb-0 max-sm:flex-wrap sm:gap-4'>
@@ -136,12 +117,11 @@ function ListItem({
               ))}
             </ul>
           </div>
-          {!isUsers && (
+          {linkCount > 0 && (
             <div className='flex shrink-0 flex-wrap gap-x-1.5 gap-y-2.5 max-sm:basis-full max-sm:*:flex-1 @md:mt-0.5 @md:max-w-56 @md:justify-end'>
-              <div className='skeleton h-6 w-24 rounded-md' />
-              {type !== 'artist' && (
-                <div className='skeleton h-6 w-11 rounded-md' />
-              )}
+              {[...Array(linkCount)].map((_, i) => (
+                <div key={i} className='skeleton h-6 w-11 rounded-md' />
+              ))}
             </div>
           )}
         </div>

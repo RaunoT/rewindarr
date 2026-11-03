@@ -42,14 +42,14 @@
   }
 }
 
-/* The home page and the dashboard, with their tiles and lists */
+/* The content column every page keeps to */
 @utility page-width {
-  @apply w-full max-w-4xl;
+  @apply w-full max-w-3xl;
 }
 
-/* Settings, Rewind and Activity, whose forms and cards would stretch wider */
-@utility page-width-narrow {
-  @apply w-full max-w-2xl;
+/* The home page's, wider for its tiles */
+@utility page-width-wide {
+  @apply w-full max-w-6xl;
 }
 
 @utility focus-ring {
@@ -239,8 +239,40 @@
     }
   }
 
+  /* A tap area of the stories, shown by the touch intro */
+  .intro-zone {
+    @apply relative flex items-center justify-center rounded-2xl bg-white/5 ring-1 ring-white/10 ring-inset;
+  }
+
+  .intro-zone-icon {
+    @apply flex size-12 items-center justify-center rounded-full bg-white/10 text-white;
+  }
+
+  /* Hangs below the centred icon, so the labels start on the same line */
+  .intro-zone-label {
+    @apply absolute inset-x-3 top-[calc(50%+2.25rem)] text-sm text-balance text-neutral-300;
+  }
+
   .poster {
     @apply relative aspect-2/3 w-16 shrink-0 overflow-hidden rounded-md! shadow-lg ring-1 shadow-black/40 ring-white/10 sm:w-18;
+  }
+
+  /* A title and its poster open the same item, so hovering either lights up
+     both */
+  .media-link-group {
+    .poster {
+      @apply transition-[filter];
+    }
+
+    &:has([data-media-link]:hover) {
+      .poster {
+        @apply brightness-115;
+      }
+
+      .media-link-title {
+        @apply underline decoration-white/40 underline-offset-4;
+      }
+    }
   }
 
   .link {
@@ -288,6 +320,167 @@
     }
   }
 
+  /* A choice of one, like the period, shaped like the page navigation. It
+     scrolls sideways when the labels don't fit. */
+  .segmented {
+    @apply glass-pill flex h-10 w-fit max-w-full shrink-0 items-center gap-0.5 overflow-x-auto p-1 text-xs font-medium sm:text-sm;
+
+    scrollbar-width: none;
+
+    > svg {
+      @apply mx-1.5 size-4 shrink-0 text-neutral-500;
+    }
+  }
+
+  .segment {
+    @apply data-focus-visible:focus-ring flex h-full flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full px-2.5 whitespace-nowrap text-neutral-300 transition-colors outline-none hover:bg-white/5 hover:text-white sm:px-3;
+
+    > svg {
+      @apply size-4 shrink-0;
+    }
+
+    &[data-selected] {
+      @apply bg-white/15 text-white;
+
+      box-shadow:
+        inset 0 1px 0 0 rgb(255 255 255 / 15%),
+        0 2px 8px -2px rgb(0 0 0 / 40%);
+    }
+  }
+
+  /* A search among the filters, shaped like them */
+  .search-pill {
+    @apply glass-pill flex h-10 min-w-0 cursor-text items-center gap-2 pr-1 pl-3.5 text-sm transition-colors hover:bg-white/5;
+
+    > svg {
+      @apply size-4 shrink-0 text-neutral-400;
+    }
+
+    input {
+      @apply h-full min-w-0 flex-1 bg-transparent text-white outline-none placeholder:text-neutral-400;
+
+      &::-webkit-search-cancel-button {
+        @apply appearance-none;
+      }
+    }
+
+    &:focus-within {
+      @apply bg-white/5;
+
+      > svg {
+        @apply text-neutral-200;
+      }
+    }
+
+    &:has(input[data-focus-visible]) {
+      @apply focus-ring;
+    }
+
+    &[data-empty] .search-pill-clear {
+      @apply invisible;
+    }
+  }
+
+  .search-pill-clear {
+    @apply data-focus-visible:focus-ring flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-neutral-400 transition-colors outline-none hover:bg-white/10 hover:text-white;
+  }
+
+  /* A quiet scrollbar for lists that scroll inside a panel */
+  .thin-scrollbar {
+    scrollbar-color: rgb(255 255 255 / 20%) transparent;
+    scrollbar-width: thin;
+  }
+
+  /* Any number of choices, like the libraries. Picked ones are solid. */
+  .chip {
+    @apply data-focus-visible:focus-ring flex h-9 cursor-pointer items-center gap-1.5 rounded-full px-3.5 text-xs font-medium whitespace-nowrap text-neutral-300 ring-1 ring-white/15 transition-colors outline-none ring-inset hover:bg-white/5 hover:text-white sm:text-sm;
+
+    > svg {
+      @apply size-4 shrink-0;
+    }
+
+    &[data-selected] {
+      @apply bg-white text-black ring-white hover:bg-white/90;
+    }
+  }
+
+  /* Opens a list, like the users, and says what's picked */
+  .filter-button {
+    @apply glass-pill data-focus-visible:focus-ring flex h-10 max-w-full min-w-0 cursor-pointer items-center gap-2 px-4 text-sm text-neutral-200 transition-colors outline-none hover:bg-white/10;
+
+    > svg {
+      @apply size-4 shrink-0 text-neutral-400;
+    }
+
+    &[data-active] {
+      @apply text-white;
+
+      > svg {
+        @apply text-white;
+      }
+    }
+  }
+
+  /* Opens the filters. A round icon on phones, with a label from sm up. */
+  .filter-button--toggle {
+    @apply relative shrink-0 max-sm:w-10 max-sm:justify-center max-sm:px-0;
+  }
+
+  /* The count of filters on, over the corner of the round button on phones
+     and after the label from sm up */
+  .filter-badge {
+    @apply flex size-5 items-center justify-center rounded-full bg-white text-[0.6875rem] font-semibold text-black tabular-nums max-sm:absolute max-sm:-top-1 max-sm:-right-1 sm:-mr-1.5;
+  }
+
+  /* The filters under their button on wider screens. Wide enough for a row of
+     the libraries. */
+  .filter-panel {
+    @apply flex w-100 flex-col bg-neutral-900/80 outline-none;
+
+    &[data-entering] {
+      animation: fade-in 0.15s ease-out;
+    }
+
+    &[data-exiting] {
+      animation: fade-in 0.1s ease-in reverse;
+    }
+  }
+
+  .sheet-overlay {
+    @apply fixed inset-0 z-50 flex items-end bg-black/60;
+
+    &[data-entering] {
+      animation: fade-in 0.2s ease-out;
+    }
+
+    &[data-exiting] {
+      animation: fade-in 0.15s ease-in reverse;
+    }
+  }
+
+  /* Slides up from the bottom of the screen, on phones. Used with glass-sheet. */
+  .sheet {
+    @apply flex max-h-[85dvh] w-full flex-col rounded-b-none bg-neutral-900/80 pb-[max(1.25rem,env(safe-area-inset-bottom))] outline-none;
+
+    &[data-entering] {
+      animation: sheet-up 0.25s ease-out;
+    }
+
+    &[data-exiting] {
+      animation: sheet-up 0.2s ease-in reverse;
+    }
+  }
+
+  @keyframes sheet-up {
+    from {
+      transform: translateY(100%);
+    }
+
+    to {
+      transform: translateY(0);
+    }
+  }
+
   /* Used with glass-sheet, whose padding and radius it replaces */
   .menu {
     @apply bg-neutral-900/70 p-1.5 outline-none;
@@ -296,7 +489,7 @@
   }
 
   .menu-item {
-    @apply flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-sm text-neutral-200 outline-none data-focused:bg-white/10 data-focused:text-white;
+    @apply flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-sm text-neutral-200 outline-none data-focused:bg-white/10 data-focused:text-white data-hovered:bg-white/10 data-hovered:text-white;
 
     > svg {
       @apply size-5 shrink-0 text-neutral-400;
@@ -318,6 +511,26 @@
     &.icon-stat-wrapper--clean {
       @apply bg-transparent p-0 ring-0;
     }
+  }
+
+  /* An option's icon or logo. Wide logos like IMDb's set their own size. */
+  .option-icon {
+    @apply flex shrink-0 items-center justify-center text-neutral-400;
+
+    > svg,
+    > img,
+    > .option-avatar {
+      @apply size-4 shrink-0;
+    }
+  }
+
+  /* Bigger in the list, like the users filter's */
+  .menu-item .option-icon > .option-avatar {
+    @apply size-6;
+  }
+
+  .option-avatar {
+    @apply relative overflow-hidden rounded-full;
   }
 
   .input {
@@ -467,7 +680,9 @@
   }
 
   .select-input,
-  select.input {
+  /* Buttons that open a list, like the users filter, look like the selects */
+  select.input,
+  .input.input--select {
     @apply relative cursor-pointer appearance-none bg-no-repeat pr-12;
 
     background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23D4D4D4"><path d="M7 10l5 5 5-5z"/></svg>');

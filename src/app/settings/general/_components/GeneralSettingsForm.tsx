@@ -1,5 +1,11 @@
 'use client'
 
+import audienceFreshSvg from '@/assets/rotten-tomatoes/audience-fresh.svg'
+import freshSvg from '@/assets/rotten-tomatoes/fresh.svg'
+import Avatar from '@/components/Avatar'
+import { STAT_ICONS } from '@/components/icons'
+import SiteLogo from '@/components/MediaItem/SiteLogo'
+import MultiSelect from '@/components/MultiSelect'
 import SourceUnreachable from '@/components/SourceUnreachable'
 import StatusMessage from '@/components/StatusMessage'
 import {
@@ -7,19 +13,20 @@ import {
   PublicSettings,
   SettingsFormInitialState,
 } from '@/types/settings'
-import { TautulliLibrary, TautulliUser } from '@/types/tautulli'
+import { TautulliLibrary } from '@/types/tautulli'
 import {
   APP_NAME,
   EXTERNAL_LINK_NAMES,
   EXTERNAL_LINKS,
 } from '@/utils/constants'
 import { sortByLabel } from '@/utils/helpers'
-import { RectangleStackIcon } from '@heroicons/react/24/outline'
+import { PlayIcon, RectangleStackIcon } from '@heroicons/react/24/outline'
 import { kebabCase } from 'lodash'
 import { Reorder } from 'motion/react'
 import { useLocale, useTranslations } from 'next-intl'
+import Image from 'next/image'
 import { useActionState, useEffect, useRef, useState } from 'react'
-import { Checkbox, CheckboxGroup, Label, Switch } from 'react-aria-components'
+import { CheckboxGroup, Label, Switch } from 'react-aria-components'
 import SettingsForm from '../../_components/SettingsForm'
 import saveGeneralSettings from '../_actions/updateGeneralSettings'
 import SortableLibrary from './SortableLibrary'
@@ -28,7 +35,7 @@ type Props = {
   settings: PublicSettings
   // Null when the source can't be reached
   libraries: TautulliLibrary[] | null
-  users: Pick<TautulliUser, 'user_id' | 'friendly_name'>[]
+  users: { user_id: string; friendly_name: string; avatar: string }[]
 }
 
 type GeneralFormState = SettingsFormInitialState<GeneralSettings>
@@ -70,35 +77,59 @@ export default function GeneralSettingsForm({
     EXTERNAL_LINKS.map((site) => ({
       value: site,
       label: EXTERNAL_LINK_NAMES[site],
+      icon: <SiteLogo site={site} />,
     })),
     locale,
   )
-  const itemStatisticOptions = sortByLabel(
-    [
-      { value: 'year', label: tCommon('year') },
-      { value: 'tmdbRating', label: tCommon('ratingBy', { provider: 'TMDB' }) },
-      { value: 'imdbRating', label: tCommon('ratingBy', { provider: 'IMDb' }) },
-      {
-        value: 'rottenTomatoesRating',
-        label: tCommon('rottenTomatoesCritics'),
-      },
-      {
-        value: 'rottenTomatoesAudienceRating',
-        label: tCommon('rottenTomatoesAudience'),
-      },
-      { value: 'duration', label: tCommon('duration') },
-      { value: 'plays', label: tCommon('plays') },
-      { value: 'users', label: tCommon('users') },
-      ...(isSeerrActive
-        ? [{ value: 'requests', label: tCommon('requests') }]
-        : []),
-    ],
-    locale,
-  )
+  // In the order they show on the cards
+  const itemStatisticOptions = [
+    { value: 'year', label: tCommon('year'), icon: <STAT_ICONS.year /> },
+    {
+      value: 'tmdbRating',
+      label: tCommon('ratingBy', { provider: 'TMDB' }),
+      icon: <SiteLogo site='tmdb' />,
+    },
+    {
+      value: 'imdbRating',
+      label: tCommon('ratingBy', { provider: 'IMDb' }),
+      icon: <SiteLogo site='imdb' />,
+    },
+    {
+      value: 'rottenTomatoesRating',
+      label: tCommon('rottenTomatoesCritics'),
+      icon: <Image src={freshSvg} alt='' />,
+    },
+    {
+      value: 'rottenTomatoesAudienceRating',
+      label: tCommon('rottenTomatoesAudience'),
+      icon: <Image src={audienceFreshSvg} alt='' />,
+    },
+    {
+      value: 'duration',
+      label: tCommon('duration'),
+      icon: <STAT_ICONS.duration />,
+    },
+    { value: 'plays', label: tCommon('plays'), icon: <PlayIcon /> },
+    { value: 'users', label: tCommon('users'), icon: <STAT_ICONS.users /> },
+    ...(isSeerrActive
+      ? [
+          {
+            value: 'requests',
+            label: tCommon('requests'),
+            icon: <STAT_ICONS.requests />,
+          },
+        ]
+      : []),
+  ]
   const userOptions = sortByLabel(
     users.map((user) => ({
       value: String(user.user_id),
       label: user.friendly_name,
+      icon: (
+        <span className='option-avatar'>
+          <Avatar src={user.avatar} name={user.friendly_name} sizes='1.5rem' />
+        </span>
+      ),
     })),
     locale,
   )
@@ -250,53 +281,25 @@ export default function GeneralSettingsForm({
                 <span className='label-wrapper'>{t('tmdbOnlyPosters')}</span>
               </span>
             </Switch>
-            <CheckboxGroup
+            <MultiSelect
               key={`external-links-${generalSettings.activeExternalLinks.join(',')}`}
-              className='input-wrapper'
+              label={t('externalLinks')}
+              description={t('externalLinksDescription')}
               name='activeExternalLinks'
+              options={externalLinkOptions}
               defaultValue={generalSettings.activeExternalLinks}
-            >
-              <div className='peer checkbox-grid'>
-                {externalLinkOptions.map(({ value, label }) => (
-                  <Checkbox
-                    key={`external-link-${value}`}
-                    value={value}
-                    className='checkbox-wrapper'
-                  >
-                    <div className='checkbox' aria-hidden='true'></div>
-                    {label}
-                  </Checkbox>
-                ))}
-              </div>
-              <Label className='label label--start'>
-                <span className='label-wrapper'>{t('externalLinks')}</span>
-                <small>{t('externalLinksDescription')}</small>
-              </Label>
-            </CheckboxGroup>
-            <CheckboxGroup
+              placeholder={tCommon('none')}
+            />
+            <MultiSelect
               key={`item-stats-${generalSettings.activeItemStatistics.join(
                 ',',
               )}`}
-              className='input-wrapper'
+              label={t('itemStatistics')}
               name='activeItemStatistics'
+              options={itemStatisticOptions}
               defaultValue={generalSettings.activeItemStatistics}
-            >
-              <div className='peer checkbox-grid'>
-                {itemStatisticOptions.map(({ value, label }) => (
-                  <Checkbox
-                    key={`item-${value}`}
-                    value={value}
-                    className='checkbox-wrapper'
-                  >
-                    <div className='checkbox' aria-hidden='true'></div>
-                    {label}
-                  </Checkbox>
-                ))}
-              </div>
-              <Label className='label label--start'>
-                <span className='label-wrapper'>{t('itemStatistics')}</span>
-              </Label>
-            </CheckboxGroup>
+              placeholder={tCommon('none')}
+            />
             <label className='input-wrapper'>
               <input
                 key={`min-play-percent-${generalSettings.minPlayPercent}`}
@@ -318,28 +321,14 @@ export default function GeneralSettingsForm({
           <section className='group-settings group'>
             <h2 className='heading-settings'>{t('privacy')}</h2>
             {users.length > 0 ? (
-              <CheckboxGroup
+              <MultiSelect
                 key={`excluded-users-${generalSettings.excludedUsers.join(',')}`}
-                className='input-wrapper'
+                label={t('excludedUsers')}
                 name='excludedUsers'
+                options={userOptions}
                 defaultValue={generalSettings.excludedUsers}
-              >
-                <div className='peer checkbox-grid'>
-                  {userOptions.map(({ value, label }) => (
-                    <Checkbox
-                      key={`user-${value}`}
-                      value={value}
-                      className='checkbox-wrapper'
-                    >
-                      <div className='checkbox' aria-hidden='true'></div>
-                      {label}
-                    </Checkbox>
-                  ))}
-                </div>
-                <Label className='label label--start'>
-                  <span className='label-wrapper'>{t('excludedUsers')}</span>
-                </Label>
-              </CheckboxGroup>
+                placeholder={tCommon('none')}
+              />
             ) : (
               // Preserve saved exclusions when the user list can't be loaded so
               // submitting the form doesn't silently clear them.

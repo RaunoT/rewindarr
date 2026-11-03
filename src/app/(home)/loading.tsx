@@ -1,35 +1,23 @@
-import SkeletonLine from '@/components/SkeletonLine'
-import HeaderControls from '../_components/HeaderControls'
+import { authOptions } from '@/lib/auth'
+import getSettings from '@/utils/getSettings'
+import { checkRequiredSettings } from '@/utils/helpers'
+import { getServerSession } from 'next-auth'
+import { OverviewSkeleton } from '../_components/Overview'
 
-// Laid out like the home page's tiles. In a route group, so it doesn't stand in
-// for other sections while their layouts load.
-export default function Loading() {
-  return (
-    <div className='page-width'>
-      <header
-        data-page-header
-        className='mb-4 flex min-h-10 items-center justify-between gap-3'
-      >
-        <SkeletonLine className='text-2xl sm:text-3xl' width='w-48' />
-        <HeaderControls className='lg:group-data-[sidebar]/app:hidden' />
-      </header>
-      <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className='glass-sheet flex flex-col gap-4'>
-            <div className='flex items-center gap-2'>
-              <div className='skeleton size-5 shrink-0' />
-              <SkeletonLine width='w-24' />
-            </div>
-            <div className='flex items-center gap-3'>
-              <div className='skeleton poster w-12' />
-              <div className='min-w-0 flex-1'>
-                <SkeletonLine className='text-xs' width='w-28' />
-                <SkeletonLine width='w-2/3' />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+// The home page's own skeleton, so it doesn't change into another one once
+// the page arrives. In a route group, so it doesn't stand in for other
+// sections while their layouts load.
+export default async function Loading() {
+  const settings = getSettings()
+  const session = await getServerSession(authOptions)
+
+  // The login and setup screens have nothing to stand in for
+  if (
+    checkRequiredSettings(settings) ||
+    (!session && !settings.general.isOutsideAccess)
+  ) {
+    return null
+  }
+
+  return <OverviewSkeleton settings={settings} session={session} />
 }

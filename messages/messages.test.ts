@@ -148,20 +148,20 @@ describe('placeholders', () => {
   })
 })
 
-const reference = flatten(loadMessages('en'))
+const reference = flatten(loadMessages('en-GB'))
 
-describe.each(LOCALES.filter((locale) => locale !== 'en'))(
+describe.each(LOCALES.filter((locale) => locale !== 'en-GB'))(
   'messages/%s.json',
   (locale) => {
     const messages = flatten(loadMessages(locale))
 
-    it('has the same keys as en.json', () => {
+    it('has the same keys as en-GB.json', () => {
       expect(Object.keys(messages).sort()).toEqual(
         Object.keys(reference).sort(),
       )
     })
 
-    it('uses the same placeholders and tags as en.json', () => {
+    it('uses the same placeholders and tags as en-GB.json', () => {
       for (const [key, message] of Object.entries(messages)) {
         expect(placeholders(message), key).toEqual(
           placeholders(reference[key] ?? ''),

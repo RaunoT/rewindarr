@@ -22,7 +22,7 @@ export default async function ActivityLayout({ children }: Props) {
   }
 
   return (
-    <div className='page-width-narrow mb-auto'>
+    <div className='page-width mb-auto'>
       <PageTitle title={t('title')} />
       <CardWrapper>{children}</CardWrapper>
     </div>

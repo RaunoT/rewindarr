@@ -11,6 +11,7 @@ import { useActionState, useState } from 'react'
 import { Switch } from 'react-aria-components'
 import SettingsForm from '../../_components/SettingsForm'
 import saveRewindSettings from '../_actions/updateRewindSettings'
+import RewindMusicUpload from './RewindMusicUpload'
 
 type Props = {
   settings: PublicSettings
@@ -88,6 +89,30 @@ export default function RewindSettingsForm({ settings }: Props) {
                 </span>
               </span>
             </Switch>
+            <Switch
+              key={`snow-${rewindSettings.isSnowActive}`}
+              className='switch'
+              name='isSnowActive'
+              defaultSelected={rewindSettings.isSnowActive}
+            >
+              <div className='indicator' />
+              <span className='label'>
+                <span className='label-wrapper'>{t('snow')}</span>
+              </span>
+            </Switch>
+            <Switch
+              key={`theme-music-${rewindSettings.isThemeMusicActive}`}
+              className='switch items-start'
+              name='isThemeMusicActive'
+              defaultSelected={rewindSettings.isThemeMusicActive}
+            >
+              <div className='indicator' />
+              <span className='label'>
+                <span className='label-wrapper'>{t('themeMusic')}</span>
+                <small>{t('themeMusicDescription')}</small>
+              </span>
+            </Switch>
+            <RewindMusicUpload initialMusic={settings.rewind.music} />
           </section>
           <section className='group-settings group'>
             <h2 className='heading-settings'>{tCommon('defaults')}</h2>

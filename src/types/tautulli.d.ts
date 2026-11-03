@@ -44,6 +44,10 @@ export type TautulliHistoryRow = {
   grandparent_rating_key: number | string | null
   user_id: number
   user_thumb: string
+  // Season and episode, as numbers or strings, empty for other media
+  parent_media_index: number | string | null
+  media_index: number | string | null
+  transcode_decision: string | null
 }
 
 export type TautulliItemRow = {
@@ -117,7 +121,11 @@ export type TautulliSession = {
   ip_address?: string
   ip_address_public?: string
   location?: string
+  // An episode's number. Tautulli sends it as a string, empty when unknown.
+  media_index?: number | string | null
   media_type: string
+  // An episode's season
+  parent_media_index?: number | string | null
   parent_rating_key?: number | string
   parent_title?: string
   player: string

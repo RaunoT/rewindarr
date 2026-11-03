@@ -3,6 +3,7 @@ import {
   ConnectionSettings,
   DashboardSettings,
   GeneralSettings,
+  HistorySettings,
   RewindSettings,
   Settings,
 } from '@/types/settings'
@@ -18,6 +19,7 @@ type SettingsTypeMap = {
   rewind: Partial<RewindSettings>
   general: GeneralSettings
   activity: Partial<ActivitySettings>
+  history: Partial<HistorySettings>
 }
 
 export default async function updateSettings<K extends keyof SettingsTypeMap>(

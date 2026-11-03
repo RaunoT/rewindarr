@@ -9,7 +9,7 @@ import {
   ChevronUpDownIcon,
 } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
-import { DE, EE, ES, FR, GB, IT } from 'country-flag-icons/react/1x1'
+import { DE, EE, ES, FR, GB, IT, US } from 'country-flag-icons/react/1x1'
 import { signOut, useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { startTransition } from 'react'
@@ -31,7 +31,8 @@ type Props = {
 
 // SVG flags, since Windows has no flag emoji
 const LOCALE_FLAGS: Record<Locale, typeof GB> = {
-  en: GB,
+  'en-GB': GB,
+  'en-US': US,
   et: EE,
   fr: FR,
   de: DE,
@@ -46,7 +47,12 @@ function LocaleFlag({ code }: { code: string }) {
 }
 
 function getLocaleName(code: string) {
-  const name = new Intl.DisplayNames(code, { type: 'language' }).of(code)
+  // "English (UK)" rather than "British English"
+  const name = new Intl.DisplayNames(code, {
+    type: 'language',
+    languageDisplay: 'standard',
+    style: 'short',
+  }).of(code)
 
   return name ? name.charAt(0).toLocaleUpperCase(code) + name.slice(1) : code
 }

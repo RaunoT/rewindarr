@@ -17,6 +17,7 @@ const REQUIRED_SETTINGS = [
   'dashboard.customPeriod',
   'dashboard.complete',
   'activity.complete',
+  'history.complete',
 ]
 
 export function isTracearrSource(settings: Settings): boolean {
@@ -35,7 +36,7 @@ export function sortByActiveLibraries(
     .filter((lib): lib is TautulliLibrary => lib !== undefined)
 }
 
-export type Feature = 'rewind' | 'dashboard' | 'activity'
+export type Feature = 'rewind' | 'dashboard' | 'activity' | 'history'
 
 export type Viewer = {
   isLoggedIn: boolean
@@ -79,6 +80,7 @@ export function getHomeTiles(
   return {
     rewind: canViewFeature(settings, 'rewind', viewer),
     activity: canViewFeature(settings, 'activity', viewer),
+    history: canViewFeature(settings, 'history', viewer),
     libraries:
       canViewFeature(settings, 'dashboard', viewer) && libraryCount > 0,
   }

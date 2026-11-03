@@ -30,9 +30,13 @@ type Props = {
   isActivityDetailsHidden?: boolean
 }
 
-const SIDEBAR_ROUTES = ['/dashboard', '/rewind', '/activity', '/settings']
-// Their pages keep to a narrower column, which the notice lines up with
-const NARROW_ROUTES = ['/rewind', '/activity', '/settings']
+const SIDEBAR_ROUTES = [
+  '/dashboard',
+  '/rewind',
+  '/activity',
+  '/history',
+  '/settings',
+]
 const queryClient = new QueryClient()
 
 export default function AppProvider({
@@ -73,8 +77,10 @@ export default function AppProvider({
             )}
             <main
               className={clsx(
-                // The same 16px around the page, the sidebar and between blocks
-                'group/main flex h-full min-h-dvh flex-col items-center overflow-x-hidden p-4',
+                // The same 16px around the page, the sidebar and between blocks.
+                // Clipped rather than hidden, which would make it a scroll
+                // container and keep sticky things inside from sticking.
+                'group/main flex h-full min-h-dvh flex-col items-center overflow-x-clip p-4',
                 {
                   'justify-center':
                     (pathname === '/' && !hasSidebar) ||
@@ -103,9 +109,6 @@ export default function AppProvider({
               {hasSidebar && (
                 <SourceOutageNotice
                   source={settings.connection.statisticsSource}
-                  isNarrow={NARROW_ROUTES.some((route) =>
-                    pathname.startsWith(route),
-                  )}
                 />
               )}
               {children}

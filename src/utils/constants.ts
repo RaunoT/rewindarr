@@ -64,6 +64,7 @@ export const DEFAULT_SETTINGS: Settings = {
     tracearrServerId: '',
     mediaServerType: 'plex',
     plexUrl: '',
+    plexToken: '',
     jellyfinUrl: '',
     seerrUrl: '',
     seerrApiKey: '',
@@ -95,6 +96,9 @@ export const DEFAULT_SETTINGS: Settings = {
     isActive: true,
     isAdminOnly: false,
     isLibrariesSizeAndCountActive: true,
+    isThemeMusicActive: false,
+    music: null,
+    isSnowActive: true,
     startDate: '',
     complete: false,
   },
@@ -112,6 +116,11 @@ export const DEFAULT_SETTINGS: Settings = {
     isAdminOnly: false,
     complete: false,
   },
+  history: {
+    isActive: true,
+    isAdminOnly: false,
+    complete: false,
+  },
   setupComplete: false,
 }
 
@@ -125,6 +134,7 @@ export const SETTINGS_PAGES = [
   { href: '/settings/rewind', key: 'rewind' },
   { href: '/settings/dashboard', key: 'dashboard' },
   { href: '/settings/activity', key: 'activity' },
+  { href: '/settings/history', key: 'history' },
 ]
 
 // Wherever they're opened from, the settings start on the first page
@@ -175,9 +185,22 @@ export const RATING_STATISTICS = [
   'rottenTomatoesAudienceRating',
 ] as const
 
+export const REWIND_MUSIC_MAX_BYTES = 50 * 1024 * 1024
+// What a Rewind track may be, by file extension, and the type it's served as
+export const REWIND_MUSIC_TYPES: Record<string, string> = {
+  mp3: 'audio/mpeg',
+  m4a: 'audio/mp4',
+  aac: 'audio/aac',
+  ogg: 'audio/ogg',
+  oga: 'audio/ogg',
+  opus: 'audio/ogg',
+  wav: 'audio/wav',
+  flac: 'audio/flac',
+}
+
 export type Locale = (typeof LOCALES)[number]
-export const LOCALES = ['en', 'et', 'fr', 'de', 'it', 'es']
-export const DEFAULT_LOCALE: Locale = 'en'
+export const LOCALES = ['en-GB', 'en-US', 'et', 'fr', 'de', 'it', 'es']
+export const DEFAULT_LOCALE: Locale = 'en-GB'
 export const LOCALE_COOKIE_NAME = 'locale'
 // Mirrors the dashboard's period, so the home page can use it on the server
 export const DASHBOARD_PERIOD_COOKIE_NAME = 'dashboardPeriod'
@@ -189,3 +212,7 @@ export const ACTIVITY_DETAILS_COOKIE_NAME = 'activityDetails'
 export const DASHBOARD_PAGE_SIZE = 5
 // Each row costs the source and TMDB a lookup, so the URL can't ask for more
 export const DASHBOARD_MAX_ITEMS = 50
+// The plays a history page can show, the first by default
+export const HISTORY_PAGE_SIZES = [10, 25, 50, 100]
+// Remembers the plays per page, for when the URL doesn't say
+export const HISTORY_PAGE_SIZE_COOKIE_NAME = 'historyPageSize'

@@ -13,9 +13,16 @@
       "plexAccount": "Sinu Plexi kontot ei õnnestunud laadida. Proovi uuesti.",
       "jellyfinUnavailable": "Jellyfiniga ei saanud ühendust. Proovi hetke pärast uuesti.",
       "jellyfinCredentials": "Vale kasutajanimi või parool.",
+      "jellyfinQuickConnectDisabled": "Kiirühendus on selles Jellyfini serveris välja lülitatud.",
+      "jellyfinQuickConnectExpired": "Kood aegus. Hangi uus ja proovi uuesti.",
       "noAccess": "Sellel kontol pole ligipääsu sellele serverile.",
       "unknown": "Sisselogimine ebaõnnestus. Proovi uuesti."
     },
+    "useQuickConnect": "Kasuta Kiirühendust",
+    "quickConnectDescription": "Ava Jellyfinis seadmes, kuhu oled sisse logitud, seadetes Kiirühendus ja sisesta see kood.",
+    "quickConnectWaiting": "Ootan, kuni koodi sisestad…",
+    "quickConnectRetry": "Hangi uus kood",
+    "usePassword": "Kasuta hoopis parooli",
     "rewind": "Rewind",
     "signOut": "Logi välja",
     "greeting": "Tere, {name} 👋",
@@ -43,7 +50,6 @@
     "streamDetails": "Voo üksikasjad",
     "noActivity": "Ühtegi aktiivset voogu pole",
     "loadError": "Tegevust ei õnnestunud laadida",
-    "playing": "Mängib",
     "paused": "Pausil",
     "buffering": "Puhverdab",
     "endsAt": "Lõpeb {time}",
@@ -61,24 +67,14 @@
     "showMore": "Näita rohkem",
     "title": "Edetabel",
     "usersTitle": "Kasutajad",
-    "users": "{count, plural, one {# kasutaja} other {# kasutajat}}",
-    "movies": "{count, plural, one {film} other {filmi}}",
-    "episodes": "{count, plural, one {episood} other {episoodi}}",
-    "tracks": "{count, plural, one {lugu} other {lugu}}",
-    "requests": "{count, plural, one {# tellimus} other {# tellimust}}",
-    "durationWatched": "{duration} vaadatud",
-    "durationListened": "{duration} kuulatud",
-    "durationPlayed": "{duration} mängitud"
+    "users": "{count, plural, one {# kasutaja} other {# kasutajat}}"
   },
   "DashboardFilters": {
     "type": "Kelle statistika",
     "general": "Kõigi",
     "personal": "Ainult minu",
     "sortByLabel": "Sorteerimisalus",
-    "sort": "Sorteerimine",
-    "byDuration": "Vaatamisaja järgi",
-    "byPlays": "Mängimiste järgi",
-    "byUsers": "Kasutajate arvu järgi"
+    "sort": "Sorteerimine"
   },
   "DashboardNavContent": {
     "label": "Edetabeli navigatsioon",
@@ -96,18 +92,56 @@
   "History": {
     "syncingTitle": "Esitusajaloo sünkroonimine",
     "syncingDescription": "Allika {source} esitusajalugu sünkroonitakse üks kord ja see võib võtta paar minutit. {count, plural, =0 {Sünkroonimine just algas.} one {Seni on sünkroonitud # mängimine, alates {date}.} other {Seni on sünkroonitud # mängimist, alates {date}.}} Leht uueneb ise.",
-    "syncingShort": "Esitusajaloo sünkroonimine…"
+    "syncingShort": "Esitusajaloo sünkroonimine…",
+    "title": "Ajalugu",
+    "libraryLabel": "Kogumik",
+    "noPlays": "Midagi pole veel esitatud",
+    "poster": "{title} poster",
+    "anonymous": "Anonüümne",
+    "unknownUser": "Tundmatu kasutaja",
+    "onlyMine": "Ainult minu",
+    "search": "Otsi pealkirju",
+    "clearSearch": "Tühjenda otsing",
+    "noMatches": "Filtritele ei vasta ükski esitus",
+    "pagination": "Lehed",
+    "page": "Leht {page}",
+    "pageOf": "{page} / {pageCount}",
+    "previousPage": "Eelmine leht",
+    "nextPage": "Järgmine leht",
+    "episodeNumber": "H{season} · O{episode}",
+    "episodeOnly": "O{episode}",
+    "episodeRange": "H{season} · O{first}–O{last}",
+    "range": "{from} – {to}",
+    "episodeCount": "{count, plural, one {# osa} other {# osa}}",
+    "trackCount": "{count, plural, one {# lugu} other {# lugu}}",
+    "rowsLabel": "Ridu lehel",
+    "rowsOption": "{count} lehel",
+    "kindLabel": "Tüüp",
+    "plays": "Esitused",
+    "requests": "Soovid",
+    "request": "Soov",
+    "unknownTitle": "Tundmatu pealkiri",
+    "season": "{season}. hooaeg",
+    "seasonCount": "{count, plural, one {# hooaeg} other {# hooaega}}",
+    "requestsFailed": "Seerrist ei õnnestunud soove laadida",
+    "requestStatus": {
+      "pending": "Ootel",
+      "approved": "Kinnitatud",
+      "declined": "Tagasi lükatud",
+      "failed": "Ebaõnnestus",
+      "partiallyAvailable": "Osaliselt saadaval",
+      "available": "Saadaval"
+    },
+    "requestStatusLabel": "{status}: ava {title} Seerris"
   },
   "MediaServerDeeplink": {
-    "available": "Saadaval",
-    "availableLabel": "Saadaval: ava {title} {server}is"
+    "openLabel": "Ava {title} {server}is"
   },
   "PeriodSelectContent": {
     "7days": "7 päeva",
     "pastYear": "Viimane aasta",
     "allTime": "Kokku",
-    "days": "{count, plural, one {# päev} other {# päeva}}",
-    "label": "Perioodi valik"
+    "days": "{count, plural, one {# päev} other {# päeva}}"
   },
   "NotFound": {
     "title": "404",
@@ -136,8 +170,11 @@
     "continue": "Jätka",
     "setupFinished": "Kõik on valmis!",
     "reenterApiKey": "Sisesta API võti URL-i muutmisel uuesti.",
+    "reenterToken": "Sisesta token URL-i muutmisel uuesti.",
     "apiKey": "API võti",
     "invalidApiKey": "Vale API võti.",
+    "invalidToken": "Vale token.",
+    "tokenNeedsUrl": "Sisesta tokeni kasutamiseks URL.",
     "unableToConnect": "Ühenduse loomine ebaõnnestus. Kontrolli URL-i ja seda, et server töötab.",
     "noMediaServer": "Plexi ega Jellyfini serverit ei leitud.",
     "chooseMediaServer": "Vali, millist serverit kasutada.",
@@ -146,7 +183,7 @@
     "urlNotFound": "Ei leitud. Kontrolli URL-i, sealhulgas võimalikku baasteed.",
     "unexpectedResponse": "Ootamatu vastus (HTTP {status}).",
     "certificateError": "HTTPS-sertifikaadi viga. Kontrolli, et URL vastaks kehtivale sertifikaadile.",
-    "invalidField": "Kontrolli {field, select, tautulliUrl {Tautulli URL-i} tautulliApiKey {Tautulli API võtit} tracearrUrl {Tracearr URL-i} tracearrApiKey {Tracearr API võtit} plexUrl {Plexi URL-i} jellyfinUrl {Jellyfini URL-i} seerrUrl {Seerr URL-i} seerrApiKey {Seerr API võtit} googleAnalyticsId {Google Analyticsi ID-d} other {seadeid}}.",
+    "invalidField": "Kontrolli {field, select, tautulliUrl {Tautulli URL-i} tautulliApiKey {Tautulli API võtit} tracearrUrl {Tracearr URL-i} tracearrApiKey {Tracearr API võtit} plexUrl {Plexi URL-i} jellyfinUrl {Jellyfini URL-i} plexToken {Plexi tokenit} seerrUrl {Seerr URL-i} seerrApiKey {Seerr API võtit} googleAnalyticsId {Google Analyticsi ID-d} other {seadeid}}.",
     "becomeASponsor": "Hakka sponsoriks",
     "buyMeABeer": "Osta mulle õlut",
     "reportAnIssue": "Teata probleemist",
@@ -157,6 +194,7 @@
       "rewind": "Rewind",
       "dashboard": "Edetabel",
       "activity": "Tegevus",
+      "history": "Ajalugu",
       "complete": "Lõpetatud",
       "incomplete": "Lõpetamata",
       "connectionRequired": "Lõpeta kõigepealt ühenduse seadistamine"
@@ -167,6 +205,8 @@
       "source": "Allikas",
       "server": "Server",
       "chooseServer": "Vali server",
+      "token": "Token (valikuline)",
+      "tokenDescription": "Laseb Rewind'il mängida muusikat sinu kogust. <link>Kuidas seda leida?</link>",
       "optionalService": "{service} (valikuline)",
       "plexUrlHelp": "Lisab lingid, mis avavad pealkirjad Plexis",
       "jellyfinUrlHelp": "Sisselogimiseks ja linkideks, mis avavad pealkirjad Jellyfinis",
@@ -201,6 +241,9 @@
     "Activity": {
       "title": "Tegevuse seaded"
     },
+    "History": {
+      "title": "Ajaloo seaded"
+    },
     "General": {
       "title": "Üldseaded",
       "config": "Konfiguratsioon",
@@ -231,6 +274,19 @@
       "title": "Rewind seaded",
       "cards": "Lood",
       "librariesSizeAndCountCard": "Kogumike suurus ja sisu",
+      "themeMusic": "Tunnusmeloodiad",
+      "themeMusicDescription": "Mängib muusikat vaataja lemmikutest",
+      "musicTrack": "Taustamuusika",
+      "musicTrackDescription": "Kuni {size}, suured failid võivad aeglaselt laadida",
+      "musicFileDetails": "{format} · {size}",
+      "musicUpload": "Laadi üles",
+      "musicReplace": "Asenda",
+      "musicRemove": "Eemalda",
+      "musicSaving": "Salvestan…",
+      "musicTypeError": "Vali MP3-, M4A-, AAC-, OGG-, Opus-, WAV- või FLAC-fail.",
+      "musicSizeError": "Fail on suurem kui {size}.",
+      "musicError": "Muusikat ei õnnestunud muuta. Proovi uuesti.",
+      "snow": "Lumi",
       "startDateHelperText": "Vaikimisi 365 päeva tagasi"
     }
   },
@@ -242,6 +298,7 @@
   },
   "Common": {
     "dismiss": "Sulge",
+    "none": "Puudub",
     "enabled": "Aktiveeritud",
     "adminOnly": "Ainult administraatoritele",
     "status": "Olek",
@@ -261,9 +318,9 @@
     "time": {
       "zero": "0 min",
       "month": "{count, plural, one {# kuu} other {# kuud}}",
-      "week": "{count, plural, one {# nädal} other {# nädalat}}",
+      "week": "{count, plural, one {# näd} other {# näd}}",
       "day": "{count, plural, one {# päev} other {# päeva}}",
-      "hr": "{count, plural, one {# tund} other {# tundi}}",
+      "hr": "{count, plural, one {# t} other {# t}}",
       "min": "{count, plural, one {# min} other {# min}}",
       "sec": "{count, plural, one {# sek} other {# sek}}"
     },
@@ -282,6 +339,7 @@
       "goToStory": "Mine loole {index}",
       "previous": "Eelmine",
       "next": "Järgmine",
+      "sound": "Heli",
       "label": "Rewind'i lood",
       "storyPosition": "{current}. lugu {total}-st",
       "introTitle": "Kuidas liikuda",
@@ -297,7 +355,7 @@
       "topDirectors": "Siin on sinu <top>{count, plural, one {enim vaadatud režissöör} other {# enim vaadatud režissööri}}</top>",
       "topMovieActors": "Siin on sinu <top>{count, plural, one {enim vaadatud filminäitleja} other {# enim vaadatud filminäitlejat}}</top>",
       "topMovieGenres": "Siin on sinu <top>{count, plural, one {enim vaadatud filmižanr} other {# enim vaadatud filmižanrit}}</top>",
-      "topArtists": "Siin on sinu <top>{count, plural, one {enim kuulatud esitaja} other {# enim kuulatud esitajat}}</top>",
+      "topArtists": "Siin on {count, plural, one {<top>ainus artist</top>, keda kuulasid} other {sinu <top># enim kuulatud esitajat</top>}}",
       "percentage": "See on <percentage>{percentageValue}</percentage> kogu sinu esitusajast.",
       "shows": "Seriaalid",
       "movies": "Filmid",
@@ -329,6 +387,12 @@
       "duration": "Sa kuulasid <duration>{durationValue}</duration> <audio>muusikat</audio>",
       "count": "Kokku kuulasid sa <count>{countValue, number}</count> <tracks>{countValue, plural, one {loo} other {lugu}}!</tracks>",
       "favorite": "Sinu lemmik oli",
+      "only": "Ainus artist, keda kuulasid, oli",
+      "topTrack": "Sinu lemmik oli <track>{title}</track>, esitajaks <by>{artist}</by>",
+      "topTrackWithoutArtist": "Sinu lemmik oli <track>{title}</track>",
+      "onlyTrack": "Ainus lugu, mida kuulasid, oli <track>{title}</track>, esitajaks <by>{artist}</by>",
+      "onlyTrackWithoutArtist": "Ainus lugu, mida kuulasid, oli <track>{title}</track>",
+      "topTrackPlays": "Sa kuulasid seda <count>{countValue, plural, one {ühe korra} other {# korda}}</count>",
       "noData": "Sa ei kuulanud <audio>muusikat</audio> <from>{serverName}'ist</from>"
     },
     "Libraries": {
@@ -344,6 +408,7 @@
       "duration": "<library>Seriaalid</library> võtsid <duration>{durationValue}</duration> sinu ajast <plex>{serverName}'is.</plex>",
       "count": "Sa vaatasid kokku <count>{countValue, number}</count> <episodes>{countValue, plural, one {episoodi} other {episoodi}}</episodes>",
       "favorite": "Sinu lemmik oli",
+      "only": "Ainus sari, mida vaatasid, oli",
       "noData": "Sa ei vaadanud ühtegi <shows>seriaali</shows> <plex>{serverName}'ist</plex> <emoji>😥</emoji>"
     },
     "Requests": {
@@ -362,6 +427,7 @@
       "duration": "<duration>{durationValue}</duration> kulus sul <movies>filmidele</movies>",
       "count": "Vaatasid <count>{countValue, number}</count> <movies>{countValue, plural, one {filmi} other {filmi}}</movies>",
       "favorite": "Sinu lemmik oli",
+      "only": "Ainus film, mida vaatasid, oli",
       "noData": "Sa ei vaadanud ühtegi <movies>filmi</movies> <plex>{serverName}'ist</plex> <emoji>😵‍💫</emoji>"
     },
     "People": {
@@ -424,5 +490,20 @@
     "requestLabel": "Telli {title}",
     "externalLinkLabel": "{title} saidil {site}",
     "externalSearchLabel": "Otsi {title} saidilt {site}"
+  },
+  "Totals": {
+    "playTime": "Mängimisaeg",
+    "listenTime": "Kuulamisaeg",
+    "movies": "Filmid",
+    "episodes": "Episoodid",
+    "tracks": "Lood"
+  },
+  "Filters": {
+    "title": "Filtrid",
+    "titleWithCount": "{count, plural, one {Filtrid, # sees} other {Filtrid, # sees}}",
+    "clearAll": "Tühjenda kõik",
+    "done": "Valmis",
+    "period": "Periood",
+    "all": "Kõik"
   }
 }

@@ -1,19 +1,15 @@
 'use client'
 
 import { GlobalContext } from '@/app/_components/GlobalContextProvider'
-import Avatar from '@/components/Avatar'
-import ImageFallback from '@/components/ImageFallback'
-import TitleDetails from '@/components/MediaItem/TitleDetails'
-import PosterImage from '@/components/PosterImage'
-import SkeletonLine from '@/components/SkeletonLine'
+import MediaCard, { STAT_PILL } from '@/components/MediaCard'
+import PlaybackOverlay from '@/components/PlaybackOverlay'
+import ProgressBar from '@/components/ProgressBar'
+import { DECISION_ICONS, getDecisionKind } from '@/components/StreamDecision'
 import { useMediaDetails } from '@/hooks/useMediaDetails'
 import { PublicSettings } from '@/types/settings'
 import { MediaServer } from '@/types/statsSource'
 import { TautulliSession } from '@/types/tautulli'
-import {
-  generateDeeplinkUrl,
-  getDeeplinkRatingKeyFromSession,
-} from '@/utils/deeplink'
+import { getDeeplinkRatingKeyFromSession } from '@/utils/deeplink'
 import {
   calculateETA,
   formatBitrate,
@@ -26,34 +22,12 @@ import {
   millisecondsToTimeString,
 } from '@/utils/formatting'
 import { ArrowTurnDownRightIcon } from '@heroicons/react/16/solid'
-import {
-  ArrowPathIcon,
-  ArrowsRightLeftIcon,
-  CheckCircleIcon,
-  ChevronDownIcon,
-  CpuChipIcon,
-  PauseIcon,
-  PlayIcon,
-  UserIcon,
-} from '@heroicons/react/24/outline'
+import { ChevronDownIcon, DeviceTabletIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { capitalize, toUpper } from 'lodash'
 import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { ReactNode, useContext, useId, useState } from 'react'
-
-type DecisionKind = 'directPlay' | 'directStream' | 'transcode'
-
-// Green when the file plays as is, blue when only its container changes, and
-// Plex orange when the server converts it
-const DECISION_ICONS: Record<
-  DecisionKind,
-  { Icon: typeof CheckCircleIcon; className: string }
-> = {
-  directPlay: { Icon: CheckCircleIcon, className: 'text-success' },
-  directStream: { Icon: ArrowsRightLeftIcon, className: 'text-sky-400' },
-  transcode: { Icon: CpuChipIcon, className: 'text-plex' },
-}
 
 type ActivityItemProps = {
   session: TautulliSession
@@ -71,7 +45,7 @@ export default function ActivityItem({
   const { posterUrl, isPosterLoading, details, isDetailsLoading } =
     useMediaDetails(session, settings)
   const t = useTranslations('Activity')
-  const tCommon = useTranslations('Common')
+  const tHistory = useTranslations('History')
   const locale = useLocale()
   const { data: user } = useSession()
   const isCurrentUser = String(session.user_id) === user?.user.id
@@ -95,8 +69,9 @@ export default function ActivityItem({
     ip_address,
     ip_address_public,
     location,
+    media_index,
     media_type,
-    parent_title,
+    parent_media_index,
     player,
     product,
     quality_profile,
@@ -160,14 +135,34 @@ export default function ActivityItem({
   const subtitleSource = formatCodec(subtitle_codec, 'subtitle')
   const subtitleStream = formatCodec(stream_subtitle_codec, 'subtitle')
   const isAnonymous = settings.general.isAnonymized && !isCurrentUser
-  const isVideo = media_type === 'episode' || media_type === 'movie'
-  const subtitle = [grandparent_title, parent_title].filter(Boolean).join(' · ')
+  // The show or artist leads, and an episode goes by its numbers, as in the
+  // history
+  const name = grandparent_title || title
+  const episode =
+    media_type === 'episode' &&
+    isPresent(parent_media_index) &&
+    isPresent(media_index)
+      ? tHistory('episodeNumber', {
+          season: parent_media_index,
+          episode: media_index,
+        })
+      : null
+  const detail =
+    media_type === 'episode'
+      ? (episode ?? title)
+      : name !== title
+        ? title
+        : null
+  const fullTitle = [name, episode, name !== title && title]
+    .filter(Boolean)
+    .join(' · ')
+  const position =
+    session.duration && session.view_offset
+      ? `${millisecondsToTimeString(parseInt(session.view_offset))} / ${millisecondsToTimeString(parseInt(session.duration))}`
+      : null
   const eta = calculateETA(session.duration, session.view_offset, locale)
   // The player's name is a stream detail, so it hides with them
   const device = isExpanded ? formatDevice(product, player) : product || player
-  // Only Tautulli reports buffering, and anything unexpected reads as paused
-  const playbackState =
-    state === 'playing' || state === 'buffering' ? state : 'paused'
   const decisionKind = getDecisionKind(transcode_decision)
   const decisionIcon = decisionKind && DECISION_ICONS[decisionKind]
 
@@ -177,275 +172,224 @@ export default function ActivityItem({
     setIsDetailsHidden(isExpanded)
   }
 
-  return (
-    <li className='w-full py-6 first:pt-0 last:pb-0 sm:py-8'>
-      {/* Who is watching, and on what */}
-      <div className='mb-4 flex items-center justify-between gap-3'>
-        <div className='flex min-w-0 items-center gap-2 text-sm'>
-          <div className='relative size-6 shrink-0 overflow-hidden rounded-full ring-1 ring-white/15'>
-            {isAnonymous ? (
-              <ImageFallback alt={t('anonymousAvatar')}>
-                <UserIcon className='size-[60cqw]' />
-              </ImageFallback>
-            ) : (
-              <Avatar
-                src={session.user_thumb}
-                name={friendly_name}
-                alt={tCommon('profilePictureAlt', { name: friendly_name })}
-                sizes='3rem'
-                priority
-              />
-            )}
-          </div>
-          <span
-            className={clsx(
-              'shrink-0 font-medium',
-              isCurrentUser && 'text-plex',
-            )}
-          >
-            {isAnonymous
-              ? t('anonymous', { number: index + 1 })
-              : friendly_name}
-          </span>
-          {device && (
-            <span className='truncate text-neutral-400'>{device}</span>
-          )}
-        </div>
-        <div className='flex shrink-0 items-center gap-2'>
-          {/* Only the icon on phones, so the device has room */}
-          <span className='icon-stat-wrapper text-xs max-sm:p-1 sm:text-sm'>
-            {playbackState === 'playing' && <PlayIcon />}
-            {playbackState === 'buffering' && (
-              <ArrowPathIcon className='motion-safe:animate-spin' />
-            )}
-            {playbackState === 'paused' && <PauseIcon />}
-            <span className='max-sm:sr-only'>{t(playbackState)}</span>
-          </span>
-          {/* How the stream gets there, which opens the rest. Its colour shows
-              when the details are worth a look. Without the text on phones,
-              and taps 10px above and below count too, for a 40px tap area. */}
-          <button
-            type='button'
-            className='icon-stat-wrapper focus-visible:focus-ring relative cursor-pointer pr-2 text-xs transition-colors after:absolute after:inset-x-0 after:-inset-y-2.5 hover:bg-white/10 max-sm:p-1 sm:text-sm'
-            aria-expanded={isExpanded}
-            aria-controls={detailsId}
-            onClick={toggleDetails}
-          >
-            {decisionIcon && (
-              <decisionIcon.Icon className={decisionIcon.className} />
-            )}
-            <span className='max-sm:sr-only'>
-              {capitalize(formatDecision(transcode_decision))}
-            </span>
-            <span className='sr-only'>{` (${t('streamDetails')})`}</span>
-            <ChevronDownIcon
-              className={clsx(
-                'transition-transform',
-                isExpanded && 'rotate-180',
-              )}
-            />
-          </button>
-        </div>
-      </div>
-
-      {/* What is playing, beside its poster. On phones the progress goes under
-          both, where the times fit on one line. */}
-      <div className='grid grid-cols-[auto_minmax(0,1fr)] gap-4 sm:grid-rows-[1fr_auto] sm:gap-y-0'>
-        <div
-          className={clsx('poster sm:row-span-2', {
-            skeleton: isPosterLoading,
-          })}
-        >
-          {!isPosterLoading && (
-            <PosterImage
-              srcs={[posterUrl, details?.poster]}
-              type={media_type}
-              alt={t('poster', { title: grandparent_title || title })}
-              sizes='6rem'
-              priority
-            />
-          )}
-        </div>
-
-        <div className='min-w-0 self-center sm:self-start'>
-          {subtitle && (
-            <p className='truncate text-xs text-neutral-400 sm:text-sm'>
-              {subtitle}
-            </p>
-          )}
-          <h2
-            className='mb-1.5 truncate text-base leading-snug font-medium sm:text-lg'
-            title={title}
-          >
-            {mediaServer && deeplinkRatingKey ? (
-              <a
-                href={generateDeeplinkUrl(deeplinkRatingKey, mediaServer)}
-                target='_blank'
-                rel='noopener noreferrer'
-                className='link-light'
-              >
-                {title}
-              </a>
-            ) : (
-              title
-            )}
-          </h2>
-          {/* The show's or movie's, like on the dashboard */}
-          {isVideo &&
-            (isDetailsLoading ? (
-              <SkeletonLine className='text-xs sm:text-sm' width='w-24' />
-            ) : (
-              details && (
-                <TitleDetails
-                  data={details}
-                  activeStats={settings.general.activeItemStatistics}
-                />
-              )
-            ))}
-        </div>
-
-        {session.duration && session.view_offset && (
-          <div className='col-span-2 text-xs text-neutral-400 tabular-nums sm:col-span-1 sm:col-start-2 sm:pt-3'>
-            <div
-              className='h-1.5 overflow-hidden rounded-full bg-white/10'
-              aria-hidden='true'
-            >
-              <div
-                className='h-full rounded-full bg-white'
-                style={{ width: `${Number(session.progress_percent)}%` }}
-              />
-            </div>
-            {/* On narrow cards the end time goes on its own line, still
-                on the right, instead of breaking either half */}
-            <div className='mt-1.5 flex flex-wrap justify-between gap-x-3 whitespace-nowrap'>
-              <span>
-                {millisecondsToTimeString(parseInt(session.view_offset))} /{' '}
-                {millisecondsToTimeString(parseInt(session.duration))}
-              </span>
-              <span className='ml-auto'>
-                {formatPercent(Number(session.progress_percent), locale)}
-                {eta && ` · ${t('endsAt', { time: eta })}`}
-              </span>
-            </div>
-          </div>
+  // How the stream gets there, which opens the rest. Its colour shows when the
+  // details are worth a look. Phones get just the icons. Taps 10px above and
+  // below count too, for a 40px tap area.
+  function decisionToggle(isIconOnly: boolean) {
+    return (
+      <button
+        type='button'
+        className={clsx(
+          'icon-stat-wrapper focus-visible:focus-ring relative cursor-pointer pr-2 transition-colors after:absolute after:-inset-y-2.5 hover:bg-white/10',
+          // The narrow pill gets 10px more on the sides too
+          isIconOnly ? 'after:-inset-x-2.5' : 'after:inset-x-0',
         )}
-      </div>
+        aria-expanded={isExpanded}
+        aria-controls={detailsId}
+        onClick={toggleDetails}
+      >
+        {decisionIcon && (
+          <decisionIcon.Icon
+            className={decisionIcon.className}
+            aria-hidden='true'
+          />
+        )}
+        <span className={clsx(isIconOnly && 'sr-only')}>
+          {capitalize(formatDecision(transcode_decision))}
+        </span>
+        <span className='sr-only'>{` (${t('streamDetails')})`}</span>
+        <ChevronDownIcon
+          className={clsx('transition-transform', isExpanded && 'rotate-180')}
+        />
+      </button>
+    )
+  }
 
-      {/* Stream info: what is playing first, then how it gets there */}
-      {isExpanded && (
-        <ul
-          id={detailsId}
-          className='mt-4 flex flex-wrap gap-x-6 gap-y-3 rounded-2xl bg-black/25 p-4 text-sm ring-1 ring-white/10 ring-inset'
+  // Stream info: what is playing first, then how it gets there
+  const streamDetails = isExpanded && (
+    <ul
+      id={detailsId}
+      className='flex flex-wrap gap-x-6 gap-y-3 rounded-2xl bg-black/25 p-4 text-sm ring-1 ring-white/10 ring-inset'
+    >
+      {media_type !== 'track' && (
+        <Detail
+          label={t('video')}
+          convertedTo={getConversion(
+            videoSource,
+            videoStream,
+            stream_video_decision,
+          )}
         >
-          {media_type !== 'track' && (
-            <Detail
-              label={t('video')}
-              convertedTo={getConversion(
-                videoSource,
-                videoStream,
-                stream_video_decision,
-              )}
-            >
-              {formatValue(videoSource || videoStream)}
-            </Detail>
-          )}
-          <Detail
-            label={withLanguage(
-              t('audio'),
-              media_type !== 'track' && stream_audio_language,
-            )}
-            convertedTo={getConversion(
-              audioSource,
-              audioStream,
-              stream_audio_decision,
-            )}
-          >
-            {formatValue(audioSource || audioStream)}
-          </Detail>
-          {media_type !== 'track' &&
-            (subtitle_codec || stream_subtitle_codec) && (
-              <Detail
-                label={withLanguage(t('subtitles'), stream_subtitle_language)}
-                convertedTo={
-                  stream_subtitle_decision === 'burn'
-                    ? t('decision.burnedIn')
-                    : getConversion(
-                        subtitleSource,
-                        subtitleStream,
-                        stream_subtitle_decision,
-                      )
-                }
-              >
-                {formatValue(subtitleSource || subtitleStream)}
-              </Detail>
-            )}
-          {/* The profile names the bitrate it streams at, and bandwidth shows
-              the real one, so the stream bitrate is only for no profile */}
-          <Detail
-            label={t('quality')}
-            convertedTo={
-              qualityConversion && (quality_profile || qualityConversion)
-            }
-          >
-            {formatValue(
-              !qualityConversion && quality_profile,
-              bitrateSource || bitrateStream,
-            )}
-          </Detail>
-          {/* TODO: Tautulli doesn't return bandwidth for tracks sometimes */}
-          <Detail label={t('bandwidth')}>
-            {formatValue(formatBitrate(bandwidth, locale))}
-          </Detail>
-          <Detail
-            label={t('container')}
-            convertedTo={getConversion(
-              toUpper(container),
-              toUpper(stream_container),
-              stream_container_decision,
-            )}
-          >
-            {formatValue(toUpper(container) || toUpper(stream_container))}
-          </Detail>
-          {isAdmin && !settings.general.isAnonymized && location && (
-            <Detail label={t('location')}>
-              {`${toUpper(location)} · `}
-              {location === 'wan' ? (
-                <a
-                  href={`https://ipinfo.io/${ip_address_public}`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='underline decoration-white/30 underline-offset-2 transition-colors hover:decoration-white'
-                >
-                  {ip_address_public}
-                </a>
-              ) : (
-                ip_address
-              )}
-            </Detail>
-          )}
-        </ul>
+          {formatValue(videoSource || videoStream)}
+        </Detail>
       )}
-    </li>
+      <Detail
+        label={withLanguage(
+          t('audio'),
+          media_type !== 'track' && stream_audio_language,
+        )}
+        convertedTo={getConversion(
+          audioSource,
+          audioStream,
+          stream_audio_decision,
+        )}
+      >
+        {formatValue(audioSource || audioStream)}
+      </Detail>
+      {media_type !== 'track' && (subtitle_codec || stream_subtitle_codec) && (
+        <Detail
+          label={withLanguage(t('subtitles'), stream_subtitle_language)}
+          convertedTo={
+            stream_subtitle_decision === 'burn'
+              ? t('decision.burnedIn')
+              : getConversion(
+                  subtitleSource,
+                  subtitleStream,
+                  stream_subtitle_decision,
+                )
+          }
+        >
+          {formatValue(subtitleSource || subtitleStream)}
+        </Detail>
+      )}
+      {/* The profile names the bitrate it streams at, and bandwidth shows
+              the real one, so the stream bitrate is only for no profile */}
+      <Detail
+        label={t('quality')}
+        convertedTo={
+          qualityConversion && (quality_profile || qualityConversion)
+        }
+      >
+        {formatValue(
+          !qualityConversion && quality_profile,
+          bitrateSource || bitrateStream,
+        )}
+      </Detail>
+      {/* TODO: Tautulli doesn't return bandwidth for tracks sometimes */}
+      <Detail label={t('bandwidth')}>
+        {formatValue(formatBitrate(bandwidth, locale))}
+      </Detail>
+      <Detail
+        label={t('container')}
+        convertedTo={getConversion(
+          toUpper(container),
+          toUpper(stream_container),
+          stream_container_decision,
+        )}
+      >
+        {formatValue(toUpper(container) || toUpper(stream_container))}
+      </Detail>
+      {isAdmin && !settings.general.isAnonymized && location && (
+        <Detail label={t('location')}>
+          {`${toUpper(location)} · `}
+          {location === 'wan' ? (
+            <a
+              href={`https://ipinfo.io/${ip_address_public}`}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='underline decoration-white/30 underline-offset-2 transition-colors hover:decoration-white'
+            >
+              {ip_address_public}
+            </a>
+          ) : (
+            ip_address
+          )}
+        </Detail>
+      )}
+    </ul>
   )
+
+  return (
+    <MediaCard
+      type={TYPES[media_type as keyof typeof TYPES] ?? 'movie'}
+      mediaType={media_type}
+      item={details}
+      isItemLoading={isDetailsLoading}
+      name={name}
+      detail={detail}
+      fullTitle={fullTitle}
+      posters={[posterUrl, details?.poster]}
+      isPosterLoading={isPosterLoading}
+      posterOverlay={<PlaybackOverlay state={state} className='size-7' />}
+      isPriority
+      user={{
+        name: isAnonymous
+          ? t('anonymous', { number: index + 1 })
+          : friendly_name,
+        avatar: session.user_thumb,
+        isAnonymous,
+      }}
+      stats={
+        <>
+          {device && (
+            <li className={clsx(STAT_PILL, 'min-w-0')}>
+              <DeviceTabletIcon />
+              <span className='truncate'>{device}</span>
+            </li>
+          )}
+          {/* Phones have its icon next to the title instead */}
+          <li className={clsx(decisionIcon && 'max-sm:hidden')}>
+            {decisionToggle(false)}
+          </li>
+        </>
+      }
+      deeplink={
+        mediaServer && deeplinkRatingKey
+          ? { mediaServer, ratingKey: deeplinkRatingKey }
+          : null
+      }
+      // Where the play is and when it ends, where a history card has its date
+      aside={
+        position && (
+          <>
+            <span className='block'>{position}</span>
+            {eta && (
+              <span className='block text-neutral-200'>
+                {t('endsAt', { time: eta })}
+              </span>
+            )}
+          </>
+        )
+      }
+      phoneAside={decisionIcon && decisionToggle(true)}
+      settings={settings}
+      footer={streamDetails}
+    >
+      {position && (
+        <div className='text-xs text-neutral-400 tabular-nums sm:text-sm'>
+          <div className='flex items-center gap-3'>
+            <ProgressBar
+              value={Number(session.progress_percent) / 100}
+              className='flex-1'
+            />
+            <span className='max-sm:hidden'>
+              {formatPercent(Number(session.progress_percent), locale)}
+            </span>
+          </div>
+          {/* Phones put the times under the bar, so the title gets its row */}
+          <div className='mt-1.5 flex justify-between gap-3 sm:hidden'>
+            <span>{position}</span>
+            {eta && (
+              <span className='text-neutral-200'>
+                {t('endsAt', { time: eta })}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+    </MediaCard>
+  )
+}
+
+const TYPES = { movie: 'movie', episode: 'show', track: 'artist' } as const
+
+function isPresent(value?: number | string | null): value is number | string {
+  return value != null && value !== ''
 }
 
 // Tautulli sends 0 or 1, Tracearr a boolean
 function isAtmos(value?: number | boolean) {
   return Number(value) === 1
-}
-
-// Plex's decisions, grouped by how much work they are for the server
-function getDecisionKind(decision?: string): DecisionKind | undefined {
-  switch (decision) {
-    case 'direct play':
-      return 'directPlay'
-    case 'copy':
-      return 'directStream'
-    case 'transcode':
-    // Burning in subtitles is a transcode too
-    case 'burn':
-      return 'transcode'
-  }
 }
 
 function isTranscoding(decision?: string) {

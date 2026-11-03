@@ -13,6 +13,7 @@ const fetchMock = vi.fn()
 beforeEach(() => {
   vi.stubGlobal('fetch', fetchMock)
   vi.spyOn(console, 'error').mockImplementation(() => {})
+  vi.spyOn(console, 'warn').mockImplementation(() => {})
   vi.mocked(isHostDown).mockReset()
   vi.mocked(markHostDown).mockReset()
 })
@@ -53,6 +54,18 @@ describe('fetchTmdb', () => {
 
     await expect(fetchTmdb('movie/0/credits')).resolves.toBeNull()
     expect(markHostDown).not.toHaveBeenCalled()
+  })
+
+  it('only warns about a title TMDB no longer has', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('', { status: 404 }))
+    fetchMock.mockResolvedValueOnce(new Response('', { status: 401 }))
+
+    await expect(fetchTmdb('movie/1673394')).resolves.toBeNull()
+    expect(console.warn).toHaveBeenCalledTimes(1)
+    expect(console.error).not.toHaveBeenCalled()
+
+    await expect(fetchTmdb('movie/155')).resolves.toBeNull()
+    expect(console.error).toHaveBeenCalledTimes(1)
   })
 
   it('skips the request while TMDB is down', async () => {

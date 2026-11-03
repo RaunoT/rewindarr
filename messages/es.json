@@ -13,9 +13,16 @@
       "plexAccount": "No se pudo cargar tu cuenta de Plex. Inténtalo de nuevo.",
       "jellyfinUnavailable": "No se pudo conectar con Jellyfin. Inténtalo de nuevo en un momento.",
       "jellyfinCredentials": "Nombre de usuario o contraseña incorrectos.",
+      "jellyfinQuickConnectDisabled": "La conexión rápida está desactivada en este servidor Jellyfin.",
+      "jellyfinQuickConnectExpired": "El código ha caducado. Obtén uno nuevo para volver a intentarlo.",
       "noAccess": "Esta cuenta no tiene acceso a este servidor.",
       "unknown": "No se pudo iniciar sesión. Inténtalo de nuevo."
     },
+    "useQuickConnect": "Usar conexión rápida",
+    "quickConnectDescription": "En Jellyfin, en un dispositivo donde hayas iniciado sesión, abre Conexión rápida en tus ajustes e introduce este código.",
+    "quickConnectWaiting": "Esperando a que introduzcas el código…",
+    "quickConnectRetry": "Obtener un código nuevo",
+    "usePassword": "Usar tu contraseña",
     "rewind": "Empezar Rewind",
     "signOut": "Cerrar sesión",
     "greeting": "Hola, {name} 👋",
@@ -43,7 +50,6 @@
     "streamDetails": "Detalles de la transmisión",
     "noActivity": "No hay reproducciones activas",
     "loadError": "No se pudo cargar la actividad",
-    "playing": "Reproduciendo",
     "paused": "En pausa",
     "buffering": "En búfer",
     "endsAt": "Hora de fin: {time}",
@@ -61,24 +67,14 @@
     "showMore": "Mostrar más",
     "title": "Panel",
     "usersTitle": "Usuarios",
-    "users": "{count, plural, one {# usuario} other {# usuarios}}",
-    "movies": "{count, plural, one {película} other {películas}}",
-    "episodes": "{count, plural, one {episodio} other {episodios}}",
-    "tracks": "{count, plural, one {canción} other {canciones}}",
-    "requests": "{count, plural, one {# solicitud} other {# solicitudes}}",
-    "durationWatched": "{duration} de visualización",
-    "durationListened": "{duration} de escucha",
-    "durationPlayed": "{duration} de reproducción"
+    "users": "{count, plural, one {# usuario} other {# usuarios}}"
   },
   "DashboardFilters": {
     "type": "Estadísticas de",
     "general": "Todos",
     "personal": "Solo yo",
     "sortByLabel": "Ordenar por",
-    "sort": "Ordenar",
-    "byDuration": "Por tiempo de visualización",
-    "byPlays": "Por reproducciones",
-    "byUsers": "Por usuarios"
+    "sort": "Ordenar"
   },
   "DashboardNavContent": {
     "label": "Navegación del panel",
@@ -96,18 +92,56 @@
   "History": {
     "syncingTitle": "Sincronizando el historial",
     "syncingDescription": "El historial de reproducciones de {source} se sincroniza una sola vez, lo que puede tardar unos minutos. {count, plural, =0 {Acaba de empezar.} one {Por ahora # reproducción, desde {date}.} other {Por ahora # reproducciones, desde {date}.}} Esta página se actualiza sola.",
-    "syncingShort": "Sincronizando el historial…"
+    "syncingShort": "Sincronizando el historial…",
+    "title": "Historial",
+    "libraryLabel": "Biblioteca",
+    "noPlays": "Aún no se ha reproducido nada",
+    "poster": "Póster de {title}",
+    "anonymous": "Anónimo",
+    "unknownUser": "Usuario desconocido",
+    "onlyMine": "Solo las mías",
+    "search": "Buscar títulos",
+    "clearSearch": "Borrar búsqueda",
+    "noMatches": "Ninguna reproducción coincide con los filtros",
+    "pagination": "Páginas",
+    "page": "Página {page}",
+    "pageOf": "{page} de {pageCount}",
+    "previousPage": "Página anterior",
+    "nextPage": "Página siguiente",
+    "episodeNumber": "T{season} · E{episode}",
+    "episodeOnly": "E{episode}",
+    "episodeRange": "T{season} · E{first}–E{last}",
+    "range": "{from} – {to}",
+    "episodeCount": "{count, plural, one {# episodio} other {# episodios}}",
+    "trackCount": "{count, plural, one {# canción} other {# canciones}}",
+    "rowsLabel": "Filas por página",
+    "rowsOption": "{count} por página",
+    "kindLabel": "Tipo",
+    "plays": "Reproducciones",
+    "requests": "Solicitudes",
+    "request": "Solicitud",
+    "unknownTitle": "Título desconocido",
+    "season": "Temporada {season}",
+    "seasonCount": "{count, plural, one {# temporada} other {# temporadas}}",
+    "requestsFailed": "No se pudieron cargar las solicitudes de Seerr",
+    "requestStatus": {
+      "pending": "Pendiente",
+      "approved": "Aprobada",
+      "declined": "Rechazada",
+      "failed": "Fallida",
+      "partiallyAvailable": "Disponible en parte",
+      "available": "Disponible"
+    },
+    "requestStatusLabel": "{status}: abrir {title} en Seerr"
   },
   "MediaServerDeeplink": {
-    "available": "Disponible",
-    "availableLabel": "Disponible: abrir {title} en {server}"
+    "openLabel": "Abrir {title} en {server}"
   },
   "PeriodSelectContent": {
     "7days": "7 días",
     "pastYear": "Último año",
     "allTime": "Desde siempre",
-    "days": "{count, plural, one {# día} other {# días}}",
-    "label": "Selección de periodo"
+    "days": "{count, plural, one {# día} other {# días}}"
   },
   "NotFound": {
     "title": "404",
@@ -136,8 +170,11 @@
     "continue": "Continuar",
     "setupFinished": "¡Todo listo!",
     "reenterApiKey": "Vuelve a escribir la clave de API después de cambiar la URL.",
+    "reenterToken": "Vuelve a escribir el token después de cambiar la URL.",
     "apiKey": "Clave de API",
     "invalidApiKey": "Clave de API no válida.",
+    "invalidToken": "Token no válido.",
+    "tokenNeedsUrl": "Introduce la URL para usar el token.",
     "unableToConnect": "No se pudo conectar. Comprueba la URL y que el servidor esté en marcha.",
     "noMediaServer": "No se encontró ningún servidor de Plex o Jellyfin.",
     "chooseMediaServer": "Elige qué servidor usar.",
@@ -146,7 +183,7 @@
     "urlNotFound": "No encontrado. Comprueba la URL, incluida cualquier ruta base.",
     "unexpectedResponse": "Respuesta inesperada (HTTP {status}).",
     "certificateError": "Error de certificado HTTPS. Comprueba que la URL coincida con un certificado válido.",
-    "invalidField": "Revisa {field, select, tautulliUrl {la URL de Tautulli} tautulliApiKey {la clave de API de Tautulli} tracearrUrl {la URL de Tracearr} tracearrApiKey {la clave de API de Tracearr} plexUrl {la URL de Plex} jellyfinUrl {la URL de Jellyfin} seerrUrl {la URL de Seerr} seerrApiKey {la clave de API de Seerr} googleAnalyticsId {el ID de Google Analytics} other {los ajustes}}.",
+    "invalidField": "Revisa {field, select, tautulliUrl {la URL de Tautulli} tautulliApiKey {la clave de API de Tautulli} tracearrUrl {la URL de Tracearr} tracearrApiKey {la clave de API de Tracearr} plexUrl {la URL de Plex} jellyfinUrl {la URL de Jellyfin} plexToken {el token de Plex} seerrUrl {la URL de Seerr} seerrApiKey {la clave de API de Seerr} googleAnalyticsId {el ID de Google Analytics} other {los ajustes}}.",
     "becomeASponsor": "Hazte patrocinador",
     "buyMeABeer": "Invítame a una cerveza",
     "reportAnIssue": "Informar de un problema",
@@ -157,6 +194,7 @@
       "rewind": "Rewind",
       "dashboard": "Panel",
       "activity": "Actividad",
+      "history": "Historial",
       "complete": "Completo",
       "incomplete": "Incompleto",
       "connectionRequired": "Completa primero los ajustes de conexión"
@@ -167,6 +205,8 @@
       "source": "Fuente",
       "server": "Servidor",
       "chooseServer": "Elige un servidor",
+      "token": "Token (opcional)",
+      "tokenDescription": "Permite que Rewind reproduzca música de tu biblioteca. <link>¿Cómo encontrarlo?</link>",
       "optionalService": "{service} (opcional)",
       "plexUrlHelp": "Añade enlaces que abren los títulos en Plex",
       "jellyfinUrlHelp": "Para iniciar sesión y para los enlaces que abren los títulos en Jellyfin",
@@ -201,6 +241,9 @@
     "Activity": {
       "title": "Ajustes de actividad"
     },
+    "History": {
+      "title": "Ajustes del historial"
+    },
     "General": {
       "title": "Ajustes generales",
       "config": "Configuración",
@@ -231,6 +274,19 @@
       "title": "Ajustes de Rewind",
       "cards": "Historias",
       "librariesSizeAndCountCard": "Tamaño y recuento de bibliotecas",
+      "themeMusic": "Sintonías",
+      "themeMusicDescription": "Reproduce música de los favoritos del espectador",
+      "musicTrack": "Música de fondo",
+      "musicTrackDescription": "Hasta {size}, los archivos grandes pueden tardar en cargar",
+      "musicFileDetails": "{format} · {size}",
+      "musicUpload": "Subir",
+      "musicReplace": "Reemplazar",
+      "musicRemove": "Quitar",
+      "musicSaving": "Guardando…",
+      "musicTypeError": "Elige un archivo MP3, M4A, AAC, OGG, Opus, WAV o FLAC.",
+      "musicSizeError": "El archivo supera {size}.",
+      "musicError": "No se pudo actualizar la música. Inténtalo de nuevo.",
+      "snow": "Nieve",
       "startDateHelperText": "Por defecto hace 365 días"
     }
   },
@@ -242,6 +298,7 @@
   },
   "Common": {
     "dismiss": "Cerrar",
+    "none": "Ninguno",
     "enabled": "Activado",
     "adminOnly": "Solo administradores",
     "status": "Estado",
@@ -261,8 +318,8 @@
     "time": {
       "zero": "0 min",
       "month": "{count, plural, one {# mes} other {# meses}}",
-      "week": "{count, plural, one {# semana} other {# semanas}}",
-      "day": "{count, plural, one {# día} other {# días}}",
+      "week": "{count, plural, one {# sem.} other {# sem.}}",
+      "day": "{count, plural, one {# d} other {# d}}",
       "hr": "{count, plural, one {# h} other {# h}}",
       "min": "{count, plural, one {# min} other {# min}}",
       "sec": "{count, plural, one {# s} other {# s}}"
@@ -282,6 +339,7 @@
       "goToStory": "Ir a la historia {index}",
       "previous": "Anterior",
       "next": "Siguiente",
+      "sound": "Sonido",
       "label": "Historias de Rewind",
       "storyPosition": "Historia {current} de {total}",
       "introTitle": "Cómo moverte",
@@ -297,7 +355,7 @@
       "topDirectors": "Aquí tienes tu <top>{count, plural, one {director favorito} other {top # de directores}}</top>",
       "topMovieActors": "Aquí tienes tu <top>{count, plural, one {actor de cine favorito} other {top # de actores de cine}}</top>",
       "topMovieGenres": "Aquí tienes tu <top>{count, plural, one {género de cine favorito} other {top # de géneros de cine}}</top>",
-      "topArtists": "Aquí tienes tu <top>{count, plural, one {artista favorito} other {top # de artistas}}</top>",
+      "topArtists": "{count, plural, one {Aquí tienes <top>el único artista</top> que escuchaste} other {Aquí tienes tu <top>top # de artistas</top>}}",
       "percentage": "Eso es el <percentage>{percentageValue}</percentage> de tu tiempo total de reproducción.",
       "shows": "Series",
       "movies": "Películas",
@@ -329,6 +387,12 @@
       "duration": "Pasaste <duration>{durationValue}</duration> escuchando <audio>música</audio>",
       "count": "¡Escuchaste <count>{countValue, number}</count> <tracks>{countValue, plural, one {canción} other {canciones}}</tracks> en total!",
       "favorite": "Lo que más escuchaste fue",
+      "only": "El único artista que escuchaste fue",
+      "topTrack": "Lo que más escuchaste fue <track>{title}</track> de <by>{artist}</by>",
+      "topTrackWithoutArtist": "Lo que más escuchaste fue <track>{title}</track>",
+      "onlyTrack": "La única canción que escuchaste fue <track>{title}</track> de <by>{artist}</by>",
+      "onlyTrackWithoutArtist": "La única canción que escuchaste fue <track>{title}</track>",
+      "topTrackPlays": "La escuchaste <count>{countValue, plural, one {una vez} other {# veces}}</count>",
       "noData": "No escuchaste <audio>música</audio> en <from>{serverName}</from>"
     },
     "Libraries": {
@@ -344,6 +408,7 @@
       "duration": "Las <library>series</library> ocuparon <duration>{durationValue}</duration> de tu tiempo en <plex>{serverName}.</plex>",
       "count": "¡Viste <count>{countValue, number}</count> <episodes>{countValue, plural, one {episodio} other {episodios}}</episodes> en total!",
       "favorite": "Lo que más viste fue",
+      "only": "La única serie que viste fue",
       "noData": "No viste ninguna <shows>serie</shows> en <plex>{serverName}</plex> <emoji>😥</emoji>"
     },
     "Requests": {
@@ -362,6 +427,7 @@
       "duration": "Pasaste <duration>{durationValue}</duration> de tu tiempo viendo <movies>películas</movies>",
       "count": "¡Viste <count>{countValue, number}</count> <movies>{countValue, plural, one {película} other {películas}}</movies> en total!",
       "favorite": "Lo que más viste fue",
+      "only": "La única película que viste fue",
       "noData": "No viste ninguna <movies>película</movies> en <plex>{serverName}</plex> <emoji>😵‍💫</emoji>"
     },
     "People": {
@@ -379,9 +445,9 @@
     },
     "Habits": {
       "day": "Tu día favorito para ver contenido fue el <day>{dayValue}</day>",
-      "hour": "Y tu hora favorita para darle al play: <hour>{hourValue} h</hour>",
+      "hour": "Y tu hora favorita para darle al play: <hour>{hourValue}</hour>",
       "dayChart": "Gráfico de barras de reproducciones por día de la semana. Día con más actividad: {dayValue}, con {count, plural, one {# reproducción} other {# reproducciones}}.",
-      "hourChart": "Gráfico de barras de reproducciones por hora del día. Hora con más actividad: {hourValue} h, con {count, plural, one {# reproducción} other {# reproducciones}}."
+      "hourChart": "Gráfico de barras de reproducciones por hora del día. Hora con más actividad: {hourValue}, con {count, plural, one {# reproducción} other {# reproducciones}}."
     },
     "FirstPlay": {
       "since": "Llevas viendo contenido en <plex>{serverName}</plex> desde <date>{dateValue}</date>",
@@ -424,5 +490,20 @@
     "requestLabel": "Solicitar {title}",
     "externalLinkLabel": "{title} en {site}",
     "externalSearchLabel": "Buscar {title} en {site}"
+  },
+  "Totals": {
+    "playTime": "Tiempo de reproducción",
+    "listenTime": "Tiempo de escucha",
+    "movies": "Películas",
+    "episodes": "Episodios",
+    "tracks": "Canciones"
+  },
+  "Filters": {
+    "title": "Filtros",
+    "titleWithCount": "{count, plural, one {Filtros, # activo} other {Filtros, # activos}}",
+    "clearAll": "Borrar todo",
+    "done": "Listo",
+    "period": "Periodo",
+    "all": "Todo"
   }
 }

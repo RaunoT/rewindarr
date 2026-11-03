@@ -87,6 +87,9 @@ function play(userId: number, mediaType: PlayMediaType, seconds = 60): Play {
     tmdbId: null,
     identityId: String(userId),
     avatar: '',
+    seasonNumber: null,
+    episodeNumber: null,
+    transcodeDecision: null,
   }
 }
 

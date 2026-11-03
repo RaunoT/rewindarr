@@ -5,7 +5,11 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { PLEX_API_ENDPOINT } from '../utils/constants'
 import getSettings from '../utils/getSettings'
 import { getServerUser } from '../utils/statsSource'
-import { authenticateJellyfinUser } from './jellyfinAuth'
+import {
+  authenticateJellyfinQuickConnect,
+  authenticateJellyfinUser,
+  JellyfinUser,
+} from './jellyfinAuth'
 import { LoginError } from './loginError'
 
 // Admin rights and server membership are re-checked this often, so changes
@@ -99,21 +103,21 @@ export async function authorizePlexUser(authToken: string): Promise<User> {
   }
 }
 
-export async function authorizeJellyfinUser(
-  username: string,
-  password: string,
-): Promise<User> {
+// Jellyfin's URL. A Plex server's users can't sign in with Jellyfin.
+export function getJellyfinUrl(): string {
   const { mediaServerType, jellyfinUrl } = getSettings().connection
 
   if (mediaServerType !== 'jellyfin' || !jellyfinUrl) {
     throw new LoginError('noAccess')
   }
 
-  const jellyfinUser = await authenticateJellyfinUser(
-    jellyfinUrl,
-    username,
-    password,
-  )
+  return jellyfinUrl
+}
+
+async function authorizeJellyfin(
+  authenticate: (url: string) => Promise<JellyfinUser>,
+): Promise<User> {
+  const jellyfinUser = await authenticate(getJellyfinUrl())
   const serverUser = await checkMembership(jellyfinUser.id, '')
 
   return {
@@ -122,6 +126,23 @@ export async function authorizeJellyfinUser(
     // Tracearr can't tell Jellyfin's admins apart, so it's Jellyfin's word
     isAdmin: serverUser.isAdmin ?? jellyfinUser.isAdmin,
   }
+}
+
+export async function authorizeJellyfinUser(
+  username: string,
+  password: string,
+): Promise<User> {
+  return authorizeJellyfin((url) =>
+    authenticateJellyfinUser(url, username, password),
+  )
+}
+
+export async function authorizeJellyfinQuickConnect(
+  secret: string,
+): Promise<User> {
+  return authorizeJellyfin((url) =>
+    authenticateJellyfinQuickConnect(url, secret),
+  )
 }
 
 // Other messages would reach the browser, so they stay in the log.
@@ -279,6 +300,23 @@ export const authOptions: AuthOptions = {
         // Jellyfin allows users without a password
         return authorize(() =>
           authorizeJellyfinUser(credentials.username, credentials.password),
+        )
+      },
+    }),
+    // The secret of a Quick Connect request the user has authorized
+    CredentialsProvider({
+      id: 'jellyfin-quick-connect',
+      name: 'Jellyfin Quick Connect',
+      credentials: {
+        secret: { label: 'secret', type: 'text' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.secret) {
+          return null
+        }
+
+        return authorize(() =>
+          authorizeJellyfinQuickConnect(credentials.secret),
         )
       },
     }),

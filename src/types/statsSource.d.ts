@@ -106,6 +106,13 @@ export type PlaysByTime = {
   daily: number[]
 }
 
+// A play in the history, with who played it. The user's ID and name are empty
+// when the source no longer lists them.
+export type HistoryPlay = Play & {
+  userId: string
+  userName: string
+}
+
 // Neither source knows when a user joined the server, so the first play stands
 // in for it. It can't be older than the source's own history.
 export type FirstPlay = {
@@ -184,6 +191,9 @@ export type StatsSource = {
   // a user, the row counts every play of it the user has, which waits for the
   // whole history to be read. Without one, only this play.
   getPlayItem: (play: Play, userId?: string) => Promise<TautulliItemRow>
+  // Every play since the query's start, the newest first, without excluded
+  // users unless the query is for one user
+  getHistoryPlays: (query: DurationQuery) => Promise<HistoryPlay[]>
   // The play histories the stats are read from. Without libraries, those of
   // every library, whoever is signed in.
   getHistoryReaders: (libraries?: TautulliLibrary[]) => Promise<HistoryReader[]>

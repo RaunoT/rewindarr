@@ -28,7 +28,7 @@ export default async function SettingsLayout({ children }: Props) {
   const t = await getTranslations('Settings')
 
   return (
-    <div className='page-width-narrow mb-auto'>
+    <div className='page-width mb-auto'>
       <PageTitle
         title={missingSetting ? t('getStarted') : t('title')}
         isTitleHidden={!!missingSetting}

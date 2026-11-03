@@ -25,7 +25,7 @@ export default async function RewindLayout({ children }: Props) {
   const t = await getTranslations('Rewind')
 
   return (
-    <div className='page-width-narrow flex flex-1 flex-col sm:flex-none'>
+    <div className='page-width flex flex-1 flex-col sm:flex-none'>
       <PageTitle title={t('title')} />
       {session?.user.isAdmin && (
         <div className='mb-4 flex min-h-10 items-center justify-end'>
@@ -44,9 +44,11 @@ async function AdminUserSelect({ defaultUserId }: { defaultUserId: string }) {
 
   return (
     <UserSelect
-      users={users.map(({ user_id, friendly_name }) => ({
+      users={users.map(({ user_id, friendly_name, thumb, user_thumb }) => ({
         user_id,
         friendly_name,
+        thumb,
+        user_thumb,
       }))}
       defaultUserId={defaultUserId}
     />

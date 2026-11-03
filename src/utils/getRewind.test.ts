@@ -21,6 +21,7 @@ vi.mock('./statsSource', () => ({ getStatsSource: vi.fn() }))
 // Seerr users without Plex have no Plex id
 function request(type: string, plexId: number | null, id = plexId ?? 0) {
   return {
+    id,
     createdAt: '2026-06-01T00:00:00Z',
     type,
     requestedBy: { id, plexId },

@@ -10,6 +10,7 @@ import {
 } from '@/types/tautulli'
 import {
   TracearrCursorPage,
+  TracearrDecision,
   TracearrHistoryRecord,
   TracearrLibrary,
   TracearrMedia,
@@ -21,7 +22,7 @@ import {
   TracearrUser,
   TracearrUserAccount,
 } from '@/types/tracearr'
-import { minBy, pick, sumBy } from 'lodash'
+import { maxBy, minBy, pick, sumBy } from 'lodash'
 import { unstable_rethrow } from 'next/navigation'
 import qs from 'qs'
 import { SavedMediaData, SourceMediaData } from './getMediaAdditionalData'
@@ -238,6 +239,42 @@ function toAbsoluteUrl(url: string | null, baseUrl: string): string {
   }
 
   return url.startsWith('/') ? `${baseUrl}${url}` : url
+}
+
+// Plex artwork Tracearr can proxy, which needs the timestamp on the end
+const PLEX_THUMB_PATH = /^\/library\/metadata\/\d+\/thumb\/(\d+)$/
+
+// A track's poster is its album's, so the artist's is asked for instead, as
+// for Tautulli. Plex ignores the timestamp, but Tracearr only proxies paths
+// that have one, so the album's is kept. Jellyfin's are left as they are.
+export function getPosterUrl(
+  media: Pick<
+    TracearrStream,
+    'media_type' | 'poster_url' | 'grandparent_rating_key'
+  >,
+  baseUrl: string,
+): string {
+  const { media_type, poster_url, grandparent_rating_key } = media
+  const [path, query] = poster_url?.split('?') ?? []
+  const params = new URLSearchParams(query)
+  const timestamp = PLEX_THUMB_PATH.exec(params.get('url') ?? '')?.[1]
+
+  if (
+    media_type !== 'track' ||
+    !timestamp ||
+    !/^\d+$/.test(grandparent_rating_key ?? '')
+  ) {
+    return toAbsoluteUrl(poster_url, baseUrl)
+  }
+
+  params.set(
+    'url',
+    `/library/metadata/${grandparent_rating_key}/thumb/${timestamp}`,
+  )
+  // The album's version, which says nothing about the artist's
+  params.delete('v')
+
+  return toAbsoluteUrl(`${path}?${params.toString()}`, baseUrl)
 }
 
 type FetchOptions = {
@@ -657,7 +694,7 @@ function toPlay(record: TracearrHistoryRecord, baseUrl: string): Play | null {
     showTitle: record.show_title,
     artistName: record.artist_name,
     year: record.year,
-    thumb: toAbsoluteUrl(record.poster_url, baseUrl),
+    thumb: getPosterUrl(record, baseUrl),
     ratingKey: record.rating_key,
     grandparentRatingKey: record.grandparent_rating_key,
     mediaId: record.media_id,
@@ -666,6 +703,10 @@ function toPlay(record: TracearrHistoryRecord, baseUrl: string): Play | null {
     tmdbId: record.tmdb_id,
     identityId: record.user.id,
     avatar: toAbsoluteUrl(record.user.avatar_url, baseUrl),
+    seasonNumber: record.media_type === 'episode' ? record.season_number : null,
+    episodeNumber:
+      record.media_type === 'episode' ? record.episode_number : null,
+    transcodeDecision: getTranscodeDecision(record),
   }
 }
 
@@ -1006,7 +1047,8 @@ export async function getTracearrLibrariesSize(
 
 // Whether the item was removed from the media server, and its IDs. The saved IDs
 // and year stand in while Tracearr is down, so a show isn't looked up by its
-// title alone.
+// title alone. Items removed before Tracearr first synced the libraries have no
+// availability for the server at all, which only counts once it has synced.
 export async function getTracearrMedia(
   mediaId?: string | null,
 ): Promise<Omit<SourceMediaData, 'thumb'>> {
@@ -1037,13 +1079,22 @@ export async function getTracearrMedia(
     },
     year: media.year || null,
   }
+  // The newest of the items still on the server is the one to open
+  const ratingKey = maxBy(
+    availability.filter((item) => !item.removed_at && item.rating_key),
+    (item) => Date.parse(item.added_at ?? '') || 0,
+  )?.rating_key
 
   void saveSnapshot(key, mediaData)
 
   return {
-    isDeleted:
-      availability.length > 0 && availability.every((item) => item.removed_at),
+    isDeleted: availability.length
+      ? availability.every((item) => item.removed_at)
+      : Array.isArray(media.availability) &&
+        !!serverId &&
+        !!(await getLibraryRollups())?.length,
     ...mediaData,
+    ...(ratingKey && { ratingKey: toSourceId(ratingKey) }),
   }
 }
 
@@ -1052,6 +1103,30 @@ const DECISIONS = {
   copy: 'copy',
   transcode: 'transcode',
 }
+
+// The whole stream's decision in Plex's words, as Tautulli gives it. Null when
+// Tracearr has none.
+export function getTranscodeDecision(stream: {
+  is_transcode?: boolean | null
+  video_decision?: TracearrDecision | null
+  audio_decision?: TracearrDecision | null
+}): string | null {
+  const decisions = [stream.video_decision, stream.audio_decision]
+
+  // A track's own decision counts when the stream's is missing
+  if (stream.is_transcode || decisions.includes('transcode')) {
+    return 'transcode'
+  }
+
+  if (decisions.includes('copy')) {
+    return 'copy'
+  }
+
+  return stream.is_transcode === false || decisions.some(Boolean)
+    ? 'direct play'
+    : null
+}
+
 const CHANNEL_LAYOUTS: Record<number, string> = {
   1: 'Mono',
   2: 'Stereo',
@@ -1116,7 +1191,9 @@ function toSession(
     grandparent_title:
       (isEpisode ? stream.show_title : stream.artist_name) ?? '',
     guids: toGuids(stream),
+    media_index: isEpisode ? stream.episode_number : null,
     media_type: stream.media_type,
+    parent_media_index: isEpisode ? stream.season_number : null,
     parent_rating_key: toSourceId(stream.parent_rating_key) || undefined,
     parent_title: isEpisode
       ? stream.season_number !== null
@@ -1159,13 +1236,9 @@ function toSession(
     stream_video_dynamic_range: stream.stream_video_details?.dynamicRange ?? '',
     stream_video_full_resolution: streamHeight ? `${streamHeight}p` : '',
     subtitle_codec: stream.subtitle_info?.codec ?? '',
-    thumb: toAbsoluteUrl(stream.poster_url, baseUrl),
+    thumb: getPosterUrl(stream, baseUrl),
     title: stream.media_title,
-    transcode_decision: stream.is_transcode
-      ? 'transcode'
-      : videoDecision === 'copy' || audioDecision === 'copy'
-        ? 'copy'
-        : 'direct play',
+    transcode_decision: getTranscodeDecision(stream) ?? 'direct play',
     user_id: toSourceId(user?.userId),
     user_thumb: toAbsoluteUrl(
       stream.user_avatar_url ?? stream.user_thumb,
