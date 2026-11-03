@@ -74,7 +74,7 @@ To try your changes in the production image, run `docker compose up --build`. Th
 
 ### README screenshots
 
-The screenshots in `.github/screenshots` use made-up data, so they don't show anyone's real history. `.github/scripts/mock-server.mjs` stands in for Tautulli and Seerr with a 15-person server, and the app still fetches real posters, ratings and links for its titles.
+The screenshots in `.github/screenshots` use made-up data, so they don't show anyone's real history. `.github/scripts/mock-server.mjs` stands in for Tautulli and Seerr with a 15-person server. Its users have stock portraits from randomuser.me as avatars, and the app still fetches real posters, ratings and links for its titles.
 
 1. Start the mock with your own Plex account as one of its users, so you can sign in. Your ID, name, email and avatar URL are under `user` at `/api/auth/session` while you're signed in to your dev server:
 
@@ -115,7 +115,7 @@ The screenshots in `.github/screenshots` use made-up data, so they don't show an
    }
    ```
 
-3. Take the screenshots in a 1152×720 window at 2× scale, with the Next.js dev badge hidden, and save them as WebP:
+3. Take the screenshots in a 1280×720 window at 2× scale, with the Next.js dev badge hidden, and save them as WebP:
 
    ```bash
    cwebp -q 82 -m 6 home.png -o .github/screenshots/home.webp

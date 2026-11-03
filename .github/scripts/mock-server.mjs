@@ -2,7 +2,8 @@
 // A stand-in for Tautulli and Seerr with made-up data for a 15-person
 // server, for taking README screenshots without anyone's real history. Titles
 // are real, so posters, ratings and links still come from TMDB and the rating
-// services. See CONTRIBUTING.md for how to use it.
+// services, and avatars are stock portraits from randomuser.me. See
+// CONTRIBUTING.md for how to use it.
 //
 // Your own Plex account is one of the users, so you can sign in. Set
 // MOCK_USER_ID, MOCK_USER_NAME, MOCK_USER_EMAIL and MOCK_USER_THUMB to the
@@ -27,7 +28,11 @@ const TMDB_API_KEY =
       'utf8',
     )
     .match(/TMDB_API_KEY = '(\w+)'/)?.[1]
-// Hours a month in each library, which every count is worked out from
+// Avatars are served like artwork, from rating keys above this
+const AVATAR_KEY_BASE = 9000
+// Hours a month in each library, which every count is worked out from, and
+// the randomuser.me portrait each person uses as their avatar. Like most
+// servers, not everyone has set one.
 const USERS = [
   {
     id: process.env.MOCK_USER_ID || '1',
@@ -43,33 +48,34 @@ const USERS = [
       artist: [1, 2, 6, 4, 8],
     },
   },
-  ['Sam Rivera', '2021-05-02', 14, 41, 4],
-  ['Maya Chen', '2021-11-19', 11, 36, 12],
-  ['Jonas Berg', '2022-01-08', 6, 33, 22],
-  ['Priya Patel', '2022-04-21', 12, 24, 9],
-  ['Lukas Novak', '2022-09-03', 8, 29, 0],
-  ['Emma Laine', '2023-02-11', 5, 27, 16],
-  ['Diego Alvarez', '2023-06-25', 13, 15, 3],
-  ['Hanna Kask', '2023-10-30', 4, 22, 11],
-  ['Oliver Brooks', '2024-01-17', 7, 18, 6],
-  ['Sofia Rossi', '2024-05-09', 6, 14, 18],
-  ['Noah Fischer', '2024-08-22', 9, 10, 0],
-  ['Aino Virtanen', '2025-01-05', 3, 12, 7],
+  ['Sam Rivera', '2021-05-02', 14, 41, 4, 'men/86'],
+  ['Maya Chen', '2021-11-19', 11, 36, 12, 'women/17'],
+  ['Jonas Berg', '2022-01-08', 6, 33, 22, 'men/52'],
+  ['Priya Patel', '2022-04-21', 12, 24, 9, 'women/26'],
+  ['Lukas Novak', '2022-09-03', 8, 29, 0, 'men/36'],
+  ['Emma Laine', '2023-02-11', 5, 27, 16, 'women/65'],
+  ['Diego Alvarez', '2023-06-25', 13, 15, 3, 'men/22'],
+  ['Hanna Kask', '2023-10-30', 4, 22, 11, 'women/68'],
+  ['Oliver Brooks', '2024-01-17', 7, 18, 6, 'men/62'],
+  ['Sofia Rossi', '2024-05-09', 6, 14, 18, 'women/79'],
+  ['Noah Fischer', '2024-08-22', 9, 10, 0, 'men/75'],
+  ['Aino Virtanen', '2025-01-05', 3, 12, 7, 'women/33'],
   ['Marcus Webb', '2025-04-14', 5, 7, 2],
-  ['Lea Martin', '2025-09-01', 2, 6, 5],
+  ['Lea Martin', '2025-09-01', 2, 6, 5, 'women/50'],
 ].map((user, i) => {
   if (!Array.isArray(user)) {
     return user
   }
 
-  const [name, joined, movie, show, artist] = user
+  const [name, joined, movie, show, artist, portrait] = user
   const username = name.toLowerCase().replace(/\s+/g, '.')
 
   return {
     id: String(100000 + i),
     name,
     email: `${username}@example.com`,
-    thumb: '',
+    thumb: portrait ? `/library/metadata/${AVATAR_KEY_BASE + i}/thumb/1` : '',
+    portrait,
     isAdmin: false,
     joined,
     hours: { movie, show, artist },
@@ -77,7 +83,8 @@ const USERS = [
 })
 // Plays in the last 30 days. Runtimes are in minutes. A deleted title is no
 // longer on the server, so it gets a request button. Shows end with their
-// episode count, which caps how often one person can have played them.
+// episode count, which caps how often one person can have played them, and
+// how many seasons those are split into.
 const MEDIA = {
   movie: [
     ['Sinners', 2025, 9, 137, 7],
@@ -94,18 +101,18 @@ const MEDIA = {
     ['Hamnet', 2025, 2, 126, 2],
   ],
   show: [
-    ['The Pitt', 2025, 62, 50, 7, false, 30],
-    ['Severance', 2022, 48, 52, 6, false, 19],
-    ['Pluribus', 2025, 41, 45, 6, false, 9],
-    ['Stranger Things', 2016, 37, 75, 8, false, 42],
-    ['The Bear', 2022, 30, 32, 4, false, 38],
-    ['Slow Horses', 2022, 26, 48, 4, false, 30],
-    ['The White Lotus', 2021, 22, 58, 3, false, 26],
-    ['Andor', 2022, 19, 50, 3, false, 24],
-    ['Shōgun', 2024, 15, 58, 3, true, 10],
-    ['The Last of Us', 2023, 14, 55, 3, false, 16],
-    ['Only Murders in the Building', 2021, 12, 32, 2, false, 50],
-    ['Task', 2025, 10, 55, 2, false, 7],
+    ['The Pitt', 2025, 62, 50, 7, false, 30, 2],
+    ['Severance', 2022, 48, 52, 6, false, 19, 2],
+    ['Pluribus', 2025, 41, 45, 6, false, 9, 1],
+    ['Stranger Things', 2016, 37, 75, 8, false, 42, 5],
+    ['The Bear', 2022, 30, 32, 4, false, 38, 4],
+    ['Slow Horses', 2022, 26, 48, 4, false, 30, 5],
+    ['The White Lotus', 2021, 22, 58, 3, false, 26, 3],
+    ['Andor', 2022, 19, 50, 3, false, 24, 2],
+    ['Shōgun', 2024, 15, 58, 3, true, 10, 1],
+    ['The Last of Us', 2023, 14, 55, 3, false, 16, 2],
+    ['Only Murders in the Building', 2021, 12, 32, 2, false, 50, 5],
+    ['Task', 2025, 10, 55, 2, false, 7, 1],
   ],
   artist: [
     ['The Rolling Stones', null, 418, 4.1, 9],
@@ -151,6 +158,86 @@ const LIBRARIES = [
     size: 0.94e12,
   },
 ]
+// What the history plays from each artist
+const TRACKS = {
+  'The Rolling Stones': [
+    'Gimme Shelter',
+    'Paint It Black',
+    'Sympathy for the Devil',
+    'Wild Horses',
+    'Start Me Up',
+  ],
+  'Fleetwood Mac': [
+    'Dreams',
+    'The Chain',
+    'Go Your Own Way',
+    'Landslide',
+    'Everywhere',
+  ],
+  'Taylor Swift': [
+    'Cruel Summer',
+    'Anti-Hero',
+    'Blank Space',
+    'Style',
+    'All Too Well',
+  ],
+  'Daft Punk': [
+    'Get Lucky',
+    'One More Time',
+    'Digital Love',
+    'Instant Crush',
+    'Something About Us',
+  ],
+  'Kendrick Lamar': [
+    'HUMBLE.',
+    'Alright',
+    'Not Like Us',
+    'Money Trees',
+    'DNA.',
+  ],
+  Radiohead: [
+    'Weird Fishes/Arpeggi',
+    'Karma Police',
+    'No Surprises',
+    'Reckoner',
+    'Everything in Its Right Place',
+  ],
+  'Arctic Monkeys': [
+    'Do I Wanna Know?',
+    'R U Mine?',
+    '505',
+    'Fluorescent Adolescent',
+    'Arabella',
+  ],
+  Queen: [
+    'Bohemian Rhapsody',
+    "Don't Stop Me Now",
+    'Under Pressure',
+    'Somebody to Love',
+    'Killer Queen',
+  ],
+  'Billie Eilish': [
+    'Birds of a Feather',
+    'bad guy',
+    'Happier Than Ever',
+    'Lunch',
+    'ocean eyes',
+  ],
+  'The Beatles': [
+    'Here Comes the Sun',
+    'Come Together',
+    'Let It Be',
+    'Something',
+    'In My Life',
+  ],
+  'Tame Impala': [
+    'The Less I Know the Better',
+    'Let It Happen',
+    'Borderline',
+    'Feels Like We Only Go Backwards',
+  ],
+  'Massive Attack': ['Teardrop', 'Unfinished Sympathy', 'Angel', 'Protection'],
+}
 // Average length of one play, in minutes
 const PLAY_MINUTES = { movie: 126, show: 48, artist: 4.1 }
 const HISTORY_TYPE = { movie: 'movie', episode: 'show', track: 'artist' }
@@ -159,7 +246,10 @@ const items = Object.fromEntries(
   Object.entries(MEDIA).map(([type, list]) => [
     type,
     list.map(
-      ([title, year, plays, minutes, users, isDeleted, episodes], i) => ({
+      (
+        [title, year, plays, minutes, users, isDeleted, episodes, seasons],
+        i,
+      ) => ({
         key: KEY_BASE[type] + i + 1,
         title,
         year,
@@ -168,6 +258,7 @@ const items = Object.fromEntries(
         users,
         isDeleted: !!isDeleted,
         episodes,
+        seasons,
       }),
     ),
   ]),
@@ -342,6 +433,10 @@ function makePlays() {
             const started = Math.floor(NOW - (day + random()) * DAY)
             const seconds = Math.round(item.minutes * 60 * (0.8 + random() / 5))
             const number = 1 + Math.floor(random() * (item.episodes || 12))
+            const perSeason = Math.ceil(item.episodes / item.seasons)
+            const season = Math.ceil(number / perSeason)
+            const episode = number - (season - 1) * perSeason
+            const tracks = TRACKS[item.title]
 
             referenceId++
             rows.push({
@@ -360,15 +455,18 @@ function makePlays() {
                 type === 'movie'
                   ? item.title
                   : type === 'show'
-                    ? `Episode ${number}`
-                    : `Track ${number}`,
-              parent_title: type === 'show' ? 'Season 1' : '',
+                    ? `Episode ${episode}`
+                    : tracks[number % tracks.length],
+              parent_title: type === 'show' ? `Season ${season}` : '',
+              parent_media_index: type === 'show' ? season : null,
+              media_index: type === 'show' ? episode : null,
               grandparent_title: type === 'movie' ? '' : item.title,
               year: item.year,
               rating_key: type === 'movie' ? item.key : item.key * 100 + number,
               grandparent_rating_key: type === 'movie' ? '' : item.key,
-              // Posters come from TMDB, but artists have none there
-              thumb: '',
+              // The app asks for a show's or artist's own artwork itself
+              thumb:
+                type === 'movie' ? `/library/metadata/${item.key}/thumb/1` : '',
               user_id: Number(user.id),
               user: user.email.split('@')[0],
               friendly_name: user.name,
@@ -656,8 +754,16 @@ const SESSIONS = [
 ]
 // Where each piece of artwork comes from, by rating key
 const ARTWORK = {
+  ...Object.fromEntries([
+    ...items.movie.map((item) => [item.key, { tmdb: 'movie', ...item }]),
+    ...items.show.map((item) => [item.key, { tmdb: 'tv', ...item }]),
+    ...items.artist.map((item) => [item.key, { artist: item.title }]),
+  ]),
   ...Object.fromEntries(
-    items.artist.map((item) => [item.key, { artist: item.title }]),
+    USERS.filter((user) => user.portrait).map((user) => [
+      AVATAR_KEY_BASE + USERS.indexOf(user),
+      { portrait: user.portrait },
+    ]),
   ),
   7001: { tmdb: 'movie', title: 'Sinners', year: 2025 },
   7002: { album: 'Let It Bleed', artist: 'The Rolling Stones' },
@@ -675,6 +781,10 @@ async function findArtworkUrl(source) {
     const poster = search.results?.[0]?.poster_path
 
     return poster && `https://image.tmdb.org/t/p/w500${poster}`
+  }
+
+  if (source.portrait) {
+    return `https://randomuser.me/api/portraits/${source.portrait}.jpg`
   }
 
   if (source.album) {
