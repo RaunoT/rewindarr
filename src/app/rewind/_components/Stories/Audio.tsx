@@ -51,7 +51,7 @@ export default function StoryAudio({ userRewind, settings }: RewindStory) {
 
           <RewindStat step={3} noScale>
             <p className='mb-2'>
-              {t('favorite')}&nbsp;
+              {t(userRewind.audio.top.length > 1 ? 'favorite' : 'only')}&nbsp;
               <span className='rewind-cat'>
                 {userRewind.audio.top[0].title}
               </span>
