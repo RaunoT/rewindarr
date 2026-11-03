@@ -19,6 +19,8 @@ export type HistoryRequest = {
   // A show's requested seasons, in order
   seasons: number[]
   status: RequestStatus
+  // The title's ID in the media server, once it's there
+  ratingKey: string | null
   // The media server user who asked, empty when Seerr's user isn't one
   userId: string
   userName: string
