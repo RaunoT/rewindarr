@@ -262,6 +262,52 @@ async function addItems(entries: HistoryEntry[]): Promise<HistoryEntry[]> {
   )
 }
 
+// The show of an episode or the artist of a track, which a binge stays on
+function getBingeKey(play: HistoryPlay): string | null {
+  if (play.mediaType !== 'episode' && play.mediaType !== 'track') {
+    return null
+  }
+
+  return [
+    play.mediaType,
+    play.userId || play.identityId,
+    play.grandparentRatingKey ||
+      (play.mediaType === 'episode' ? play.showTitle : play.artistName),
+  ].join('|')
+}
+
+// Episodes of one show, or tracks of one artist, that a user played one after
+// another on the same day, as one entry. A request or another play between
+// them ends the binge. The day is the server's, like the history's dates.
+export function groupBinges(entries: HistoryEntry[]): HistoryEntry[] {
+  const grouped: HistoryEntry[] = []
+
+  for (const entry of entries) {
+    const last = grouped.at(-1)
+
+    if (entry.kind === 'play' && last?.kind === 'play') {
+      const binge = last.binge ?? [last.play]
+      const oldest = binge[binge.length - 1]
+      const key = getBingeKey(entry.play)
+
+      if (
+        key &&
+        key === getBingeKey(oldest) &&
+        new Date(entry.play.startedAt).toDateString() ===
+          new Date(oldest.startedAt).toDateString()
+      ) {
+        grouped[grouped.length - 1] = { ...last, binge: [...binge, entry.play] }
+
+        continue
+      }
+    }
+
+    grouped.push(entry)
+  }
+
+  return grouped
+}
+
 function matchesSearch(texts: (string | null)[], search: string): boolean {
   return texts.some((text) => text?.toLowerCase().includes(search))
 }
@@ -312,21 +358,24 @@ export async function getHistoryPage(
     )
   }
 
-  const entries = orderBy(
-    [
-      ...plays.map((play): HistoryEntry => ({
-        kind: 'play',
-        time: play.startedAt,
-        play,
-      })),
-      ...requests.map((request): HistoryEntry => ({
-        kind: 'request',
-        time: request.createdAt,
-        request,
-      })),
-    ],
-    'time',
-    'desc',
+  // A binge counts once in the pages, and each of its plays in the totals
+  const entries = groupBinges(
+    orderBy(
+      [
+        ...plays.map((play): HistoryEntry => ({
+          kind: 'play',
+          time: play.startedAt,
+          play,
+        })),
+        ...requests.map((request): HistoryEntry => ({
+          kind: 'request',
+          time: request.createdAt,
+          request,
+        })),
+      ],
+      'time',
+      'desc',
+    ),
   )
   const pageCount = Math.max(Math.ceil(entries.length / pageSize), 1)
   const current = clamp(page, 1, pageCount)

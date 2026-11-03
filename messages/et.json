@@ -109,6 +109,11 @@
     "previousPage": "Eelmine leht",
     "nextPage": "Järgmine leht",
     "episodeNumber": "H{season} · O{episode}",
+    "episodeOnly": "O{episode}",
+    "episodeRange": "H{season} · O{first}–O{last}",
+    "range": "{from} – {to}",
+    "episodeCount": "{count, plural, one {# osa} other {# osa}}",
+    "trackCount": "{count, plural, one {# lugu} other {# lugu}}",
     "rowsLabel": "Ridu lehel",
     "rowsOption": "{count} lehel",
     "kindLabel": "Tüüp",
@@ -130,8 +135,7 @@
     "requestStatusLabel": "{status}: ava {title} Seerris"
   },
   "MediaServerDeeplink": {
-    "available": "Saadaval",
-    "availableLabel": "Saadaval: ava {title} {server}is"
+    "openLabel": "Ava {title} {server}is"
   },
   "PeriodSelectContent": {
     "7days": "7 päeva",

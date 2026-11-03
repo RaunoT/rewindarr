@@ -77,8 +77,10 @@ export default function AppProvider({
             )}
             <main
               className={clsx(
-                // The same 16px around the page, the sidebar and between blocks
-                'group/main flex h-full min-h-dvh flex-col items-center overflow-x-hidden p-4',
+                // The same 16px around the page, the sidebar and between blocks.
+                // Clipped rather than hidden, which would make it a scroll
+                // container and keep sticky things inside from sticking.
+                'group/main flex h-full min-h-dvh flex-col items-center overflow-x-clip p-4',
                 {
                   'justify-center':
                     (pathname === '/' && !hasSidebar) ||

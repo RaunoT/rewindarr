@@ -16,10 +16,13 @@ type Props = {
   settings: PublicSettings
   isOwn: boolean
   isAnonymous: boolean
+  // Left out of one user's history, where it's the same on every card
+  isUserShown: boolean
 }
 
-// Built like a play's card, with the request's status in Seerr where a play
-// has its media server's button. Once it's all there, it gets that button too.
+// Built like a play's card, with the request's status in Seerr among its
+// links. Once some of it is there, the title and poster open it in the media
+// server.
 export default function HistoryRequestItem({
   request,
   item,
@@ -27,6 +30,7 @@ export default function HistoryRequestItem({
   settings,
   isOwn,
   isAnonymous,
+  isUserShown,
 }: Props) {
   const t = useTranslations()
   const { mediaType, seasons } = request
@@ -38,10 +42,16 @@ export default function HistoryRequestItem({
         ? t('History.season', { season: seasons[0] })
         : t('History.seasonCount', { count: seasons.length })
       : null
+  // What's there opens in the media server. Only a partly available one still
+  // needs its status, as the rest is yet to come.
   const deeplink =
-    request.status === 'available' && mediaServer && request.ratingKey
+    (request.status === 'available' ||
+      request.status === 'partiallyAvailable') &&
+    mediaServer &&
+    request.ratingKey
       ? { mediaServer, ratingKey: request.ratingKey }
       : null
+  const isStatusShown = request.status !== 'available' || !deeplink
 
   return (
     <MediaCard
@@ -62,16 +72,20 @@ export default function HistoryRequestItem({
           <STAT_ICONS.requests className='size-7 drop-shadow' />
         </span>
       }
-      user={{
-        name: isAnonymous
-          ? t('History.anonymous')
-          : request.userName || t('History.unknownUser'),
-        avatar: request.avatar,
-        isOwn,
-        isAnonymous,
-      }}
+      user={
+        isUserShown
+          ? {
+              name: isAnonymous
+                ? t('History.anonymous')
+                : request.userName || t('History.unknownUser'),
+              avatar: request.avatar,
+              isOwn,
+              isAnonymous,
+            }
+          : null
+      }
       action={
-        !deeplink && (
+        isStatusShown && (
           <a
             href={`${settings.connection.seerrUrl}/${mediaType}/${request.tmdbId}`}
             target='_blank'

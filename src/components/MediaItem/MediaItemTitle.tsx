@@ -1,18 +1,22 @@
 'use client'
 
 import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion'
+import { MediaServer } from '@/types/statsSource'
 import { TautulliItemRow } from '@/types/tautulli'
 import clsx from 'clsx'
 import { debounce } from 'lodash'
 import { motion, useAnimation } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { RefObject, useEffect, useRef } from 'react'
+import MediaServerLink from './MediaServerLink'
 
 type Props = {
   data: TautulliItemRow
   type: string
   parentRef: RefObject<HTMLDivElement | null>
   loggedInUserId?: string
+  // Makes the title open it in the media server
+  serverLink?: { mediaServer: MediaServer; ratingKey: number | string } | null
 }
 
 export default function MediaItemTitle({
@@ -20,6 +24,7 @@ export default function MediaItemTitle({
   type,
   parentRef,
   loggedInUserId,
+  serverLink,
 }: Props) {
   const t = useTranslations('MediaItem')
   const titleRef = useRef<HTMLSpanElement>(null)
@@ -109,7 +114,17 @@ export default function MediaItemTitle({
           ref={titleRef}
           title={shouldReduceMotion ? title : undefined}
         >
-          {title}
+          {serverLink ? (
+            <MediaServerLink
+              title={title}
+              {...serverLink}
+              className='media-link-title'
+            >
+              {title}
+            </MediaServerLink>
+          ) : (
+            title
+          )}
         </motion.span>
       </span>
       {isCurrentUser && <span className='sr-only'>{` ${t('you')}`}</span>}

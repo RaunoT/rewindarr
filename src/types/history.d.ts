@@ -34,8 +34,10 @@ export type HistoryRequest = {
 // A play or a request, at the time it started or was made. The page's
 // entries also get their title's year, ratings and IDs, as the dashboard's
 // items have them, which is null for music or when they couldn't be found.
+// Episodes or tracks played in a row are one entry, its play the newest and
+// `binge` all of them, newest first.
 export type HistoryEntry = (
-  | { kind: 'play'; time: number; play: HistoryPlay }
+  | { kind: 'play'; time: number; play: HistoryPlay; binge?: HistoryPlay[] }
   | { kind: 'request'; time: number; request: HistoryRequest }
 ) & { item?: TautulliItemRow | null }
 
