@@ -55,7 +55,7 @@ export default function StoryShows({ userRewind, settings }: RewindStory) {
 
           <RewindStat step={3} noScale>
             <p className='mb-2'>
-              {t('favorite')}{' '}
+              {t(userRewind.shows.top.length > 1 ? 'favorite' : 'only')}{' '}
               <span className='rewind-cat'>
                 {userRewind.shows.top[0].title}
               </span>
