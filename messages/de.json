@@ -276,6 +276,7 @@
   },
   "Common": {
     "dismiss": "Schließen",
+    "none": "Keine",
     "enabled": "Aktiv",
     "adminOnly": "Nur für Admins",
     "status": "Status",

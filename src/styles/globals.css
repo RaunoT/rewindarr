@@ -481,6 +481,26 @@
     }
   }
 
+  /* An option's icon or logo. Wide logos like IMDb's set their own size. */
+  .option-icon {
+    @apply flex shrink-0 items-center justify-center text-neutral-400;
+
+    > svg,
+    > img,
+    > .option-avatar {
+      @apply size-4 shrink-0;
+    }
+  }
+
+  /* Bigger in the list, like the users filter's */
+  .menu-item .option-icon > .option-avatar {
+    @apply size-6;
+  }
+
+  .option-avatar {
+    @apply relative overflow-hidden rounded-full;
+  }
+
   .input {
     @apply block w-full rounded-xl border-none bg-white/10 px-3 py-2 text-white transition-colors placeholder:text-neutral-400 hover:bg-white/15;
 
