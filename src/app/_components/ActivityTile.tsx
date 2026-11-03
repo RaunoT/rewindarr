@@ -72,8 +72,14 @@ export default function ActivityTile({ settings }: Props) {
                   STATS_SOURCE_NAMES[settings.connection.statisticsSource],
               })}
         </p>
+      ) : isLoading ? (
+        // As tall as the empty tile's text, so a phone's tiles below don't
+        // move when nothing plays
+        <SkeletonLine
+          className='mt-auto text-2xl font-semibold tracking-tight'
+          width='w-40'
+        />
       ) : (
-        !isLoading &&
         !data?.stream_count && (
           // Big and at the bottom, so the empty tile doesn't look unfinished
           <p className='mt-auto text-2xl font-semibold tracking-tight'>

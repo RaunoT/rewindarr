@@ -107,7 +107,10 @@ export default function Sidebar({ libraries, settings }: Props) {
             <Suspense
               fallback={
                 <DashboardLinksSkeleton
-                  count={settings.general.activeLibraries.length}
+                  count={
+                    settings.general.activeLibraries.length +
+                    Number(settings.dashboard.isUsersPageActive)
+                  }
                 />
               }
             >
@@ -217,8 +220,8 @@ function DashboardLinks({
   )
 }
 
-// One row for each library the settings list, so the links don't shift much
-// once they load
+// One row for each library the settings list and the users page, so the
+// links don't shift much once they load
 function DashboardLinksSkeleton({ count }: { count: number }) {
   return (
     <>
