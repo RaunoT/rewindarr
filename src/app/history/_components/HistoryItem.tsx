@@ -17,8 +17,6 @@ type Props = {
   item: TautulliItemRow | null | undefined
   mediaServer: MediaServer | null
   settings: PublicSettings
-  // Whether the signed-in user played it
-  isOwn: boolean
   // Who played it stays hidden, as on the activity page
   isAnonymous: boolean
 }
@@ -52,7 +50,6 @@ export default function HistoryItem({
   item,
   mediaServer,
   settings,
-  isOwn,
   isAnonymous,
 }: Props) {
   const t = useTranslations()
@@ -96,7 +93,6 @@ export default function HistoryItem({
           ? t('History.anonymous')
           : play.userName || t('History.unknownUser'),
         avatar: play.avatar,
-        isOwn,
         isAnonymous,
       }}
       stats={

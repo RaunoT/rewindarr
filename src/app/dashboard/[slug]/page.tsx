@@ -129,7 +129,6 @@ async function DashboardContent({
       mediaServer={mediaServer}
       count={count}
       settings={toPublicSettings(settings)}
-      loggedInUserId={loggedInUserId}
       nextLimit={getNextItemsLimit(limit, hasMore)}
     />
   )

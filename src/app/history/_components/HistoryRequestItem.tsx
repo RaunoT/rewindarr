@@ -14,7 +14,6 @@ type Props = {
   item: TautulliItemRow | null | undefined
   mediaServer: MediaServer | null
   settings: PublicSettings
-  isOwn: boolean
   isAnonymous: boolean
 }
 
@@ -25,7 +24,6 @@ export default function HistoryRequestItem({
   item,
   mediaServer,
   settings,
-  isOwn,
   isAnonymous,
 }: Props) {
   const t = useTranslations()
@@ -67,7 +65,6 @@ export default function HistoryRequestItem({
           ? t('History.anonymous')
           : request.userName || t('History.unknownUser'),
         avatar: request.avatar,
-        isOwn,
         isAnonymous,
       }}
       action={
