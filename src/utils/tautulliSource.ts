@@ -265,8 +265,14 @@ async function getServerUser(
 
 async function getActivity(): Promise<TautulliActivity | null> {
   const res = await fetchTautulli<TautulliActivity>('get_activity')
+  const data = res?.response?.data
 
-  return res?.response?.data ?? null
+  if (!data) {
+    return null
+  }
+
+  // Tautulli sends the count as a string, and '0' is truthy
+  return { ...data, stream_count: Number(data.stream_count) || 0 }
 }
 
 type TautulliSearchResult = TautulliMetadata & {
