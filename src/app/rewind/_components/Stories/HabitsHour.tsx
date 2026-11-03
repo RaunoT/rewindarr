@@ -19,8 +19,18 @@ export default function StoryHabitsHour({ userRewind }: RewindStory) {
   const t = useTranslations('Rewind.Habits')
   const tCommon = useTranslations('Common')
   const locale = useLocale()
+  // The axis has room for the hour alone, the sentence says it as a time
   const formatter = useMemo(
     () => new Intl.DateTimeFormat(locale, { hour: 'numeric', timeZone: 'UTC' }),
+    [locale],
+  )
+  const timeFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        hour: 'numeric',
+        minute: '2-digit',
+        timeZone: 'UTC',
+      }),
     [locale],
   )
   const { peakHour, hourly } = userRewind.habits
@@ -40,7 +50,7 @@ export default function StoryHabitsHour({ userRewind }: RewindStory) {
   const labels = Array.from({ length: 24 }, (_, hour) =>
     labelledHours.has(hour) ? formatHour(hour, formatter) : null,
   )
-  const peakHourLabel = formatHour(peakHour, formatter)
+  const peakHourLabel = formatHour(peakHour, timeFormatter)
 
   return (
     <>

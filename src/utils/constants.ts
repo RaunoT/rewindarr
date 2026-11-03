@@ -98,7 +98,7 @@ export const DEFAULT_SETTINGS: Settings = {
     isLibrariesSizeAndCountActive: true,
     isThemeMusicActive: false,
     music: null,
-    isSnowActive: false,
+    isSnowActive: true,
     startDate: '',
     complete: false,
   },

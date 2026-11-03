@@ -69,7 +69,8 @@ export default function TileItem({
 }
 
 // `lead` is a placeholder for what the loaded rows show before their poster,
-// such as History's time, so nothing moves when they arrive
+// such as History's time, so nothing moves when they arrive. Laid out like a
+// row with a detail over its title and who played it.
 export function TileItemsSkeleton({ lead }: { lead?: ReactNode }) {
   return (
     <ul className='space-y-2 text-sm'>
@@ -77,7 +78,11 @@ export function TileItemsSkeleton({ lead }: { lead?: ReactNode }) {
         <li key={i} className='flex items-center gap-3'>
           {lead}
           <div className='skeleton poster w-7 rounded-sm!' />
-          <SkeletonLine width={i % 2 ? 'w-1/2' : 'w-2/3'} />
+          <div className='flex min-w-0 flex-1 flex-col'>
+            <SkeletonLine className='text-xs' width='w-12' />
+            <SkeletonLine width={i % 2 ? 'w-1/2' : 'w-2/3'} />
+          </div>
+          <div className='skeleton size-6 shrink-0' />
         </li>
       ))}
     </ul>

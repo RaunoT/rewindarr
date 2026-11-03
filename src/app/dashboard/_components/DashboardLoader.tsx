@@ -1,9 +1,10 @@
 import CardWrapper from '@/app/_components/CardWrapper'
 import SkeletonLine from '@/components/SkeletonLine'
 import { TotalsSkeleton } from '@/components/Totals'
-import { ItemStatistics, PublicSettings } from '@/types/settings'
+import { PublicSettings } from '@/types/settings'
 import { TautulliMediaType } from '@/types/tautulli'
 import { DASHBOARD_PAGE_SIZE, RATING_STATISTICS } from '@/utils/constants'
+import { getLinkButtonSites } from '@/utils/externalLinks'
 import clsx from 'clsx'
 
 type Props = {
@@ -50,11 +51,7 @@ export function DashboardListSkeleton({
   return (
     <ul className='flex flex-col overflow-hidden'>
       {[...Array(rows)].map((_, i) => (
-        <ListItem
-          key={i}
-          type={type}
-          activeStats={settings.general.activeItemStatistics}
-        />
+        <ListItem key={i} type={type} settings={settings} />
       ))}
     </ul>
   )
@@ -62,11 +59,12 @@ export function DashboardListSkeleton({
 
 function ListItem({
   type,
-  activeStats,
+  settings,
 }: {
   type: Props['type']
-  activeStats: ItemStatistics
+  settings: PublicSettings
 }) {
+  const activeStats = settings.general.activeItemStatistics
   const isUsers = type === 'users'
   // Users have the date of their first play there
   const hasDetails =
@@ -83,6 +81,15 @@ function ListItem({
   ]
     .filter((width): width is string => !!width)
     .slice(0, 2)
+  // Music has no links, and a site whose rating is shown opens from it
+  const linkCount =
+    type === 'movie' || type === 'show'
+      ? getLinkButtonSites(
+          type,
+          settings.general.activeExternalLinks,
+          activeStats,
+        ).length
+      : 0
 
   return (
     <li className='flex items-center gap-3 py-2.5 not-first:border-t not-first:border-white/10 first:pt-0 last:pb-0 max-sm:flex-wrap sm:gap-4'>
@@ -110,12 +117,11 @@ function ListItem({
               ))}
             </ul>
           </div>
-          {!isUsers && (
+          {linkCount > 0 && (
             <div className='flex shrink-0 flex-wrap gap-x-1.5 gap-y-2.5 max-sm:basis-full max-sm:*:flex-1 @md:mt-0.5 @md:max-w-56 @md:justify-end'>
-              <div className='skeleton h-6 w-24 rounded-md' />
-              {type !== 'artist' && (
-                <div className='skeleton h-6 w-11 rounded-md' />
-              )}
+              {[...Array(linkCount)].map((_, i) => (
+                <div key={i} className='skeleton h-6 w-11 rounded-md' />
+              ))}
             </div>
           )}
         </div>

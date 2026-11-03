@@ -1,6 +1,7 @@
 'use client'
 
 import Loader from '@/components/Loader'
+import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
 import { useFormStatus } from 'react-dom'
 
@@ -14,11 +15,19 @@ export default function SettingsSaveButton({ isSetup }: Props) {
 
   return (
     <button
-      className='button flex w-full min-w-28 justify-center sm:w-fit'
+      className='button relative flex w-full min-w-28 justify-center sm:w-fit'
       type='submit'
       disabled={pending}
     >
-      {pending ? <Loader size={6} /> : t(isSetup ? 'continue' : 'save')}
+      {/* Kept while saving, so the button doesn't change width */}
+      <span className={clsx(pending && 'invisible')}>
+        {t(isSetup ? 'continue' : 'save')}
+      </span>
+      {pending && (
+        <span className='absolute inset-0 flex items-center justify-center'>
+          <Loader size={6} />
+        </span>
+      )}
     </button>
   )
 }
