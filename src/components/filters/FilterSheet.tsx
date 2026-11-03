@@ -32,7 +32,8 @@ const WIDE_QUERY = '(min-width: 40rem)'
 // The filters beyond the period and the search, behind one button that counts
 // those that are on. A panel under it on wider screens, a sheet from the
 // bottom on phones. Filters apply as they're picked, so the list behind
-// updates while it's open.
+// updates while it's open. When they don't fit, they scroll and the buttons
+// stay in sight.
 export default function FilterSheet({
   count,
   canClear,
@@ -43,14 +44,17 @@ export default function FilterSheet({
   const t = useTranslations('Filters')
   const isWide = useMediaQuery(WIDE_QUERY)
   const content = (
-    <Dialog className='flex flex-col gap-6 outline-none'>
+    <Dialog className='flex min-h-0 flex-1 flex-col gap-6 outline-none'>
       {({ close }) => (
         <>
-          <Heading slot='title' className='text-lg font-semibold'>
-            {t('title')}
-          </Heading>
-          {children}
-          <div className='flex gap-3'>
+          {/* Out to the edges, so the scrollbar sits there */}
+          <div className='thin-scrollbar -mx-5 flex min-h-0 flex-col gap-6 overflow-y-auto px-5'>
+            <Heading slot='title' className='text-lg font-semibold'>
+              {t('title')}
+            </Heading>
+            {children}
+          </div>
+          <div className='flex shrink-0 gap-3'>
             <Button
               className='data-focus-visible:focus-ring flex-1 rounded-full px-6 py-2.5 font-semibold ring-1 ring-white/20 transition-colors ring-inset hover:bg-white/10 disabled:opacity-40'
               isDisabled={!canClear}

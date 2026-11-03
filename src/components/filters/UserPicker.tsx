@@ -62,8 +62,9 @@ export function UserList({
             : [...keys].map(String),
         )
       }
+      // Apart, so the hover of one doesn't run into the next
       className={clsx(
-        'thin-scrollbar max-h-72 overflow-y-auto outline-none',
+        'thin-scrollbar flex flex-col gap-1 overflow-y-auto outline-none',
         className,
       )}
     >
@@ -121,6 +122,7 @@ export default function UserPicker({
             options={options}
             selectionMode='single'
             value={value}
+            className='max-h-72'
             onChange={(newValue) => {
               onChange(newValue)
               setIsOpen(false)

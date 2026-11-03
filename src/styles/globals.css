@@ -400,9 +400,10 @@
     @apply flex size-5 items-center justify-center rounded-full bg-white text-[0.6875rem] font-semibold text-black tabular-nums max-sm:absolute max-sm:-top-1 max-sm:-right-1 sm:-mr-1.5;
   }
 
-  /* The filters under their button on wider screens */
+  /* The filters under their button on wider screens. Wide enough for a row of
+     the libraries. */
   .filter-panel {
-    @apply w-96 overflow-y-auto bg-neutral-900/80 outline-none;
+    @apply flex w-100 flex-col bg-neutral-900/80 outline-none;
 
     &[data-entering] {
       animation: fade-in 0.15s ease-out;
@@ -427,7 +428,7 @@
 
   /* Slides up from the bottom of the screen, on phones. Used with glass-sheet. */
   .sheet {
-    @apply max-h-[85dvh] w-full overflow-y-auto rounded-b-none bg-neutral-900/80 pb-[max(1.25rem,env(safe-area-inset-bottom))] outline-none;
+    @apply flex max-h-[85dvh] w-full flex-col rounded-b-none bg-neutral-900/80 pb-[max(1.25rem,env(safe-area-inset-bottom))] outline-none;
 
     &[data-entering] {
       animation: sheet-up 0.25s ease-out;

@@ -238,7 +238,8 @@ export default function HistoryFilters({
                   selectionMode='multiple'
                   value={pickedUsers}
                   onChange={(values) => setParam('user', values)}
-                  className='-mx-1.5'
+                  // Five rows, then it scrolls
+                  className='-mx-1.5 max-h-54'
                 />
               </FilterGroup>
             )
