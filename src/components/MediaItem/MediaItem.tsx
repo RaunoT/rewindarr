@@ -21,6 +21,7 @@ import { useRef } from 'react'
 import MediaItemTitle from './MediaItemTitle'
 import MediaServerDeeplink from './MediaServerDeeplink'
 import Rank from './Rank'
+import SeerrLogo from './SeerrLogo'
 import SiteLogo from './SiteLogo'
 import TitleDetails from './TitleDetails'
 
@@ -230,7 +231,7 @@ export default function MediaItem({
                     className='button-card'
                     aria-label={t('requestLabel', { title: data.title })}
                   >
-                    <STAT_ICONS.requests />
+                    <SeerrLogo />
                     {t('request')}
                   </a>
                 ) : (
