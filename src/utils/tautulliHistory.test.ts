@@ -85,6 +85,9 @@ describe('toTautulliPlay', () => {
       tmdbId: null,
       identityId: '42',
       avatar: 'https://plex.tv/users/42/avatar',
+      seasonNumber: null,
+      episodeNumber: null,
+      transcodeDecision: null,
     })
   })
 
@@ -104,6 +107,38 @@ describe('toTautulliPlay', () => {
     expect(
       toTautulliPlay(row({ percent_complete: null }))?.percentComplete,
     ).toBe(null)
+  })
+
+  it('keeps the episode numbers and how it played', () => {
+    const play = toTautulliPlay(
+      row({
+        media_type: 'episode',
+        parent_media_index: '0',
+        media_index: 3,
+        transcode_decision: 'copy',
+      }),
+    )
+
+    expect(play).toMatchObject({
+      seasonNumber: 0,
+      episodeNumber: 3,
+      transcodeDecision: 'copy',
+    })
+  })
+
+  it('has no episode numbers when Tautulli has none', () => {
+    const movie = toTautulliPlay(
+      row({ parent_media_index: '', media_index: '' }),
+    )
+    const episode = toTautulliPlay(
+      row({ media_type: 'episode', parent_media_index: '', media_index: '' }),
+    )
+
+    expect(movie).toMatchObject({
+      seasonNumber: null,
+      episodeNumber: null,
+    })
+    expect(episode).toMatchObject({ seasonNumber: null, episodeNumber: null })
   })
 
   it('orders a resumed play by its last session', () => {

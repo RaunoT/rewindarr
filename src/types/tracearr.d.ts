@@ -88,11 +88,16 @@ type TracearrMediaFields = {
   grandparent_rating_key: string | null
 }
 
+export type TracearrDecision = 'directplay' | 'copy' | 'transcode'
+
 export type TracearrHistoryRecord = TracearrMediaFields & {
   id: string
   duration_ms: number | null
   percent_complete: number | null
   started_at: string
+  is_transcode: boolean | null
+  video_decision: TracearrDecision | null
+  audio_decision: TracearrDecision | null
   user: {
     id: string
     server_user_id: string
@@ -114,8 +119,8 @@ export type TracearrStream = TracearrMediaFields & {
   player: string | null
   product: string | null
   is_transcode: boolean
-  video_decision: 'directplay' | 'copy' | 'transcode' | null
-  audio_decision: 'directplay' | 'copy' | 'transcode' | null
+  video_decision: TracearrDecision | null
+  audio_decision: TracearrDecision | null
   bitrate: number | null
   source_video_codec: string | null
   source_audio_codec: string | null

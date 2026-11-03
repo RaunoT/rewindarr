@@ -68,24 +68,14 @@
     "showMore": "Afficher plus",
     "title": "Tableau de bord",
     "usersTitle": "Utilisateurs",
-    "users": "{count, plural, one {# utilisateur} other {# utilisateurs}}",
-    "movies": "{count, plural, one {film} other {films}}",
-    "episodes": "{count, plural, one {épisode} other {épisodes}}",
-    "tracks": "{count, plural, one {morceau} other {morceaux}}",
-    "requests": "{count, plural, one {# demande} other {# demandes}}",
-    "durationWatched": "{duration} de visionnage",
-    "durationListened": "{duration} d'écoute",
-    "durationPlayed": "{duration} de lecture"
+    "users": "{count, plural, one {# utilisateur} other {# utilisateurs}}"
   },
   "DashboardFilters": {
     "type": "Statistiques de",
     "general": "Tout le monde",
     "personal": "Moi uniquement",
     "sortByLabel": "Trier par",
-    "sort": "Trier",
-    "byDuration": "Par durée de visionnage",
-    "byPlays": "Par lectures",
-    "byUsers": "Par utilisateurs"
+    "sort": "Trier"
   },
   "DashboardNavContent": {
     "label": "Navigation du tableau de bord",
@@ -103,7 +93,41 @@
   "History": {
     "syncingTitle": "Synchronisation de l'historique",
     "syncingDescription": "L'historique de lecture de {source} n'est synchronisé qu'une fois, ce qui peut prendre quelques minutes. {count, plural, =0 {Cela vient de commencer.} one {# lecture pour l'instant, depuis {date}.} other {# lectures pour l'instant, depuis {date}.}} Cette page se met à jour toute seule.",
-    "syncingShort": "Synchronisation de l'historique…"
+    "syncingShort": "Synchronisation de l'historique…",
+    "title": "Historique",
+    "libraryLabel": "Bibliothèque",
+    "noPlays": "Rien n'a encore été lu",
+    "poster": "Affiche de {title}",
+    "anonymous": "Anonyme",
+    "unknownUser": "Utilisateur inconnu",
+    "onlyMine": "Seulement les miennes",
+    "search": "Rechercher un titre",
+    "clearSearch": "Effacer la recherche",
+    "noMatches": "Aucune lecture ne correspond aux filtres",
+    "pagination": "Pages",
+    "page": "Page {page}",
+    "pageOf": "{page} sur {pageCount}",
+    "previousPage": "Page précédente",
+    "nextPage": "Page suivante",
+    "episodeNumber": "S{season} · É{episode}",
+    "rowsLabel": "Lignes par page",
+    "rowsOption": "{count} par page",
+    "kindLabel": "Type",
+    "plays": "Lectures",
+    "requests": "Demandes",
+    "request": "Demande",
+    "unknownTitle": "Titre inconnu",
+    "season": "Saison {season}",
+    "seasonCount": "{count, plural, one {# saison} other {# saisons}}",
+    "requestsFailed": "Impossible de charger les demandes depuis Seerr",
+    "requestStatus": {
+      "pending": "En attente",
+      "approved": "Approuvée",
+      "declined": "Refusée",
+      "failed": "Échouée",
+      "partiallyAvailable": "Disponible en partie",
+      "available": "Disponible"
+    }
   },
   "MediaServerDeeplink": {
     "available": "Disponible",
@@ -113,8 +137,7 @@
     "7days": "7 jours",
     "pastYear": "Année passée",
     "allTime": "Tout le temps",
-    "days": "{count, plural, one {# jour} other {# jours}}",
-    "label": "Sélection de période"
+    "days": "{count, plural, one {# jour} other {# jours}}"
   },
   "NotFound": {
     "title": "404",
@@ -164,6 +187,7 @@
       "rewind": "Rewind",
       "dashboard": "Tableau de bord",
       "activity": "Activité",
+      "history": "Historique",
       "complete": "Terminé",
       "incomplete": "Incomplet",
       "connectionRequired": "Terminez d'abord les paramètres de connexion"
@@ -207,6 +231,9 @@
     },
     "Activity": {
       "title": "Paramètres d'activité"
+    },
+    "History": {
+      "title": "Paramètres de l'historique"
     },
     "General": {
       "title": "Paramètres généraux",
@@ -268,11 +295,11 @@
     "time": {
       "zero": "0 min",
       "month": "{count, plural, one {# mois} other {# mois}}",
-      "week": "{count, plural, one {# semaine} other {# semaines}}",
-      "day": "{count, plural, one {# jour} other {# jours}}",
+      "week": "{count, plural, one {# sem.} other {# sem.}}",
+      "day": "{count, plural, one {# j} other {# j}}",
       "hr": "{count, plural, one {# h} other {# h}}",
       "min": "{count, plural, one {# min} other {# min}}",
-      "sec": "{count, plural, one {# sec} other {# sec}}"
+      "sec": "{count, plural, one {# s} other {# s}}"
     },
     "fileSize": "{value, number} {unit}"
   },
@@ -431,5 +458,20 @@
     "requestLabel": "Demander {title}",
     "externalLinkLabel": "{title} sur {site}",
     "externalSearchLabel": "Rechercher {title} sur {site}"
+  },
+  "Totals": {
+    "playTime": "Durée de lecture",
+    "listenTime": "Durée d'écoute",
+    "movies": "Films",
+    "episodes": "Épisodes",
+    "tracks": "Morceaux"
+  },
+  "Filters": {
+    "title": "Filtres",
+    "titleWithCount": "{count, plural, one {Filtres, # actif} other {Filtres, # actifs}}",
+    "clearAll": "Tout effacer",
+    "done": "Terminé",
+    "period": "Période",
+    "all": "Tout"
   }
 }

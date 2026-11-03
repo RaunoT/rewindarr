@@ -26,6 +26,11 @@ export type Play = {
   // Tracearr's identity of the user, or Tautulli's user ID
   identityId: string
   avatar: string
+  // An episode's, null for other media or when unknown
+  seasonNumber: number | null
+  episodeNumber: number | null
+  // In Plex's words: "direct play", "copy" or "transcode". Null when unknown.
+  transcodeDecision: string | null
 }
 
 // How far Rewindarr has read the play history

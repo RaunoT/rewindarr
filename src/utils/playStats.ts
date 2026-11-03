@@ -2,6 +2,7 @@ import { Play, PlayMediaType } from '@/types/playHistory'
 import {
   DurationQuery,
   Genres,
+  HistoryPlay,
   MediaStats,
   PlaysByTime,
   StatsSource,
@@ -100,6 +101,7 @@ export type PlayStats = Pick<
   | 'getGenres'
   | 'getPlaysByTime'
   | 'getPlayItem'
+  | 'getHistoryPlays'
 >
 
 type PlaysQuery = Omit<DurationQuery, 'since'> & {
@@ -571,6 +573,26 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
     return item
   }
 
+  async function getHistoryPlays(query: DurationQuery): Promise<HistoryPlay[]> {
+    const [plays, users] = await Promise.all([
+      getPlays(query),
+      provider.getUsers(),
+    ])
+    const usersByIdentity = new Map(
+      users.map((user) => [user.identityId, user]),
+    )
+
+    return orderBy(plays, 'startedAt', 'desc').map((play) => {
+      const user = usersByIdentity.get(play.identityId)
+
+      return {
+        ...play,
+        userId: user?.userId ?? '',
+        userName: user?.friendlyName ?? '',
+      }
+    })
+  }
+
   return {
     getTotalDuration,
     getTopItems,
@@ -581,5 +603,6 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
     getGenres,
     getPlaysByTime,
     getPlayItem,
+    getHistoryPlays,
   }
 }

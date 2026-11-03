@@ -112,6 +112,11 @@ export const DEFAULT_SETTINGS: Settings = {
     isAdminOnly: false,
     complete: false,
   },
+  history: {
+    isActive: true,
+    isAdminOnly: false,
+    complete: false,
+  },
   setupComplete: false,
 }
 
@@ -125,6 +130,7 @@ export const SETTINGS_PAGES = [
   { href: '/settings/rewind', key: 'rewind' },
   { href: '/settings/dashboard', key: 'dashboard' },
   { href: '/settings/activity', key: 'activity' },
+  { href: '/settings/history', key: 'history' },
 ]
 
 // Wherever they're opened from, the settings start on the first page
@@ -189,3 +195,7 @@ export const ACTIVITY_DETAILS_COOKIE_NAME = 'activityDetails'
 export const DASHBOARD_PAGE_SIZE = 5
 // Each row costs the source and TMDB a lookup, so the URL can't ask for more
 export const DASHBOARD_MAX_ITEMS = 50
+// The plays a history page can show, the first by default
+export const HISTORY_PAGE_SIZES = [10, 25, 50, 100]
+// Remembers the plays per page, for when the URL doesn't say
+export const HISTORY_PAGE_SIZE_COOKIE_NAME = 'historyPageSize'

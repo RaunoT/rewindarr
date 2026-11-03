@@ -86,12 +86,19 @@ export type ActivitySettings = {
   complete: boolean
 }
 
+export type HistorySettings = {
+  isActive: boolean
+  isAdminOnly: boolean
+  complete: boolean
+}
+
 export type Settings = {
   connection: ConnectionSettings
   general: GeneralSettings
   rewind: RewindSettings
   dashboard: DashboardSettings
   activity: ActivitySettings
+  history: HistorySettings
   setupComplete: boolean
 }
 

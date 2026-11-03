@@ -8,6 +8,7 @@ import {
   getTracearrPlays,
   getTracearrServerUsers,
   getTracearrUser,
+  getTracearrUsers,
 } from './fetchTracearr'
 import getSettings from './getSettings'
 import tracearrSource, { getTracearrMediaData } from './tracearrSource'
@@ -18,6 +19,7 @@ vi.mock('./fetchTracearr', async (importOriginal) => ({
   getTracearrPlays: vi.fn(),
   getTracearrServerUsers: vi.fn(),
   getTracearrUser: vi.fn(),
+  getTracearrUsers: vi.fn(),
 }))
 vi.mock('./getSettings', () => ({ default: vi.fn() }))
 vi.mock('./fetchTmdb', () => ({ default: vi.fn() }))
@@ -62,6 +64,9 @@ function play(overrides: Partial<Play>): Play {
     tmdbId: null,
     identityId: 'alice',
     avatar: '',
+    seasonNumber: null,
+    episodeNumber: null,
+    transcodeDecision: null,
     ...overrides,
   }
 }
@@ -360,5 +365,37 @@ describe('getServerUser', () => {
     await expect(tracearrSource.getServerUser('1', '')).resolves.toEqual({
       status: 'unavailable',
     })
+  })
+})
+
+describe('getInactiveUser', () => {
+  beforeEach(() => {
+    vi.mocked(getTracearrUsers).mockResolvedValue([
+      {
+        is_admin: 0,
+        is_restricted: 0,
+        is_active: 1,
+        user_id: '1',
+        friendly_name: 'Alice',
+        thumb: '',
+        user_thumb: '',
+        username: 'alice',
+        email: '',
+        shared_libraries: [],
+      },
+    ])
+  })
+
+  it('gives a user Tracearr lists a row without plays', async () => {
+    await expect(tracearrSource.getInactiveUser('1')).resolves.toMatchObject({
+      user: 'alice',
+      friendly_name: 'Alice',
+      user_id: 1,
+      total_duration: 0,
+    })
+  })
+
+  it('has no row for a user Tracearr does not list', async () => {
+    await expect(tracearrSource.getInactiveUser('2')).resolves.toBeNull()
   })
 })

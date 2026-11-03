@@ -34,6 +34,7 @@ function completeSettings(): Settings {
   settings.rewind.complete = true
   settings.dashboard.complete = true
   settings.activity.complete = true
+  settings.history.complete = true
 
   return settings
 }
@@ -334,6 +335,53 @@ describe('getSettings', () => {
 
     expect(getSettings().setupComplete).toBe(true)
     expect(readSavedSettings().setupComplete).toBe(true)
+  })
+
+  it('keeps a server set up before the history settings page set up', async () => {
+    const settings: Partial<Settings> = completeSettings()
+
+    delete settings.history
+    settings.setupComplete = true
+    fs.writeFileSync(settingsPath, JSON.stringify(settings))
+
+    const { default: getSettings } = await loadModule()
+    const { checkRequiredSettings } = await import('./helpers')
+
+    expect(getSettings().history).toEqual({
+      ...DEFAULT_SETTINGS.history,
+      complete: true,
+    })
+    expect(checkRequiredSettings(getSettings())).toBeNull()
+  })
+
+  it('keeps the saved history settings of a server set up before', async () => {
+    const settings = completeSettings()
+
+    // @ts-expect-error - saved before the page had a setup step
+    delete settings.history.complete
+    settings.history.isAdminOnly = true
+    settings.setupComplete = true
+    fs.writeFileSync(settingsPath, JSON.stringify(settings))
+
+    const { default: getSettings } = await loadModule()
+
+    expect(getSettings().history).toMatchObject({
+      isAdminOnly: true,
+      complete: true,
+    })
+  })
+
+  it('asks for the history settings in a first setup', async () => {
+    const settings: Partial<Settings> = completeSettings()
+
+    delete settings.history
+    settings.setupComplete = false
+    fs.writeFileSync(settingsPath, JSON.stringify(settings))
+
+    const { default: getSettings } = await loadModule()
+
+    expect(getSettings().history.complete).toBe(false)
+    expect(getSettings().setupComplete).toBe(false)
   })
 
   it('leaves an old file without a saved connection in setup', async () => {

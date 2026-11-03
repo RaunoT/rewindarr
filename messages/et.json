@@ -68,24 +68,14 @@
     "showMore": "Näita rohkem",
     "title": "Edetabel",
     "usersTitle": "Kasutajad",
-    "users": "{count, plural, one {# kasutaja} other {# kasutajat}}",
-    "movies": "{count, plural, one {film} other {filmi}}",
-    "episodes": "{count, plural, one {episood} other {episoodi}}",
-    "tracks": "{count, plural, one {lugu} other {lugu}}",
-    "requests": "{count, plural, one {# tellimus} other {# tellimust}}",
-    "durationWatched": "{duration} vaadatud",
-    "durationListened": "{duration} kuulatud",
-    "durationPlayed": "{duration} mängitud"
+    "users": "{count, plural, one {# kasutaja} other {# kasutajat}}"
   },
   "DashboardFilters": {
     "type": "Kelle statistika",
     "general": "Kõigi",
     "personal": "Ainult minu",
     "sortByLabel": "Sorteerimisalus",
-    "sort": "Sorteerimine",
-    "byDuration": "Vaatamisaja järgi",
-    "byPlays": "Mängimiste järgi",
-    "byUsers": "Kasutajate arvu järgi"
+    "sort": "Sorteerimine"
   },
   "DashboardNavContent": {
     "label": "Edetabeli navigatsioon",
@@ -103,7 +93,41 @@
   "History": {
     "syncingTitle": "Esitusajaloo sünkroonimine",
     "syncingDescription": "Allika {source} esitusajalugu sünkroonitakse üks kord ja see võib võtta paar minutit. {count, plural, =0 {Sünkroonimine just algas.} one {Seni on sünkroonitud # mängimine, alates {date}.} other {Seni on sünkroonitud # mängimist, alates {date}.}} Leht uueneb ise.",
-    "syncingShort": "Esitusajaloo sünkroonimine…"
+    "syncingShort": "Esitusajaloo sünkroonimine…",
+    "title": "Ajalugu",
+    "libraryLabel": "Kogumik",
+    "noPlays": "Midagi pole veel esitatud",
+    "poster": "{title} poster",
+    "anonymous": "Anonüümne",
+    "unknownUser": "Tundmatu kasutaja",
+    "onlyMine": "Ainult minu",
+    "search": "Otsi pealkirju",
+    "clearSearch": "Tühjenda otsing",
+    "noMatches": "Filtritele ei vasta ükski esitus",
+    "pagination": "Lehed",
+    "page": "Leht {page}",
+    "pageOf": "{page} / {pageCount}",
+    "previousPage": "Eelmine leht",
+    "nextPage": "Järgmine leht",
+    "episodeNumber": "H{season} · O{episode}",
+    "rowsLabel": "Ridu lehel",
+    "rowsOption": "{count} lehel",
+    "kindLabel": "Tüüp",
+    "plays": "Esitused",
+    "requests": "Soovid",
+    "request": "Soov",
+    "unknownTitle": "Tundmatu pealkiri",
+    "season": "{season}. hooaeg",
+    "seasonCount": "{count, plural, one {# hooaeg} other {# hooaega}}",
+    "requestsFailed": "Seerrist ei õnnestunud soove laadida",
+    "requestStatus": {
+      "pending": "Ootel",
+      "approved": "Kinnitatud",
+      "declined": "Tagasi lükatud",
+      "failed": "Ebaõnnestus",
+      "partiallyAvailable": "Osaliselt saadaval",
+      "available": "Saadaval"
+    }
   },
   "MediaServerDeeplink": {
     "available": "Saadaval",
@@ -113,8 +137,7 @@
     "7days": "7 päeva",
     "pastYear": "Viimane aasta",
     "allTime": "Kokku",
-    "days": "{count, plural, one {# päev} other {# päeva}}",
-    "label": "Perioodi valik"
+    "days": "{count, plural, one {# päev} other {# päeva}}"
   },
   "NotFound": {
     "title": "404",
@@ -164,6 +187,7 @@
       "rewind": "Rewind",
       "dashboard": "Edetabel",
       "activity": "Tegevus",
+      "history": "Ajalugu",
       "complete": "Lõpetatud",
       "incomplete": "Lõpetamata",
       "connectionRequired": "Lõpeta kõigepealt ühenduse seadistamine"
@@ -207,6 +231,9 @@
     },
     "Activity": {
       "title": "Tegevuse seaded"
+    },
+    "History": {
+      "title": "Ajaloo seaded"
     },
     "General": {
       "title": "Üldseaded",
@@ -268,9 +295,9 @@
     "time": {
       "zero": "0 min",
       "month": "{count, plural, one {# kuu} other {# kuud}}",
-      "week": "{count, plural, one {# nädal} other {# nädalat}}",
+      "week": "{count, plural, one {# näd} other {# näd}}",
       "day": "{count, plural, one {# päev} other {# päeva}}",
-      "hr": "{count, plural, one {# tund} other {# tundi}}",
+      "hr": "{count, plural, one {# t} other {# t}}",
       "min": "{count, plural, one {# min} other {# min}}",
       "sec": "{count, plural, one {# sek} other {# sek}}"
     },
@@ -431,5 +458,20 @@
     "requestLabel": "Telli {title}",
     "externalLinkLabel": "{title} saidil {site}",
     "externalSearchLabel": "Otsi {title} saidilt {site}"
+  },
+  "Totals": {
+    "playTime": "Mängimisaeg",
+    "listenTime": "Kuulamisaeg",
+    "movies": "Filmid",
+    "episodes": "Episoodid",
+    "tracks": "Lood"
+  },
+  "Filters": {
+    "title": "Filtrid",
+    "titleWithCount": "{count, plural, one {Filtrid, # sees} other {Filtrid, # sees}}",
+    "clearAll": "Tühjenda kõik",
+    "done": "Valmis",
+    "period": "Periood",
+    "all": "Kõik"
   }
 }

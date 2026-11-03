@@ -1579,6 +1579,9 @@ describe('getTracearrPlays', () => {
         tmdbId: null,
         identityId: 'u1',
         avatar: '',
+        seasonNumber: null,
+        episodeNumber: null,
+        transcodeDecision: null,
       }
     }
 
@@ -1700,5 +1703,56 @@ describe('getTracearrPlays', () => {
         expect.any(Error),
       )
     })
+  })
+})
+
+describe('getTranscodeDecision', () => {
+  it('puts the stream in Plex words, as Tautulli does', async () => {
+    const { getTranscodeDecision } = await load()
+
+    expect(
+      getTranscodeDecision({ is_transcode: true, video_decision: 'copy' }),
+    ).toBe('transcode')
+    expect(
+      getTranscodeDecision({
+        is_transcode: false,
+        video_decision: 'copy',
+        audio_decision: 'directplay',
+      }),
+    ).toBe('copy')
+    expect(
+      getTranscodeDecision({
+        is_transcode: false,
+        video_decision: 'directplay',
+      }),
+    ).toBe('direct play')
+  })
+
+  it('goes by the tracks when the stream has no decision', async () => {
+    const { getTranscodeDecision } = await load()
+
+    expect(
+      getTranscodeDecision({
+        is_transcode: null,
+        video_decision: 'copy',
+        audio_decision: 'transcode',
+      }),
+    ).toBe('transcode')
+    expect(getTranscodeDecision({ video_decision: 'transcode' })).toBe(
+      'transcode',
+    )
+  })
+
+  it('has none when Tracearr has none', async () => {
+    const { getTranscodeDecision } = await load()
+
+    expect(getTranscodeDecision({})).toBeNull()
+    expect(
+      getTranscodeDecision({
+        is_transcode: null,
+        video_decision: null,
+        audio_decision: null,
+      }),
+    ).toBeNull()
   })
 })

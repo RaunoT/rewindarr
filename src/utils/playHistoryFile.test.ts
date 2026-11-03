@@ -37,6 +37,9 @@ function play(overrides: Partial<Play>): Play {
     tmdbId: 438631,
     identityId: 'alice',
     avatar: '',
+    seasonNumber: null,
+    episodeNumber: null,
+    transcodeDecision: null,
     ...overrides,
   }
 }
@@ -163,7 +166,7 @@ describe('playHistoryFile', () => {
 
     const file = readFile() as { histories: { plays: object[] }[] }
 
-    writeFile({ ...file, version: 3 })
+    writeFile({ ...file, version: 4 })
 
     await expect(readHistoryFile()).resolves.toEqual(new Map())
 
@@ -202,6 +205,31 @@ describe('playHistoryFile', () => {
     expect(history?.plays.every((item) => item.percentComplete === null)).toBe(
       true,
     )
+    expect(history?.rebuildAt).toBe(0)
+  })
+
+  it('reads a history without episode numbers and streams again soon', async () => {
+    await writeHistoryFile([[KEY, snapshot]])
+
+    const file = readFile() as { histories: { plays: object[] }[] }
+    const laterFields = ['seasonNumber', 'episodeNumber', 'transcodeDecision']
+
+    writeFile({
+      version: 2,
+      histories: file.histories.map((history) => ({
+        ...history,
+        plays: history.plays.map((item) => omit(item, laterFields)),
+      })),
+    })
+
+    const history = (await readHistoryFile()).get(KEY)
+
+    expect(history?.plays).toHaveLength(snapshot.plays.length)
+    expect(
+      history?.plays.every((item) =>
+        laterFields.every((field) => item[field as keyof typeof item] === null),
+      ),
+    ).toBe(true)
     expect(history?.rebuildAt).toBe(0)
   })
 

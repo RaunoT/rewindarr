@@ -42,6 +42,9 @@ function play(
     tmdbId: null,
     identityId: 'alice',
     avatar: '',
+    seasonNumber: null,
+    episodeNumber: null,
+    transcodeDecision: null,
     ...overrides,
   }
 }
@@ -371,5 +374,37 @@ describe('plays short of the percent in the settings', () => {
 
     expect(sum(hourly)).toBe(1)
     expect(sum(daily)).toBe(1)
+  })
+})
+
+describe('getHistoryPlays', () => {
+  function getHistoryPlays(excludedUsers: string[] = []) {
+    vi.mocked(getSettings).mockReturnValue({
+      general: { excludedUsers },
+    } as unknown as ReturnType<typeof getSettings>)
+
+    return createPlayStats({
+      getPlays: async () => plays,
+      getUsers: async () => [user('1', 'alice'), user('2', 'bob')],
+      getMediaData: async () => ({ thumb: '', isDeleted: false }),
+    }).getHistoryPlays({ since: '2026-03-08T00:00:00Z' })
+  }
+
+  it('lists the plays since the start, the newest first, with who played them', async () => {
+    const history = await getHistoryPlays()
+
+    expect(
+      history.map((play) => [play.id, play.userId, play.userName]),
+    ).toEqual([
+      ['episode', '', ''],
+      ['after', '2', 'bob'],
+      ['start', '1', 'alice'],
+    ])
+  })
+
+  it('leaves out the excluded users', async () => {
+    const history = await getHistoryPlays(['2'])
+
+    expect(history.map((play) => play.id)).toEqual(['episode', 'start'])
   })
 })

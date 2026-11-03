@@ -8,9 +8,11 @@ import zlib from 'zlib'
 
 const gzip = promisify(zlib.gzip)
 const gunzip = promisify(zlib.gunzip)
-const VERSION = 2
-// Its plays have no percent complete, so its histories are read again
-const PREVIOUS_VERSION = 1
+const VERSION = 3
+// Their plays miss what came later, such as the percent complete in version 2
+// and the episode numbers and streams in 3, so their histories
+// are read again
+const PREVIOUS_VERSIONS = [1, 2]
 
 export type PlaysSnapshot = {
   plays: Play[]
@@ -21,8 +23,16 @@ export type PlaysSnapshot = {
   rebuildAt: number
 }
 
-type SavedPlay = Omit<Play, 'avatar' | 'percentComplete'> &
-  Partial<Pick<Play, 'percentComplete'>>
+// Fields that came later are missing from older files
+const LATER_FIELDS = [
+  'percentComplete',
+  'seasonNumber',
+  'episodeNumber',
+  'transcodeDecision',
+] as const
+
+type SavedPlay = Omit<Play, 'avatar' | (typeof LATER_FIELDS)[number]> &
+  Partial<Pick<Play, (typeof LATER_FIELDS)[number]>>
 
 type SavedHistory = {
   // The source, its URL and the part of its history, but no API key
@@ -91,7 +101,7 @@ function isHistoryFile(file: unknown): file is HistoryFile {
   const { version, histories } = file as Partial<HistoryFile>
 
   return (
-    (version === VERSION || version === PREVIOUS_VERSION) &&
+    (version === VERSION || PREVIOUS_VERSIONS.includes(Number(version))) &&
     Array.isArray(histories) &&
     histories.every(isSavedHistory)
   )
@@ -112,9 +122,11 @@ function toSnapshot(history: SavedHistory, version: number): PlaysSnapshot {
 
       return {
         ...play,
-        percentComplete: play.percentComplete ?? null,
+        ...Object.fromEntries(
+          LATER_FIELDS.map((field) => [field, play[field] ?? null]),
+        ),
         avatar: typeof avatar === 'string' ? avatar : '',
-      }
+      } as Play
     }),
     readTo: history.readTo ?? -Infinity,
     cursor: history.cursor,

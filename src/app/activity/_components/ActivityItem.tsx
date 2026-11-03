@@ -1,11 +1,11 @@
 'use client'
 
 import { GlobalContext } from '@/app/_components/GlobalContextProvider'
-import Avatar from '@/components/Avatar'
-import ImageFallback from '@/components/ImageFallback'
 import TitleDetails from '@/components/MediaItem/TitleDetails'
 import PosterImage from '@/components/PosterImage'
 import SkeletonLine from '@/components/SkeletonLine'
+import { DECISION_ICONS, getDecisionKind } from '@/components/StreamDecision'
+import UserBadge from '@/components/UserBadge'
 import { useMediaDetails } from '@/hooks/useMediaDetails'
 import { PublicSettings } from '@/types/settings'
 import { MediaServer } from '@/types/statsSource'
@@ -28,32 +28,16 @@ import {
 import { ArrowTurnDownRightIcon } from '@heroicons/react/16/solid'
 import {
   ArrowPathIcon,
-  ArrowsRightLeftIcon,
-  CheckCircleIcon,
   ChevronDownIcon,
-  CpuChipIcon,
+  DeviceTabletIcon,
   PauseIcon,
   PlayIcon,
-  UserIcon,
 } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { capitalize, toUpper } from 'lodash'
 import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { ReactNode, useContext, useId, useState } from 'react'
-
-type DecisionKind = 'directPlay' | 'directStream' | 'transcode'
-
-// Green when the file plays as is, blue when only its container changes, and
-// Plex orange when the server converts it
-const DECISION_ICONS: Record<
-  DecisionKind,
-  { Icon: typeof CheckCircleIcon; className: string }
-> = {
-  directPlay: { Icon: CheckCircleIcon, className: 'text-success' },
-  directStream: { Icon: ArrowsRightLeftIcon, className: 'text-sky-400' },
-  transcode: { Icon: CpuChipIcon, className: 'text-plex' },
-}
 
 type ActivityItemProps = {
   session: TautulliSession
@@ -71,7 +55,6 @@ export default function ActivityItem({
   const { posterUrl, isPosterLoading, details, isDetailsLoading } =
     useMediaDetails(session, settings)
   const t = useTranslations('Activity')
-  const tCommon = useTranslations('Common')
   const locale = useLocale()
   const { data: user } = useSession()
   const isCurrentUser = String(session.user_id) === user?.user.id
@@ -179,75 +162,6 @@ export default function ActivityItem({
 
   return (
     <li className='w-full py-6 first:pt-0 last:pb-0 sm:py-8'>
-      {/* Who is watching, and on what */}
-      <div className='mb-4 flex items-center justify-between gap-3'>
-        <div className='flex min-w-0 items-center gap-2 text-sm'>
-          <div className='relative size-6 shrink-0 overflow-hidden rounded-full ring-1 ring-white/15'>
-            {isAnonymous ? (
-              <ImageFallback alt={t('anonymousAvatar')}>
-                <UserIcon className='size-[60cqw]' />
-              </ImageFallback>
-            ) : (
-              <Avatar
-                src={session.user_thumb}
-                name={friendly_name}
-                alt={tCommon('profilePictureAlt', { name: friendly_name })}
-                sizes='3rem'
-                priority
-              />
-            )}
-          </div>
-          <span
-            className={clsx(
-              'shrink-0 font-medium',
-              isCurrentUser && 'text-plex',
-            )}
-          >
-            {isAnonymous
-              ? t('anonymous', { number: index + 1 })
-              : friendly_name}
-          </span>
-          {device && (
-            <span className='truncate text-neutral-400'>{device}</span>
-          )}
-        </div>
-        <div className='flex shrink-0 items-center gap-2'>
-          {/* Only the icon on phones, so the device has room */}
-          <span className='icon-stat-wrapper text-xs max-sm:p-1 sm:text-sm'>
-            {playbackState === 'playing' && <PlayIcon />}
-            {playbackState === 'buffering' && (
-              <ArrowPathIcon className='motion-safe:animate-spin' />
-            )}
-            {playbackState === 'paused' && <PauseIcon />}
-            <span className='max-sm:sr-only'>{t(playbackState)}</span>
-          </span>
-          {/* How the stream gets there, which opens the rest. Its colour shows
-              when the details are worth a look. Without the text on phones,
-              and taps 10px above and below count too, for a 40px tap area. */}
-          <button
-            type='button'
-            className='icon-stat-wrapper focus-visible:focus-ring relative cursor-pointer pr-2 text-xs transition-colors after:absolute after:inset-x-0 after:-inset-y-2.5 hover:bg-white/10 max-sm:p-1 sm:text-sm'
-            aria-expanded={isExpanded}
-            aria-controls={detailsId}
-            onClick={toggleDetails}
-          >
-            {decisionIcon && (
-              <decisionIcon.Icon className={decisionIcon.className} />
-            )}
-            <span className='max-sm:sr-only'>
-              {capitalize(formatDecision(transcode_decision))}
-            </span>
-            <span className='sr-only'>{` (${t('streamDetails')})`}</span>
-            <ChevronDownIcon
-              className={clsx(
-                'transition-transform',
-                isExpanded && 'rotate-180',
-              )}
-            />
-          </button>
-        </div>
-      </div>
-
       {/* What is playing, beside its poster. On phones the progress goes under
           both, where the times fit on one line. */}
       <div className='grid grid-cols-[auto_minmax(0,1fr)] gap-4 sm:grid-rows-[1fr_auto] sm:gap-y-0'>
@@ -302,6 +216,61 @@ export default function ActivityItem({
                 />
               )
             ))}
+          {/* Who is watching and on what, like the history's user, then how
+              it's playing and how the stream gets there */}
+          <ul className='icon-stats-container mt-3 text-xs sm:text-sm'>
+            <li className='icon-stat-wrapper min-w-0'>
+              <UserBadge
+                user={{
+                  name: isAnonymous
+                    ? t('anonymous', { number: index + 1 })
+                    : friendly_name,
+                  avatar: session.user_thumb,
+                  isOwn: isCurrentUser,
+                  isAnonymous,
+                }}
+                priority
+              />
+            </li>
+            {device && (
+              <li className='icon-stat-wrapper min-w-0'>
+                <DeviceTabletIcon />
+                <span className='truncate'>{device}</span>
+              </li>
+            )}
+            <li className='icon-stat-wrapper'>
+              {playbackState === 'playing' && <PlayIcon />}
+              {playbackState === 'buffering' && (
+                <ArrowPathIcon className='motion-safe:animate-spin' />
+              )}
+              {playbackState === 'paused' && <PauseIcon />}
+              {t(playbackState)}
+            </li>
+            {/* How the stream gets there, which opens the rest. Its colour
+                shows when the details are worth a look. Taps 10px above and
+                below count too, for a 40px tap area. */}
+            <li>
+              <button
+                type='button'
+                className='icon-stat-wrapper focus-visible:focus-ring relative cursor-pointer pr-2 transition-colors after:absolute after:inset-x-0 after:-inset-y-2.5 hover:bg-white/10'
+                aria-expanded={isExpanded}
+                aria-controls={detailsId}
+                onClick={toggleDetails}
+              >
+                {decisionIcon && (
+                  <decisionIcon.Icon className={decisionIcon.className} />
+                )}
+                {capitalize(formatDecision(transcode_decision))}
+                <span className='sr-only'>{` (${t('streamDetails')})`}</span>
+                <ChevronDownIcon
+                  className={clsx(
+                    'transition-transform',
+                    isExpanded && 'rotate-180',
+                  )}
+                />
+              </button>
+            </li>
+          </ul>
         </div>
 
         {session.duration && session.view_offset && (
@@ -432,20 +401,6 @@ export default function ActivityItem({
 // Tautulli sends 0 or 1, Tracearr a boolean
 function isAtmos(value?: number | boolean) {
   return Number(value) === 1
-}
-
-// Plex's decisions, grouped by how much work they are for the server
-function getDecisionKind(decision?: string): DecisionKind | undefined {
-  switch (decision) {
-    case 'direct play':
-      return 'directPlay'
-    case 'copy':
-      return 'directStream'
-    case 'transcode':
-    // Burning in subtitles is a transcode too
-    case 'burn':
-      return 'transcode'
-  }
 }
 
 function isTranscoding(decision?: string) {

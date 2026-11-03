@@ -68,24 +68,14 @@
     "showMore": "Show more",
     "title": "Dashboard",
     "usersTitle": "Users",
-    "users": "{count, plural, one {# user} other {# users}}",
-    "movies": "{count, plural, one {movie} other {movies}}",
-    "episodes": "{count, plural, one {episode} other {episodes}}",
-    "tracks": "{count, plural, one {track} other {tracks}}",
-    "requests": "{count, plural, one {# request} other {# requests}}",
-    "durationWatched": "{duration} watched",
-    "durationListened": "{duration} listened",
-    "durationPlayed": "{duration} played"
+    "users": "{count, plural, one {# user} other {# users}}"
   },
   "DashboardFilters": {
     "type": "Stats for",
     "general": "Everyone",
     "personal": "Just me",
     "sortByLabel": "Sort by",
-    "sort": "Sort",
-    "byDuration": "By watch time",
-    "byPlays": "By plays",
-    "byUsers": "By users"
+    "sort": "Sort"
   },
   "DashboardNavContent": {
     "label": "Dashboard navigation",
@@ -103,7 +93,41 @@
   "History": {
     "syncingTitle": "Syncing the play history",
     "syncingDescription": "The play history from {source} is synced once, which can take a few minutes. {count, plural, =0 {It has just started.} one {# play so far, back to {date}.} other {# plays so far, back to {date}.}} This page updates on its own.",
-    "syncingShort": "Syncing the play history…"
+    "syncingShort": "Syncing the play history…",
+    "title": "History",
+    "libraryLabel": "Library",
+    "noPlays": "Nothing played yet",
+    "poster": "Poster for {title}",
+    "anonymous": "Anonymous",
+    "unknownUser": "Unknown user",
+    "onlyMine": "Only mine",
+    "search": "Search titles",
+    "clearSearch": "Clear search",
+    "noMatches": "No plays match the filters",
+    "pagination": "Pages",
+    "page": "Page {page}",
+    "pageOf": "{page} of {pageCount}",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "episodeNumber": "S{season} · E{episode}",
+    "rowsLabel": "Rows per page",
+    "rowsOption": "{count} per page",
+    "kindLabel": "Type",
+    "plays": "Plays",
+    "requests": "Requests",
+    "request": "Request",
+    "unknownTitle": "Unknown title",
+    "season": "Season {season}",
+    "seasonCount": "{count, plural, one {# season} other {# seasons}}",
+    "requestsFailed": "Couldn't load the requests from Seerr",
+    "requestStatus": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "declined": "Declined",
+      "failed": "Failed",
+      "partiallyAvailable": "Partly available",
+      "available": "Available"
+    }
   },
   "MediaServerDeeplink": {
     "available": "Available",
@@ -113,8 +137,7 @@
     "7days": "7 days",
     "pastYear": "Past year",
     "allTime": "All time",
-    "days": "{count, plural, one {# day} other {# days}}",
-    "label": "Period select"
+    "days": "{count, plural, one {# day} other {# days}}"
   },
   "NotFound": {
     "title": "404",
@@ -164,6 +187,7 @@
       "rewind": "Rewind",
       "dashboard": "Dashboard",
       "activity": "Activity",
+      "history": "History",
       "complete": "Complete",
       "incomplete": "Incomplete",
       "connectionRequired": "Finish the Connection settings first"
@@ -207,6 +231,9 @@
     },
     "Activity": {
       "title": "Activity settings"
+    },
+    "History": {
+      "title": "History settings"
     },
     "General": {
       "title": "General settings",
@@ -267,8 +294,8 @@
     "profilePictureAlt": "{name}'s profile picture",
     "time": {
       "zero": "0 mins",
-      "month": "{count, plural, one {# month} other {# months}}",
-      "week": "{count, plural, one {# week} other {# weeks}}",
+      "month": "{count, plural, one {# mth} other {# mths}}",
+      "week": "{count, plural, one {# wk} other {# wks}}",
       "day": "{count, plural, one {# day} other {# days}}",
       "hr": "{count, plural, one {# hr} other {# hrs}}",
       "min": "{count, plural, one {# min} other {# mins}}",
@@ -431,5 +458,20 @@
     "requestLabel": "Request {title}",
     "externalLinkLabel": "{title} on {site}",
     "externalSearchLabel": "Search {site} for {title}"
+  },
+  "Totals": {
+    "playTime": "Play time",
+    "listenTime": "Listening time",
+    "movies": "Movies",
+    "episodes": "Episodes",
+    "tracks": "Tracks"
+  },
+  "Filters": {
+    "title": "Filters",
+    "titleWithCount": "{count, plural, one {Filters, # on} other {Filters, # on}}",
+    "clearAll": "Clear all",
+    "done": "Done",
+    "period": "Period",
+    "all": "All"
   }
 }

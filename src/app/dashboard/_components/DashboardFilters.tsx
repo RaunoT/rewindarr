@@ -4,13 +4,19 @@ import {
   GlobalContext,
   readStorage,
 } from '@/app/_components/GlobalContextProvider'
+import FilterSheet, { FilterGroup } from '@/components/filters/FilterSheet'
+import SegmentedControl from '@/components/filters/SegmentedControl'
 import { DashboardSearchParams } from '@/types/dashboard'
+import { PublicSettings } from '@/types/settings'
 import { getDashboardSort } from '@/utils/helpers'
+import { BarsArrowDownIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { ChangeEvent, useCallback, useContext, useEffect, useId } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
+import PeriodFilter from './PeriodFilter'
 
 type Props = {
+  settings: PublicSettings
   personalFilter: boolean
 }
 
@@ -27,8 +33,9 @@ function getAvailableSort(
   return personal === 'true' && sort === 'users' ? undefined : sort
 }
 
-export default function DashboardFilters({ personalFilter }: Props) {
-  const id = useId()
+// The period stays in sight. On wider screens the other filters sit across
+// from it, on phones they're in a sheet.
+export default function DashboardFilters({ settings, personalFilter }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -77,12 +84,25 @@ export default function DashboardFilters({ personalFilter }: Props) {
     [pathname, searchParams],
   )
 
-  function handlePersonalChange(e: ChangeEvent<HTMLSelectElement>) {
-    router.push(getUrl(e.target.value === 'true' ? 'true' : undefined, sortBy))
+  function handlePersonalChange(value: string) {
+    router.push(getUrl(value === 'true' ? 'true' : undefined, sortBy))
   }
 
-  function handleSortChange(e: ChangeEvent<HTMLSelectElement>) {
-    router.push(getUrl(isPersonal, getDashboardSort(e.target.value)))
+  function handleSortChange(value: string) {
+    router.push(getUrl(isPersonal, getDashboardSort(value)))
+  }
+
+  // Back to the defaults, the period too
+  function handleClear() {
+    const params = new URLSearchParams(searchParams.toString())
+
+    for (const name of ['period', 'personal', 'sortBy', 'limit']) {
+      params.delete(name)
+    }
+
+    const query = params.toString()
+
+    router.push(query ? `${pathname}?${query}` : pathname)
   }
 
   useEffect(() => {
@@ -116,41 +136,56 @@ export default function DashboardFilters({ personalFilter }: Props) {
     sortBy,
   ])
 
+  const tCommon = useTranslations('Common')
+  const activeCount = Number(!!isPersonal) + Number(!!sortBy)
+  const canClear = activeCount > 0 || searchParams.has('period')
+
+  function getAudience() {
+    return (
+      <SegmentedControl
+        label={t('type')}
+        options={[
+          { value: 'everyone', label: t('general') },
+          { value: 'me', label: t('personal') },
+        ]}
+        value={isPersonal ? 'me' : 'everyone'}
+        onChange={(value) => handlePersonalChange(value === 'me' ? 'true' : '')}
+        className='w-full'
+      />
+    )
+  }
+
+  function getSort() {
+    return (
+      <SegmentedControl
+        label={t('sortByLabel')}
+        icon={<BarsArrowDownIcon aria-hidden='true' />}
+        options={[
+          { value: 'plays', label: tCommon('plays') },
+          { value: 'duration', label: tCommon('duration') },
+          ...(isPersonal ? [] : [{ value: 'users', label: tCommon('users') }]),
+        ]}
+        value={sortBy ?? 'plays'}
+        onChange={handleSortChange}
+        className='w-full'
+      />
+    )
+  }
+
   return (
-    <>
-      {personalFilter && (
-        <div className='input-wrapper'>
-          <div className='select-wrapper'>
-            <select
-              id={`${id}-style`}
-              className='input input--small'
-              value={isPersonal === 'true' ? 'true' : ''}
-              onChange={handlePersonalChange}
-              aria-label={t('type')}
-            >
-              <option disabled>{t('type')}</option>
-              <option value=''>{t('general')}</option>
-              <option value='true'>{t('personal')}</option>
-            </select>
-          </div>
-        </div>
-      )}
-      <div className='input-wrapper'>
-        <div className='select-wrapper'>
-          <select
-            id={`${id}-sort`}
-            className='input input--small'
-            value={sortBy ?? ''}
-            onChange={handleSortChange}
-            aria-label={t('sortByLabel')}
-          >
-            <option disabled>{t('sort')}</option>
-            <option value=''>{t('byPlays')}</option>
-            <option value='duration'>{t('byDuration')}</option>
-            {!isPersonal && <option value='users'>{t('byUsers')}</option>}
-          </select>
-        </div>
-      </div>
-    </>
+    <div className='mb-4 flex items-center gap-2'>
+      <PeriodFilter settings={settings} className='max-sm:flex-1' />
+      <FilterSheet
+        count={activeCount}
+        canClear={canClear}
+        onClear={handleClear}
+        className='ml-auto'
+      >
+        {personalFilter && (
+          <FilterGroup label={t('type')}>{getAudience()}</FilterGroup>
+        )}
+        <FilterGroup label={t('sort')}>{getSort()}</FilterGroup>
+      </FilterSheet>
+    </div>
   )
 }

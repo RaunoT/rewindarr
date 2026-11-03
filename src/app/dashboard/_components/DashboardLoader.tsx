@@ -1,11 +1,11 @@
 import CardWrapper from '@/app/_components/CardWrapper'
 import SkeletonLine from '@/components/SkeletonLine'
+import { TotalsSkeleton } from '@/components/Totals'
 import { ItemStatistics, PublicSettings } from '@/types/settings'
 import { TautulliMediaType } from '@/types/tautulli'
 import { DASHBOARD_PAGE_SIZE, RATING_STATISTICS } from '@/utils/constants'
 import clsx from 'clsx'
 import { ReactNode } from 'react'
-import DashboardHeader from './DashboardHeader'
 
 type Props = {
   toolbar: ReactNode
@@ -22,36 +22,25 @@ export default function DashboardLoader({
   settings,
   rows = DASHBOARD_PAGE_SIZE,
 }: Props) {
-  const isUsers = type === 'users'
   const { activeTotalStatistics } = settings.dashboard
-  const periodStats = [
-    activeTotalStatistics.includes('duration') && 'w-32',
+  // The same totals as the dashboard shows for this library
+  const totalsCount = [
+    activeTotalStatistics.includes('duration'),
     activeTotalStatistics.includes('requests') &&
       settings.connection.isSeerrActive &&
-      type !== 'artist' &&
-      'w-20',
-  ]
-  const generalStats = isUsers
-    ? [activeTotalStatistics.includes('count') && 'w-16']
-    : [
-        activeTotalStatistics.includes('size') && 'w-16',
-        activeTotalStatistics.includes('count') && 'w-24',
-      ]
+      type !== 'artist',
+    activeTotalStatistics.includes('count'),
+    activeTotalStatistics.includes('size') && type !== 'users',
+  ].filter(Boolean).length
 
   return (
     <div className='flex flex-1 flex-col'>
-      <DashboardHeader
-        periodStats={<StatSkeletons widths={periodStats} />}
-        toolbar={toolbar}
-      />
+      {toolbar}
+      <TotalsSkeleton count={totalsCount} />
 
       <CardWrapper>
         <DashboardListSkeleton type={type} settings={settings} rows={rows} />
       </CardWrapper>
-
-      <ul className='icon-stats-container mt-4 justify-center gap-x-3 empty:hidden'>
-        <StatSkeletons widths={generalStats} />
-      </ul>
     </div>
   )
 }
@@ -73,17 +62,6 @@ export function DashboardListSkeleton({
       ))}
     </ul>
   )
-}
-
-function StatSkeletons({ widths }: { widths: (string | false)[] }) {
-  return widths
-    .filter((width): width is string => !!width)
-    .map((width, i) => (
-      <li key={i} className='icon-stat-wrapper icon-stat-wrapper--clean'>
-        <div className='skeleton size-4' />
-        <SkeletonLine width={width} />
-      </li>
-    ))
 }
 
 function ListItem({
