@@ -8,6 +8,7 @@ import RewindStat from '../RewindStat'
 
 export default function StoryAudio({ userRewind, settings }: RewindStory) {
   const t = useTranslations('Rewind.Audio')
+  const { topTrack } = userRewind.audio
 
   return (
     <>
@@ -49,24 +50,63 @@ export default function StoryAudio({ userRewind, settings }: RewindStory) {
             </RewindStat>
           )}
 
-          <RewindStat step={3} noScale>
-            <p className='mb-2'>
-              {t(userRewind.audio.top.length > 1 ? 'favorite' : 'only')}&nbsp;
-              <span className='rewind-cat'>
-                {userRewind.audio.top[0].title}
-              </span>
-            </p>
+          {topTrack ? (
+            <>
+              <RewindStat step={3}>
+                <p>
+                  {t.rich(
+                    topTrack.isOnly
+                      ? topTrack.artist
+                        ? 'onlyTrack'
+                        : 'onlyTrackWithoutArtist'
+                      : topTrack.artist
+                        ? 'topTrack'
+                        : 'topTrackWithoutArtist',
+                    {
+                      title: topTrack.title,
+                      artist: topTrack.artist ?? '',
+                      track: (chunks) => (
+                        <span className='rewind-cat'>{chunks}</span>
+                      ),
+                      by: (chunks) => (
+                        <span className='rewind-cat'>{chunks}</span>
+                      ),
+                    },
+                  )}
+                </p>
+              </RewindStat>
 
-            <div className='text-base leading-normal font-normal tracking-normal'>
-              <MediaItems
-                type='artist'
-                items={Array(userRewind.audio.top[0])}
-                mediaServer={userRewind.media_server}
-                rows
-                settings={settings}
-              />
-            </div>
-          </RewindStat>
+              <RewindStat step={4}>
+                <p>
+                  {t.rich('topTrackPlays', {
+                    countValue: topTrack.plays,
+                    count: (chunks) => (
+                      <span className='rewind-stat'>{chunks}</span>
+                    ),
+                  })}
+                </p>
+              </RewindStat>
+            </>
+          ) : (
+            <RewindStat step={3} noScale>
+              <p className='mb-2'>
+                {t(userRewind.audio.top.length > 1 ? 'favorite' : 'only')}&nbsp;
+                <span className='rewind-cat'>
+                  {userRewind.audio.top[0].title}
+                </span>
+              </p>
+
+              <div className='text-base leading-normal font-normal tracking-normal'>
+                <MediaItems
+                  type='artist'
+                  items={Array(userRewind.audio.top[0])}
+                  mediaServer={userRewind.media_server}
+                  rows
+                  settings={settings}
+                />
+              </div>
+            </RewindStat>
+          )}
         </>
       ) : (
         <RewindStat noScale>

@@ -3,6 +3,7 @@
 import { UserRewind } from '@/types/rewind'
 import { PublicSettings } from '@/types/settings'
 import { FC } from 'react'
+import Snow from './Snow'
 import Stories from './Stories'
 import StoryAudio from './Stories/Audio'
 import StoryAudioTop from './Stories/AudioTop'
@@ -31,19 +32,52 @@ type StoryComponent = {
   settings: PublicSettings
 }
 
+export type RewindMusicUrls = {
+  // The top show's and top movie's theme songs, best first
+  showThemes: string[]
+  movieThemes: string[]
+  // The viewer's most played track, from the media server
+  topTrack: string | null
+  // The admin's own track
+  track: string | null
+}
+
 type Props = {
   userRewind: UserRewind
   settings: PublicSettings
+  music: RewindMusicUrls
 }
 
-export default function RewindStories({ userRewind, settings }: Props) {
+// Where the top show's and top movie's theme songs play
+const SHOW_STORIES = ['shows', 'shows_top', 'shows_actors', 'shows_genres']
+const MOVIE_STORIES = [
+  'movies',
+  'movies_top',
+  'movies_directors',
+  'movies_actors',
+  'movies_genres',
+]
+const AUDIO_STORIES = ['audio', 'audio_top']
+
+export default function RewindStories({ userRewind, settings, music }: Props) {
   function createStory(id: string, Component: FC<StoryComponent>) {
+    // The track also stands in for a title without a theme song
+    const themes = SHOW_STORIES.includes(id)
+      ? music.showThemes
+      : MOVIE_STORIES.includes(id)
+        ? music.movieThemes
+        : AUDIO_STORIES.includes(id) && music.topTrack
+          ? [music.topTrack]
+          : []
+    const sources = [...themes, music.track]
+
     return {
       id,
       type: 'component' as const,
       component: () => (
         <Component userRewind={userRewind} settings={settings} />
       ),
+      music: sources.filter((url) => url !== null),
     }
   }
 
@@ -103,7 +137,9 @@ export default function RewindStories({ userRewind, settings }: Props) {
     ...(userRewind.duration.user && hasAudioLibraries && userRewind.audio.top[0]
       ? [createStory('audio', StoryAudio)]
       : []),
-    ...(userRewind.audio.top.length > 1 && hasAudioLibraries
+    // The music story names the top track, so the top artists show even when
+    // there's only one
+    ...(userRewind.audio.top.length && hasAudioLibraries
       ? [createStory('audio_top', StoryAudioTop)]
       : []),
     ...(userRewind.genres.match
@@ -121,5 +157,10 @@ export default function RewindStories({ userRewind, settings }: Props) {
     createStory('goodbye', StoryGoodbye),
   ]
 
-  return <Stories stories={stories} />
+  return (
+    <>
+      {settings.rewind.isSnowActive && <Snow />}
+      <Stories stories={stories} />
+    </>
+  )
 }

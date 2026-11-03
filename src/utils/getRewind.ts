@@ -1,3 +1,4 @@
+import { TopTrack } from '@/types/rewind'
 import { TautulliLibrary, TautulliMediaReturnType } from '@/types/tautulli'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { fetchSeerrStats, getMediaUserIds } from './fetchSeerr'
@@ -5,6 +6,7 @@ import { formatPercent, secondsToTime } from './formatting'
 import getSettings from './getSettings'
 import { getAverage, getDifference, getRewindStartDate } from './helpers'
 import { LibrariesSize } from './librariesSize'
+import { isCountedPlay } from './playStats'
 import { getStatsSource } from './statsSource'
 
 export async function getTopMediaStats(
@@ -116,6 +118,76 @@ export async function getTopPeople(
     libraries,
     getRewindStartDate(settings),
   )
+}
+
+// The user's most played track, by plays and then listening time. Like the
+// other stats, plays short of the percent in the settings only add their
+// listening time.
+export async function getTopTrack(
+  userId: string,
+  libraries: TautulliLibrary[],
+): Promise<TopTrack | null> {
+  const settings = getSettings()
+  const audioLibraries = libraries.filter(
+    (library) => library.section_type === 'artist',
+  )
+
+  if (!audioLibraries.length) {
+    return null
+  }
+
+  const plays = await getStatsSource(settings).getHistoryPlays({
+    since: getRewindStartDate(settings),
+    userId,
+    libraries: audioLibraries,
+  })
+  const tracks = new Map<string, TopTrack>()
+
+  for (const play of plays) {
+    if (play.mediaType !== 'track') {
+      continue
+    }
+
+    // Jellyfin's plays through Tracearr may have no rating key
+    const key =
+      play.ratingKey ?? play.mediaId ?? `${play.artistName}|${play.title}`
+    const track = tracks.get(key) ?? {
+      ratingKey: play.ratingKey,
+      title: play.title,
+      artist: play.artistName,
+      plays: 0,
+      durationMs: 0,
+      isOnly: false,
+    }
+
+    if (isCountedPlay(play, settings.general.minPlayPercent)) {
+      track.plays += 1
+    }
+
+    track.durationMs += play.durationMs
+    tracks.set(key, track)
+  }
+
+  let top: TopTrack | null = null
+  let countedTracks = 0
+
+  for (const track of tracks.values()) {
+    if (!track.plays) {
+      continue
+    }
+
+    countedTracks += 1
+
+    if (
+      !top ||
+      track.plays > top.plays ||
+      (track.plays === top.plays && track.durationMs > top.durationMs)
+    ) {
+      top = track
+    }
+  }
+
+  return top && { ...top, isOnly: countedTracks === 1 }
 }
 
 // Anonymizing hides who the match would name, so it isn't looked for
