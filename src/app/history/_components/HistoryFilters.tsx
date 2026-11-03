@@ -54,6 +54,8 @@ export default function HistoryFilters({
   const [search, setSearch] = useState(searchParam)
   // Back and the other filters change the URL too
   const [shownSearchParam, setShownSearchParam] = useState(searchParam)
+  // Searches sent to the URL that it hasn't shown yet, oldest first
+  const [pendingSearches, setPendingSearches] = useState<string[]>([])
   // Ones in the URL that aren't among the options don't count
   const pickedLibraries = getPicked('library', libraries)
   const pickedUsers = getPicked('user', users)
@@ -71,8 +73,18 @@ export default function HistoryFilters({
   const hasMoreFilters = hasRequests || libraries.length > 1 || users.length > 0
 
   if (searchParam !== shownSearchParam) {
+    const pendingIndex = pendingSearches.indexOf(searchParam)
+
     setShownSearchParam(searchParam)
-    setSearch(searchParam)
+
+    // A search typed here arriving late leaves whatever was typed since.
+    // Back, Forward and the other links bring a search of their own.
+    if (pendingIndex === -1) {
+      setSearch(searchParam)
+      setPendingSearches([])
+    } else {
+      setPendingSearches(pendingSearches.slice(pendingIndex + 1))
+    }
   }
 
   function getPicked(name: string, options: FilterOption[]) {
@@ -121,6 +133,7 @@ export default function HistoryFilters({
         params.delete('q')
       }
 
+      setPendingSearches((pending) => [...pending, value])
       // Each letter typed doesn't need a step in the browser's history
       router.replace(
         params.size ? `${pathname}?${params.toString()}` : pathname,

@@ -250,8 +250,10 @@ async function addItems(entries: HistoryEntry[]): Promise<HistoryEntry[]> {
             play.mediaType,
             play.grandparentRatingKey ||
               play.ratingKey ||
-              play.showTitle ||
-              play.title,
+              // Movies of the same name differ by their year
+              (play.mediaType === 'movie'
+                ? `${play.title}|${play.year ?? ''}`
+                : play.showTitle || play.title),
           ].join('|'),
           () => source.getPlayItem(play),
         ),

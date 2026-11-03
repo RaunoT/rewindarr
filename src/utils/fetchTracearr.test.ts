@@ -1728,6 +1728,21 @@ describe('getTranscodeDecision', () => {
     ).toBe('direct play')
   })
 
+  it('goes by the tracks when the stream has no decision', async () => {
+    const { getTranscodeDecision } = await load()
+
+    expect(
+      getTranscodeDecision({
+        is_transcode: null,
+        video_decision: 'copy',
+        audio_decision: 'transcode',
+      }),
+    ).toBe('transcode')
+    expect(getTranscodeDecision({ video_decision: 'transcode' })).toBe(
+      'transcode',
+    )
+  })
+
   it('has none when Tracearr has none', async () => {
     const { getTranscodeDecision } = await load()
 

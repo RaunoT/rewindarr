@@ -36,8 +36,9 @@ export default function HistoryItem({
 }: Props) {
   const t = useTranslations()
   const locale = useLocale()
-  const { mediaType, ratingKey, percentComplete, seasonNumber, episodeNumber } =
-    play
+  const { mediaType, percentComplete, seasonNumber, episodeNumber } = play
+  // A deleted item has nothing left to open in the media server
+  const ratingKey = item?.is_deleted ? null : play.ratingKey
   const name = play.showTitle || play.artistName || play.title
   const episode =
     seasonNumber !== null && episodeNumber !== null

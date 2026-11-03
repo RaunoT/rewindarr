@@ -106,7 +106,11 @@ export default function HistoryCard({
   return (
     <li className='group/item flex items-center gap-3 py-2.5 not-first:border-t not-first:border-white/10 first:pt-0 last:pb-0 max-sm:flex-wrap sm:gap-4'>
       <HistoryPoster
-        srcs={[...posters, item?.tmdb_poster]}
+        srcs={
+          isVideo && settings.general.isPostersTmdbOnly
+            ? [item?.tmdb_poster, ...posters]
+            : [...posters, item?.tmdb_poster]
+        }
         type={mediaType}
         alt={t('History.poster', { title: name })}
         href={href}

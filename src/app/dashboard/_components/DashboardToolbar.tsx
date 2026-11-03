@@ -1,6 +1,7 @@
 import { PublicSettings } from '@/types/settings'
 import { Suspense } from 'react'
 import DashboardFilters from './DashboardFilters'
+import PeriodFilter from './PeriodFilter'
 
 type Props = {
   settings: PublicSettings
@@ -18,11 +19,15 @@ export default function DashboardToolbar({
   return (
     // As tall as the filters, so nothing moves once they render
     <Suspense fallback={<div className='mb-4 h-10' />}>
-      <DashboardFilters
-        settings={settings}
-        personalFilter={personalFilter}
-        isUsers={isUsers}
-      />
+      {isUsers ? (
+        // The users dashboard has only the period. The other filters aren't
+        // mounted, so their saved values are left alone.
+        <div className='mb-4 flex items-center gap-2'>
+          <PeriodFilter settings={settings} className='max-sm:flex-1' />
+        </div>
+      ) : (
+        <DashboardFilters settings={settings} personalFilter={personalFilter} />
+      )}
     </Suspense>
   )
 }

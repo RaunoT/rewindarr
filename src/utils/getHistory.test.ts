@@ -230,6 +230,23 @@ describe('getHistoryPage', () => {
     })
   })
 
+  it('tells apart movies of the same name by their year', async () => {
+    const dunes = [
+      play('a', NOW, { mediaType: 'movie', title: 'Dune', year: 2021 }),
+      play('b', NOW - DAY, { mediaType: 'movie', title: 'Dune', year: 1984 }),
+    ]
+
+    vi.mocked(getStatsSource).mockReturnValue({
+      getHistoryPlays: async () => dunes,
+      getPlayItem,
+    } as unknown as StatsSource)
+    vi.mocked(getHistoryRequests).mockResolvedValue([])
+
+    await getHistoryPage({ since: SINCE }, 1, 25, NOW)
+
+    expect(getPlayItem).toHaveBeenCalledTimes(2)
+  })
+
   it('adds up the whole period with the filters', async () => {
     const { totals } = await getHistoryPage(
       { since: new Date(NOW - 10 * DAY).toISOString() },

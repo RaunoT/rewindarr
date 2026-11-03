@@ -18,8 +18,6 @@ import PeriodFilter from './PeriodFilter'
 type Props = {
   settings: PublicSettings
   personalFilter: boolean
-  // The users dashboard has only the period
-  isUsers: boolean
 }
 
 // Saved filters are applied once per page load, when a dashboard is opened
@@ -37,11 +35,7 @@ function getAvailableSort(
 
 // The period stays in sight. On wider screens the other filters sit across
 // from it, on phones they're in a sheet.
-export default function DashboardFilters({
-  settings,
-  personalFilter,
-  isUsers,
-}: Props) {
+export default function DashboardFilters({ settings, personalFilter }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -181,19 +175,17 @@ export default function DashboardFilters({
   return (
     <div className='mb-4 flex items-center gap-2'>
       <PeriodFilter settings={settings} className='max-sm:flex-1' />
-      {!isUsers && (
-        <FilterSheet
-          count={activeCount}
-          canClear={canClear}
-          onClear={handleClear}
-          className='ml-auto'
-        >
-          {personalFilter && (
-            <FilterGroup label={t('type')}>{getAudience()}</FilterGroup>
-          )}
-          <FilterGroup label={t('sort')}>{getSort()}</FilterGroup>
-        </FilterSheet>
-      )}
+      <FilterSheet
+        count={activeCount}
+        canClear={canClear}
+        onClear={handleClear}
+        className='ml-auto'
+      >
+        {personalFilter && (
+          <FilterGroup label={t('type')}>{getAudience()}</FilterGroup>
+        )}
+        <FilterGroup label={t('sort')}>{getSort()}</FilterGroup>
+      </FilterSheet>
     </div>
   )
 }

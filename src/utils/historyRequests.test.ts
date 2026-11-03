@@ -130,6 +130,20 @@ describe('getHistoryRequests', () => {
     expect(requests?.map((request) => request.id)).toEqual([1])
   })
 
+  it('leaves out an excluded user who is no longer listed', async () => {
+    withSettings((settings) => {
+      settings.general.excludedUsers = ['300']
+    })
+    vi.mocked(fetchSeerrStats).mockResolvedValue([
+      seerrRequest({ id: 1 }),
+      seerrRequest({ id: 2, requestedBy: { id: 8, plexId: 300 } }),
+    ])
+
+    const requests = await getHistoryRequests('2026-01-01')
+
+    expect(requests?.map((request) => request.id)).toEqual([1])
+  })
+
   it("has none when Seerr isn't set up or doesn't answer", async () => {
     vi.mocked(fetchSeerrStats).mockResolvedValue(null)
 

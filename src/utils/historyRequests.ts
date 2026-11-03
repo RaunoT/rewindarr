@@ -72,15 +72,16 @@ export async function getHistoryRequests(
 
   return requests.flatMap((request) => {
     const tmdbId = request.media?.tmdbId
-    const userId = getMediaUserIds(request.requestedBy).find((id) =>
-      usersById.has(id),
-    )
+    const mediaUserIds = getMediaUserIds(request.requestedBy)
+    const userId = mediaUserIds.find((id) => usersById.has(id))
     const user = userId ? usersById.get(userId) : undefined
 
+    // An excluded user stays excluded once they're no longer listed, as
+    // Tautulli leaves out inactive users
     if (
       !tmdbId ||
       (request.type !== 'movie' && request.type !== 'tv') ||
-      (userId && excludedUsers.includes(userId))
+      mediaUserIds.some((id) => excludedUsers.includes(id))
     ) {
       return []
     }

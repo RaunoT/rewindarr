@@ -1065,11 +1065,12 @@ export function getTranscodeDecision(stream: {
   video_decision?: TracearrDecision | null
   audio_decision?: TracearrDecision | null
 }): string | null {
-  if (stream.is_transcode) {
+  const decisions = [stream.video_decision, stream.audio_decision]
+
+  // A track's own decision counts when the stream's is missing
+  if (stream.is_transcode || decisions.includes('transcode')) {
     return 'transcode'
   }
-
-  const decisions = [stream.video_decision, stream.audio_decision]
 
   if (decisions.includes('copy')) {
     return 'copy'
