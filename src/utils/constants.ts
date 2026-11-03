@@ -182,8 +182,8 @@ export const RATING_STATISTICS = [
 ] as const
 
 export type Locale = (typeof LOCALES)[number]
-export const LOCALES = ['en', 'et', 'fr', 'de', 'it', 'es']
-export const DEFAULT_LOCALE: Locale = 'en'
+export const LOCALES = ['en-GB', 'en-US', 'et', 'fr', 'de', 'it', 'es']
+export const DEFAULT_LOCALE: Locale = 'en-GB'
 export const LOCALE_COOKIE_NAME = 'locale'
 // Mirrors the dashboard's period, so the home page can use it on the server
 export const DASHBOARD_PERIOD_COOKIE_NAME = 'dashboardPeriod'

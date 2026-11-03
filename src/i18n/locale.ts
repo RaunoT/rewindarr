@@ -22,14 +22,25 @@ function getBrowserLocale(acceptLanguage: string | null): Locale | undefined {
         .find((param) => param.startsWith('q='))
 
       return {
-        language: tag.split('-')[0].toLowerCase(),
+        tag: tag.toLowerCase(),
         quality: quality ? parseFloat(quality.slice(2)) : 1,
       }
     })
     .filter(({ quality }) => quality > 0)
     .sort((a, b) => b.quality - a.quality)
 
-  return languages.map(({ language }) => language).find(isLocale)
+  // An exact match first (`en-US`), then the first locale in the same
+  // language, so `en` and `en-AU` get `en-GB`
+  for (const { tag } of languages) {
+    const language = tag.split('-')[0]
+    const match =
+      LOCALES.find((locale) => locale.toLowerCase() === tag) ??
+      LOCALES.find((locale) => locale.split('-')[0] === language)
+
+    if (match) {
+      return match
+    }
+  }
 }
 
 export async function getUserLocale() {
