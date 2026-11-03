@@ -55,7 +55,13 @@ export default function StoryAudio({ userRewind, settings }: RewindStory) {
               <RewindStat step={3}>
                 <p>
                   {t.rich(
-                    topTrack.artist ? 'topTrack' : 'topTrackWithoutArtist',
+                    topTrack.isOnly
+                      ? topTrack.artist
+                        ? 'onlyTrack'
+                        : 'onlyTrackWithoutArtist'
+                      : topTrack.artist
+                        ? 'topTrack'
+                        : 'topTrackWithoutArtist',
                     {
                       title: topTrack.title,
                       artist: topTrack.artist ?? '',

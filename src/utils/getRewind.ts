@@ -157,6 +157,7 @@ export async function getTopTrack(
       artist: play.artistName,
       plays: 0,
       durationMs: 0,
+      isOnly: false,
     }
 
     if (isCountedPlay(play, settings.general.minPlayPercent)) {
@@ -168,11 +169,14 @@ export async function getTopTrack(
   }
 
   let top: TopTrack | null = null
+  let countedTracks = 0
 
   for (const track of tracks.values()) {
     if (!track.plays) {
       continue
     }
+
+    countedTracks += 1
 
     if (
       !top ||
@@ -183,7 +187,7 @@ export async function getTopTrack(
     }
   }
 
-  return top
+  return top && { ...top, isOnly: countedTracks === 1 }
 }
 
 // Anonymizing hides who the match would name, so it isn't looked for

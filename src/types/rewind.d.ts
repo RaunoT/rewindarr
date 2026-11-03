@@ -22,6 +22,8 @@ export type TopTrack = {
   artist: string | null
   plays: number
   durationMs: number
+  // No other track has a play that counts
+  isOnly: boolean
 }
 
 type LibraryRewind = {

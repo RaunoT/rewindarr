@@ -351,7 +351,7 @@
       "topDirectors": "Here's your <top>top {count, plural, one {director} other {# directors}}</top>",
       "topMovieActors": "Here's your <top>top {count, plural, one {movie actor} other {# movie actors}}</top>",
       "topMovieGenres": "Here's your <top>top {count, plural, one {movie genre} other {# movie genres}}</top>",
-      "topArtists": "Here's your <top>top {count, plural, one {artist} other {# artists}}</top>",
+      "topArtists": "{count, plural, one {Here's <top>the only artist</top> you listened to} other {Here's your <top>top # artists</top>}}",
       "percentage": "That's <percentage>{percentageValue}</percentage> of your total playtime.",
       "shows": "Shows",
       "movies": "Movies",
@@ -386,6 +386,8 @@
       "only": "The only artist you listened to was",
       "topTrack": "Your favorite was <track>{title}</track> by <by>{artist}</by>",
       "topTrackWithoutArtist": "Your favorite was <track>{title}</track>",
+      "onlyTrack": "The only track you listened to was <track>{title}</track> by <by>{artist}</by>",
+      "onlyTrackWithoutArtist": "The only track you listened to was <track>{title}</track>",
       "topTrackPlays": "You played it <count>{countValue, plural, one {once} other {# times}}</count>",
       "noData": "You didn't listen to any <audio>music</audio> on <from>{serverName}</from>"
     },

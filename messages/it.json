@@ -351,7 +351,7 @@
       "topDirectors": "Ecco {count, plural, one {il tuo <top>regista più visto</top>} other {la tua <top>top # dei registi</top>}}",
       "topMovieActors": "Ecco {count, plural, one {il tuo <top>attore di film più visto</top>} other {la tua <top>top # degli attori di film</top>}}",
       "topMovieGenres": "Ecco {count, plural, one {il tuo <top>genere di film più visto</top>} other {la tua <top>top # dei generi di film</top>}}",
-      "topArtists": "Ecco {count, plural, one {il tuo <top>artista più ascoltato</top>} other {la tua <top>top # degli artisti</top>}}",
+      "topArtists": "Ecco {count, plural, one {<top>l'unico artista</top> che hai ascoltato} other {la tua <top>top # degli artisti</top>}}",
       "percentage": "<percentage>{percentageValue}</percentage> del tuo tempo di riproduzione totale.",
       "shows": "Serie",
       "movies": "Film",
@@ -386,6 +386,8 @@
       "only": "L'unico artista che hai ascoltato è stato",
       "topTrack": "Il tuo preferito è stato <track>{title}</track> di <by>{artist}</by>",
       "topTrackWithoutArtist": "Il tuo preferito è stato <track>{title}</track>",
+      "onlyTrack": "L'unico brano che hai ascoltato è stato <track>{title}</track> di <by>{artist}</by>",
+      "onlyTrackWithoutArtist": "L'unico brano che hai ascoltato è stato <track>{title}</track>",
       "topTrackPlays": "L'hai ascoltato <count>{countValue, plural, one {una volta} other {# volte}}</count>",
       "noData": "Non hai ascoltato <audio>musica</audio> su <from>{serverName}</from>"
     },
