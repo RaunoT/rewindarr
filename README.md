@@ -43,8 +43,6 @@ Keep an eye on the [issues page](https://github.com/RaunoT/rewindarr/issues) to 
 
 ![Rewind](.github/screenshots/rewind.webp 'Rewind')
 
-![Activity](.github/screenshots/activity.webp 'Activity')
-
 ## Getting started
 
 1. Create a `docker-compose.yml` in your location of choice and run `docker compose up -d`. The app will be available at `http://localhost:8383`.
