@@ -194,6 +194,15 @@ describe('groupBinges', () => {
     expect(result.every((entry) => !('binge' in entry))).toBe(true)
   })
 
+  it("keeps apart plays whose show isn't known", () => {
+    const unknown = { grandparentRatingKey: null, showTitle: null }
+    const result = groupBinges(
+      entries(episode('2', 1, unknown), episode('1', 2, unknown)),
+    )
+
+    expect(result).toHaveLength(2)
+  })
+
   it('ends a binge at a request between its plays', () => {
     const result = groupBinges([
       ...entries(episode('2', 1)),

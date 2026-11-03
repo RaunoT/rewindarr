@@ -262,18 +262,20 @@ async function addItems(entries: HistoryEntry[]): Promise<HistoryEntry[]> {
   )
 }
 
-// The show of an episode or the artist of a track, which a binge stays on
+// The show of an episode or the artist of a track, which a binge stays on.
+// Without either, there's no telling what it belongs to, so it's on its own.
 function getBingeKey(play: HistoryPlay): string | null {
   if (play.mediaType !== 'episode' && play.mediaType !== 'track') {
     return null
   }
 
-  return [
-    play.mediaType,
-    play.userId || play.identityId,
+  const parent =
     play.grandparentRatingKey ||
-      (play.mediaType === 'episode' ? play.showTitle : play.artistName),
-  ].join('|')
+    (play.mediaType === 'episode' ? play.showTitle : play.artistName)
+
+  return parent
+    ? [play.mediaType, play.userId || play.identityId, parent].join('|')
+    : null
 }
 
 // Episodes of one show, or tracks of one artist, that a user played one after
