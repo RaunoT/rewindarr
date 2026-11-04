@@ -429,6 +429,8 @@
       "count": "Du hast insgesamt <count>{countValue, number}</count> <episodes>{countValue, plural, one {Episode} other {Episoden}}</episodes> geschaut!",
       "favorite": "Deine Lieblingsserie war",
       "only": "Die einzige Serie, die du geschaut hast, war",
+      "previousFavorite": "{period, select, year {Im Jahr davor} other {Beim letzten Mal}} war es <title>{titleValue}</title>",
+      "sameFavorite": "Sie war schon <before>{period, select, year {im Jahr davor} other {beim letzten Mal}}</before> deine Lieblingsserie!",
       "noData": "Du hast keine <shows>Serien</shows> auf <plex>{serverName}</plex> geschaut <emoji>😥</emoji>"
     },
     "Requests": {
@@ -448,6 +450,8 @@
       "count": "Du hast <count>{countValue, number}</count> <movies>{countValue, plural, one {Film} other {Filme}}</movies> gesehen!",
       "favorite": "Dein Lieblingsfilm war",
       "only": "Der einzige Film, den du gesehen hast, war",
+      "previousFavorite": "{period, select, year {Im Jahr davor} other {Beim letzten Mal}} war es <title>{titleValue}</title>",
+      "sameFavorite": "Er war schon <before>{period, select, year {im Jahr davor} other {beim letzten Mal}}</before> dein Lieblingsfilm!",
       "noData": "Du hast keine <movies>Filme</movies> auf <plex>{serverName}</plex> gesehen <emoji>😵‍💫</emoji>"
     },
     "People": {
@@ -492,6 +496,15 @@
       "dayTitles": "Das stand auf dem Programm",
       "moreTitles": "{count, plural, one {# weiterer} other {# weitere}}",
       "streak": "Dein Rekord: <days>{count, plural, one {# Tag} other {# Tage}} in Folge</days> mit mindestens einer Wiedergabe, vom <start>{startValue}</start> bis zum <end>{endValue}</end>"
+    },
+    "YearOverYear": {
+      "yearBefore": "<before>Im Jahr davor</before> hast du <duration>{durationValue}</duration> auf <plex>{serverName}</plex> verbracht",
+      "rangeBefore": "<before>Von {startValue} bis {endValue}</before> hast du <duration>{durationValue}</duration> auf <plex>{serverName}</plex> verbracht",
+      "monthBefore": "<before>Im {startValue}</before> hast du <duration>{durationValue}</duration> auf <plex>{serverName}</plex> verbracht",
+      "averageMore": "Diesmal waren es <difference>{percent, number, percent} mehr</difference>",
+      "averageTimes": "Diesmal war es <difference>{times, number}× so viel</difference>",
+      "averageLess": "Diesmal waren es <difference>{percent, number, percent} weniger</difference>",
+      "averageSame": "Diesmal war es <difference>etwa gleich viel</difference>"
     },
     "Habits": {
       "day": "Dein liebster Tag zum Schauen war <day>{dayValue}</day>",

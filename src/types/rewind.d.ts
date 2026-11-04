@@ -4,6 +4,7 @@ import { PublicSettings } from './settings'
 import { Genres, MediaServer, TopPeople } from './statsSource'
 import { TautulliItemRow, TautulliLibrary } from './tautulli'
 import { TitleMoments } from './titleMoments'
+import { YearOverYear } from './yearOverYear'
 
 export type RewindUser = {
   id: string
@@ -67,6 +68,9 @@ export type UserRewind = {
     topTrack: TopTrack | null
   }
   titleMoments: TitleMoments
+  // Null until the whole history has been read, or without enough plays before
+  // the period to compare with
+  yearOverYear: YearOverYear | null
   habits: {
     peakHour: number | null
     peakDayIndex: number | null

@@ -5,6 +5,7 @@ import { getMediaServerName } from '@/utils/mediaServerName'
 import { useTranslations } from 'next-intl'
 import CountUp from '../CountUp'
 import PlaytimeShare from '../PlaytimeShare'
+import PreviousFavorite from '../PreviousFavorite'
 import RewindStat from '../RewindStat'
 
 export default function StoryShows({ userRewind, settings }: RewindStory) {
@@ -74,6 +75,12 @@ export default function StoryShows({ userRewind, settings }: RewindStory) {
               />
             </div>
           </RewindStat>
+
+          <PreviousFavorite
+            yearOverYear={userRewind.yearOverYear}
+            type='shows'
+            step={4}
+          />
         </>
       ) : (
         <RewindStat noScale>
