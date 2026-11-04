@@ -1,4 +1,5 @@
 import { RewindMoments } from '@/utils/rewindMoments'
+import { RewindPersonality } from './rewindPersonality'
 import { RewindSocial } from './rewindSocial'
 import { PublicSettings } from './settings'
 import { Genres, MediaServer, TopPeople } from './statsSource'
@@ -58,6 +59,8 @@ export type UserRewind = {
         } | null
       })
     | null
+  // How the user watched, null with too little to go on
+  personality?: RewindPersonality | null
   media_server: MediaServer | null
   shows: LibraryRewind
   movies: LibraryRewind

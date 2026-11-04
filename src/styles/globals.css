@@ -190,6 +190,15 @@
         @apply brightness-110;
       }
     }
+
+    /* Second to a solid one beside it, like the glass icon buttons */
+    &.button--glass {
+      @apply glass-pill text-white;
+
+      &:hover:not([disabled]) {
+        @apply bg-white/10;
+      }
+    }
   }
 
   .button-card {
