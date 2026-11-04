@@ -49,20 +49,23 @@ export default function StoryBiggestDay({ userRewind }: RewindStory) {
       <RewindStat step={1}>
         <p className='mb-4'>{t('dayTitles')}</p>
 
-        {/* The posters name the titles, and the rest are only counted */}
-        <ul className='flex gap-3'>
+        {/* The posters name the titles, and wrap to fit the width */}
+        <ul className='grid grid-cols-4 gap-2 sm:grid-cols-6 sm:gap-3'>
           {biggestDay.titles.map(({ title, mediaType, item }) => (
-            <li key={`${mediaType}|${title}`} className='poster w-20 sm:w-24'>
+            <li
+              key={`${mediaType}|${title}`}
+              className='poster w-full sm:w-full'
+            >
               <PosterImage
                 srcs={item ? [getPoster(item), item.tmdb_poster] : []}
                 type={mediaType}
                 alt={title}
-                sizes='6rem'
+                sizes='(min-width: 640px) 7rem, 25vw'
               />
             </li>
           ))}
           {biggestDay.moreTitles > 0 && (
-            <li className='poster flex w-20 items-center justify-center bg-white/5 px-2 text-center text-base font-medium text-neutral-300 sm:w-24'>
+            <li className='poster flex w-full items-center justify-center bg-white/5 px-1 text-center text-sm font-medium text-neutral-300 sm:w-full sm:text-base'>
               {t('moreTitles', { count: biggestDay.moreTitles })}
             </li>
           )}

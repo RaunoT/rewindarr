@@ -306,28 +306,33 @@ describe('getBiggestDay', () => {
     ])
   })
 
-  it('counts the titles past the first three', () => {
-    const artists = ['A', 'B', 'C', 'D', 'E'].map((artistName, i) =>
-      play(`2026-03-14T1${i}:00:00Z`, {
-        mediaType: 'track',
-        artistName,
-        durationMs: (5 - i) * 60 * 1000,
-      }),
-    )
+  it('counts the titles past the posters there is room for', () => {
+    const otherDays = [
+      play('2026-03-01T20:00:00Z', { durationMs: 1000 }),
+      play('2026-03-02T20:00:00Z', { durationMs: 1000 }),
+    ]
+    const artists = (count: number) =>
+      Array.from({ length: count }, (_, i) =>
+        play(`2026-03-14T${String(i).padStart(2, '0')}:00:00Z`, {
+          mediaType: 'track',
+          artistName: `Artist ${i + 1}`,
+          durationMs: (count - i) * 60 * 1000,
+        }),
+      )
 
-    expect(
-      getBiggestDay(
-        [
-          ...artists,
-          play('2026-03-01T20:00:00Z', { durationMs: 1000 }),
-          play('2026-03-02T20:00:00Z', { durationMs: 1000 }),
-        ],
-        'UTC',
-      ),
-    ).toMatchObject({
-      titles: [{ title: 'A' }, { title: 'B' }, { title: 'C' }],
-      moreTitles: 2,
+    expect(getBiggestDay([...artists(12), ...otherDays], 'UTC')).toMatchObject({
+      moreTitles: 0,
     })
+    expect(
+      getBiggestDay([...artists(12), ...otherDays], 'UTC')?.titles,
+    ).toHaveLength(12)
+
+    // The twelfth place counts the rest
+    const day = getBiggestDay([...artists(14), ...otherDays], 'UTC')
+
+    expect(day?.titles).toHaveLength(11)
+    expect(day?.titles[0]).toMatchObject({ title: 'Artist 1' })
+    expect(day?.moreTitles).toBe(3)
   })
 
   it('picks the earliest day of a tie', () => {

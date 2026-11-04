@@ -11,8 +11,9 @@ const MIN_CHART_MONTHS = 3
 const MIN_BINGE_EPISODES = 3
 const MIN_PLAY_DAYS = 3
 const MIN_STREAK_DAYS = 3
-// The biggest day names its titles, and how many more there were
-const MAX_DAY_TITLES = 3
+// The biggest day has room for this many posters: three rows on phones, two
+// on wider screens
+const MAX_DAY_POSTERS = 12
 
 export type MonthDuration = {
   // YYYY-MM
@@ -209,12 +210,15 @@ export function getBiggestDay(
 
     return { title: getTitle(play), mediaType: play.mediaType, play }
   })
+  // With more titles than posters, the last place counts the rest
+  const shown =
+    titles.length > MAX_DAY_POSTERS ? MAX_DAY_POSTERS - 1 : titles.length
 
   return {
     date,
     duration: Math.round(sumBy(dayPlays, 'durationMs') / 1000),
-    titles: titles.slice(0, MAX_DAY_TITLES),
-    moreTitles: Math.max(titles.length - MAX_DAY_TITLES, 0),
+    titles: titles.slice(0, shown),
+    moreTitles: titles.length - shown,
   }
 }
 
