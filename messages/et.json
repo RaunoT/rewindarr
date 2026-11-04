@@ -451,7 +451,7 @@
       "bingeEpisodes": "Sa vaatasid järjest <count>{countValue, plural, one {# episoodi} other {# episoodi}}</count>, kokku <duration>{durationValue}</duration>",
       "bingeShow": "Ja see seriaal oli <show>{showValue}</show>",
       "day": "Sinu suurim päev oli <date>{dateValue}</date>, kui kogusid <duration>{durationValue}</duration> esitusaega",
-      "dayTitles": "Selle päeva täitsid <titles>{titlesValue}</titles>",
+      "dayTitles": "Selle päeva täitsid need",
       "moreTitles": "{count, plural, one {veel #} other {veel #}}",
       "streak": "Sinu pikim seeria oli <days>{count, plural, one {# päev} other {# päeva}} järjest</days>, vahemikus <start>{startValue}</start> kuni <end>{endValue}</end>"
     },

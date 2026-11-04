@@ -451,7 +451,7 @@
       "bingeEpisodes": "You watched <count>{countValue, plural, one {# episode} other {# episodes}}</count> back to back, <duration>{durationValue}</duration> in all",
       "bingeShow": "And the show was <show>{showValue}</show>",
       "day": "Your biggest day was <date>{dateValue}</date>, when you clocked up <duration>{durationValue}</duration>",
-      "dayTitles": "You spent it on <titles>{titlesValue}</titles>",
+      "dayTitles": "Here's what you spent it on",
       "moreTitles": "{count, plural, one {# more} other {# more}}",
       "streak": "Your longest streak was <days>{count, plural, one {# day} other {# days}} in a row</days>, from <start>{startValue}</start> to <end>{endValue}</end>"
     },

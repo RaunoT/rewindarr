@@ -28,13 +28,6 @@ export default function StoryBiggestDay({ userRewind }: RewindStory) {
     return null
   }
 
-  // The titles left out have no poster, so they're only counted
-  const titles = biggestDay.titles.map(({ title }) => title)
-
-  if (biggestDay.moreTitles) {
-    titles.push(t('moreTitles', { count: biggestDay.moreTitles }))
-  }
-
   return (
     <>
       <RewindStat>
@@ -54,13 +47,9 @@ export default function StoryBiggestDay({ userRewind }: RewindStory) {
       </RewindStat>
 
       <RewindStat step={1}>
-        <p className='mb-4'>
-          {t.rich('dayTitles', {
-            titlesValue: format.list(titles),
-            titles: (chunks) => <span className='rewind-cat'>{chunks}</span>,
-          })}
-        </p>
+        <p className='mb-4'>{t('dayTitles')}</p>
 
+        {/* The posters name the titles, and the rest are only counted */}
         <ul className='flex gap-3'>
           {biggestDay.titles.map(({ title, mediaType, item }) => (
             <li key={`${mediaType}|${title}`} className='poster w-20 sm:w-24'>
@@ -72,6 +61,11 @@ export default function StoryBiggestDay({ userRewind }: RewindStory) {
               />
             </li>
           ))}
+          {biggestDay.moreTitles > 0 && (
+            <li className='poster flex w-20 items-center justify-center bg-white/5 px-2 text-center text-base font-medium text-neutral-300 sm:w-24'>
+              {t('moreTitles', { count: biggestDay.moreTitles })}
+            </li>
+          )}
         </ul>
       </RewindStat>
 

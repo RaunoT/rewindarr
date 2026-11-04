@@ -37,11 +37,14 @@ function getScale(maxValue: number) {
   return { niceMax, ticks }
 }
 
-// Labels are centered on their bar, but on dense charts (the 24-hour view) a
-// label near an edge is clamped to the plot bounds — anchored by its left edge
-// at the start and its right edge at the end — so it can never be clipped.
-function labelTransform(index: number, count: number) {
-  if (count <= 12) {
+// Labels are centered on their bar. When only some bars have one, as on the
+// 24-hour view, a label can be wider than its bar, so one near an edge is
+// clamped to the plot bounds — anchored by its left edge at the start and its
+// right edge at the end — so it can never be clipped.
+function labelTransform(index: number, labels: (string | null)[]) {
+  const count = labels.length
+
+  if (count <= 12 || labels.every(Boolean)) {
     return 'translateX(-50%)'
   }
 
@@ -79,7 +82,7 @@ function BarLabels({ labels, peakIndex, className }: BarLabelsProps) {
             )}
             style={{
               left: `${((index + 0.5) / labels.length) * 100}%`,
-              transform: labelTransform(index, labels.length),
+              transform: labelTransform(index, labels),
             }}
           >
             {label}

@@ -451,7 +451,7 @@
       "bingeEpisodes": "Hai guardato <count>{countValue, plural, one {# episodio} other {# episodi}}</count> di fila, per <duration>{durationValue}</duration> in tutto",
       "bingeShow": "E la serie? <show>{showValue}</show>",
       "day": "Il tuo giorno più intenso è stato <date>{dateValue}</date>, con <duration>{durationValue}</duration> di riproduzione",
-      "dayTitles": "In programma: <titles>{titlesValue}</titles>",
+      "dayTitles": "Ecco cosa c'era in programma",
       "moreTitles": "{count, plural, one {altro #} other {altri #}}",
       "streak": "Il tuo record: <days>{count, plural, one {# giorno} other {# giorni}} di fila</days> con almeno una riproduzione, dal <start>{startValue}</start> al <end>{endValue}</end>"
     },
