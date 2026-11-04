@@ -11,7 +11,7 @@ function weekday(index: number, formatter: Intl.DateTimeFormat) {
   return formatter.format(new Date(Date.UTC(2024, 0, 7 + index)))
 }
 
-// Plays are counted by Date.getDay(), which starts on Sunday, but the chart
+// The plays per day start on Sunday, as Date.getDay() does, but the chart
 // starts the week on Monday.
 const WEEK = [1, 2, 3, 4, 5, 6, 0]
 

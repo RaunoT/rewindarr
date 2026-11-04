@@ -24,6 +24,7 @@ import getMediaAdditionalData, {
   TmdbMediaType,
 } from './getMediaAdditionalData'
 import getSettings from './getSettings'
+import { createHourAndDayReader } from './timeZone'
 import { getTopGenres, MatchCandidate, WatchedTitle } from './topGenres'
 import { getTopPeople as findTopPeople } from './topPeople'
 
@@ -479,23 +480,25 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
     )
   }
 
-  // Hours and days are in the Rewindarr server's timezone.
   async function getPlaysByTime(
     userId: string,
+    libraries: TautulliLibrary[],
     since: string,
+    timeZone?: string,
   ): Promise<PlaysByTime> {
-    const plays = await getPlays({ since, userId })
+    const plays = await getPlays({ since, userId, libraries })
     const minPercent = getMinPlayPercent()
+    const readHourAndDay = createHourAndDayReader(timeZone)
     const hourly = Array<number>(24).fill(0)
     const daily = Array<number>(7).fill(0)
 
     for (const play of plays.filter((play) =>
       isCountedPlay(play, minPercent),
     )) {
-      const startedAt = new Date(play.startedAt)
+      const { hour, day } = readHourAndDay(play.startedAt)
 
-      hourly[startedAt.getHours()]++
-      daily[startedAt.getDay()]++
+      hourly[hour]++
+      daily[day]++
     }
 
     return { hourly, daily }
