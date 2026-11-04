@@ -15,7 +15,7 @@ export default function StoryShows({ userRewind, settings }: RewindStory) {
   const top = userRewind.shows.top[0]
   const isOnly = userRewind.shows.top.length === 1
   // Without a rewatch, it's only the one with the most watch time
-  const isTopFavorite = isOnly || isFavorite(top)
+  const isTopFavorite = isFavorite(top)
 
   return (
     <>

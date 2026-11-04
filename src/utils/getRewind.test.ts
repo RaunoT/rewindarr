@@ -1,9 +1,10 @@
+import { TautulliLibrary } from '@/types/tautulli'
 import { cloneDeep } from 'lodash'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
 import { fetchSeerrStats } from './fetchSeerr'
-import { getRequestsTotals, getTopMediaStats } from './getRewind'
+import { getRequestsTotals, getTopMediaStats, getTopTrack } from './getRewind'
 import getSettings from './getSettings'
 import { getStatsSource } from './statsSource'
 
@@ -185,5 +186,59 @@ describe('getTopMediaStats', () => {
     const stats = await getTopMediaStats('1', [])
 
     expect(stats.shows.percentage).toBe('')
+  })
+})
+
+describe('getTopTrack', () => {
+  const MINUTE = 60 * 1000
+  const LIBRARIES = [{ section_type: 'artist' }] as TautulliLibrary[]
+
+  // A track played to the end unless the percent says otherwise
+  function track(title: string, minutes: number, percentComplete = 100) {
+    return {
+      mediaType: 'track',
+      ratingKey: title,
+      mediaId: null,
+      title,
+      artistName: 'Artist',
+      durationMs: minutes * MINUTE,
+      lengthMs: null,
+      percentComplete,
+    }
+  }
+
+  function mockPlays(plays: ReturnType<typeof track>[]) {
+    vi.mocked(getStatsSource).mockReturnValue({
+      getHistoryPlays: vi.fn().mockResolvedValue(plays),
+    } as unknown as ReturnType<typeof getStatsSource>)
+  }
+
+  it('goes by plays first', async () => {
+    mockPlays([track('Short', 3), track('Short', 3), track('Long', 20)])
+
+    await expect(getTopTrack('1', LIBRARIES)).resolves.toMatchObject({
+      title: 'Short',
+      plays: 2,
+      isOnly: false,
+    })
+  })
+
+  it('goes by listening time without a track played twice', async () => {
+    mockPlays([track('Short', 3), track('Long', 5), track('Partial', 10, 40)])
+
+    await expect(getTopTrack('1', LIBRARIES)).resolves.toMatchObject({
+      title: 'Partial',
+      plays: 0,
+      isOnly: false,
+    })
+  })
+
+  it('keeps the only track that counts', async () => {
+    mockPlays([track('Short', 3), track('Partial', 10, 40)])
+
+    await expect(getTopTrack('1', LIBRARIES)).resolves.toMatchObject({
+      title: 'Short',
+      isOnly: true,
+    })
   })
 })

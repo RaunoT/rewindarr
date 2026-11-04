@@ -397,8 +397,8 @@
       "topTrackWithoutArtist": "Sinu lemmik oli <track>{title}</track>",
       "onlyTrack": "Ainus lugu, mida kuulasid, oli <track>{title}</track>, esitajaks <by>{artist}</by>",
       "onlyTrackWithoutArtist": "Ainus lugu, mida kuulasid, oli <track>{title}</track>",
-      "longestTrack": "Kõige pikem lugu, mida kuulasid, oli <track>{title}</track>, esitajaks <by>{artist}</by>",
-      "longestTrackWithoutArtist": "Kõige pikem lugu, mida kuulasid, oli <track>{title}</track>",
+      "mostTimeTrack": "Lugu, mida kuulasid kõige kauem, oli <track>{title}</track>, esitajaks <by>{artist}</by>",
+      "mostTimeTrackWithoutArtist": "Lugu, mida kuulasid kõige kauem, oli <track>{title}</track>",
       "topTrackPlays": "Sa kuulasid seda <count>{countValue, plural, one {ühe korra} other {# korda}}</count>",
       "noData": "Sa ei kuulanud <audio>muusikat</audio> <from>{serverName}'ist</from>"
     },
@@ -433,7 +433,7 @@
       "count": "Sa vaatasid kokku <count>{countValue, number}</count> <episodes>{countValue, plural, one {episoodi} other {episoodi}}</episodes>",
       "favorite": "Sinu lemmik oli",
       "only": "Ainus sari, mida vaatasid, oli",
-      "mostTime": "Sari, millele kulutasid kõige rohkem aega, oli",
+      "mostTime": "Sari, mida vaatasid kõige kauem, oli",
       "previousFavorite": "{period, select, year {Aasta varem} other {Eelmisel korral}} oli selleks <title>{titleValue}</title>",
       "sameFavorite": "See oli sinu lemmik ka <before>{period, select, year {aasta varem} other {eelmisel korral}}</before>!",
       "noData": "Sa ei vaadanud ühtegi <shows>seriaali</shows> <plex>{serverName}'ist</plex> <emoji>😥</emoji>"
@@ -455,7 +455,7 @@
       "count": "Vaatasid <count>{countValue, number}</count> <movies>{countValue, plural, one {filmi} other {filmi}}</movies>",
       "favorite": "Sinu lemmik oli",
       "only": "Ainus film, mida vaatasid, oli",
-      "longest": "Kõige pikem film, mida vaatasid, oli",
+      "mostTime": "Film, mida vaatasid kõige kauem, oli",
       "previousFavorite": "{period, select, year {Aasta varem} other {Eelmisel korral}} oli selleks <title>{titleValue}</title>",
       "sameFavorite": "See oli sinu lemmik ka <before>{period, select, year {aasta varem} other {eelmisel korral}}</before>!",
       "noData": "Sa ei vaadanud ühtegi <movies>filmi</movies> <plex>{serverName}'ist</plex> <emoji>😵‍💫</emoji>"
@@ -478,7 +478,7 @@
       "nobodyElse": "Keegi teine <plex>{serverName}'is</plex> {countValue, plural, one {seda} other {neid}} ei vaadanud",
       "nobodyElseShare": "Keegi teine <plex>{serverName}'is</plex> {countValue, plural, one {seda} other {neid}} ei vaadanud. See on <share>{shareValue}</share> kõigist filmidest ja sarjadest, mida vaatasid.",
       "top": "{countValue, plural, one {See oli <title>{titleValue}</title>} other {Neist sinu lemmik oli <title>{titleValue}</title>}}",
-      "topMostTime": "Neist kulutasid kõige rohkem aega <title>{titleValue}</title> peale"
+      "topMostTime": "Neist vaatasid kõige kauem <title>{titleValue}</title>"
     },
     "RequestsReach": {
       "users": "{usersValue, plural, one {<count># teine inimene</count> vaatas} other {<count># teist inimest</count> vaatasid}} seda, mida sa <requests>tellisid</requests>",

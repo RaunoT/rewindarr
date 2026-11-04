@@ -1,5 +1,6 @@
 import { TopTrack } from '@/types/rewind'
 import { TautulliLibrary, TautulliMediaReturnType } from '@/types/tautulli'
+import { maxBy } from 'lodash'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { cache } from 'react'
 import { fetchSeerrStats, getMediaUserIds } from './fetchSeerr'
@@ -123,7 +124,8 @@ export async function getTopPeople(
 
 // The user's most played track, by plays and then listening time. Like the
 // other stats, plays short of the percent in the settings only add their
-// listening time.
+// listening time. Without a track played twice, it's the one with the most
+// listening time, also from plays that don't count.
 export async function getTopTrack(
   userId: string,
   libraries: TautulliLibrary[],
@@ -188,7 +190,17 @@ export async function getTopTrack(
     }
   }
 
-  return top && { ...top, isOnly: countedTracks === 1 }
+  if (!top) {
+    return null
+  }
+
+  const isOnly = countedTracks === 1
+
+  if (top.plays === 1 && !isOnly) {
+    top = maxBy([...tracks.values()], 'durationMs') ?? top
+  }
+
+  return { ...top, isOnly }
 }
 
 // Anonymizing hides who the match would name, so it isn't looked for

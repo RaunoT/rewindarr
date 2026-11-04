@@ -260,6 +260,7 @@ describe('getFavoriteChange', () => {
     const change = getFavoriteChange(
       {
         previous: [
+          play('dune-0', '2024-12-01', { title: 'Dune', ratingKey: '1' }),
           play('dune-1', '2025-01-01', { title: 'Dune', ratingKey: '1' }),
           play('alien', '2025-01-02', { durationMs: 60 * MINUTE }),
         ],
@@ -284,10 +285,14 @@ describe('getFavoriteChange', () => {
       {
         previous: [
           play('abandoned', '2025-01-01', {
-            durationMs: 100 * MINUTE,
+            durationMs: 200 * MINUTE,
             percentComplete: 40,
           }),
           play('finished', '2025-01-02', { durationMs: 80 * MINUTE }),
+          play('finished-2', '2025-01-03', {
+            title: 'finished',
+            durationMs: 80 * MINUTE,
+          }),
         ],
         current: [
           play('abandoned-again', '2026-01-01', { title: 'abandoned' }),
@@ -299,9 +304,33 @@ describe('getFavoriteChange', () => {
     )
 
     expect(change).toEqual({
-      play: expect.objectContaining({ id: 'finished' }),
+      play: expect.objectContaining({ id: 'finished-2' }),
       isSame: false,
     })
+  })
+
+  it('needs the earlier favourite to have been played again', () => {
+    const periods = {
+      previous: [
+        play('dune', '2025-01-01', { title: 'Dune', durationMs: 150 * MINUTE }),
+        play('heat-1', '2025-01-02', {
+          title: 'Heat',
+          durationMs: 60 * MINUTE,
+        }),
+        play('heat-2', '2025-01-03', {
+          title: 'Heat',
+          durationMs: 60 * MINUTE,
+        }),
+      ],
+      current: [
+        play('dune-2', '2026-01-01', { title: 'Dune' }),
+        play('dune-3', '2026-01-02', { title: 'Dune' }),
+      ],
+    }
+
+    expect(
+      getFavoriteChange(periods, 'movie', MIN_PERCENT, favorite('Dune', 2020)),
+    ).toBeNull()
   })
 
   it('is null without the media type in either period', () => {
@@ -318,7 +347,10 @@ describe('getFavoriteChange', () => {
 
   it("goes by the card's favourite when two titles tie in the period", () => {
     const periods = {
-      previous: [play('alien-1', '2025-01-01', { title: 'Alien' })],
+      previous: [
+        play('alien-0', '2024-12-01', { title: 'Alien' }),
+        play('alien-1', '2025-01-01', { title: 'Alien' }),
+      ],
       current: [
         play('heat', '2026-01-01', { title: 'Heat' }),
         play('alien-2', '2026-01-02', { title: 'Alien' }),
@@ -356,6 +388,7 @@ describe('getYearOverYear', () => {
   const shows = [
     ...previousYear,
     episode('s1', '2024-12-01T20:00:00Z', 'Severance'),
+    episode('s2', '2024-12-02T20:00:00Z', 'Severance'),
     episode('b1', '2025-12-01T20:00:00Z', 'The Bear'),
     ...pastYear,
   ]
@@ -370,8 +403,8 @@ describe('getYearOverYear', () => {
       since: '2024-11-03',
       until: '2025-11-03',
       isPastYear: true,
-      duration: '15 hr 30 min',
-      difference: 39,
+      duration: '16 hr',
+      difference: 34,
       shows: { title: 'Severance', isSame: false },
       movies: { title: 'Alien', isSame: false },
     })

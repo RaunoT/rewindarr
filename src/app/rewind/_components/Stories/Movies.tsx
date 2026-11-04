@@ -15,7 +15,7 @@ export default function StoryMovies({ userRewind, settings }: RewindStory) {
   const top = userRewind.movies.top[0]
   const isOnly = userRewind.movies.top.length === 1
   // Without a rewatch, it's only the one with the most watch time
-  const isTopFavorite = isOnly || isFavorite(top)
+  const isTopFavorite = isFavorite(top)
 
   return (
     <>
@@ -60,7 +60,7 @@ export default function StoryMovies({ userRewind, settings }: RewindStory) {
 
           <RewindStat step={3} noScale>
             <p className='mb-2'>
-              {t(isOnly ? 'only' : isTopFavorite ? 'favorite' : 'longest')}{' '}
+              {t(isOnly ? 'only' : isTopFavorite ? 'favorite' : 'mostTime')}{' '}
               <span className='rewind-cat'>{top.title}</span>
             </p>
 
