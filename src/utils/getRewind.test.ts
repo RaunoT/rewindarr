@@ -50,6 +50,8 @@ describe('getRequestsTotals', () => {
       user: { total: 2, movies: 1, shows: 1 },
       // 3 requests from 2 users average 1.5, which shows as 2
       average: { count: 2, difference: 0 },
+      // Half and half for user 1, all movies for user 2
+      averageShares: { movies: 0.75, shows: 0.25 },
     })
     expect(fetchSeerrStats).toHaveBeenCalledWith('request', '2026-01-01')
   })
@@ -84,6 +86,7 @@ describe('getRequestsTotals', () => {
 
     // 4 requests from 3 users
     expect(totals?.average).toEqual({ count: 1, difference: 100 })
+    expect(totals?.averageShares).toEqual({ movies: 1, shows: 0 })
   })
 
   it("leaves excluded users out of every user's requests", async () => {
@@ -106,7 +109,22 @@ describe('getRequestsTotals', () => {
       shows: 0,
       user: { total: 1, movies: 1, shows: 0 },
       average: { count: 1, difference: 0 },
+      averageShares: { movies: 1, shows: 0 },
     })
+  })
+
+  it("averages each requester's split of their movies and shows", async () => {
+    vi.mocked(fetchSeerrStats).mockResolvedValue([
+      request('movie', 1),
+      request('music', 1),
+      request('tv', 2),
+      request('music', 3),
+    ])
+
+    const totals = await getRequestsTotals('1')
+
+    // User 3 has no movies or shows to split
+    expect(totals?.averageShares).toEqual({ movies: 0.5, shows: 0.5 })
   })
 
   it('counts zero requests when there were none', async () => {
@@ -118,6 +136,7 @@ describe('getRequestsTotals', () => {
       shows: 0,
       user: { total: 0, movies: 0, shows: 0 },
       average: null,
+      averageShares: null,
     })
   })
 
