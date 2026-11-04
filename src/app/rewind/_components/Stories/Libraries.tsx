@@ -4,6 +4,7 @@ import { bytesToSize } from '@/utils/formatting'
 import { getMediaServerName } from '@/utils/mediaServerName'
 import { useTranslations } from 'next-intl'
 import { ComponentProps } from 'react'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 import StatListItem from '../StatListItem'
 
@@ -44,10 +45,7 @@ export default function StoryLibraries({ userRewind, settings }: RewindStory) {
         <p>
           {t.rich('filesize', {
             filesize: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <STAT_ICONS.size />
-              </span>
+              <RewindCat icon={<STAT_ICONS.size />}>{chunks}</RewindCat>
             ),
             serverName:
               settings.general.serverName ||

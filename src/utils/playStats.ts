@@ -24,6 +24,7 @@ import getMediaAdditionalData, {
   TmdbMediaType,
 } from './getMediaAdditionalData'
 import getSettings from './getSettings'
+import { createHourAndDayReader } from './timeZone'
 import { getTopGenres, MatchCandidate, WatchedTitle } from './topGenres'
 import { getTopPeople as findTopPeople } from './topPeople'
 
@@ -145,10 +146,23 @@ function getDuration(plays: Play[]): number {
   return Math.round(sumBy(plays, 'durationMs') / 1000)
 }
 
-// Plays short of the percent in the settings still add their watch time. A
-// play the source has no percent complete for counts.
+// Without the item's length, only where a play stopped is known, and reopening
+// an item at its end logs a play near 100% that lasted seconds. So without it,
+// a play also needs this long.
+export const MIN_PLAY_MS = 30 * 1000
+
+// A play counts once its time reaches the settings' percent of the item's
+// length. Without the length, the percent is where it stopped, and a play
+// without one counts. Plays that don't count still add their watch time.
 export function isCountedPlay(play: Play, minPercent: number): boolean {
-  return play.percentComplete === null || play.percentComplete >= minPercent
+  if (play.lengthMs) {
+    return play.durationMs >= (play.lengthMs * minPercent) / 100
+  }
+
+  return (
+    play.durationMs >= MIN_PLAY_MS &&
+    (play.percentComplete === null || play.percentComplete >= minPercent)
+  )
 }
 
 function getMinPlayPercent(): number {
@@ -166,7 +180,7 @@ function getMediaId(play: Play): string | null {
   }
 }
 
-function getRatingKey(play: Play): string | null {
+export function getRatingKey(play: Play): string | null {
   return play.mediaType === 'movie' ? play.ratingKey : play.grandparentRatingKey
 }
 
@@ -184,7 +198,7 @@ function getTitleKey(play: Play): string {
 // Plex gives an item a new rating key when it's re-added, and imported
 // history has none, so plays group by the source's media id and otherwise by
 // title, like Tautulli's top_movies, top_tv and top_music stats.
-function groupPlays(plays: Play[]): Play[][] {
+export function groupPlays<T extends Play>(plays: T[]): T[][] {
   const mediaIdsByTitle = new Map<string, string>()
 
   for (const play of plays) {
@@ -205,6 +219,37 @@ function groupPlays(plays: Play[]): Play[][] {
       )
     }),
   )
+}
+
+// Whether a play is of an item made from plays, matched by the media id or the
+// title, the way the plays are grouped
+export function isPlayOfItem(
+  play: Play,
+  item: Pick<TautulliItemRow, 'media_id' | 'title' | 'year'>,
+): boolean {
+  const mediaId = getMediaId(play)
+
+  if (item.media_id && mediaId) {
+    return mediaId === item.media_id
+  }
+
+  const title = item.title.trim().toLowerCase()
+
+  return (
+    getTitleKey(play) ===
+    (play.mediaType === 'movie' ? `${title}|${item.year ?? ''}` : title)
+  )
+}
+
+// An item's plays that count and its watch time, as its row shows them
+export function getItemTotals(
+  plays: Play[],
+  minPercent: number,
+): Pick<TautulliItemRow, 'total_plays' | 'total_duration'> {
+  return {
+    total_plays: plays.filter((play) => isCountedPlay(play, minPercent)).length,
+    total_duration: getDuration(plays),
+  }
 }
 
 // Episodes roll up into their show and tracks into their artist. The newest
@@ -230,8 +275,7 @@ function toItemRow(plays: Play[], minPercent: number): TautulliItemRow {
     ...EMPTY_ROW,
     title: titleByType[play.mediaType] || play.title,
     year: isMovie ? play.year : null,
-    total_plays: countedPlays.length,
-    total_duration: getDuration(plays),
+    ...getItemTotals(plays, minPercent),
     users_watched: uniqBy(countedPlays, 'identityId').length,
     rating_key: ratingKey,
     grandparent_rating_key: ratingKey,
@@ -479,23 +523,25 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
     )
   }
 
-  // Hours and days are in the Rewindarr server's timezone.
   async function getPlaysByTime(
     userId: string,
+    libraries: TautulliLibrary[],
     since: string,
+    timeZone?: string,
   ): Promise<PlaysByTime> {
-    const plays = await getPlays({ since, userId })
+    const plays = await getPlays({ since, userId, libraries })
     const minPercent = getMinPlayPercent()
+    const readHourAndDay = createHourAndDayReader(timeZone)
     const hourly = Array<number>(24).fill(0)
     const daily = Array<number>(7).fill(0)
 
     for (const play of plays.filter((play) =>
       isCountedPlay(play, minPercent),
     )) {
-      const startedAt = new Date(play.startedAt)
+      const { hour, day } = readHourAndDay(play.startedAt)
 
-      hourly[startedAt.getHours()]++
-      daily[startedAt.getDay()]++
+      hourly[hour]++
+      daily[day]++
     }
 
     return { hourly, daily }

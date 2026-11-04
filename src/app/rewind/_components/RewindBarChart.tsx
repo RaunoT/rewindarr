@@ -10,6 +10,8 @@ type Props = {
   data: number[]
   peakIndex: number | null
   labels?: (string | null)[]
+  // In place of the labels on wider screens, where the bars have more room
+  wideLabels?: (string | null)[]
   ariaLabel: string
   axisLabel: string
   className?: string
@@ -35,11 +37,14 @@ function getScale(maxValue: number) {
   return { niceMax, ticks }
 }
 
-// Labels are centered on their bar, but on dense charts (the 24-hour view) a
-// label near an edge is clamped to the plot bounds — anchored by its left edge
-// at the start and its right edge at the end — so it can never be clipped.
-function labelTransform(index: number, count: number) {
-  if (count <= 12) {
+// Labels are centered on their bar. When only some bars have one, as on the
+// 24-hour view, a label can be wider than its bar, so one near an edge is
+// clamped to the plot bounds — anchored by its left edge at the start and its
+// right edge at the end — so it can never be clipped.
+function labelTransform(index: number, labels: (string | null)[]) {
+  const count = labels.length
+
+  if (count <= 12 || labels.every(Boolean)) {
     return 'translateX(-50%)'
   }
 
@@ -56,10 +61,43 @@ function labelTransform(index: number, count: number) {
   return 'translateX(-50%)'
 }
 
+type BarLabelsProps = {
+  labels: (string | null)[]
+  peakIndex: number | null
+  className?: string
+}
+
+function BarLabels({ labels, peakIndex, className }: BarLabelsProps) {
+  return (
+    <div className={clsx('absolute inset-0', className)}>
+      {labels.map((label, index) =>
+        label ? (
+          <span
+            key={index}
+            className={clsx(
+              'absolute top-0 text-xs whitespace-nowrap',
+              index === peakIndex
+                ? 'text-plex font-semibold'
+                : 'text-neutral-400',
+            )}
+            style={{
+              left: `${((index + 0.5) / labels.length) * 100}%`,
+              transform: labelTransform(index, labels),
+            }}
+          >
+            {label}
+          </span>
+        ) : null,
+      )}
+    </div>
+  )
+}
+
 export default function RewindBarChart({
   data,
   peakIndex,
   labels,
+  wideLabels,
   ariaLabel,
   axisLabel,
   className,
@@ -143,24 +181,17 @@ export default function RewindBarChart({
           <>
             <div aria-hidden />
             <div className='relative mt-2 h-4'>
-              {labels.map((label, index) =>
-                label ? (
-                  <span
-                    key={index}
-                    className={clsx(
-                      'absolute top-0 text-xs whitespace-nowrap',
-                      index === peakIndex
-                        ? 'text-plex font-semibold'
-                        : 'text-neutral-400',
-                    )}
-                    style={{
-                      left: `${((index + 0.5) / labels.length) * 100}%`,
-                      transform: labelTransform(index, labels.length),
-                    }}
-                  >
-                    {label}
-                  </span>
-                ) : null,
+              <BarLabels
+                labels={labels}
+                peakIndex={peakIndex}
+                className={wideLabels && 'sm:hidden'}
+              />
+              {wideLabels && (
+                <BarLabels
+                  labels={wideLabels}
+                  peakIndex={peakIndex}
+                  className='max-sm:hidden'
+                />
               )}
             </div>
           </>

@@ -11,6 +11,7 @@ import {
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useContext } from 'react'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 import { StoryRestartContext } from '../Stories'
 
@@ -80,22 +81,13 @@ export default function StoryGoodbye({ userRewind, settings }: RewindStory) {
               )}`,
               {
                 movies: (chunks) => (
-                  <span className='rewind-cat'>
-                    {chunks}
-                    <FilmIcon />
-                  </span>
+                  <RewindCat icon={<FilmIcon />}>{chunks}</RewindCat>
                 ),
                 shows: (chunks) => (
-                  <span className='rewind-cat'>
-                    {chunks}
-                    <PlayCircleIcon />
-                  </span>
+                  <RewindCat icon={<PlayCircleIcon />}>{chunks}</RewindCat>
                 ),
                 tracks: (chunks) => (
-                  <span className='rewind-cat'>
-                    {chunks}
-                    <MusicalNoteIcon />
-                  </span>
+                  <RewindCat icon={<MusicalNoteIcon />}>{chunks}</RewindCat>
                 ),
               },
             )}

@@ -10,6 +10,8 @@ export type Play = {
   orderedAt?: number
   mediaType: PlayMediaType
   durationMs: number
+  // The item's length, which only Tracearr gives. Null when unknown.
+  lengthMs: number | null
   // How far into the item the play got, from 0 to 100. Null when unknown.
   percentComplete: number | null
   title: string

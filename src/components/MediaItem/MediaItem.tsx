@@ -8,11 +8,11 @@ import { PublicSettings } from '@/types/settings'
 import { MediaServer } from '@/types/statsSource'
 import { TautulliItemRow } from '@/types/tautulli'
 import { DASHBOARD_PAGE_SIZE, EXTERNAL_LINK_NAMES } from '@/utils/constants'
-import { getDeeplinkRatingKeyFromRow } from '@/utils/deeplink'
+import { getRowDeeplink } from '@/utils/deeplink'
 import { getExternalLinks, getRatedSites } from '@/utils/externalLinks'
 import { formatMonthYear, secondsToTime } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
-import { slideDown } from '@/utils/motion'
+import { countdownRow, slideDown } from '@/utils/motion'
 import { TrashIcon, UserIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { motion } from 'motion/react'
@@ -39,6 +39,10 @@ type Props = {
   loggedInUserId?: string
   // Without a place in a ranking, there's no number before the poster
   isRanked?: boolean
+  // In a countdown, a place reached comes in at the top and pushes the others
+  // down. A place not reached yet is an unseen placeholder below them, which
+  // keeps its room so the story doesn't move as the list grows.
+  countdown?: 'reached' | 'placeholder'
 }
 
 export default function MediaItem({
@@ -50,12 +54,12 @@ export default function MediaItem({
   settings,
   loggedInUserId,
   isRanked = true,
+  countdown,
 }: Props) {
   const translations = useTranslations()
   const t = useTranslations('MediaItem')
   const locale = useLocale()
   const isUsers = type === 'users'
-  const deeplinkRatingKey = getDeeplinkRatingKeyFromRow(data, type)
   const posterSrc = !data.thumb
     ? null
     : data.thumb.startsWith('https://image.tmdb.org')
@@ -76,10 +80,7 @@ export default function MediaItem({
   const externalLinks = links.filter(({ site }) => !ratedSites.includes(site))
   const ratingLinks = Object.fromEntries(links.map((link) => [link.site, link]))
   // The title and poster open it in the media server, unless it's gone
-  const serverLink =
-    !isUsers && !data.is_deleted && mediaServer && deeplinkRatingKey
-      ? { mediaServer, ratingKey: deeplinkRatingKey }
-      : null
+  const serverLink = isUsers ? null : getRowDeeplink(data, type, mediaServer)
   const poster = (
     <div className='poster max-sm:w-12'>
       {!isUsers ? (
@@ -112,12 +113,18 @@ export default function MediaItem({
       className={clsx(
         'flex items-center gap-3 py-2.5 not-first:border-t not-first:border-white/10 first:pt-0 last:pb-0 motion-reduce:transform-none! motion-reduce:opacity-100! max-sm:flex-wrap sm:gap-4',
         serverLink && 'media-link-group',
+        countdown === 'placeholder' && 'invisible',
       )}
-      variants={slideDown}
-      initial='hidden'
+      variants={countdown === 'reached' ? countdownRow : slideDown}
+      initial={countdown === 'placeholder' ? false : 'hidden'}
       animate='show'
-      // Rows added by "Show more" stagger from the first of them
-      transition={{ delay: (i % DASHBOARD_PAGE_SIZE) * 0.075 }}
+      exit={countdown === 'reached' ? 'exit' : undefined}
+      layout={countdown === 'reached' ? 'position' : undefined}
+      // Rows added by "Show more" stagger from the first of them, and a
+      // countdown's rows show on their own
+      transition={{
+        delay: countdown ? 0 : (i % DASHBOARD_PAGE_SIZE) * 0.075,
+      }}
     >
       {/* The rank stays level with the poster, however tall the details get.
           On phones it's a badge on the poster's corner, and the poster is

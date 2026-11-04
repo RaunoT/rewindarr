@@ -1,0 +1,131 @@
+import MediaServerLink from '@/components/MediaItem/MediaServerLink'
+import PosterImage from '@/components/PosterImage'
+import { RewindStory } from '@/types/rewind'
+import { TautulliItemRow } from '@/types/tautulli'
+import { getRowDeeplink } from '@/utils/deeplink'
+import { secondsToTime } from '@/utils/formatting'
+import { getImageProxyUrl } from '@/utils/imageProxy'
+import { CalendarIcon, FireIcon } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
+import { useFormatter, useTranslations } from 'next-intl'
+import { DAY_FORMAT, formatMomentDate, SHORT_DAY_FORMAT } from '../momentDate'
+import RewindCat from '../RewindCat'
+import RewindStat from '../RewindStat'
+
+// The kind of item each kind of play rolls up into
+const ITEM_TYPES = {
+  movie: 'movie',
+  episode: 'show',
+  track: 'artist',
+} as const
+
+function getPoster(item: TautulliItemRow) {
+  if (!item.thumb) {
+    return undefined
+  }
+
+  return item.thumb.startsWith('https://image.tmdb.org')
+    ? item.thumb
+    : getImageProxyUrl(item.thumb)
+}
+
+export default function StoryBiggestDay({ userRewind }: RewindStory) {
+  const t = useTranslations('Rewind.Moments')
+  const tRoot = useTranslations()
+  const format = useFormatter()
+  const { biggestDay, streak } = userRewind.moments
+
+  if (!biggestDay) {
+    return null
+  }
+
+  return (
+    <>
+      <RewindStat>
+        <p>
+          {t.rich('day', {
+            day: (chunks) => (
+              <RewindCat icon={<CalendarIcon />}>{chunks}</RewindCat>
+            ),
+            dateValue: formatMomentDate(format, biggestDay.date, DAY_FORMAT),
+            durationValue: secondsToTime(biggestDay.duration, tRoot),
+            date: (chunks) => <span className='rewind-cat'>{chunks}</span>,
+            duration: (chunks) => <span className='rewind-stat'>{chunks}</span>,
+          })}
+        </p>
+      </RewindStat>
+
+      <RewindStat step={1}>
+        <p className='mb-4'>{t('dayTitles')}</p>
+
+        {/* The posters name the titles, open them in the media server and
+            wrap to fit the width */}
+        <ul className='grid grid-cols-4 gap-2 sm:grid-cols-6 sm:gap-3'>
+          {biggestDay.titles.map(({ title, mediaType, item }) => {
+            const deeplink = getRowDeeplink(
+              item,
+              ITEM_TYPES[mediaType],
+              userRewind.media_server,
+            )
+            const poster = (
+              <div className='poster w-full sm:w-full'>
+                <PosterImage
+                  srcs={item ? [getPoster(item), item.tmdb_poster] : []}
+                  type={mediaType}
+                  alt={title}
+                  sizes='(min-width: 640px) 7rem, 25vw'
+                />
+              </div>
+            )
+
+            return (
+              <li
+                key={`${mediaType}|${title}`}
+                className={clsx(deeplink && 'media-link-group')}
+              >
+                {deeplink ? (
+                  <MediaServerLink
+                    title={title}
+                    mediaServer={deeplink.mediaServer}
+                    ratingKey={deeplink.ratingKey}
+                    className='block'
+                  >
+                    {poster}
+                  </MediaServerLink>
+                ) : (
+                  poster
+                )}
+              </li>
+            )
+          })}
+          {biggestDay.moreTitles > 0 && (
+            <li className='poster flex w-full items-center justify-center bg-white/5 px-1 text-center text-sm font-medium text-neutral-300 sm:w-full sm:text-base'>
+              {t('moreTitles', { count: biggestDay.moreTitles })}
+            </li>
+          )}
+        </ul>
+      </RewindStat>
+
+      {streak && (
+        <RewindStat step={2}>
+          <p>
+            {t.rich('streak', {
+              count: streak.days,
+              startValue: formatMomentDate(
+                format,
+                streak.start,
+                SHORT_DAY_FORMAT,
+              ),
+              endValue: formatMomentDate(format, streak.end, SHORT_DAY_FORMAT),
+              days: (chunks) => (
+                <RewindCat icon={<FireIcon />}>{chunks}</RewindCat>
+              ),
+              start: (chunks) => <span className='rewind-cat'>{chunks}</span>,
+              end: (chunks) => <span className='rewind-cat'>{chunks}</span>,
+            })}
+          </p>
+        </RewindStat>
+      )}
+    </>
+  )
+}

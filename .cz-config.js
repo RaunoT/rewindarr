@@ -37,9 +37,18 @@ const config = {
   scopes: [
     { name: 'rewind' },
     { name: 'dashboard' },
-    { name: 'config' },
+    { name: 'activity' },
+    { name: 'history' },
+    { name: 'home' },
+    { name: 'settings' },
+    { name: 'auth' },
+    { name: 'stats' },
+    { name: 'i18n' },
+    { name: 'pwa' },
+    { name: 'docker' },
     { name: 'api' },
   ],
+  allowCustomScopes: true,
 }
 
 export default config

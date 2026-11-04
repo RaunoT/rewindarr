@@ -54,12 +54,13 @@ type TmdbDetails = {
   vote_average?: number
   first_air_date?: string
   poster_path?: string | null
+  backdrop_path?: string | null
   genres?: { name: string }[]
   // Only TV shows have a TVDB ID on TMDB
   external_ids?: { imdb_id?: string | null; tvdb_id?: number | null }
 }
 
-// The ratings, posters and genres share one request per title.
+// The ratings, posters, backdrops and genres share one request per title.
 export function fetchTmdbDetails(
   type: TmdbMediaType,
   tmdbId: number,
@@ -189,6 +190,9 @@ export default async function getMediaAdditionalData(
         : null
       const poster =
         (isPostersTmdbOnly && tmdbPoster) || source.thumb || tmdbPoster || ''
+      const tmdbBackdrop = details?.backdrop_path
+        ? `https://image.tmdb.org/t/p/w300${details.backdrop_path}`
+        : null
 
       return {
         year,
@@ -206,6 +210,7 @@ export default async function getMediaAdditionalData(
         tvdb_id: tvdbId,
         thumb: poster,
         tmdb_poster: tmdbPoster,
+        tmdb_backdrop: tmdbBackdrop,
       }
     }),
   )
@@ -224,6 +229,7 @@ export default async function getMediaAdditionalData(
     mediaItem.tvdb_id = additionalData[i].tvdb_id
     mediaItem.thumb = additionalData[i].thumb
     mediaItem.tmdb_poster = additionalData[i].tmdb_poster
+    mediaItem.tmdb_backdrop = additionalData[i].tmdb_backdrop
 
     if (type === 'tv') {
       mediaItem.year = mediaItem.year || additionalData[i].year

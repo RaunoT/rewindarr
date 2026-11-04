@@ -1,9 +1,10 @@
+import { TautulliLibrary } from '@/types/tautulli'
 import { cloneDeep } from 'lodash'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
 import { fetchSeerrStats } from './fetchSeerr'
-import { getRequestsTotals, getTopMediaStats } from './getRewind'
+import { getRequestsTotals, getTopMediaStats, getTopTrack } from './getRewind'
 import getSettings from './getSettings'
 import { getStatsSource } from './statsSource'
 
@@ -50,6 +51,8 @@ describe('getRequestsTotals', () => {
       user: { total: 2, movies: 1, shows: 1 },
       // 3 requests from 2 users average 1.5, which shows as 2
       average: { count: 2, difference: 0 },
+      // Half and half for user 1, all movies for user 2
+      averageShares: { movies: 0.75, shows: 0.25 },
     })
     expect(fetchSeerrStats).toHaveBeenCalledWith('request', '2026-01-01')
   })
@@ -84,6 +87,7 @@ describe('getRequestsTotals', () => {
 
     // 4 requests from 3 users
     expect(totals?.average).toEqual({ count: 1, difference: 100 })
+    expect(totals?.averageShares).toEqual({ movies: 1, shows: 0 })
   })
 
   it("leaves excluded users out of every user's requests", async () => {
@@ -106,7 +110,22 @@ describe('getRequestsTotals', () => {
       shows: 0,
       user: { total: 1, movies: 1, shows: 0 },
       average: { count: 1, difference: 0 },
+      averageShares: { movies: 1, shows: 0 },
     })
+  })
+
+  it("averages each requester's split of their movies and shows", async () => {
+    vi.mocked(fetchSeerrStats).mockResolvedValue([
+      request('movie', 1),
+      request('music', 1),
+      request('tv', 2),
+      request('music', 3),
+    ])
+
+    const totals = await getRequestsTotals('1')
+
+    // User 3 has no movies or shows to split
+    expect(totals?.averageShares).toEqual({ movies: 0.5, shows: 0.5 })
   })
 
   it('counts zero requests when there were none', async () => {
@@ -118,6 +137,7 @@ describe('getRequestsTotals', () => {
       shows: 0,
       user: { total: 0, movies: 0, shows: 0 },
       average: null,
+      averageShares: null,
     })
   })
 
@@ -185,5 +205,92 @@ describe('getTopMediaStats', () => {
     const stats = await getTopMediaStats('1', [])
 
     expect(stats.shows.percentage).toBe('')
+  })
+})
+
+describe('getTopTrack', () => {
+  const MINUTE = 60 * 1000
+  const LIBRARIES = [{ section_type: 'artist' }] as TautulliLibrary[]
+
+  // A track played to the end unless the percent says otherwise
+  function track(title: string, minutes: number, percentComplete = 100) {
+    return {
+      mediaType: 'track',
+      ratingKey: title,
+      mediaId: null,
+      title,
+      artistName: 'Artist',
+      durationMs: minutes * MINUTE,
+      lengthMs: null,
+      percentComplete,
+    }
+  }
+
+  function mockPlays(plays: ReturnType<typeof track>[]) {
+    vi.mocked(getStatsSource).mockReturnValue({
+      getHistoryPlays: vi.fn().mockResolvedValue(plays),
+    } as unknown as ReturnType<typeof getStatsSource>)
+  }
+
+  it('goes by plays first', async () => {
+    mockPlays([track('Short', 3), track('Short', 3), track('Long', 20)])
+
+    await expect(getTopTrack('1', LIBRARIES)).resolves.toMatchObject({
+      title: 'Short',
+      plays: 2,
+      isOnly: false,
+    })
+  })
+
+  it('goes by listening time without a track played twice', async () => {
+    mockPlays([track('Short', 3), track('Long', 5), track('Partial', 10, 40)])
+
+    await expect(getTopTrack('1', LIBRARIES)).resolves.toMatchObject({
+      title: 'Partial',
+      plays: 0,
+      isOnly: false,
+    })
+  })
+
+  it('keeps the only track that counts', async () => {
+    mockPlays([track('Short', 3), track('Partial', 10, 40)])
+
+    await expect(getTopTrack('1', LIBRARIES)).resolves.toMatchObject({
+      title: 'Short',
+      isOnly: true,
+    })
+  })
+
+  it('breaks a repeat-play tie by total listening time', async () => {
+    mockPlays([
+      track('Short', 3),
+      track('Short', 3),
+      track('Long', 4),
+      track('Long', 4),
+      track('Partial', 20, 40),
+    ])
+
+    await expect(getTopTrack('1', LIBRARIES)).resolves.toMatchObject({
+      title: 'Long',
+      plays: 2,
+      isOnly: false,
+    })
+  })
+
+  it('adds partial plays when ranking single-play tracks by time', async () => {
+    mockPlays([track('Short', 3), track('Short', 4, 40), track('Long', 5)])
+
+    await expect(getTopTrack('1', LIBRARIES)).resolves.toMatchObject({
+      title: 'Short',
+      plays: 1,
+      durationMs: 7 * MINUTE,
+      isOnly: false,
+    })
+  })
+
+  it('leaves the track out when no plays count', async () => {
+    mockPlays([track('Partial', 10, 40)])
+
+    await expect(getTopTrack('1', LIBRARIES)).resolves.toBeNull()
   })
 })

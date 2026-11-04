@@ -29,7 +29,7 @@ export default function Toasts() {
   return (
     <ToastRegion
       queue={toastQueue}
-      className='fixed inset-x-4 top-4 z-50 flex flex-col items-center gap-2 outline-none sm:inset-x-auto sm:right-4 sm:items-end'
+      className='fixed inset-x-4 top-(--page-top) z-50 flex flex-col items-center gap-2 outline-none sm:inset-x-auto sm:right-4 sm:items-end'
     >
       {({ toast }) => (
         <Toast

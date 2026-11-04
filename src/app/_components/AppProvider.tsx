@@ -4,10 +4,11 @@ import Toasts from '@/components/Toasts'
 import { Version } from '@/types'
 import { PublicSettings } from '@/types/settings'
 import { TautulliLibrary } from '@/types/tautulli'
+import { TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import clsx from 'clsx'
 import Image from 'next/image'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
 import stars from '../_assets/stars.png'
 import GlobalContextProvider from './GlobalContextProvider'
@@ -39,6 +40,13 @@ const SIDEBAR_ROUTES = [
 ]
 const queryClient = new QueryClient()
 
+function readTimeZoneCookie() {
+  return document.cookie
+    .split('; ')
+    .find((cookie) => cookie.startsWith(`${TIME_ZONE_COOKIE_NAME}=`))
+    ?.split('=')[1]
+}
+
 export default function AppProvider({
   children,
   missingSetting,
@@ -49,12 +57,30 @@ export default function AppProvider({
   isActivityDetailsHidden,
 }: Props) {
   const pathname = usePathname()
+  const router = useRouter()
   // Not during setup or before logging in, when there's nothing to browse yet
   const hasSidebar =
     !missingSetting &&
     canBrowse &&
     (pathname === '/' ||
       SIDEBAR_ROUTES.some((route) => pathname.startsWith(route)))
+
+  // Saved on every page, so it's there by the time Rewind is opened. A Rewind
+  // rendered without it, or with an old one, is rendered again once it's saved.
+  useEffect(() => {
+    const { timeZone } = Intl.DateTimeFormat().resolvedOptions()
+
+    if (readTimeZoneCookie() === timeZone) {
+      return
+    }
+
+    document.cookie = `${TIME_ZONE_COOKIE_NAME}=${timeZone}; path=/; max-age=31536000; samesite=lax`
+
+    // With cookies blocked, rendering again would change nothing
+    if (pathname.startsWith('/rewind') && readTimeZoneCookie() === timeZone) {
+      router.refresh()
+    }
+  }, [pathname, router])
 
   useEffect(() => {
     if (!pathname.startsWith('/settings')) {
@@ -80,7 +106,7 @@ export default function AppProvider({
                 // The same 16px around the page, the sidebar and between blocks.
                 // Clipped rather than hidden, which would make it a scroll
                 // container and keep sticky things inside from sticking.
-                'group/main flex h-full min-h-dvh flex-col items-center overflow-x-clip p-4',
+                'group/main flex h-full min-h-dvh flex-col items-center overflow-x-clip p-4 pt-(--page-top)',
                 {
                   'justify-center':
                     (pathname === '/' && !hasSidebar) ||
@@ -104,7 +130,7 @@ export default function AppProvider({
               </div>
 
               {/* The sidebar, or a page's header on smaller screens, shows these controls instead */}
-              <HeaderControls className='absolute top-4 right-4 z-10 max-lg:group-has-[[data-page-header]]/main:hidden lg:group-data-[sidebar]/app:hidden' />
+              <HeaderControls className='absolute top-(--page-top) right-4 z-10 max-lg:group-has-[[data-page-header]]/main:hidden lg:group-data-[sidebar]/app:hidden' />
 
               {hasSidebar && (
                 <SourceOutageNotice

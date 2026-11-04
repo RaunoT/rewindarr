@@ -5,9 +5,12 @@ import PlaybackOverlay from '@/components/PlaybackOverlay'
 import SkeletonLine from '@/components/SkeletonLine'
 import { UserAvatar } from '@/components/UserBadge'
 import { useMediaDetails } from '@/hooks/useMediaDetails'
+import usePromiseValue from '@/hooks/usePromiseValue'
 import { PublicSettings } from '@/types/settings'
+import { MediaServer } from '@/types/statsSource'
 import { TautulliSession } from '@/types/tautulli'
 import { STATS_SOURCE_NAMES } from '@/utils/constants'
+import { getDeeplinkRatingKeyFromSession } from '@/utils/deeplink'
 import { toIndex } from '@/utils/formatting'
 import {
   ChevronRightIcon,
@@ -22,10 +25,14 @@ import TileItem, { TILE_ITEM_COUNT } from './TileItem'
 
 type Props = {
   settings: PublicSettings
+  // Left out while the page loads
+  mediaServer?: Promise<MediaServer | null>
 }
 
+const NO_MEDIA_SERVER = Promise.resolve(null)
+
 // Shares its query with the activity page, so both stay in sync
-export default function ActivityTile({ settings }: Props) {
+export default function ActivityTile({ settings, mediaServer }: Props) {
   const t = useTranslations()
   const { data: session } = useSession()
   const { data, isLoading, isError } = useQuery({
@@ -34,18 +41,18 @@ export default function ActivityTile({ settings }: Props) {
     refetchInterval: 5000,
     refetchIntervalInBackground: false,
   })
+  const server = usePromiseValue(mediaServer ?? NO_MEDIA_SERVER) ?? null
   // Null when the server got nothing from the source
   const isUnavailable = isError || data === null
 
   return (
-    <Link
-      href='/activity'
-      className='glass-sheet group focus-visible:focus-ring flex flex-col gap-4 transition-colors hover:bg-white/5'
-    >
+    <div className='glass-sheet tile'>
       <div className='flex items-center justify-between gap-3'>
-        <h2 className='flex items-center gap-2 font-semibold'>
-          <SignalIcon className='size-5 text-neutral-400' />
-          {t('Activity.title')}
+        <h2 className='font-semibold'>
+          <Link href='/activity' className='tile-link flex items-center gap-2'>
+            <SignalIcon className='size-5 text-neutral-400' />
+            {t('Activity.title')}
+          </Link>
         </h2>
         <div className='flex shrink-0 items-center gap-1 text-xs text-neutral-400'>
           {isLoading ? (
@@ -59,7 +66,7 @@ export default function ActivityTile({ settings }: Props) {
               </span>
             )
           )}
-          <ChevronRightIcon className='size-4 shrink-0 text-neutral-500 transition-transform group-hover:translate-x-0.5' />
+          <ChevronRightIcon className='tile-chevron' />
         </div>
       </div>
       {isUnavailable ? (
@@ -97,11 +104,12 @@ export default function ActivityTile({ settings }: Props) {
               index={index}
               settings={settings}
               userId={session?.user.id}
+              mediaServer={server}
             />
           ))}
         </ul>
       )}
-    </Link>
+    </div>
   )
 }
 
@@ -111,10 +119,17 @@ type ItemProps = {
   settings: PublicSettings
   // The signed-in user's
   userId?: string
+  mediaServer: MediaServer | null
 }
 
 // The poster is found like the activity page's, which shares the query
-function ActivityTileItem({ session, index, settings, userId }: ItemProps) {
+function ActivityTileItem({
+  session,
+  index,
+  settings,
+  userId,
+  mediaServer,
+}: ItemProps) {
   const t = useTranslations()
   const { posterUrl, isPosterLoading, details } = useMediaDetails(
     session,
@@ -131,6 +146,7 @@ function ActivityTileItem({ session, index, settings, userId }: ItemProps) {
   }
   const season = toIndex(session.parent_media_index)
   const episode = toIndex(session.media_index)
+  const ratingKey = getDeeplinkRatingKeyFromSession(session)
 
   return (
     <TileItem
@@ -150,6 +166,7 @@ function ActivityTileItem({ session, index, settings, userId }: ItemProps) {
         <PlaybackOverlay state={session.state} className='size-3.5' />
       }
       hasGlow={index === 0}
+      deeplink={mediaServer && ratingKey ? { mediaServer, ratingKey } : null}
     />
   )
 }

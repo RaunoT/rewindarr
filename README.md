@@ -22,9 +22,10 @@ Present [Plex](https://plex.tv) and [Jellyfin](https://jellyfin.org) user statis
 - 📱 Fully responsive - viewable, usable & enjoyable on desktop, tablet or mobile.
 - 🔄 Fully dynamic - the data you're viewing will always be the latest available.
 - 🎭 Anonymization - anonymize user info for enhanced privacy.
-- 📆 Rewind - allows your users view their statistics and habits for a (customizable) time period.
+- 📆 Rewind - lets your users step through stories of their statistics and habits for a (customizable) time period, with a viewing personality and a summary to save as an image.
 - 👀 Dashboard - provides an easily glanceable overview of activity on your server for all your libraries, personalized or general.
 - ⚡ Activity - see what's happening on your server in real time.
+- 🕘 History - browse and search past plays and requests, with binges grouped together.
 - 📊 Fuelled by data from [Tautulli](https://tautulli.com) or [Tracearr](https://github.com/connorgallopo/Tracearr) - the backbone responsible for the heavy lifting regarding statistics.
 - 🔗 Integrates with [Seerr](https://seerr.dev) - show request breakdowns and totals and display request buttons next to deleted fan-favorite media items.
 - 🍅 Ratings from TMDB, IMDb and Rotten Tomatoes.
@@ -56,7 +57,7 @@ services:
       - NEXTAUTH_SECRET= # (required) used to encrypt auth JWT token, generate one with `openssl rand -base64 32`
       - NEXTAUTH_URL=http://localhost:8383 # (required) change to your domain if you are exposing the app to the internet
       - NEXT_PUBLIC_SITE_URL=http://localhost:8383 # (required) change to your domain if you are exposing the app to the internet
-      - TZ=Europe/London # (optional) your timezone, used for viewing habits and finish times
+      - TZ=Europe/London # (optional) your timezone, used for finish times. Rewind's viewing habits use each viewer's own.
       - PUID=1000 # (optional) user ID the app runs as, defaults to 1000
       - PGID=1000 # (optional) group ID the app runs as, defaults to 1000
     volumes:
@@ -74,11 +75,15 @@ services:
 
 For those that need it, a simple status page is also available at `/api/status`.
 
+### Updating
+
+Run `docker compose pull` and then `docker compose up -d`. Older versions ran as root, so `./config` may be owned by root. The container fixes that on start and then runs as `PUID` and `PGID`; set `PUID=0` to keep running as root.
+
 ## Translations
 
 The application follows the browser's language when it's one of the supported ones, and falls back to UK English otherwise. A language picked from the language menu takes precedence over the browser's.
 
-To help translate the application to your language, create a new `<language-code>.json` in the `messages` directory and translate the strings, using `en-GB.json` as a reference. Once the translation is complete, create a pull request for review.
+To help translate the application to your language, create a new `<language-code>.json` in the `messages` directory and translate the strings, using `en-GB.json` as a reference. Add the code to `LOCALES` in `src/utils/constants.ts`, then create a pull request for review. See [CONTRIBUTING.md](CONTRIBUTING.md) for the setup.
 
 ## Donate
 

@@ -9,6 +9,8 @@ import {
   filterPlays,
   getExcludedIdentityIds,
   isCountedPlay,
+  isPlayOfItem,
+  MIN_PLAY_MS,
   StatsUser,
   toSourceId,
 } from './playStats'
@@ -27,7 +29,7 @@ function play(
     id,
     startedAt: new Date(startedAt).getTime(),
     mediaType: 'movie' as PlayMediaType,
-    durationMs: 1000,
+    durationMs: 60 * 1000,
     percentComplete: null,
     title: id,
     showTitle: null,
@@ -45,6 +47,7 @@ function play(
     seasonNumber: null,
     episodeNumber: null,
     transcodeDecision: null,
+    lengthMs: null,
     ...overrides,
   }
 }
@@ -73,6 +76,30 @@ describe('toSourceId', () => {
     expect(toSourceId('12345')).toBe(12345)
     expect(toSourceId('a1b2c3')).toBe('a1b2c3')
     expect(toSourceId(null)).toBe(0)
+  })
+})
+
+describe('isPlayOfItem', () => {
+  it('matches by the media id, or else by the title and year', () => {
+    const dune = play('dune', '2026-03-01', {
+      title: 'Dune',
+      year: 2021,
+      mediaId: 'm1',
+    })
+    const imported = { ...dune, mediaId: null }
+
+    expect(
+      isPlayOfItem(dune, { title: 'Other', year: null, media_id: 'm1' }),
+    ).toBe(true)
+    expect(
+      isPlayOfItem(dune, { title: 'Dune', year: 2021, media_id: 'm2' }),
+    ).toBe(false)
+    expect(
+      isPlayOfItem(imported, { title: ' dune ', year: 2021, media_id: 'm1' }),
+    ).toBe(true)
+    expect(
+      isPlayOfItem(imported, { title: 'Dune', year: 1984, media_id: null }),
+    ).toBe(false)
   })
 })
 
@@ -301,6 +328,72 @@ describe('plays short of the percent in the settings', () => {
     ).toBe(true)
   })
 
+  it('count as plays only from half a minute, whatever the percent', () => {
+    // Opened again at its end, which the source logs near 100%
+    expect(
+      isCountedPlay(
+        play('reopened', '2026-03-01', { durationMs: 0, percentComplete: 98 }),
+        50,
+      ),
+    ).toBe(false)
+    expect(
+      isCountedPlay(
+        play('short', '2026-03-01', {
+          durationMs: MIN_PLAY_MS - 1,
+          percentComplete: null,
+        }),
+        0,
+      ),
+    ).toBe(false)
+    expect(
+      isCountedPlay(
+        play('track', '2026-03-01', {
+          durationMs: MIN_PLAY_MS,
+          percentComplete: 50,
+        }),
+        50,
+      ),
+    ).toBe(true)
+  })
+
+  it('count by the time played against the length, where it is known', () => {
+    const movie = { lengthMs: 2 * 60 * 60 * 1000 }
+
+    // A post-credits scene: past half a minute, but only from the end
+    expect(
+      isCountedPlay(
+        play('credits', '2026-03-01', {
+          ...movie,
+          durationMs: 5 * 60 * 1000,
+          percentComplete: 100,
+        }),
+        50,
+      ),
+    ).toBe(false)
+    // Resumed at 40% and watched to 95%
+    expect(
+      isCountedPlay(
+        play('resumed', '2026-03-01', {
+          ...movie,
+          durationMs: 66 * 60 * 1000,
+          percentComplete: 95,
+        }),
+        50,
+      ),
+    ).toBe(true)
+    // A short track counts by its length, even under half a minute
+    expect(
+      isCountedPlay(
+        play('interlude', '2026-03-01', {
+          lengthMs: 40 * 1000,
+          durationMs: 25 * 1000,
+          percentComplete: 62,
+        }),
+        50,
+      ),
+    ).toBe(true)
+  })
+
   it('count every play with the percent at 0', async () => {
     const { items } = await getStats(0).getTopItems(movies, {
       period: 3650,
@@ -370,10 +463,54 @@ describe('plays short of the percent in the settings', () => {
   })
 
   it('are left out of the hours and days', async () => {
-    const { hourly, daily } = await getStats().getPlaysByTime('2', '2026-01-01')
+    const { hourly, daily } = await getStats().getPlaysByTime(
+      '2',
+      [movies],
+      '2026-01-01',
+    )
 
     expect(sum(hourly)).toBe(1)
     expect(sum(daily)).toBe(1)
+  })
+})
+
+describe('getPlaysByTime', () => {
+  const movies = { section_type: 'movie' } as TautulliLibrary
+
+  function getStats(getPlays: () => Promise<Play[]>) {
+    vi.mocked(getSettings).mockReturnValue({
+      general: { excludedUsers: [], minPlayPercent: 50 },
+    } as unknown as ReturnType<typeof getSettings>)
+
+    return createPlayStats({
+      getPlays,
+      getUsers: async () => [user('1', 'alice')],
+      getMediaData: async () => ({ thumb: '', isDeleted: false }),
+    })
+  }
+
+  it('counts only the plays in the libraries', async () => {
+    const getPlays = vi.fn(async () => plays)
+
+    await getStats(getPlays).getPlaysByTime('1', [movies], '2026-01-01')
+
+    expect(getPlays).toHaveBeenCalledWith('2026-01-01', [movies])
+  })
+
+  it('counts the hours and days in the timezone', async () => {
+    // Saturday at 02:30 in UTC, still Friday evening in New York
+    const late = play('late', '2026-03-07T02:30:00Z')
+    const stats = getStats(async () => [late])
+    const utc = await stats.getPlaysByTime('1', [movies], '2026-01-01', 'UTC')
+    const newYork = await stats.getPlaysByTime(
+      '1',
+      [movies],
+      '2026-01-01',
+      'America/New_York',
+    )
+
+    expect([utc.hourly[2], utc.daily[6]]).toEqual([1, 1])
+    expect([newYork.hourly[21], newYork.daily[5]]).toEqual([1, 1])
   })
 })
 

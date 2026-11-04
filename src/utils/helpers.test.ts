@@ -6,6 +6,7 @@ import {
   canViewFeature,
   checkRequiredSettings,
   getAverage,
+  getAverageShares,
   getDifference,
   getHomeTiles,
   getRequestsBreakdown,
@@ -142,7 +143,7 @@ describe('hasRewindPlays', () => {
     count: 0,
     duration: '0 mins',
     duration_value: 0,
-    server_duration_value: 0,
+    average_share: null,
     percentage: '',
     top: [],
   }
@@ -152,7 +153,7 @@ describe('hasRewindPlays', () => {
       hasRewindPlays({
         shows: none,
         movies: none,
-        audio: { ...none, topTrack: null },
+        audio: { ...none },
       }),
     ).toBe(false)
   })
@@ -162,9 +163,39 @@ describe('hasRewindPlays', () => {
       hasRewindPlays({
         shows: none,
         movies: none,
-        audio: { ...none, count: 3, topTrack: null },
+        audio: { ...none, count: 3 },
       }),
     ).toBe(true)
+  })
+})
+
+describe('getAverageShares', () => {
+  it("averages each user's own split, not everyone's time together", () => {
+    // Together, the heavy user would make it about 91% shows
+    expect(
+      getAverageShares(
+        [
+          { shows: 1000, movies: 0 },
+          { shows: 0, movies: 100 },
+        ],
+        ['shows', 'movies'],
+      ),
+    ).toEqual({ shows: 0.5, movies: 0.5 })
+  })
+
+  it('leaves out users without any time', () => {
+    expect(
+      getAverageShares(
+        [{ shows: 30, movies: 10 }, { shows: 10, movies: 30 }, {}],
+        ['shows', 'movies'],
+      ),
+    ).toEqual({ shows: 0.5, movies: 0.5 })
+  })
+
+  it('has nothing to compare with a single user', () => {
+    expect(
+      getAverageShares([{ shows: 30 }, { movies: 0 }], ['shows', 'movies']),
+    ).toBeNull()
   })
 })
 
@@ -173,31 +204,31 @@ describe('getRewindBreakdown', () => {
     count: 0,
     duration: '0 mins',
     duration_value: 0,
-    server_duration_value: 0,
+    average_share: 0,
     percentage: '',
     top: [],
   }
 
-  it("splits the user's and every user's time by media type", () => {
+  it("splits the user's and the average user's time by media type", () => {
     expect(
       getRewindBreakdown({
         shows: {
           ...none,
           duration: '1 hr',
           duration_value: 3600,
-          server_duration_value: 30000,
+          average_share: 0.75,
         },
         movies: {
           ...none,
           duration: '3 hrs',
           duration_value: 10800,
-          server_duration_value: 10000,
+          average_share: 0.25,
         },
-        audio: { ...none, topTrack: null },
+        audio: { ...none },
       }),
     ).toEqual([
-      { type: 'movie', value: '3 hrs', share: 0.75, serverShare: 0.25 },
-      { type: 'show', value: '1 hr', share: 0.25, serverShare: 0.75 },
+      { type: 'movie', value: '3 hrs', share: 0.75, otherShare: 0.25 },
+      { type: 'show', value: '1 hr', share: 0.25, otherShare: 0.75 },
     ])
   })
 
@@ -208,14 +239,14 @@ describe('getRewindBreakdown', () => {
           ...none,
           duration: '1 hr',
           duration_value: 3600,
-          server_duration_value: 3600,
+          average_share: 0.5,
         },
         movies: none,
-        audio: { ...none, server_duration_value: 3600, topTrack: null },
+        audio: { ...none, average_share: 0.5 },
       }),
     ).toEqual([
-      { type: 'show', value: '1 hr', share: 1, serverShare: 0.5 },
-      { type: 'artist', value: '0 mins', share: 0, serverShare: 0.5 },
+      { type: 'show', value: '1 hr', share: 1, otherShare: 0.5 },
+      { type: 'artist', value: '0 mins', share: 0, otherShare: 0.5 },
     ])
   })
 
@@ -226,27 +257,25 @@ describe('getRewindBreakdown', () => {
           ...none,
           duration: '',
           duration_value: null,
-          server_duration_value: null,
+          average_share: null,
         },
-        movies: none,
+        movies: { ...none, average_share: null },
         audio: {
           ...none,
           duration: '5 mins',
           duration_value: 300,
-          topTrack: null,
+          average_share: null,
         },
       }),
-    ).toEqual([
-      { type: 'artist', value: '5 mins', share: 1, serverShare: null },
-    ])
+    ).toEqual([{ type: 'artist', value: '5 mins', share: 1, otherShare: null }])
   })
 
   it('is empty when the user played nothing', () => {
     expect(
       getRewindBreakdown({
-        shows: { ...none, server_duration_value: 3600 },
-        movies: { ...none, server_duration_value: 3600 },
-        audio: { ...none, topTrack: null },
+        shows: { ...none, average_share: 0.5 },
+        movies: { ...none, average_share: 0.5 },
+        audio: { ...none },
       }),
     ).toEqual([])
   })
@@ -259,12 +288,13 @@ describe('getRequestsBreakdown', () => {
     shows: 4,
     user: { total: 4, movies: 1, shows: 3 },
     average: null,
+    averageShares: { movies: 0.7, shows: 0.3 },
   }
 
-  it("splits the user's and every user's requests by type", () => {
+  it("splits the user's and the average user's requests by type", () => {
     expect(getRequestsBreakdown(requests)).toEqual([
-      { type: 'show', count: 3, share: 0.75, serverShare: 0.4 },
-      { type: 'movie', count: 1, share: 0.25, serverShare: 0.6 },
+      { type: 'show', count: 3, share: 0.75, otherShare: 0.3 },
+      { type: 'movie', count: 1, share: 0.25, otherShare: 0.7 },
     ])
   })
 
@@ -275,8 +305,8 @@ describe('getRequestsBreakdown', () => {
         user: { total: 0, movies: 0, shows: 0 },
       }),
     ).toEqual([
-      { type: 'movie', count: 6, share: null, serverShare: 0.6 },
-      { type: 'show', count: 4, share: null, serverShare: 0.4 },
+      { type: 'movie', count: 6, share: null, otherShare: 0.6 },
+      { type: 'show', count: 4, share: null, otherShare: 0.4 },
     ])
   })
 
@@ -287,8 +317,39 @@ describe('getRequestsBreakdown', () => {
         total: 6,
         shows: 0,
         user: { total: 1, movies: 1, shows: 0 },
+        averageShares: { movies: 1, shows: 0 },
       }),
-    ).toEqual([{ type: 'movie', count: 1, share: 1, serverShare: 1 }])
+    ).toEqual([{ type: 'movie', count: 1, share: 1, otherShare: 1 }])
+  })
+
+  it('splits only movies and shows, like the average user', () => {
+    expect(
+      getRequestsBreakdown({
+        ...requests,
+        total: 12,
+        user: { total: 6, movies: 1, shows: 3 },
+      }),
+    ).toEqual([
+      { type: 'show', count: 3, share: 0.75, otherShare: 0.3 },
+      { type: 'movie', count: 1, share: 0.25, otherShare: 0.7 },
+    ])
+    expect(
+      getRequestsBreakdown({
+        ...requests,
+        total: 12,
+        user: { total: 2, movies: 0, shows: 0 },
+      }),
+    ).toEqual([
+      { type: 'movie', count: 6, share: null, otherShare: 0.6 },
+      { type: 'show', count: 4, share: null, otherShare: 0.4 },
+    ])
+  })
+
+  it('has no other bar with nobody else to compare with', () => {
+    expect(getRequestsBreakdown({ ...requests, averageShares: null })).toEqual([
+      { type: 'show', count: 3, share: 0.75, otherShare: null },
+      { type: 'movie', count: 1, share: 0.25, otherShare: null },
+    ])
   })
 })
 

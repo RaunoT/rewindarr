@@ -1,10 +1,17 @@
 import { TopTrack } from '@/types/rewind'
 import { TautulliLibrary, TautulliMediaReturnType } from '@/types/tautulli'
+import { groupBy, maxBy } from 'lodash'
 import { getLocale, getTranslations } from 'next-intl/server'
+import { cache } from 'react'
 import { fetchSeerrStats, getMediaUserIds } from './fetchSeerr'
 import { formatPercent, secondsToTime } from './formatting'
 import getSettings from './getSettings'
-import { getAverage, getDifference, getRewindStartDate } from './helpers'
+import {
+  getAverage,
+  getAverageShares,
+  getDifference,
+  getRewindStartDate,
+} from './helpers'
 import { LibrariesSize } from './librariesSize'
 import { isCountedPlay } from './playStats'
 import { getStatsSource } from './statsSource'
@@ -56,29 +63,52 @@ export async function getlibrariesTotalSize(
   return getStatsSource().getLibrariesSize(libraries)
 }
 
-// Every user's time on each media type, null without a library of the type
-export async function getLibrariesDurationByType(libraries: TautulliLibrary[]) {
+type MediaDurations = Partial<Record<TautulliMediaReturnType, number>>
+
+const MEDIA_SECTION_TYPES = {
+  shows: 'show',
+  movies: 'movie',
+  audio: 'artist',
+} as const
+
+// Each user's time on each media type in seconds, by their ID, without
+// excluded users. Null when the users can't be ranked.
+export async function getUsersDurationByType(
+  libraries: TautulliLibrary[],
+): Promise<Map<string, MediaDurations> | null> {
   const settings = getSettings()
   const source = getStatsSource(settings)
   const since = getRewindStartDate(settings)
+  const rankings = await Promise.all(
+    Object.entries(MEDIA_SECTION_TYPES).map(async ([type, sectionType]) => {
+      const typeLibraries = libraries.filter(
+        (library) => library.section_type === sectionType,
+      )
 
-  async function getDuration(sectionType: string) {
-    const typeLibraries = libraries.filter(
-      (library) => library.section_type === sectionType,
-    )
+      return {
+        type: type as TautulliMediaReturnType,
+        users: typeLibraries.length
+          ? await source.getTopUsers({ since, libraries: typeLibraries })
+          : [],
+      }
+    }),
+  )
 
-    return typeLibraries.length
-      ? source.getTotalDuration({ since, libraries: typeLibraries })
-      : null
+  if (rankings.some(({ users }) => users === null)) {
+    return null
   }
 
-  const [shows, movies, audio] = await Promise.all([
-    getDuration('show'),
-    getDuration('movie'),
-    getDuration('artist'),
-  ])
+  const durations = new Map<string, MediaDurations>()
 
-  return { shows, movies, audio }
+  for (const { type, users } of rankings) {
+    for (const user of users ?? []) {
+      const id = String(user.user_id)
+
+      durations.set(id, { ...durations.get(id), [type]: user.total_duration })
+    }
+  }
+
+  return durations
 }
 
 export async function getUserTotalDuration(
@@ -122,7 +152,8 @@ export async function getTopPeople(
 
 // The user's most played track, by plays and then listening time. Like the
 // other stats, plays short of the percent in the settings only add their
-// listening time.
+// listening time. Without a track played twice, it's the one with the most
+// listening time, also from plays that don't count.
 export async function getTopTrack(
   userId: string,
   libraries: TautulliLibrary[],
@@ -187,7 +218,17 @@ export async function getTopTrack(
     }
   }
 
-  return top && { ...top, isOnly: countedTracks === 1 }
+  if (!top) {
+    return null
+  }
+
+  const isOnly = countedTracks === 1
+
+  if (top.plays === 1 && !isOnly) {
+    top = maxBy([...tracks.values()], 'durationMs') ?? top
+  }
+
+  return { ...top, isOnly }
 }
 
 // Anonymizing hides who the match would name, so it isn't looked for
@@ -218,11 +259,17 @@ function peakIndex(totals: number[]): number | null {
   return totals[maxIndex] > 0 ? maxIndex : null
 }
 
-export async function getPlaybackHabits(userId: string) {
+export async function getPlaybackHabits(
+  userId: string,
+  libraries: TautulliLibrary[],
+  timeZone?: string,
+) {
   const settings = getSettings()
   const { hourly, daily } = await getStatsSource(settings).getPlaysByTime(
     userId,
+    libraries,
     getRewindStartDate(settings),
+    timeZone,
   )
 
   return {
@@ -233,6 +280,12 @@ export async function getPlaybackHabits(userId: string) {
     daily,
   }
 }
+
+// The timeout signal opts Seerr's requests out of fetch's per-render
+// deduplication, so the requests' totals and reach share one read.
+export const fetchRewindRequests = cache((since: string) =>
+  fetchSeerrStats('request', since),
+)
 
 function countRequests(requests: { type: string }[]) {
   return {
@@ -245,7 +298,7 @@ function countRequests(requests: { type: string }[]) {
 export async function getRequestsTotals(userId: string) {
   const settings = getSettings()
   const startDate = getRewindStartDate(settings)
-  const requests = await fetchSeerrStats('request', startDate)
+  const requests = await fetchRewindRequests(startDate)
 
   if (!requests) {
     return null
@@ -268,6 +321,12 @@ export async function getRequestsTotals(userId: string) {
   // apart by their Seerr one
   const requesters = new Set(counted.map((request) => request.requestedBy.id))
   const average = getAverage(counts.total, requesters.size)
+  const averageShares = getAverageShares(
+    Object.values(groupBy(counted, (request) => request.requestedBy.id)).map(
+      countRequests,
+    ),
+    ['movies', 'shows'],
+  )
   // Compared with the rounded average the story shows, so they agree
   const averageCount = average === null ? null : Math.round(average)
 
@@ -281,5 +340,6 @@ export async function getRequestsTotals(userId: string) {
             count: averageCount,
             difference: getDifference(user.total, averageCount),
           },
+    averageShares,
   }
 }

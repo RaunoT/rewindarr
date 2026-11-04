@@ -8,9 +8,26 @@
   --color-warning: var(--color-amber-300);
 }
 
+/* Added to the Home Screen on iOS or iPadOS */
+@custom-variant ios-app {
+  @media (display-mode: standalone) {
+    @supports (-webkit-touch-callout: none) {
+      @slot;
+    }
+  }
+}
+
 @layer base {
   :root {
     color-scheme: dark;
+
+    /* Where the page and anything pinned to the top starts. iOS 26+ blurs the
+       top of a Home Screen app under the status bar, so it starts below that. */
+    --page-top: --spacing(4);
+
+    @variant ios-app {
+      --page-top: --spacing(10);
+    }
   }
 
   ::selection {
@@ -190,6 +207,15 @@
         @apply brightness-110;
       }
     }
+
+    /* Second to a solid one beside it, like the glass icon buttons */
+    &.button--glass {
+      @apply glass-pill text-white;
+
+      &:hover:not([disabled]) {
+        @apply bg-white/10;
+      }
+    }
   }
 
   .button-card {
@@ -229,32 +255,118 @@
     @apply text-plex inline-block font-semibold;
   }
 
+  /* Wraps with the statement like other text. RewindCat keeps an icon on the
+     line of the last character. */
   .rewind-cat {
-    @apply text-plex inline-flex items-center font-semibold;
+    @apply text-plex font-semibold;
 
-    /* Sized to the text, so icons shrink along with a statement */
-    > img,
-    > svg {
-      @apply text-plex/80 ml-[0.15em] w-[0.9em];
+    /* Sized to the text, so icons shrink along with a statement. Any depth, as
+       RewindCat nests the icon with the last character. */
+    svg {
+      @apply text-plex/80 ml-[0.15em] inline-block size-[0.9em] align-[-0.1em];
     }
   }
 
-  /* A tap area of the stories, shown by the touch intro */
-  .intro-zone {
-    @apply relative flex items-center justify-center rounded-2xl bg-white/5 ring-1 ring-white/10 ring-inset;
+  /* The touch intro's finger, which taps every few seconds with a ripple
+     from its tip */
+  .intro-tap {
+    @apply relative size-16 text-white;
   }
 
-  .intro-zone-icon {
-    @apply flex size-12 items-center justify-center rounded-full bg-white/10 text-white;
+  .intro-tap-ripple {
+    @apply absolute top-[12.5%] left-[39.5%] size-9 -translate-1/2 rounded-full border-2 border-white/60;
+
+    animation: intro-ripple 2.4s ease-out infinite;
   }
 
-  /* Hangs below the centred icon, so the labels start on the same line */
-  .intro-zone-label {
-    @apply absolute inset-x-3 top-[calc(50%+2.25rem)] text-sm text-balance text-neutral-300;
+  .intro-tap-hand {
+    @apply relative size-full drop-shadow-lg;
+
+    animation: intro-press 2.4s ease-in-out infinite;
+  }
+
+  @keyframes intro-ripple {
+    0%,
+    12% {
+      opacity: 0;
+      scale: 0.3;
+    }
+
+    20% {
+      opacity: 1;
+    }
+
+    65%,
+    100% {
+      opacity: 0;
+      scale: 1.6;
+    }
+  }
+
+  @keyframes intro-press {
+    0%,
+    30%,
+    100% {
+      translate: 0;
+    }
+
+    12% {
+      translate: 0 3px;
+    }
+  }
+
+  /* Rewind's card. On phones it fills the screen in place of the page,
+     reaching under the notch and the home bar. */
+  .rewind-player {
+    @variant max-sm {
+      @apply fixed inset-0 z-40 rounded-none pt-[max(1.25rem,env(safe-area-inset-top))] pr-[max(1.25rem,env(safe-area-inset-right))] pb-[max(1.25rem,env(safe-area-inset-bottom))] pl-[max(1.25rem,env(safe-area-inset-left))] shadow-none before:hidden;
+    }
+
+    /* The stories keep to a column as wide as the card's content, with the
+       art and the snow filling the screen */
+    &:fullscreen {
+      @apply rounded-none py-8 shadow-none before:hidden;
+
+      padding-inline: max(1.25rem, (100% - 45.5rem) / 2);
+    }
+  }
+
+  /* Nothing scrolls behind the stories while they fill a phone's screen */
+  html:has(.rewind-player) {
+    @variant max-sm {
+      @apply overflow-hidden overscroll-none;
+    }
   }
 
   .poster {
     @apply relative aspect-2/3 w-16 shrink-0 overflow-hidden rounded-md! shadow-lg ring-1 shadow-black/40 ring-white/10 sm:w-18;
+  }
+
+  /* A home tile opens its page from anywhere but the links in it. Its
+     heading's link stretches over it, under the titles' and posters' links to
+     the media server. Used with glass-sheet. */
+  .tile {
+    @apply flex flex-col gap-4 transition-colors;
+
+    &:has(.tile-link:hover) {
+      @apply bg-white/5;
+
+      .tile-chevron {
+        @apply translate-x-0.5;
+      }
+    }
+
+    [data-media-link] {
+      @apply relative z-20;
+    }
+  }
+
+  .tile-link {
+    @apply after:absolute after:inset-0 after:z-10 after:rounded-3xl focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-neutral-200;
+  }
+
+  .tile-chevron {
+    @apply size-4 shrink-0 text-neutral-500 transition-transform;
   }
 
   /* A title and its poster open the same item, so hovering either lights up
@@ -494,6 +606,11 @@
     > svg {
       @apply size-5 shrink-0 text-neutral-400;
     }
+  }
+
+  /* Select all and clear, over a list of any number */
+  .selection-action {
+    @apply data-focus-visible:focus-ring cursor-pointer rounded-full px-2.5 py-1 text-xs font-medium text-neutral-400 transition-colors outline-none data-disabled:cursor-default data-disabled:opacity-40 data-hovered:bg-white/10 data-hovered:text-white;
   }
 
   .icon-stats-container {
@@ -757,11 +874,29 @@
 
     animation: fade-in 0.5s ease forwards;
   }
+
+  /* Fades whatever scrolls under the iOS status bar into black, from above the
+     top of the page down to --page-top */
+  .status-bar-fade {
+    @apply ios-app:block pointer-events-none fixed inset-x-0 -top-25 z-40 hidden h-[calc(--spacing(25)+var(--page-top))];
+
+    background: linear-gradient(
+      to bottom,
+      black calc(var(--spacing) * 25),
+      transparent
+    );
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .bg-twinkling,
   .bg-clouds {
+    animation: none;
+  }
+
+  /* A still finger, with its ripple as a ring around the tip */
+  .intro-tap-ripple,
+  .intro-tap-hand {
     animation: none;
   }
 

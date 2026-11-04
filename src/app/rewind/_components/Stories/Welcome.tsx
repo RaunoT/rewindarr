@@ -1,12 +1,15 @@
 import Avatar from '@/components/Avatar'
-import { RewindStory } from '@/types/rewind'
+import { RewindStory, UserRewind } from '@/types/rewind'
 import { formatMonthYear } from '@/utils/formatting'
 import { getRewindStartDate } from '@/utils/helpers'
 import { getMediaServerName } from '@/utils/mediaServerName'
 import { useLocale, useTranslations } from 'next-intl'
 import RewindStat from '../RewindStat'
 
-export default function StoryWelcome({ userRewind, settings }: RewindStory) {
+export default function StoryWelcome({
+  userRewind,
+  settings,
+}: RewindStory<Pick<UserRewind, 'user'>>) {
   const startDate = getRewindStartDate(settings)
   const isDefaultPeriod = !settings.rewind.startDate
   const t = useTranslations('Rewind.Welcome')

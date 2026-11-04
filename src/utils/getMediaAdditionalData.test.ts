@@ -326,6 +326,30 @@ describe('getMediaAdditionalData', () => {
     expect(item.thumb).toBe('https://image.tmdb.org/t/p/w300//dune.jpg')
   })
 
+  it("keeps TMDB's backdrop", async () => {
+    mockTmdb({
+      'search/movie': { results: [{ id: 1 }] },
+      'movie/1': { poster_path: '/dune.jpg', backdrop_path: '/arrakis.jpg' },
+    })
+
+    const [item] = await getMediaAdditionalData([row()], 'movie', getSourceData)
+
+    expect(item.tmdb_backdrop).toBe(
+      'https://image.tmdb.org/t/p/w300/arrakis.jpg',
+    )
+  })
+
+  it('has no backdrop when TMDB has none', async () => {
+    mockTmdb({
+      'search/movie': { results: [{ id: 1 }] },
+      'movie/1': { poster_path: '/dune.jpg' },
+    })
+
+    const [item] = await getMediaAdditionalData([row()], 'movie', getSourceData)
+
+    expect(item.tmdb_backdrop).toBeNull()
+  })
+
   it("looks a show up by the source's IDs instead of its title", async () => {
     mockSourceData({
       ids: { imdb: 'tt5753856', tmdb: 70523, tvdb: 334824 },

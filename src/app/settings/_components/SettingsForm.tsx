@@ -49,7 +49,16 @@ export default function SettingsForm({
   }, [formState, router])
 
   return (
-    <form className='glass-sheet' action={formAction}>
+    <form
+      className='glass-sheet'
+      action={formAction}
+      // React resets a form after its action, and React Aria then sets its
+      // fields back to their first value: a multi-select to none and a
+      // controlled switch to how it was on load. Fields that were saved
+      // remount from their key, so only the others lost their value.
+      // Cancelling the reset keeps every field as it was sent.
+      onResetCapture={(event) => event.preventDefault()}
+    >
       <div className='grid gap-4'>
         {children}
         {!hideSubmit && (

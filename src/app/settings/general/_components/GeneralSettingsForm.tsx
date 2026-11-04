@@ -81,9 +81,25 @@ export default function GeneralSettingsForm({
     })),
     locale,
   )
-  // In the order they show on the cards
+  // The server's own statistics first, then the rating sites'
   const itemStatisticOptions = [
     { value: 'year', label: tCommon('year'), icon: <STAT_ICONS.year /> },
+    {
+      value: 'duration',
+      label: tCommon('duration'),
+      icon: <STAT_ICONS.duration />,
+    },
+    { value: 'plays', label: tCommon('plays'), icon: <PlayIcon /> },
+    { value: 'users', label: tCommon('users'), icon: <STAT_ICONS.users /> },
+    ...(isSeerrActive
+      ? [
+          {
+            value: 'requests',
+            label: tCommon('requests'),
+            icon: <STAT_ICONS.requests />,
+          },
+        ]
+      : []),
     {
       value: 'tmdbRating',
       label: tCommon('ratingBy', { provider: 'TMDB' }),
@@ -104,22 +120,6 @@ export default function GeneralSettingsForm({
       label: tCommon('rottenTomatoesAudience'),
       icon: <Image src={audienceFreshSvg} alt='' />,
     },
-    {
-      value: 'duration',
-      label: tCommon('duration'),
-      icon: <STAT_ICONS.duration />,
-    },
-    { value: 'plays', label: tCommon('plays'), icon: <PlayIcon /> },
-    { value: 'users', label: tCommon('users'), icon: <STAT_ICONS.users /> },
-    ...(isSeerrActive
-      ? [
-          {
-            value: 'requests',
-            label: tCommon('requests'),
-            icon: <STAT_ICONS.requests />,
-          },
-        ]
-      : []),
   ]
   const userOptions = sortByLabel(
     users.map((user) => ({
