@@ -46,6 +46,7 @@ function play(
     seasonNumber: null,
     episodeNumber: null,
     transcodeDecision: null,
+    lengthMs: null,
     ...overrides,
   }
 }
@@ -324,6 +325,44 @@ describe('plays short of the percent in the settings', () => {
         play('track', '2026-03-01', {
           durationMs: MIN_PLAY_MS,
           percentComplete: 50,
+        }),
+        50,
+      ),
+    ).toBe(true)
+  })
+
+  it('count by the time played against the length, where it is known', () => {
+    const movie = { lengthMs: 2 * 60 * 60 * 1000 }
+
+    // A post-credits scene: past half a minute, but only from the end
+    expect(
+      isCountedPlay(
+        play('credits', '2026-03-01', {
+          ...movie,
+          durationMs: 5 * 60 * 1000,
+          percentComplete: 100,
+        }),
+        50,
+      ),
+    ).toBe(false)
+    // Resumed at 40% and watched to 95%
+    expect(
+      isCountedPlay(
+        play('resumed', '2026-03-01', {
+          ...movie,
+          durationMs: 66 * 60 * 1000,
+          percentComplete: 95,
+        }),
+        50,
+      ),
+    ).toBe(true)
+    // A short track counts by its length, even under half a minute
+    expect(
+      isCountedPlay(
+        play('interlude', '2026-03-01', {
+          lengthMs: 40 * 1000,
+          durationMs: 25 * 1000,
+          percentComplete: 62,
         }),
         50,
       ),

@@ -1131,6 +1131,7 @@ describe('getTracearrPlays', () => {
       artist_name: null,
       duration_ms: 60_000,
       percent_complete: 80,
+      total_duration_ms: 75_000,
       poster_url: null,
       user: { id: 'u1', avatar_url: null },
     }
@@ -1207,6 +1208,7 @@ describe('getTracearrPlays', () => {
 
     expect(yearPlays).toHaveLength(1460)
     expect(yearPlays[0].percentComplete).toBe(80)
+    expect(yearPlays[0].lengthMs).toBe(75_000)
     expect(yearPlays.every((play) => play.startedAt >= yearAgo.getTime())).toBe(
       true,
     )
@@ -1647,6 +1649,7 @@ describe('getTracearrPlays', () => {
         seasonNumber: null,
         episodeNumber: null,
         transcodeDecision: null,
+        lengthMs: null,
       }
     }
 

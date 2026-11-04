@@ -261,7 +261,7 @@
       "externalLinksDescription": "Quand la note d'un site est affichée, c'est la note qui y renvoie",
       "itemStatistics": "Statistiques des éléments",
       "minPlayPercent": "Compter comme lecture à partir de %",
-      "minPlayPercentDescription": "Les lectures plus courtes, comme celles de moins de 30 secondes, n'ajoutent que de la durée de visionnage",
+      "minPlayPercentDescription": "Les lectures plus courtes n'ajoutent que de la durée de visionnage. Celles dont la durée totale est inconnue doivent aussi atteindre 30 secondes",
       "minPlayPercentError": "Le seuil de lecture doit être un nombre entier entre 0 et 100.",
       "privacy": "Confidentialité",
       "excludedUsers": "Utilisateurs exclus",

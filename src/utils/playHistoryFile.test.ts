@@ -40,6 +40,7 @@ function play(overrides: Partial<Play>): Play {
     seasonNumber: null,
     episodeNumber: null,
     transcodeDecision: null,
+    lengthMs: null,
     ...overrides,
   }
 }
@@ -166,7 +167,7 @@ describe('playHistoryFile', () => {
 
     const file = readFile() as { histories: { plays: object[] }[] }
 
-    writeFile({ ...file, version: 5 })
+    writeFile({ ...file, version: 6 })
 
     await expect(readHistoryFile()).resolves.toEqual(new Map())
 
@@ -240,6 +241,25 @@ describe('playHistoryFile', () => {
     const history = (await readHistoryFile()).get(KEY)
 
     expect(history?.plays).toHaveLength(snapshot.plays.length)
+    expect(history?.rebuildAt).toBe(0)
+  })
+
+  it("reads a history without Tracearr's item lengths again soon", async () => {
+    await writeHistoryFile([[KEY, snapshot]])
+
+    const file = readFile() as { histories: { plays: object[] }[] }
+
+    writeFile({
+      version: 4,
+      histories: file.histories.map((history) => ({
+        ...history,
+        plays: history.plays.map((item) => omit(item, ['lengthMs'])),
+      })),
+    })
+
+    const history = (await readHistoryFile()).get(KEY)
+
+    expect(history?.plays.every((item) => item.lengthMs === null)).toBe(true)
     expect(history?.rebuildAt).toBe(0)
   })
 
