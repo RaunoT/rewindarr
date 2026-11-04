@@ -392,10 +392,13 @@
       "count": "Hai ascoltato <count>{countValue, number}</count> <tracks>{countValue, plural, one {brano} other {brani}}</tracks> in tutto!",
       "favorite": "Il tuo preferito è stato",
       "only": "L'unico artista che hai ascoltato è stato",
+      "mostTime": "L'artista che hai ascoltato più a lungo è stato",
       "topTrack": "Il tuo preferito è stato <track>{title}</track> di <by>{artist}</by>",
       "topTrackWithoutArtist": "Il tuo preferito è stato <track>{title}</track>",
       "onlyTrack": "L'unico brano che hai ascoltato è stato <track>{title}</track> di <by>{artist}</by>",
       "onlyTrackWithoutArtist": "L'unico brano che hai ascoltato è stato <track>{title}</track>",
+      "longestTrack": "Il brano più lungo che hai ascoltato è stato <track>{title}</track> di <by>{artist}</by>",
+      "longestTrackWithoutArtist": "Il brano più lungo che hai ascoltato è stato <track>{title}</track>",
       "topTrackPlays": "L'hai ascoltato <count>{countValue, plural, one {una volta} other {# volte}}</count>",
       "noData": "Non hai ascoltato <audio>musica</audio> su <from>{serverName}</from>"
     },
@@ -430,6 +433,7 @@
       "count": "Hai guardato <count>{countValue, number}</count> <episodes>{countValue, plural, one {episodio} other {episodi}}</episodes> in tutto!",
       "favorite": "La tua preferita è stata",
       "only": "L'unica serie che hai guardato è stata",
+      "mostTime": "La serie a cui hai dedicato più tempo è stata",
       "previousFavorite": "{period, select, year {L'anno prima} other {L'ultima volta}} era <title>{titleValue}</title>",
       "sameFavorite": "Era la tua preferita anche <before>{period, select, year {l'anno prima} other {l'ultima volta}}</before>!",
       "noData": "Non hai guardato nessuna <shows>serie</shows> su <plex>{serverName}</plex> <emoji>😥</emoji>"
@@ -451,6 +455,7 @@
       "count": "Hai guardato <count>{countValue, number}</count> <movies>{countValue, plural, one {film} other {film}}</movies> in tutto!",
       "favorite": "Il tuo preferito è stato",
       "only": "L'unico film che hai guardato è stato",
+      "longest": "Il film più lungo che hai guardato è stato",
       "previousFavorite": "{period, select, year {L'anno prima} other {L'ultima volta}} era <title>{titleValue}</title>",
       "sameFavorite": "Era il tuo preferito anche <before>{period, select, year {l'anno prima} other {l'ultima volta}}</before>!",
       "noData": "Non hai guardato nessun <movies>film</movies> su <plex>{serverName}</plex> <emoji>😵‍💫</emoji>"
@@ -472,7 +477,8 @@
       "count": "{countValue, plural, one {<count># titolo</count> che hai guardato era <only>solo tuo</only>} other {<count># titoli</count> che hai guardato erano <only>solo tuoi</only>}}",
       "nobodyElse": "Nessun altro su <plex>{serverName}</plex> {countValue, plural, one {l'ha guardato} other {li ha guardati}}",
       "nobodyElseShare": "Nessun altro su <plex>{serverName}</plex> {countValue, plural, one {l'ha guardato} other {li ha guardati}}. Cioè il <share>{shareValue}</share> dei titoli che hai guardato.",
-      "top": "{countValue, plural, one {Era <title>{titleValue}</title>} other {Il tuo preferito tra questi era <title>{titleValue}</title>}}"
+      "top": "{countValue, plural, one {Era <title>{titleValue}</title>} other {Il tuo preferito tra questi era <title>{titleValue}</title>}}",
+      "topMostTime": "Quello a cui hai dedicato più tempo è stato <title>{titleValue}</title>"
     },
     "RequestsReach": {
       "users": "{usersValue, plural, one {<count># altra persona</count> ha guardato} other {<count># altre persone</count> hanno guardato}} quello che hai <requests>richiesto</requests>",

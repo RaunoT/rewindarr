@@ -392,10 +392,13 @@
       "count": "¡Escuchaste <count>{countValue, number}</count> <tracks>{countValue, plural, one {canción} other {canciones}}</tracks> en total!",
       "favorite": "Lo que más escuchaste fue",
       "only": "El único artista que escuchaste fue",
+      "mostTime": "El artista que más tiempo escuchaste fue",
       "topTrack": "Lo que más escuchaste fue <track>{title}</track> de <by>{artist}</by>",
       "topTrackWithoutArtist": "Lo que más escuchaste fue <track>{title}</track>",
       "onlyTrack": "La única canción que escuchaste fue <track>{title}</track> de <by>{artist}</by>",
       "onlyTrackWithoutArtist": "La única canción que escuchaste fue <track>{title}</track>",
+      "longestTrack": "La canción más larga que escuchaste fue <track>{title}</track> de <by>{artist}</by>",
+      "longestTrackWithoutArtist": "La canción más larga que escuchaste fue <track>{title}</track>",
       "topTrackPlays": "La escuchaste <count>{countValue, plural, one {una vez} other {# veces}}</count>",
       "noData": "No escuchaste <audio>música</audio> en <from>{serverName}</from>"
     },
@@ -430,6 +433,7 @@
       "count": "¡Viste <count>{countValue, number}</count> <episodes>{countValue, plural, one {episodio} other {episodios}}</episodes> en total!",
       "favorite": "Lo que más viste fue",
       "only": "La única serie que viste fue",
+      "mostTime": "La serie a la que dedicaste más tiempo fue",
       "previousFavorite": "{period, select, year {El año anterior} other {La última vez}} fue <title>{titleValue}</title>",
       "sameFavorite": "¡<before>{period, select, year {El año anterior} other {La última vez}}</before> también fue lo que más viste!",
       "noData": "No viste ninguna <shows>serie</shows> en <plex>{serverName}</plex> <emoji>😥</emoji>"
@@ -451,6 +455,7 @@
       "count": "¡Viste <count>{countValue, number}</count> <movies>{countValue, plural, one {película} other {películas}}</movies> en total!",
       "favorite": "Lo que más viste fue",
       "only": "La única película que viste fue",
+      "longest": "La película más larga que viste fue",
       "previousFavorite": "{period, select, year {El año anterior} other {La última vez}} fue <title>{titleValue}</title>",
       "sameFavorite": "¡<before>{period, select, year {El año anterior} other {La última vez}}</before> también fue lo que más viste!",
       "noData": "No viste ninguna <movies>película</movies> en <plex>{serverName}</plex> <emoji>😵‍💫</emoji>"
@@ -472,7 +477,8 @@
       "count": "{countValue, plural, one {<count># título</count> que viste fue <only>solo tuyo</only>} other {<count># títulos</count> que viste fueron <only>solo tuyos</only>}}",
       "nobodyElse": "Nadie más en <plex>{serverName}</plex> {countValue, plural, one {lo vio} other {los vio}}",
       "nobodyElseShare": "Nadie más en <plex>{serverName}</plex> {countValue, plural, one {lo vio} other {los vio}}. Eso es el <share>{shareValue}</share> de los títulos que viste.",
-      "top": "{countValue, plural, one {Fue <title>{titleValue}</title>} other {Tu favorito entre ellos fue <title>{titleValue}</title>}}"
+      "top": "{countValue, plural, one {Fue <title>{titleValue}</title>} other {Tu favorito entre ellos fue <title>{titleValue}</title>}}",
+      "topMostTime": "Al que más tiempo dedicaste fue <title>{titleValue}</title>"
     },
     "RequestsReach": {
       "users": "{usersValue, plural, one {<count># persona más</count> vio} other {<count># personas más</count> vieron}} lo que <requests>pediste</requests>",

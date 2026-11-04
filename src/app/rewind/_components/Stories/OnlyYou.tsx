@@ -3,6 +3,7 @@ import { RewindStory } from '@/types/rewind'
 import { getMediaServerName } from '@/utils/mediaServerName'
 import { FingerPrintIcon } from '@heroicons/react/24/outline'
 import { useFormatter, useTranslations } from 'next-intl'
+import { isFavorite } from '../favorite'
 import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
@@ -48,11 +49,17 @@ export default function StoryOnlyYou({ userRewind, settings }: RewindStory) {
 
       <RewindStat step={2} noScale>
         <p className='mb-2'>
-          {t.rich('top', {
-            countValue: onlyYou.count,
-            titleValue: onlyYou.item.data.title,
-            title: (chunks) => <span className='rewind-cat'>{chunks}</span>,
-          })}
+          {t.rich(
+            // Without a rewatch, it's only the one with the most watch time
+            onlyYou.count > 1 && !isFavorite(onlyYou.item.data)
+              ? 'topMostTime'
+              : 'top',
+            {
+              countValue: onlyYou.count,
+              titleValue: onlyYou.item.data.title,
+              title: (chunks) => <span className='rewind-cat'>{chunks}</span>,
+            },
+          )}
         </p>
 
         <div className='text-base leading-normal font-normal tracking-normal'>

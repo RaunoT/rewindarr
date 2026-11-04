@@ -4,6 +4,7 @@ import { getMediaServerName } from '@/utils/mediaServerName'
 import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import CountUp from '../CountUp'
+import { isFavorite } from '../favorite'
 import PlaytimeShare from '../PlaytimeShare'
 import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
@@ -11,6 +12,8 @@ import RewindStat from '../RewindStat'
 export default function StoryAudio({ userRewind, settings }: RewindStory) {
   const t = useTranslations('Rewind.Audio')
   const { topTrack } = userRewind.audio
+  const topArtist = userRewind.audio.top[0]
+  const isOnlyArtist = userRewind.audio.top.length === 1
 
   return (
     <>
@@ -60,9 +63,14 @@ export default function StoryAudio({ userRewind, settings }: RewindStory) {
                       ? topTrack.artist
                         ? 'onlyTrack'
                         : 'onlyTrackWithoutArtist'
-                      : topTrack.artist
-                        ? 'topTrack'
-                        : 'topTrackWithoutArtist',
+                      : // Played once like the rest, it's the longest
+                        topTrack.plays > 1
+                        ? topTrack.artist
+                          ? 'topTrack'
+                          : 'topTrackWithoutArtist'
+                        : topTrack.artist
+                          ? 'longestTrack'
+                          : 'longestTrackWithoutArtist',
                     {
                       title: topTrack.title,
                       artist: topTrack.artist ?? '',
@@ -91,16 +99,21 @@ export default function StoryAudio({ userRewind, settings }: RewindStory) {
           ) : (
             <RewindStat step={3} noScale>
               <p className='mb-2'>
-                {t(userRewind.audio.top.length > 1 ? 'favorite' : 'only')}&nbsp;
-                <span className='rewind-cat'>
-                  {userRewind.audio.top[0].title}
-                </span>
+                {t(
+                  isOnlyArtist
+                    ? 'only'
+                    : isFavorite(topArtist)
+                      ? 'favorite'
+                      : 'mostTime',
+                )}
+                &nbsp;
+                <span className='rewind-cat'>{topArtist.title}</span>
               </p>
 
               <div className='text-base leading-normal font-normal tracking-normal'>
                 <MediaItems
                   type='artist'
-                  items={Array(userRewind.audio.top[0])}
+                  items={[topArtist]}
                   mediaServer={userRewind.media_server}
                   rows
                   settings={settings}
