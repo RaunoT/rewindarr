@@ -10,6 +10,8 @@ type Props = {
   data: number[]
   peakIndex: number | null
   labels?: (string | null)[]
+  // In place of the labels on wider screens, where the bars have more room
+  wideLabels?: (string | null)[]
   ariaLabel: string
   axisLabel: string
   className?: string
@@ -56,10 +58,43 @@ function labelTransform(index: number, count: number) {
   return 'translateX(-50%)'
 }
 
+type BarLabelsProps = {
+  labels: (string | null)[]
+  peakIndex: number | null
+  className?: string
+}
+
+function BarLabels({ labels, peakIndex, className }: BarLabelsProps) {
+  return (
+    <div className={clsx('absolute inset-0', className)}>
+      {labels.map((label, index) =>
+        label ? (
+          <span
+            key={index}
+            className={clsx(
+              'absolute top-0 text-xs whitespace-nowrap',
+              index === peakIndex
+                ? 'text-plex font-semibold'
+                : 'text-neutral-400',
+            )}
+            style={{
+              left: `${((index + 0.5) / labels.length) * 100}%`,
+              transform: labelTransform(index, labels.length),
+            }}
+          >
+            {label}
+          </span>
+        ) : null,
+      )}
+    </div>
+  )
+}
+
 export default function RewindBarChart({
   data,
   peakIndex,
   labels,
+  wideLabels,
   ariaLabel,
   axisLabel,
   className,
@@ -143,24 +178,17 @@ export default function RewindBarChart({
           <>
             <div aria-hidden />
             <div className='relative mt-2 h-4'>
-              {labels.map((label, index) =>
-                label ? (
-                  <span
-                    key={index}
-                    className={clsx(
-                      'absolute top-0 text-xs whitespace-nowrap',
-                      index === peakIndex
-                        ? 'text-plex font-semibold'
-                        : 'text-neutral-400',
-                    )}
-                    style={{
-                      left: `${((index + 0.5) / labels.length) * 100}%`,
-                      transform: labelTransform(index, labels.length),
-                    }}
-                  >
-                    {label}
-                  </span>
-                ) : null,
+              <BarLabels
+                labels={labels}
+                peakIndex={peakIndex}
+                className={wideLabels && 'sm:hidden'}
+              />
+              {wideLabels && (
+                <BarLabels
+                  labels={wideLabels}
+                  peakIndex={peakIndex}
+                  className='max-sm:hidden'
+                />
               )}
             </div>
           </>

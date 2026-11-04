@@ -29,6 +29,7 @@ import {
 } from '@/utils/helpers'
 import { getPlexThemeUrl, getPlexTrackUrl } from '@/utils/plexAudio'
 import { toPublicSettings } from '@/utils/publicSettings'
+import { getRewindMoments } from '@/utils/rewindMoments'
 import { getMusicUrl, getThemeSongUrl } from '@/utils/rewindMusic'
 import {
   getActiveUsers,
@@ -104,6 +105,12 @@ async function RewindContent({ userId }: { userId?: string }) {
     since: startDate,
     libraries,
   })
+  // Read once, for every stat from the user's own plays
+  const userPlaysRequest = getStatsSource(settings).getHistoryPlays({
+    since: startDate,
+    userId: user.id,
+    libraries,
+  })
   const [
     topMediaItems,
     topMediaStats,
@@ -118,6 +125,7 @@ async function RewindContent({ userId }: { userId?: string }) {
     genres,
     viewers,
     topTrack,
+    moments,
   ] = await Promise.all([
     getTopMediaItems(user.id, libraries),
     getTopMediaStats(user.id, libraries),
@@ -132,6 +140,15 @@ async function RewindContent({ userId }: { userId?: string }) {
     getGenres(user.id, libraries),
     viewersRequest,
     getTopTrack(user.id, libraries),
+    userPlaysRequest.then((plays) =>
+      getRewindMoments(plays, {
+        since: startDate,
+        minPlayPercent: settings.general.minPlayPercent,
+        // The server's, until the viewer's is known
+        timeZone: undefined,
+        getPlayItem: (play) => getStatsSource(settings).getPlayItem(play),
+      }),
+    ),
   ])
   // The card for the first play needs its poster and ratings looked up. Its
   // all-time watch time and plays wait for the whole history to be read.
@@ -217,6 +234,7 @@ async function RewindContent({ userId }: { userId?: string }) {
             }
           : null,
     },
+    moments,
     libraries: libraries,
     libraries_total_size: librariesTotalSize.size,
     libraries_size_is_partial: librariesTotalSize.isPartial,

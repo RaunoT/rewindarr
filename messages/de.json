@@ -443,6 +443,18 @@
       "score": "Eure Genres stimmen zu <score>{scoreValue}</score> überein",
       "genres": "Ihr beide liebt <genres>{genresValue}</genres>"
     },
+    "Moments": {
+      "month": "Dein aktivster Monat war <month>{monthValue}</month> mit <duration>{durationValue}</duration> Wiedergabezeit",
+      "hours": "Stunden",
+      "monthChart": "Balkendiagramm der Wiedergabezeit pro Monat. Aktivster Monat: {monthValue} mit {durationValue}.",
+      "binge": "Dein größter Serienmarathon war am <date>{dateValue}</date>",
+      "bingeEpisodes": "Du hast <count>{countValue, plural, one {# Episode} other {# Episoden}}</count> am Stück geschaut, insgesamt <duration>{durationValue}</duration>",
+      "bingeShow": "Und die Serie? <show>{showValue}</show>",
+      "day": "Dein intensivster Tag war der <date>{dateValue}</date> mit <duration>{durationValue}</duration> Wiedergabezeit",
+      "dayTitles": "Auf dem Programm: <titles>{titlesValue}</titles>",
+      "moreTitles": "{count, plural, one {# weiterer} other {# weitere}}",
+      "streak": "Dein Rekord: <days>{count, plural, one {# Tag} other {# Tage}} in Folge</days> mit mindestens einer Wiedergabe, vom <start>{startValue}</start> bis zum <end>{endValue}</end>"
+    },
     "Habits": {
       "day": "Dein liebster Tag zum Schauen war <day>{dayValue}</day>",
       "hour": "Und am häufigsten hast du gegen <hour>{hourValue}</hour> Play gedrückt",

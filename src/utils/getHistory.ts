@@ -8,6 +8,7 @@ import { HistoryStatus } from '@/types/playHistory'
 import { HistoryPlay } from '@/types/statsSource'
 import { TautulliItemRow, TautulliLibrary } from '@/types/tautulli'
 import { clamp, orderBy, range, sumBy } from 'lodash'
+import { isSameBinge } from './binges'
 import { HISTORY_PAGE_SIZES } from './constants'
 import getMediaAdditionalData from './getMediaAdditionalData'
 import {
@@ -262,22 +263,6 @@ async function addItems(entries: HistoryEntry[]): Promise<HistoryEntry[]> {
   )
 }
 
-// The show of an episode or the artist of a track, which a binge stays on.
-// Without either, there's no telling what it belongs to, so it's on its own.
-function getBingeKey(play: HistoryPlay): string | null {
-  if (play.mediaType !== 'episode' && play.mediaType !== 'track') {
-    return null
-  }
-
-  const parent =
-    play.grandparentRatingKey ||
-    (play.mediaType === 'episode' ? play.showTitle : play.artistName)
-
-  return parent
-    ? [play.mediaType, play.userId || play.identityId, parent].join('|')
-    : null
-}
-
 // Episodes of one show, or tracks of one artist, that a user played one after
 // another on the same day, as one entry. A request or another play between
 // them ends the binge. The day is the server's, like the history's dates.
@@ -289,15 +274,8 @@ export function groupBinges(entries: HistoryEntry[]): HistoryEntry[] {
 
     if (entry.kind === 'play' && last?.kind === 'play') {
       const binge = last.binge ?? [last.play]
-      const oldest = binge[binge.length - 1]
-      const key = getBingeKey(entry.play)
 
-      if (
-        key &&
-        key === getBingeKey(oldest) &&
-        new Date(entry.play.startedAt).toDateString() ===
-          new Date(oldest.startedAt).toDateString()
-      ) {
+      if (isSameBinge(entry.play, binge[binge.length - 1])) {
         grouped[grouped.length - 1] = { ...last, binge: [...binge, entry.play] }
 
         continue

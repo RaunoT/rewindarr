@@ -1,3 +1,4 @@
+import { RewindMoments } from '@/utils/rewindMoments'
 import { PublicSettings } from './settings'
 import { Genres, MediaServer, TopPeople } from './statsSource'
 import { TautulliItemRow, TautulliLibrary } from './tautulli'
@@ -91,6 +92,8 @@ export type UserRewind = {
       hasTotals: boolean
     } | null
   } | null
+  // From the user's plays in the period
+  moments: RewindMoments
   user: RewindUser
 }
 
