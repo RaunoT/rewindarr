@@ -6,10 +6,10 @@ import clsx from 'clsx'
 import { motion } from 'motion/react'
 import { useFormatter } from 'next-intl'
 
-// user: the user's own share, in Plex gold. userMuted: also the user's, but
-// not the one to look at first, like the genres below the top one. server:
-// everyone's share, next to the user's
-type Variant = 'user' | 'userMuted' | 'server'
+// user: the user's own share, in Plex gold. muted: a share that isn't the one to
+// look at first, like the genres below the top one. server: everyone's
+// share, next to the user's
+type Variant = 'user' | 'muted' | 'server'
 
 type Props = {
   share: number
@@ -21,12 +21,12 @@ type Props = {
 
 const BAR_CLASSES: Record<Variant, string> = {
   user: 'bg-plex',
-  userMuted: 'bg-plex/40',
+  muted: 'bg-neutral-300',
   server: 'bg-white/30',
 }
 const SHARE_CLASSES: Record<Variant, string> = {
   user: 'text-plex font-semibold',
-  userMuted: 'text-neutral-300',
+  muted: 'text-neutral-300',
   server: 'text-neutral-400',
 }
 

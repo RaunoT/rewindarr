@@ -25,7 +25,7 @@ export default function TopGenres({ genres }: Props) {
             <ShareBar
               share={genre.share}
               delay={i * 0.15}
-              variant={isTop ? 'user' : 'userMuted'}
+              variant={isTop ? 'user' : 'muted'}
             />
           </li>
         )
