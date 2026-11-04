@@ -110,22 +110,32 @@ type PlaysQuery = Omit<DurationQuery, 'since'> & {
 
 type PlayFilter = {
   since: string | Date
+  // Exclusive
+  until?: string | Date
   mediaTypes?: PlayMediaType[]
   identityId?: string
   excludedIdentityIds?: string[]
 }
 
-// Narrows plays down to a window that starts at an exact time, and to the
-// media types and users asked for.
+// Narrows plays down to a window that starts at an exact time, and ends at one
+// when asked, and to the media types and users asked for.
 export function filterPlays(
   plays: Play[],
-  { since, mediaTypes, identityId, excludedIdentityIds = [] }: PlayFilter,
+  {
+    since,
+    until,
+    mediaTypes,
+    identityId,
+    excludedIdentityIds = [],
+  }: PlayFilter,
 ): Play[] {
   const sinceTime = new Date(since).getTime()
+  const untilTime = until === undefined ? Infinity : new Date(until).getTime()
 
   return plays.filter(
     (play) =>
       play.startedAt >= sinceTime &&
+      play.startedAt < untilTime &&
       (!mediaTypes || mediaTypes.includes(play.mediaType)) &&
       (!identityId || play.identityId === identityId) &&
       !excludedIdentityIds.includes(play.identityId),
@@ -273,6 +283,7 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
   // Excluded users are left out, unless the query is for one of them
   async function getPlays({
     since,
+    until,
     userId,
     libraries,
   }: PlaysQuery): Promise<Play[]> {
@@ -294,6 +305,7 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
 
     return filterPlays(plays, {
       since,
+      until,
       identityId,
       // A user's own stats still show when they're excluded from the server's.
       excludedIdentityIds: userId
@@ -349,8 +361,9 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
     userId: string,
     libraries: TautulliLibrary[],
     since: string,
+    until?: string,
   ): Promise<MediaStats> {
-    const plays = await getPlays({ since, userId, libraries })
+    const plays = await getPlays({ since, until, userId, libraries })
     const minPercent = getMinPlayPercent()
     const mediaTypes = libraries.map(
       (library) => LIBRARY_PLAY_TYPES[library.section_type],
@@ -379,8 +392,9 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
     userId: string,
     libraries: TautulliLibrary[],
     since: string,
+    until?: string,
   ): Promise<TopMediaItems> {
-    const plays = await getPlays({ since, userId, libraries })
+    const plays = await getPlays({ since, until, userId, libraries })
     const minPercent = getMinPlayPercent()
 
     function getTop(mediaType: PlayMediaType) {
@@ -406,8 +420,9 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
     userId: string,
     libraries: TautulliLibrary[],
     since: string,
+    until?: string,
   ): Promise<TopPeople> {
-    const plays = await getPlays({ since, userId, libraries })
+    const plays = await getPlays({ since, until, userId, libraries })
     const minPercent = getMinPlayPercent()
 
     function getTitles(mediaType: PlayMediaType) {
@@ -427,10 +442,11 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
     libraries: TautulliLibrary[],
     since: string,
     withMatch: boolean,
+    until?: string,
   ): Promise<Genres> {
     const [userPlays, serverPlays, users] = await Promise.all([
-      getPlays({ since, userId, libraries }),
-      withMatch ? getPlays({ since, libraries }) : [],
+      getPlays({ since, until, userId, libraries }),
+      withMatch ? getPlays({ since, until, libraries }) : [],
       withMatch ? provider.getUsers() : [],
     ])
     const identityId = userPlays[0]?.identityId
@@ -483,8 +499,9 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
   async function getPlaysByTime(
     userId: string,
     since: string,
+    until?: string,
   ): Promise<PlaysByTime> {
-    const plays = await getPlays({ since, userId })
+    const plays = await getPlays({ since, until, userId })
     const minPercent = getMinPlayPercent()
     const hourly = Array<number>(24).fill(0)
     const daily = Array<number>(7).fill(0)
@@ -503,10 +520,11 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
 
   async function getTopUsers({
     since,
+    until,
     libraries,
   }: TopUsersQuery): Promise<TautulliItemRow[]> {
     const [plays, users] = await Promise.all([
-      getPlays({ since, libraries }),
+      getPlays({ since, until, libraries }),
       provider.getUsers(),
     ])
     const usersByIdentity = new Map(

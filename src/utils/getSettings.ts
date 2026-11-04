@@ -138,7 +138,9 @@ function loadSettings(key: string): Settings {
         migrateRatingStatistic(
           mergeWithDefaults(
             completeHistorySettings(
-              moveItemStatistics(renameOverseerrSettings(savedSettings)),
+              addRewindPeriod(
+                moveItemStatistics(renameOverseerrSettings(savedSettings)),
+              ),
             ),
           ),
         ),
@@ -298,6 +300,22 @@ function moveItemStatistics(saved: Partial<Settings>): Partial<Settings> {
       activeItemStatistics:
         saved.general?.activeItemStatistics ?? activeItemStatistics,
     } as Settings['general'],
+  }
+}
+
+// Rewind's start date was its only period setting, and a saved one meant a
+// custom period. Set before merging, so the default doesn't replace it.
+function addRewindPeriod(saved: Partial<Settings>): Partial<Settings> {
+  if (!saved.rewind || saved.rewind.period) {
+    return saved
+  }
+
+  return {
+    ...saved,
+    rewind: {
+      ...saved.rewind,
+      period: saved.rewind.startDate ? 'custom' : 'pastYear',
+    },
   }
 }
 

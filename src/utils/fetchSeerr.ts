@@ -186,7 +186,8 @@ async function fetchSeerrPages<T>(
 }
 
 // Null when Seerr fails, so callers can leave the requests out instead of
-// showing none
+// showing none. The end is left out, like the plays', so a request at midnight
+// on 1 January counts in one edition only.
 export async function fetchSeerrStats(
   req: string,
   startDate: string,
@@ -214,7 +215,7 @@ export async function fetchSeerrStats(
   return requests.filter((request) => {
     const requestDate = new Date(request.createdAt).getTime()
 
-    return requestDate >= start && requestDate <= end
+    return requestDate >= start && requestDate < end
   })
 }
 

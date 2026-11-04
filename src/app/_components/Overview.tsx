@@ -17,6 +17,7 @@ import getPeriod, { parseCustomPeriod } from '@/utils/getPeriod'
 import { getHomeTiles, getViewer } from '@/utils/helpers'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import { toPublicSettings } from '@/utils/publicSettings'
+import { getNewEditionYear } from '@/utils/rewindPeriod'
 import { getHistoryProgress } from '@/utils/statsSource'
 import {
   BackwardIcon,
@@ -99,7 +100,7 @@ export default async function Overview({
         />
       ) : (
         <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-          {tiles.rewind && <RewindTile />}
+          {tiles.rewind && <RewindTile settings={settings} />}
           {tiles.activity && (
             <ActivityTile settings={toPublicSettings(settings)} />
           )}
@@ -152,7 +153,7 @@ export function OverviewSkeleton({ settings, session }: OverviewSkeletonProps) {
     <div className='page-width-wide'>
       <OverviewHeader settings={settings} session={session} />
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-        {tiles.rewind && <RewindTile />}
+        {tiles.rewind && <RewindTile settings={settings} />}
         {tiles.activity && (
           <ActivityTile settings={toPublicSettings(settings)} />
         )}
@@ -195,8 +196,9 @@ async function OverviewHeader({ settings, session }: OverviewSkeletonProps) {
   )
 }
 
-async function RewindTile() {
+async function RewindTile({ settings }: { settings: Settings }) {
   const t = await getTranslations()
+  const newYear = getNewEditionYear(settings)
 
   return (
     <div className='glass-sheet flex flex-col justify-between gap-4'>
@@ -211,7 +213,9 @@ async function RewindTile() {
           {t('Rewind.title')}
         </h2>
         <p className='mt-4 max-w-md text-xl font-semibold tracking-tight sm:text-2xl'>
-          {t('Home.rewindDescription')}
+          {newYear === null
+            ? t('Home.rewindDescription')
+            : t('Home.rewindEdition', { year: newYear })}
         </p>
       </div>
       <Link href='/rewind' className='button'>

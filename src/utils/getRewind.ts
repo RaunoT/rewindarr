@@ -1,10 +1,10 @@
-import { TopTrack } from '@/types/rewind'
+import { RewindPeriod, TopTrack } from '@/types/rewind'
 import { TautulliLibrary, TautulliMediaReturnType } from '@/types/tautulli'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { fetchSeerrStats, getMediaUserIds } from './fetchSeerr'
 import { formatPercent, secondsToTime } from './formatting'
 import getSettings from './getSettings'
-import { getAverage, getDifference, getRewindStartDate } from './helpers'
+import { getAverage, getDifference } from './helpers'
 import { LibrariesSize } from './librariesSize'
 import { isCountedPlay } from './playStats'
 import { getStatsSource } from './statsSource'
@@ -12,14 +12,15 @@ import { getStatsSource } from './statsSource'
 export async function getTopMediaStats(
   userId: string,
   libraries: TautulliLibrary[],
+  period: RewindPeriod,
 ) {
   const t = await getTranslations()
   const locale = await getLocale()
-  const settings = getSettings()
-  const stats = await getStatsSource(settings).getMediaStats(
+  const stats = await getStatsSource().getMediaStats(
     userId,
     libraries,
-    getRewindStartDate(settings),
+    period.start,
+    period.end,
   )
   // Shares of the user's own playtime, so they add up across the libraries
   const totalDuration = Object.values(stats).reduce(
@@ -57,10 +58,11 @@ export async function getlibrariesTotalSize(
 }
 
 // Every user's time on each media type, null without a library of the type
-export async function getLibrariesDurationByType(libraries: TautulliLibrary[]) {
-  const settings = getSettings()
-  const source = getStatsSource(settings)
-  const since = getRewindStartDate(settings)
+export async function getLibrariesDurationByType(
+  libraries: TautulliLibrary[],
+  period: RewindPeriod,
+) {
+  const source = getStatsSource()
 
   async function getDuration(sectionType: string) {
     const typeLibraries = libraries.filter(
@@ -68,7 +70,11 @@ export async function getLibrariesDurationByType(libraries: TautulliLibrary[]) {
     )
 
     return typeLibraries.length
-      ? source.getTotalDuration({ since, libraries: typeLibraries })
+      ? source.getTotalDuration({
+          since: period.start,
+          until: period.end,
+          libraries: typeLibraries,
+        })
       : null
   }
 
@@ -84,11 +90,11 @@ export async function getLibrariesDurationByType(libraries: TautulliLibrary[]) {
 export async function getUserTotalDuration(
   userId: string,
   libraries: TautulliLibrary[],
+  period: RewindPeriod,
 ) {
-  const settings = getSettings()
-
-  return getStatsSource(settings).getTotalDuration({
-    since: getRewindStartDate(settings),
+  return getStatsSource().getTotalDuration({
+    since: period.start,
+    until: period.end,
     userId,
     libraries,
   })
@@ -97,26 +103,26 @@ export async function getUserTotalDuration(
 export async function getTopMediaItems(
   userId: string,
   libraries: TautulliLibrary[],
+  period: RewindPeriod,
 ) {
-  const settings = getSettings()
-
-  return getStatsSource(settings).getTopMediaItems(
+  return getStatsSource().getTopMediaItems(
     userId,
     libraries,
-    getRewindStartDate(settings),
+    period.start,
+    period.end,
   )
 }
 
 export async function getTopPeople(
   userId: string,
   libraries: TautulliLibrary[],
+  period: RewindPeriod,
 ) {
-  const settings = getSettings()
-
-  return getStatsSource(settings).getTopPeople(
+  return getStatsSource().getTopPeople(
     userId,
     libraries,
-    getRewindStartDate(settings),
+    period.start,
+    period.end,
   )
 }
 
@@ -126,6 +132,7 @@ export async function getTopPeople(
 export async function getTopTrack(
   userId: string,
   libraries: TautulliLibrary[],
+  period: RewindPeriod,
 ): Promise<TopTrack | null> {
   const settings = getSettings()
   const audioLibraries = libraries.filter(
@@ -137,7 +144,8 @@ export async function getTopTrack(
   }
 
   const plays = await getStatsSource(settings).getHistoryPlays({
-    since: getRewindStartDate(settings),
+    since: period.start,
+    until: period.end,
     userId,
     libraries: audioLibraries,
   })
@@ -191,14 +199,19 @@ export async function getTopTrack(
 }
 
 // Anonymizing hides who the match would name, so it isn't looked for
-export async function getGenres(userId: string, libraries: TautulliLibrary[]) {
+export async function getGenres(
+  userId: string,
+  libraries: TautulliLibrary[],
+  period: RewindPeriod,
+) {
   const settings = getSettings()
 
   return getStatsSource(settings).getGenres(
     userId,
     libraries,
-    getRewindStartDate(settings),
+    period.start,
     !settings.general.isAnonymized,
+    period.end,
   )
 }
 
@@ -218,11 +231,11 @@ function peakIndex(totals: number[]): number | null {
   return totals[maxIndex] > 0 ? maxIndex : null
 }
 
-export async function getPlaybackHabits(userId: string) {
-  const settings = getSettings()
-  const { hourly, daily } = await getStatsSource(settings).getPlaysByTime(
+export async function getPlaybackHabits(userId: string, period: RewindPeriod) {
+  const { hourly, daily } = await getStatsSource().getPlaysByTime(
     userId,
-    getRewindStartDate(settings),
+    period.start,
+    period.end,
   )
 
   return {
@@ -242,10 +255,9 @@ function countRequests(requests: { type: string }[]) {
   }
 }
 
-export async function getRequestsTotals(userId: string) {
+export async function getRequestsTotals(userId: string, period: RewindPeriod) {
   const settings = getSettings()
-  const startDate = getRewindStartDate(settings)
-  const requests = await fetchSeerrStats('request', startDate)
+  const requests = await fetchSeerrStats('request', period.start, period.end)
 
   if (!requests) {
     return null

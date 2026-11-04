@@ -1,6 +1,6 @@
 import { Settings } from '@/types/settings'
 import { cloneDeep } from 'lodash'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
 import {
   canViewFeature,
@@ -10,7 +10,6 @@ import {
   getHomeTiles,
   getRequestsBreakdown,
   getRewindBreakdown,
-  getRewindStartDate,
   getSettingsPage,
   hasRewindPlays,
   isInitialSetup,
@@ -107,33 +106,6 @@ describe('setup state', () => {
     settings.activity = { ...settings.activity, complete: false }
 
     expect(isPostUpdateMissingSettings(settings)).toBe(true)
-  })
-})
-
-describe('getRewindStartDate', () => {
-  beforeEach(() => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date('2026-03-10T12:00:00Z'))
-  })
-
-  afterEach(() => {
-    vi.useRealTimers()
-  })
-
-  it('prefers the configured start date', () => {
-    const settings = completeSettings()
-
-    settings.rewind.startDate = '2025-06-01'
-
-    expect(getRewindStartDate(settings)).toBe('2025-06-01')
-  })
-
-  it('defaults to a year before now, as of the call', () => {
-    expect(getRewindStartDate(completeSettings())).toBe('2025-03-10')
-
-    vi.setSystemTime(new Date('2026-09-20T12:00:00Z'))
-
-    expect(getRewindStartDate(completeSettings())).toBe('2025-09-20')
   })
 })
 

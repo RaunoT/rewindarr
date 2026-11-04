@@ -27,6 +27,7 @@
     "signOut": "Se déconnecter",
     "greeting": "Bonjour, {name} 👋",
     "rewindDescription": "Vos moments forts, une histoire à la fois.",
+    "rewindEdition": "Votre Rewind {year} est là. Revivez votre année, une histoire à la fois.",
     "streams": "{count, plural, =0 {Aucune lecture en cours} one {# lecture en cours} other {# lectures en cours}}",
     "mostWatched": "Le plus regardé",
     "mostListened": "Le plus écouté",
@@ -287,7 +288,17 @@
       "musicSizeError": "Le fichier dépasse {size}.",
       "musicError": "La musique n'a pas pu être mise à jour. Réessayez.",
       "snow": "Neige",
-      "startDateHelperText": "Par défaut il y a 365 jours"
+      "period": "Période",
+      "periods": {
+        "pastYear": "Année passée",
+        "calendarYear": "Année civile",
+        "custom": "Depuis une date de début"
+      },
+      "periodDescriptions": {
+        "pastYear": "Les 365 derniers jours",
+        "calendarYear": "Du 1er janvier au 31 décembre. L'édition de l'année sort le 1er décembre, et les précédentes restent disponibles.",
+        "custom": "De la date de début à aujourd'hui"
+      }
     }
   },
   "LocaleSelect": {
@@ -295,6 +306,9 @@
   },
   "UserSelect": {
     "label": "Sélectionner l'utilisateur"
+  },
+  "YearSelect": {
+    "label": "Sélectionner l'année"
   },
   "Common": {
     "dismiss": "Fermer",
@@ -365,9 +379,11 @@
     },
     "Welcome": {
       "welcome": "Bienvenue dans votre <rewind>{serverName} Rewind</rewind>, <user>{userValue} !</user>",
+      "welcomeEdition": "Bienvenue dans votre <rewind>{serverName} Rewind {year}</rewind>, <user>{userValue} !</user>",
       "takeYouThrough": "Nous allons vous faire découvrir vos moments forts",
       "letsGetStarted": "Commençons !",
       "forPastYear": "pour <pastYear>l'année passée.</pastYear>",
+      "forYear": "de <year>{yearValue}.</year>",
       "singleDate": "pendant le <singleDate>{singleDateValue}</singleDate>.",
       "dateRange": "du <startDate>{startDateValue}</startDate> au <endDate>{endDateValue}</endDate>."
     },

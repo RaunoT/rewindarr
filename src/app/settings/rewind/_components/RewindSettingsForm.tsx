@@ -3,9 +3,11 @@
 import DatePicker from '@/components/DatePicker'
 import {
   PublicSettings,
+  RewindPeriodType,
   RewindSettings,
   SettingsFormInitialState,
 } from '@/types/settings'
+import { getRewindPeriodType } from '@/utils/rewindPeriod'
 import { useTranslations } from 'next-intl'
 import { useActionState, useState } from 'react'
 import { Switch } from 'react-aria-components'
@@ -19,8 +21,13 @@ type Props = {
 
 type RewindFormState = SettingsFormInitialState<Partial<RewindSettings>>
 
+const PERIOD_TYPES: RewindPeriodType[] = ['pastYear', 'calendarYear', 'custom']
+
 export default function RewindSettingsForm({ settings }: Props) {
   const [isActive, setIsActive] = useState<boolean>(settings.rewind.isActive)
+  const [period, setPeriod] = useState<RewindPeriodType>(
+    getRewindPeriodType(settings),
+  )
   const t = useTranslations('Settings.Rewind')
   const tCommon = useTranslations('Common')
   const initialState: RewindFormState = {
@@ -116,13 +123,37 @@ export default function RewindSettingsForm({ settings }: Props) {
           </section>
           <section className='group-settings group'>
             <h2 className='heading-settings'>{tCommon('defaults')}</h2>
-            <DatePicker
-              key={`start-date-${rewindSettings.startDate}`}
-              label={tCommon('startDate')}
-              helperText={t('startDateHelperText')}
-              name='startDate'
-              defaultValue={rewindSettings.startDate}
-            />
+            <label className='input-wrapper'>
+              <span className='select-wrapper'>
+                <select
+                  className='input'
+                  name='period'
+                  value={period}
+                  onChange={(e) =>
+                    setPeriod(e.target.value as RewindPeriodType)
+                  }
+                >
+                  {PERIOD_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {t(`periods.${type}`)}
+                    </option>
+                  ))}
+                </select>
+              </span>
+              <span className='label'>
+                <span className='label-wrapper'>{t('period')}</span>
+                <small>{t(`periodDescriptions.${period}`)}</small>
+              </span>
+            </label>
+            {period === 'custom' && (
+              <DatePicker
+                key={`start-date-${rewindSettings.startDate}`}
+                label={tCommon('startDate')}
+                name='startDate'
+                defaultValue={rewindSettings.startDate}
+                required
+              />
+            )}
           </section>
         </>
       )}

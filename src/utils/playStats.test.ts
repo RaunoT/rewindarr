@@ -99,6 +99,15 @@ describe('filterPlays', () => {
     ).toHaveLength(1)
   })
 
+  it('leaves out plays from the end on', () => {
+    const ids = filterPlays(plays, {
+      since: '2026-03-01',
+      until: '2026-03-09T08:00:00Z',
+    }).map((item) => item.id)
+
+    expect(ids).toEqual(['before', 'start'])
+  })
+
   it('returns nothing for an invalid start', () => {
     expect(filterPlays(plays, { since: 'not a date' })).toEqual([])
   })
@@ -406,5 +415,22 @@ describe('getHistoryPlays', () => {
     const history = await getHistoryPlays(['2'])
 
     expect(history.map((play) => play.id)).toEqual(['episode', 'start'])
+  })
+
+  it('leaves out the plays from the end of the period on', async () => {
+    vi.mocked(getSettings).mockReturnValue({
+      general: { excludedUsers: [] },
+    } as unknown as ReturnType<typeof getSettings>)
+
+    const history = await createPlayStats({
+      getPlays: async () => plays,
+      getUsers: async () => [user('1', 'alice'), user('2', 'bob')],
+      getMediaData: async () => ({ thumb: '', isDeleted: false }),
+    }).getHistoryPlays({
+      since: '2026-03-08T00:00:00Z',
+      until: '2026-03-10T00:00:00Z',
+    })
+
+    expect(history.map((play) => play.id)).toEqual(['after', 'start'])
   })
 })

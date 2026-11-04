@@ -195,6 +195,39 @@ describe('getSettings', () => {
     expect(readSavedSettings().connection).not.toHaveProperty('overseerrApiKey')
   })
 
+  it('keeps a Rewind start date saved before the period setting', async () => {
+    const { period: _, ...rewind } = DEFAULT_SETTINGS.rewind
+
+    fs.writeFileSync(
+      settingsPath,
+      JSON.stringify({
+        ...DEFAULT_SETTINGS,
+        rewind: { ...rewind, startDate: '2025-03-01' },
+      }),
+    )
+
+    const { default: getSettings } = await loadModule()
+
+    expect(getSettings().rewind).toMatchObject({
+      period: 'custom',
+      startDate: '2025-03-01',
+    })
+    expect(readSavedSettings().rewind.period).toBe('custom')
+  })
+
+  it('gives Rewind the past year when no start date was saved', async () => {
+    const { period: _, ...rewind } = DEFAULT_SETTINGS.rewind
+
+    fs.writeFileSync(
+      settingsPath,
+      JSON.stringify({ ...DEFAULT_SETTINGS, rewind }),
+    )
+
+    const { default: getSettings } = await loadModule()
+
+    expect(getSettings().rewind.period).toBe('pastYear')
+  })
+
   it('turns the old rating statistic into one per rating provider', async () => {
     const { activeItemStatistics: _, ...general } = DEFAULT_SETTINGS.general
     // Saved before item statistics moved to general

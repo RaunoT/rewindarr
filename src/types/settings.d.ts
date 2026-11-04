@@ -58,6 +58,10 @@ export type RewindMusic = {
   updatedAt: number
 }
 
+// What a Rewind covers by default: the 365 days up to now, a calendar year's
+// edition, or from the start date up to now
+export type RewindPeriodType = 'pastYear' | 'calendarYear' | 'custom'
+
 export type RewindSettings = {
   isActive: boolean
   isAdminOnly: boolean
@@ -66,6 +70,8 @@ export type RewindSettings = {
   isThemeMusicActive: boolean
   music: RewindMusic | null
   isSnowActive: boolean
+  period: RewindPeriodType
+  // Only used by the custom period
   startDate?: string
   complete: boolean
 }

@@ -1,23 +1,26 @@
 import Avatar from '@/components/Avatar'
 import { RewindStory } from '@/types/rewind'
 import { formatMonthYear } from '@/utils/formatting'
-import { getRewindStartDate } from '@/utils/helpers'
 import { getMediaServerName } from '@/utils/mediaServerName'
+import { getRewindPeriodType } from '@/utils/rewindPeriod'
 import { useLocale, useTranslations } from 'next-intl'
 import RewindStat from '../RewindStat'
 
 export default function StoryWelcome({ userRewind, settings }: RewindStory) {
-  const startDate = getRewindStartDate(settings)
-  const isDefaultPeriod = !settings.rewind.startDate
+  const { start, year } = userRewind.period
+  const isPastYear = getRewindPeriodType(settings) === 'pastYear'
   const t = useTranslations('Rewind.Welcome')
   const tCommon = useTranslations('Common')
   const locale = useLocale()
-  const formattedStartDate = formatMonthYear(startDate, locale)
-  // The window always runs to now, so the displayed range ends today.
+  const formattedStartDate = formatMonthYear(start, locale)
+  // Only an edition has an end, so the other periods' ranges end today
   const formattedEndDate = formatMonthYear(
     new Date().toISOString().split('T')[0],
     locale,
   )
+  const serverName =
+    settings.general.serverName ||
+    getMediaServerName(settings.connection.mediaServerType)
 
   return (
     <>
@@ -32,43 +35,54 @@ export default function StoryWelcome({ userRewind, settings }: RewindStory) {
           />
         </div>
         <p>
-          {t.rich('welcome', {
-            serverName:
-              settings.general.serverName ||
-              getMediaServerName(settings.connection.mediaServerType),
-            userValue: userRewind.user.name,
-            rewind: (chunks) => chunks,
-            user: (chunks) => <span className='rewind-cat'>{chunks}</span>,
-          })}
+          {year === null
+            ? t.rich('welcome', {
+                serverName,
+                userValue: userRewind.user.name,
+                rewind: (chunks) => chunks,
+                user: (chunks) => <span className='rewind-cat'>{chunks}</span>,
+              })
+            : t.rich('welcomeEdition', {
+                serverName,
+                year,
+                userValue: userRewind.user.name,
+                rewind: (chunks) => chunks,
+                user: (chunks) => <span className='rewind-cat'>{chunks}</span>,
+              })}
         </p>
       </RewindStat>
 
       <RewindStat step={1} noScale>
         <p>
           {t('takeYouThrough')}{' '}
-          {isDefaultPeriod
-            ? t.rich('forPastYear', {
-                pastYear: (chunks) => (
-                  <span className='rewind-cat'>{chunks}</span>
-                ),
+          {year !== null
+            ? t.rich('forYear', {
+                yearValue: year,
+                year: (chunks) => <span className='rewind-cat'>{chunks}</span>,
               })
-            : formattedStartDate === formattedEndDate
-              ? t.rich('singleDate', {
-                  singleDateValue: formattedStartDate,
-                  singleDate: (chunks) => (
+            : isPastYear
+              ? t.rich('forPastYear', {
+                  pastYear: (chunks) => (
                     <span className='rewind-cat'>{chunks}</span>
                   ),
                 })
-              : t.rich('dateRange', {
-                  startDateValue: formattedStartDate,
-                  endDateValue: formattedEndDate,
-                  startDate: (chunks) => (
-                    <span className='rewind-cat'>{chunks}</span>
-                  ),
-                  endDate: (chunks) => (
-                    <span className='rewind-cat'>{chunks}</span>
-                  ),
-                })}
+              : formattedStartDate === formattedEndDate
+                ? t.rich('singleDate', {
+                    singleDateValue: formattedStartDate,
+                    singleDate: (chunks) => (
+                      <span className='rewind-cat'>{chunks}</span>
+                    ),
+                  })
+                : t.rich('dateRange', {
+                    startDateValue: formattedStartDate,
+                    endDateValue: formattedEndDate,
+                    startDate: (chunks) => (
+                      <span className='rewind-cat'>{chunks}</span>
+                    ),
+                    endDate: (chunks) => (
+                      <span className='rewind-cat'>{chunks}</span>
+                    ),
+                  })}
         </p>
       </RewindStat>
 

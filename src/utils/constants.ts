@@ -99,6 +99,7 @@ export const DEFAULT_SETTINGS: Settings = {
     isThemeMusicActive: false,
     music: null,
     isSnowActive: true,
+    period: 'pastYear',
     startDate: '',
     complete: false,
   },

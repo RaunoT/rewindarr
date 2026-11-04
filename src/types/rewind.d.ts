@@ -2,6 +2,16 @@ import { PublicSettings } from './settings'
 import { Genres, MediaServer, TopPeople } from './statsSource'
 import { TautulliItemRow, TautulliLibrary } from './tautulli'
 
+// The time a Rewind covers. A play counts in the period it started in.
+export type RewindPeriod = {
+  // ISO 8601, a date for the periods that run to now
+  start: string
+  // Exclusive, left out for a period that runs to now
+  end?: string
+  // A calendar-year edition's, null for the other periods
+  year: number | null
+}
+
 export type RewindUser = {
   id: string
   name: string
@@ -78,7 +88,8 @@ export type UserRewind = {
       difference: number
     } | null
   }
-  // Formatted on the server, null without any play
+  period: RewindPeriod
+  // Formatted on the server, null without any play before the period ends
   firstPlay: {
     date: string
     timeSince: string

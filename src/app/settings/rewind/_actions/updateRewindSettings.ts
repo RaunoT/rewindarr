@@ -1,7 +1,11 @@
 'use server'
 
 import { denySettingsAccess } from '@/lib/access'
-import { RewindSettings, SettingsFormInitialState } from '@/types/settings'
+import {
+  RewindPeriodType,
+  RewindSettings,
+  SettingsFormInitialState,
+} from '@/types/settings'
 import { z } from 'zod'
 import updateSettings from '../../_actions/updateSettings'
 
@@ -21,6 +25,7 @@ export default async function saveRewindSettings(
     isLibrariesSizeAndCountActive: z.boolean().optional(),
     isThemeMusicActive: z.boolean().optional(),
     isSnowActive: z.boolean().optional(),
+    period: z.enum(['pastYear', 'calendarYear', 'custom']).optional(),
     startDate: z.string().optional(),
     complete: z.boolean(),
   })
@@ -36,7 +41,10 @@ export default async function saveRewindSettings(
       formData.get('isLibrariesSizeAndCountActive') === 'on'
     data.isThemeMusicActive = formData.get('isThemeMusicActive') === 'on'
     data.isSnowActive = formData.get('isSnowActive') === 'on'
-    data.startDate = formData.get('startDate') as string
+    data.period = formData.get('period') as RewindPeriodType
+    // Only the custom period has a start date, so the others don't keep one
+    data.startDate =
+      data.period === 'custom' ? (formData.get('startDate') as string) : ''
   }
 
   return await updateSettings(schema, data, 'rewind')

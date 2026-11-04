@@ -18,6 +18,8 @@ vi.mock('./fetchSeerr', async (importOriginal) => ({
 vi.mock('./getSettings', () => ({ default: vi.fn() }))
 vi.mock('./statsSource', () => ({ getStatsSource: vi.fn() }))
 
+const period = { start: '2026-01-01', year: null }
+
 // Seerr users without Plex have no Plex id
 function request(type: string, plexId: number | null, id = plexId ?? 0) {
   return {
@@ -29,10 +31,7 @@ function request(type: string, plexId: number | null, id = plexId ?? 0) {
 }
 
 beforeEach(() => {
-  const settings = cloneDeep(DEFAULT_SETTINGS)
-
-  settings.rewind.startDate = '2026-01-01'
-  vi.mocked(getSettings).mockReturnValue(settings)
+  vi.mocked(getSettings).mockReturnValue(cloneDeep(DEFAULT_SETTINGS))
 })
 
 describe('getRequestsTotals', () => {
@@ -43,7 +42,7 @@ describe('getRequestsTotals', () => {
       request('movie', 2),
     ])
 
-    await expect(getRequestsTotals('1')).resolves.toEqual({
+    await expect(getRequestsTotals('1', period)).resolves.toEqual({
       total: 3,
       movies: 2,
       shows: 1,
@@ -51,7 +50,27 @@ describe('getRequestsTotals', () => {
       // 3 requests from 2 users average 1.5, which shows as 2
       average: { count: 2, difference: 0 },
     })
-    expect(fetchSeerrStats).toHaveBeenCalledWith('request', '2026-01-01')
+    expect(fetchSeerrStats).toHaveBeenCalledWith(
+      'request',
+      '2026-01-01',
+      undefined,
+    )
+  })
+
+  it("leaves out requests after an edition's end", async () => {
+    vi.mocked(fetchSeerrStats).mockResolvedValue([])
+
+    await getRequestsTotals('1', {
+      start: '2025-01-01T00:00:00.000Z',
+      end: '2026-01-01T00:00:00.000Z',
+      year: 2025,
+    })
+
+    expect(fetchSeerrStats).toHaveBeenCalledWith(
+      'request',
+      '2025-01-01T00:00:00.000Z',
+      '2026-01-01T00:00:00.000Z',
+    )
   })
 
   it("counts a Jellyfin user's own requests", async () => {
@@ -67,7 +86,10 @@ describe('getRequestsTotals', () => {
       request('tv', 1),
     ])
 
-    const totals = await getRequestsTotals('eeccd0072d56458298fc1eb02f4ac421')
+    const totals = await getRequestsTotals(
+      'eeccd0072d56458298fc1eb02f4ac421',
+      period,
+    )
 
     expect(totals?.user).toEqual({ total: 1, movies: 1, shows: 0 })
   })
@@ -80,7 +102,7 @@ describe('getRequestsTotals', () => {
       request('movie', null, 11),
     ])
 
-    const totals = await getRequestsTotals('1')
+    const totals = await getRequestsTotals('1', period)
 
     // 4 requests from 3 users
     expect(totals?.average).toEqual({ count: 1, difference: 100 })
@@ -89,7 +111,6 @@ describe('getRequestsTotals', () => {
   it("leaves excluded users out of every user's requests", async () => {
     const settings = cloneDeep(DEFAULT_SETTINGS)
 
-    settings.rewind.startDate = '2026-01-01'
     settings.general.excludedUsers = ['1', '3']
     vi.mocked(getSettings).mockReturnValue(settings)
     vi.mocked(fetchSeerrStats).mockResolvedValue([
@@ -100,7 +121,7 @@ describe('getRequestsTotals', () => {
     ])
 
     // Excluded too, but the rewind is theirs
-    await expect(getRequestsTotals('1')).resolves.toEqual({
+    await expect(getRequestsTotals('1', period)).resolves.toEqual({
       total: 2,
       movies: 2,
       shows: 0,
@@ -112,7 +133,7 @@ describe('getRequestsTotals', () => {
   it('counts zero requests when there were none', async () => {
     vi.mocked(fetchSeerrStats).mockResolvedValue([])
 
-    await expect(getRequestsTotals('1')).resolves.toEqual({
+    await expect(getRequestsTotals('1', period)).resolves.toEqual({
       total: 0,
       movies: 0,
       shows: 0,
@@ -124,7 +145,7 @@ describe('getRequestsTotals', () => {
   it('returns null when Seerr fails, so the story is left out', async () => {
     vi.mocked(fetchSeerrStats).mockResolvedValue(null)
 
-    await expect(getRequestsTotals('1')).resolves.toBeNull()
+    await expect(getRequestsTotals('1', period)).resolves.toBeNull()
   })
 })
 
@@ -153,7 +174,7 @@ describe('getTopMediaStats', () => {
   it("gives each library's share of the user's playtime", async () => {
     mockMediaStats(600, 300, 100)
 
-    const stats = await getTopMediaStats('1', [])
+    const stats = await getTopMediaStats('1', [], period)
 
     expect(stats.shows.percentage).toBe('60%')
     expect(stats.movies.percentage).toBe('30%')
@@ -163,7 +184,7 @@ describe('getTopMediaStats', () => {
   it('leaves the share out for a missing library', async () => {
     mockMediaStats(300, 100, null)
 
-    const stats = await getTopMediaStats('1', [])
+    const stats = await getTopMediaStats('1', [], period)
 
     expect(stats.shows.percentage).toBe('75%')
     expect(stats.audio.percentage).toBe('')
@@ -172,7 +193,7 @@ describe('getTopMediaStats', () => {
   it('leaves the share out when it rounds to 0%', async () => {
     mockMediaStats(999, 0, 1)
 
-    const stats = await getTopMediaStats('1', [])
+    const stats = await getTopMediaStats('1', [], period)
 
     expect(stats.shows.percentage).toBe('100%')
     expect(stats.movies.percentage).toBe('')
@@ -182,7 +203,7 @@ describe('getTopMediaStats', () => {
   it('leaves the shares out without any playtime', async () => {
     mockMediaStats(0, 0, 0)
 
-    const stats = await getTopMediaStats('1', [])
+    const stats = await getTopMediaStats('1', [], period)
 
     expect(stats.shows.percentage).toBe('')
   })

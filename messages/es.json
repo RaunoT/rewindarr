@@ -27,6 +27,7 @@
     "signOut": "Cerrar sesión",
     "greeting": "Hola, {name} 👋",
     "rewindDescription": "Tus momentos destacados, una historia a la vez.",
+    "rewindEdition": "Tu Rewind {year} ya está aquí. Revive tu año, una historia a la vez.",
     "streams": "{count, plural, =0 {Nada en reproducción} one {# en reproducción} other {# en reproducción}}",
     "mostWatched": "Lo más visto",
     "mostListened": "Lo más escuchado",
@@ -287,7 +288,17 @@
       "musicSizeError": "El archivo supera {size}.",
       "musicError": "No se pudo actualizar la música. Inténtalo de nuevo.",
       "snow": "Nieve",
-      "startDateHelperText": "Por defecto hace 365 días"
+      "period": "Periodo",
+      "periods": {
+        "pastYear": "Último año",
+        "calendarYear": "Año natural",
+        "custom": "Desde una fecha de inicio"
+      },
+      "periodDescriptions": {
+        "pastYear": "Los últimos 365 días",
+        "calendarYear": "Del 1 de enero al 31 de diciembre. La edición del año sale el 1 de diciembre y las anteriores siguen disponibles.",
+        "custom": "Desde la fecha de inicio hasta hoy"
+      }
     }
   },
   "LocaleSelect": {
@@ -295,6 +306,9 @@
   },
   "UserSelect": {
     "label": "Seleccionar usuario"
+  },
+  "YearSelect": {
+    "label": "Seleccionar año"
   },
   "Common": {
     "dismiss": "Cerrar",
@@ -365,9 +379,11 @@
     },
     "Welcome": {
       "welcome": "¡Te damos la bienvenida a tu <rewind>{serverName} Rewind</rewind>, <user>{userValue}!</user>",
+      "welcomeEdition": "¡Te damos la bienvenida a tu <rewind>{serverName} Rewind {year}</rewind>, <user>{userValue}!</user>",
       "takeYouThrough": "Te mostraremos lo más destacado",
       "letsGetStarted": "¡Empecemos!",
       "forPastYear": "del <pastYear>último año.</pastYear>",
+      "forYear": "de <year>{yearValue}.</year>",
       "singleDate": "de <singleDate>{singleDateValue}</singleDate>.",
       "dateRange": "de <startDate>{startDateValue}</startDate> a <endDate>{endDateValue}</endDate>."
     },

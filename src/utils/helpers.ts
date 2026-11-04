@@ -4,7 +4,7 @@ import { Settings, StatisticsSource } from '@/types/settings'
 import { TautulliLibrary } from '@/types/tautulli'
 import { kebabCase } from 'lodash'
 import { Session } from 'next-auth'
-import { getPeriods, SETTINGS_PAGES } from './constants'
+import { SETTINGS_PAGES } from './constants'
 
 const SOURCE_REQUIRED_SETTINGS: Record<StatisticsSource, string[]> = {
   tautulli: ['connection.tautulliUrl', 'connection.tautulliApiKey'],
@@ -124,10 +124,6 @@ export function isSettingsPageLocked(
 export function getSettingsPage(missingSettingKey: string): string | undefined {
   return SETTINGS_PAGES.find((page) => missingSettingKey.startsWith(page.key))
     ?.href
-}
-
-export function getRewindStartDate(settings: Pick<Settings, 'rewind'>): string {
-  return settings.rewind.startDate || getPeriods().pastYear.string
 }
 
 // The formatted durations in a rewind are always truthy ("0 mins"), so whether

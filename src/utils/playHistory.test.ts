@@ -212,6 +212,33 @@ describe('playHistory', () => {
     })
   })
 
+  it('says how far back every history has its plays', async () => {
+    const { getReadFrom, readHistoryFile } = await load()
+    const movies = reader(`${TAUTULLI_PREFIX}1`, () => [])
+    const shows = reader(`${TAUTULLI_PREFIX}2`, () => [])
+
+    vi.mocked(readHistoryFile).mockResolvedValue(
+      new Map([
+        [movies.reader.key, snapshot([play('a', 1)])],
+        [shows.reader.key, { ...snapshot([]), readTo: now - 5 * HOUR }],
+      ]),
+    )
+
+    await expect(getReadFrom([movies.reader])).resolves.toBe(-Infinity)
+    await expect(getReadFrom([movies.reader, shows.reader])).resolves.toBe(
+      now - 5 * HOUR,
+    )
+    // Without waiting for a read
+    expect(shows.cursors).toEqual([])
+  })
+
+  it('has nothing read back before any history was read', async () => {
+    const { getReadFrom } = await load()
+    const movies = reader(`${TAUTULLI_PREFIX}1`, () => [play('a', 1)])
+
+    await expect(getReadFrom([movies.reader])).resolves.toBe(Infinity)
+  })
+
   it('says when the least recent history was last brought up to date', async () => {
     const { getUpdatedAt, readHistoryFile } = await load()
     const movies = reader(`${TAUTULLI_PREFIX}1`, () => [])

@@ -24,12 +24,16 @@ import {
   canViewFeature,
   getAverage,
   getDifference,
-  getRewindStartDate,
   getViewer,
 } from '@/utils/helpers'
 import { getPlexThemeUrl, getPlexTrackUrl } from '@/utils/plexAudio'
 import { toPublicSettings } from '@/utils/publicSettings'
 import { getMusicUrl, getThemeSongUrl } from '@/utils/rewindMusic'
+import {
+  getLatestEditionYear,
+  getRewindPeriod,
+  parseEditionYear,
+} from '@/utils/rewindPeriod'
 import {
   getActiveUsers,
   getHistoryProgress,
@@ -55,7 +59,13 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-async function RewindContent({ userId }: { userId?: string }) {
+async function RewindContent({
+  userId,
+  year,
+}: {
+  userId?: string
+  year?: number
+}) {
   const session = await getServerSession(authOptions)
   const settings = getSettings()
 
@@ -89,9 +99,9 @@ async function RewindContent({ userId }: { userId?: string }) {
     return notFound()
   }
 
-  const startDate = getRewindStartDate(settings)
+  const period = getRewindPeriod(settings, year)
   const libraries = await getLibraries()
-  const progress = await getHistoryProgress(startDate, libraries)
+  const progress = await getHistoryProgress(period.start, libraries)
 
   if (progress) {
     return <HistoryReading progress={progress} isInCard />
@@ -101,7 +111,8 @@ async function RewindContent({ userId }: { userId?: string }) {
   const locale = await getLocale()
   // Ranked once, for both the users' top and the average user
   const viewersRequest = getStatsSource(settings).getTopUsers({
-    since: startDate,
+    since: period.start,
+    until: period.end,
     libraries,
   })
   const [
@@ -119,19 +130,25 @@ async function RewindContent({ userId }: { userId?: string }) {
     viewers,
     topTrack,
   ] = await Promise.all([
-    getTopMediaItems(user.id, libraries),
-    getTopMediaStats(user.id, libraries),
-    getUserTotalDuration(user.id, libraries),
+    getTopMediaItems(user.id, libraries, period),
+    getTopMediaStats(user.id, libraries, period),
+    getUserTotalDuration(user.id, libraries, period),
     getlibrariesTotalSize(libraries),
-    getLibrariesDurationByType(libraries),
+    getLibrariesDurationByType(libraries, period),
     getMediaServer(),
-    viewersRequest.then((users) => getUsersTop(user.id, startDate, { users })),
-    getPlaybackHabits(user.id),
-    getStatsSource(settings).getFirstPlay(user.id),
-    getTopPeople(user.id, libraries),
-    getGenres(user.id, libraries),
+    viewersRequest.then((users) =>
+      getUsersTop(user.id, period.start, { users, until: period.end }),
+    ),
+    getPlaybackHabits(user.id, period),
+    getStatsSource(settings)
+      .getFirstPlay(user.id)
+      .then((play) =>
+        play && isBeforeEnd(play.date, period.end) ? play : null,
+      ),
+    getTopPeople(user.id, libraries, period),
+    getGenres(user.id, libraries, period),
     viewersRequest,
-    getTopTrack(user.id, libraries),
+    getTopTrack(user.id, libraries, period),
   ])
   // The card for the first play needs its poster and ratings looked up. Its
   // all-time watch time and plays wait for the whole history to be read.
@@ -204,6 +221,7 @@ async function RewindContent({ userId }: { userId?: string }) {
       topTrack,
     },
     habits: habits,
+    period,
     firstPlay: firstPlay && {
       date: formatMonthYear(firstPlay.date, locale, 'long'),
       timeSince: formatTimeSince(firstPlay.date, locale),
@@ -227,7 +245,7 @@ async function RewindContent({ userId }: { userId?: string }) {
     settings.connection.seerrUrl && settings.connection.seerrApiKey
 
   if (isSeerrActive) {
-    const requestTotals = await getRequestsTotals(user.id)
+    const requestTotals = await getRequestsTotals(user.id, period)
 
     userRewind.requests = requestTotals
   }
@@ -264,6 +282,7 @@ async function RewindContent({ userId }: { userId?: string }) {
 type Props = {
   searchParams: Promise<{
     userId?: string
+    year?: string
   }>
 }
 
@@ -274,12 +293,18 @@ const ITEM_TYPES = {
   track: 'artist',
 } as const
 
+// A past edition's first play can come after it, once the user joined later
+function isBeforeEnd(date: string, end?: string): boolean {
+  return !end || new Date(date).getTime() < new Date(end).getTime()
+}
+
 export default async function RewindPage({ searchParams }: Props) {
-  const { userId } = await searchParams
+  const { userId, year } = await searchParams
+  const edition = parseEditionYear(year, getLatestEditionYear())
 
   return (
-    <Suspense fallback={<Loading />} key={userId}>
-      <RewindContent userId={userId} />
+    <Suspense fallback={<Loading />} key={`${userId}|${edition}`}>
+      <RewindContent userId={userId} year={edition} />
     </Suspense>
   )
 }
