@@ -207,6 +207,8 @@
       "chooseServer": "Vali server",
       "token": "Token (valikuline)",
       "tokenDescription": "Laseb Rewind'il mängida muusikat sinu kogust. <link>Kuidas seda leida?</link>",
+      "allServers": "Arvesta esitusi kõigist {server} serveritest",
+      "allServersHelp": "Neile, kes vaatavad mitmes serveris. Seo iga inimese kontod enne Tracearris. Kasutajad, teegid ja lingid jäävad selle serveri omaks.",
       "optionalService": "{service} (valikuline)",
       "plexUrlHelp": "Lisab lingid, mis avavad pealkirjad Plexis",
       "jellyfinUrlHelp": "Sisselogimiseks ja linkideks, mis avavad pealkirjad Jellyfinis",

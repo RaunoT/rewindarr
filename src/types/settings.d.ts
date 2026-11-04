@@ -18,6 +18,9 @@ export type ConnectionSettings = {
   tracearrUrl: string
   tracearrApiKey: string
   tracearrServerId: string
+  // Counts plays from every server of the chosen one's type, not only its own.
+  // Users, libraries and links stay the chosen server's.
+  tracearrAllServers: boolean
   seerrUrl?: string
   seerrApiKey?: string
   mediaServerType: MediaServerType

@@ -133,19 +133,26 @@ export function getTracearrUrl(settings: Settings = getSettings()): string {
   return settings.connection.tracearrUrl.replace(/\/+$/, '')
 }
 
+// The plays of every server of the type are a history of their own, so turning
+// it on or off reads the history again.
+function getServerKey(settings: Settings): string {
+  const { tracearrServerId, tracearrAllServers } = settings.connection
+
+  return tracearrAllServers ? `${tracearrServerId}|all` : tracearrServerId
+}
+
 // Tracearr's history of the media server, and its snapshot. Without the API
 // key, so a new key keeps what was read with the old one.
 export function getTracearrKey(): string {
   const settings = getSettings()
 
-  return `tracearr|${getTracearrUrl(settings)}|${settings.connection.tracearrServerId}`
+  return `tracearr|${getTracearrUrl(settings)}|${getServerKey(settings)}`
 }
 
 function getCacheKey(): string {
   const settings = getSettings()
-  const { tracearrApiKey, tracearrServerId } = settings.connection
 
-  return `${getTracearrUrl(settings)}|${tracearrApiKey}|${tracearrServerId}`
+  return `${getTracearrUrl(settings)}|${settings.connection.tracearrApiKey}|${getServerKey(settings)}`
 }
 
 // Caches a successful result for `ttl` and shares one in-flight request
@@ -450,7 +457,8 @@ const getServers = cached<TracearrServer[]>('servers', async () => {
 })
 
 // Rewind is built around one media server, its users and its links, so every
-// other server Tracearr tracks is left out. Emby isn't supported. Without a
+// other server Tracearr tracks is left out, except for their plays when
+// `tracearrAllServers` is on. Emby isn't supported. Without a
 // saved choice, the only server is used, of the type when one is given.
 export function selectServer(
   servers: TracearrServer[],
@@ -527,6 +535,55 @@ async function getSelectedServer(): Promise<TracearrServer | null> {
 
 async function getServerId(): Promise<string | null> {
   return (await getSelectedServer())?.server_id ?? null
+}
+
+// The servers whose plays count: the chosen one, and with `allServers` every
+// server of its type, for people who watch on more than one. Tracearr gives a
+// person one identity across them once their accounts are linked there.
+export function selectPlayServers(
+  servers: TracearrServer[],
+  server: TracearrServer,
+  allServers: boolean,
+): string[] {
+  if (!allServers) {
+    return [server.server_id]
+  }
+
+  return servers
+    .filter(({ server_type }) => server_type === server.server_type)
+    .map(({ server_id }) => server_id)
+}
+
+type PlayServers = {
+  // The chosen server, whose users and links are shown
+  serverId: string
+  serverIds: string[]
+}
+
+async function getPlayServers(): Promise<PlayServers | null> {
+  const [servers, server] = await Promise.all([
+    getServers(),
+    getSelectedServer(),
+  ])
+
+  if (!servers || !server) {
+    return null
+  }
+
+  return {
+    serverId: server.server_id,
+    serverIds: selectPlayServers(
+      servers,
+      server,
+      getSettings().connection.tracearrAllServers,
+    ),
+  }
+}
+
+// One server's records can be asked for by its ID, and several servers' only
+// by leaving it out, which also returns the servers that don't count.
+function getServerParam({ serverId, serverIds }: PlayServers) {
+  return serverIds.length > 1 ? undefined : serverId
 }
 
 type ServerUsers = {
@@ -677,12 +734,19 @@ export async function getTracearrUsers(): Promise<TautulliUser[]> {
   })
 }
 
-function toPlay(record: TracearrHistoryRecord, baseUrl: string): Play | null {
+// Rating keys are each server's own, so only the chosen server's open its items
+function toPlay(
+  record: TracearrHistoryRecord,
+  baseUrl: string,
+  serverId: string,
+): Play | null {
   const mediaType = record.media_type as PlayMediaType
 
   if (!PLAY_MEDIA_TYPES.includes(mediaType)) {
     return null
   }
+
+  const isOnServer = record.server_id === serverId
 
   return {
     id: record.id,
@@ -695,8 +759,8 @@ function toPlay(record: TracearrHistoryRecord, baseUrl: string): Play | null {
     artistName: record.artist_name,
     year: record.year,
     thumb: getPosterUrl(record, baseUrl),
-    ratingKey: record.rating_key,
-    grandparentRatingKey: record.grandparent_rating_key,
+    ratingKey: isOnServer ? record.rating_key : null,
+    grandparentRatingKey: isOnServer ? record.grandparent_rating_key : null,
     mediaId: record.media_id,
     showMediaId: record.show_media_id,
     imdbId: record.imdb_id,
@@ -713,15 +777,15 @@ function toPlay(record: TracearrHistoryRecord, baseUrl: string): Play | null {
 // A page of the history, newest first. Without a window, Tracearr returns
 // every segment of a play, not only the ones inside the window.
 async function fetchPlaysPage(cursor?: string): Promise<PlaysPage | null> {
-  const serverId = await getServerId()
+  const servers = await getPlayServers()
 
-  if (!serverId) {
+  if (!servers) {
     return null
   }
 
   const page = await fetchTracearr<TracearrCursorPage<TracearrHistoryRecord>>(
     'history',
-    { server_id: serverId, pageSize: PAGE_SIZE, cursor },
+    { server_id: getServerParam(servers), pageSize: PAGE_SIZE, cursor },
     { paced: true },
   )
 
@@ -739,8 +803,9 @@ async function fetchPlaysPage(cursor?: string): Promise<PlaysPage | null> {
 
   return {
     plays: page.data.flatMap((record) => {
-      const play =
-        record.server_id === serverId ? toPlay(record, baseUrl) : null
+      const play = servers.serverIds.includes(record.server_id)
+        ? toPlay(record, baseUrl, servers.serverId)
+        : null
 
       return play ? [play] : []
     }),
@@ -855,18 +920,44 @@ async function findFirstPlay(
   return firstPlay
 }
 
-// No user's first play is older than the server's, so it bounds every search
+// The oldest of the servers' first plays. Each server is searched on its own,
+// as leaving the server out would search the ones that don't count too.
+async function findFirstPlayOnServers(
+  serverIds: string[],
+  params: QueryParams,
+  noPlaysBefore: number,
+): Promise<TracearrHistoryRecord | null | undefined> {
+  const records = await Promise.all(
+    serverIds.map((serverId) =>
+      findFirstPlay({ ...params, server_id: serverId }, noPlaysBefore),
+    ),
+  )
+
+  if (records.includes(undefined)) {
+    return undefined
+  }
+
+  return (
+    minBy(
+      records.filter((record): record is TracearrHistoryRecord => !!record),
+      getStartedAt,
+    ) ?? null
+  )
+}
+
+// No user's first play is older than the servers', so it bounds every search
 const getServerFirstPlayAt = cached<number>(
   'serverFirstPlayAt',
   async () => {
-    const serverId = await getServerId()
+    const servers = await getPlayServers()
 
-    if (!serverId) {
+    if (!servers) {
       return null
     }
 
-    const firstPlay = await findFirstPlay(
-      { server_id: serverId },
+    const firstPlay = await findFirstPlayOnServers(
+      servers.serverIds,
+      {},
       EARLIEST_PLAY,
     )
     const firstPlayAt = firstPlay ? getStartedAt(firstPlay) : NaN
@@ -879,12 +970,12 @@ const getServerFirstPlayAt = cached<number>(
 export async function getTracearrFirstPlay(
   userId: string,
 ): Promise<FirstPlay | null> {
-  const [user, serverId] = await Promise.all([
+  const [user, servers] = await Promise.all([
     getTracearrUser(userId),
-    getServerId(),
+    getPlayServers(),
   ])
 
-  if (!user || !serverId) {
+  if (!user || !servers) {
     return null
   }
 
@@ -902,8 +993,9 @@ export async function getTracearrFirstPlay(
     }
   }
 
-  const record = await findFirstPlay(
-    { user_id: user.identityId, server_id: serverId },
+  const record = await findFirstPlayOnServers(
+    servers.serverIds,
+    { user_id: user.identityId },
     (await getServerFirstPlayAt()) ?? EARLIEST_PLAY,
   )
 
@@ -916,7 +1008,7 @@ export async function getTracearrFirstPlay(
       ? {
           date: new Date(record.started_at).toISOString(),
           title: record.show_title || record.artist_name || record.media_title,
-          play: toPlay(record, getTracearrUrl()),
+          play: toPlay(record, getTracearrUrl(), servers.serverId),
         }
       : null
 
@@ -935,7 +1027,8 @@ const getAllLibraries = cached<TracearrLibrary[]>('libraries', async () => {
   return Array.isArray(res?.data) ? res.data : null
 })
 
-// The saved rollups stand in while Tracearr is down
+// The saved rollups stand in while Tracearr is down. Only the chosen server's,
+// as servers whose plays count together often share their libraries.
 async function getLibraryRollups(): Promise<TracearrLibrary[] | null> {
   const key = `${getTracearrKey()}|libraries`
   const [libraries, serverId] = await Promise.all([
@@ -1057,9 +1150,9 @@ export async function getTracearrMedia(
   }
 
   const key = `${getTracearrKey()}|media|${mediaId}`
-  const [media, serverId] = await Promise.all([
+  const [media, servers] = await Promise.all([
     fetchTracearr<TracearrMedia>(`media/${mediaId}`),
-    getServerId(),
+    getPlayServers(),
   ])
 
   if (!media) {
@@ -1068,8 +1161,10 @@ export async function getTracearrMedia(
     return { isDeleted: false, ids: saved?.ids, year: saved?.year }
   }
 
-  const availability = Array.isArray(media.availability)
-    ? media.availability.filter((item) => item.server_id === serverId)
+  const counted = Array.isArray(media.availability)
+    ? media.availability.filter((item) =>
+        servers?.serverIds.includes(item.server_id),
+      )
     : []
   const mediaData: SavedMediaData = {
     ids: {
@@ -1079,19 +1174,26 @@ export async function getTracearrMedia(
     },
     year: media.year || null,
   }
-  // The newest of the items still on the server is the one to open
+  // The newest of the items still on the chosen server is the one to open, so
+  // a title only played on another server links here too
   const ratingKey = maxBy(
-    availability.filter((item) => !item.removed_at && item.rating_key),
+    counted.filter(
+      (item) =>
+        item.server_id === servers?.serverId &&
+        !item.removed_at &&
+        item.rating_key,
+    ),
     (item) => Date.parse(item.added_at ?? '') || 0,
   )?.rating_key
 
   void saveSnapshot(key, mediaData)
 
   return {
-    isDeleted: availability.length
-      ? availability.every((item) => item.removed_at)
+    // Removed once it's gone from every server whose plays count
+    isDeleted: counted.length
+      ? counted.every((item) => item.removed_at)
       : Array.isArray(media.availability) &&
-        !!serverId &&
+        !!servers &&
         !!(await getLibraryRollups())?.length,
     ...mediaData,
     ...(ratingKey && { ratingKey: toSourceId(ratingKey) }),
@@ -1255,17 +1357,17 @@ function toSession(
 const getStreams = cached<TautulliActivity>(
   'streams',
   async () => {
-    const [serverId, users] = await Promise.all([
-      getServerId(),
+    const [servers, users] = await Promise.all([
+      getPlayServers(),
       getTracearrServerUsers(),
     ])
 
-    if (!serverId) {
+    if (!servers) {
       return null
     }
 
     const res = await fetchTracearr<TracearrStreamsResponse>('streams', {
-      server_id: serverId,
+      server_id: getServerParam(servers),
     })
 
     if (!res) {
@@ -1274,7 +1376,7 @@ const getStreams = cached<TautulliActivity>(
 
     const baseUrl = getTracearrUrl()
     const sessions = (res.data ?? [])
-      .filter((stream) => stream.server_id === serverId)
+      .filter((stream) => servers.serverIds.includes(stream.server_id))
       .map((stream) => toSession(stream, users, baseUrl))
 
     return {

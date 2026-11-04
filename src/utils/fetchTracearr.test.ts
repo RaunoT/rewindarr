@@ -1879,3 +1879,261 @@ describe('getPosterUrl', () => {
     ).toBe('')
   })
 })
+
+describe('plays from every server of the type', () => {
+  const now = Date.parse('2026-10-28T12:00:00.000Z')
+  const HOUR = 60 * 60 * 1000
+  // Two Jellyfin servers that one person watches on, and a Plex server
+  const servers = () => ({
+    data: [jellyfinServer('j1'), jellyfinServer('j2'), plexServer('p1')],
+  })
+
+  function record(serverId: string, startedAt: number) {
+    return {
+      id: `${serverId}-${startedAt}`,
+      server_id: serverId,
+      started_at: new Date(startedAt).toISOString(),
+      media_type: 'episode',
+      media_title: 'Pilot',
+      show_title: 'The Office',
+      artist_name: null,
+      duration_ms: 60_000,
+      percent_complete: 100,
+      poster_url: null,
+      rating_key: `${serverId}-episode`,
+      grandparent_rating_key: `${serverId}-show`,
+      media_id: 'episode-1',
+      show_media_id: 'show-1',
+      user: { id: 'u1', avatar_url: null },
+    }
+  }
+
+  const records = [
+    record('j1', now - HOUR),
+    record('j2', now - 2 * HOUR),
+    record('p1', now - 3 * HOUR),
+    record('j2', now - 30 * 24 * HOUR),
+  ]
+
+  // Like Tracearr, one server's records when asked for it, otherwise all
+  function history(url: URL) {
+    const serverId = url.searchParams.get('server_id')
+    const until = url.searchParams.get('until')
+
+    return {
+      data: records.filter(
+        (item) =>
+          (!serverId || item.server_id === serverId) &&
+          (!until || Date.parse(item.started_at) <= Date.parse(until)),
+      ),
+      meta: { nextCursor: null, pageSize: 100 },
+    }
+  }
+
+  const users = () => ({
+    data: [
+      user('j1', {
+        plex_account_id: null,
+        accounts: ['j1', 'j2'].map((serverId) => ({
+          server_id: serverId,
+          username: 'jane',
+          external_user_id: `${serverId}user`,
+          removed_at: null,
+        })),
+      }),
+    ],
+    meta: { nextCursor: null, pageSize: 100 },
+  })
+
+  async function loadWith(allServers: boolean) {
+    const { default: getSettings } = await import('./getSettings')
+    const settings = setup('j1')
+
+    settings.connection.tracearrAllServers = allServers
+    vi.mocked(getSettings).mockReturnValue(settings)
+
+    return import('./fetchTracearr')
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(now)
+  })
+
+  it('selects the chosen server, or every server of its type', async () => {
+    const { selectPlayServers } = await import('./fetchTracearr')
+    const list = servers().data as Parameters<typeof selectPlayServers>[0]
+
+    expect(selectPlayServers(list, list[0], false)).toEqual(['j1'])
+    expect(selectPlayServers(list, list[0], true)).toEqual(['j1', 'j2'])
+    expect(selectPlayServers(list, list[2], true)).toEqual(['p1'])
+  })
+
+  it("only reads the chosen server's plays by default", async () => {
+    route({ servers, users, history })
+
+    const { getTracearrPlays } = await loadWith(false)
+    const plays = await getTracearrPlays('2026-01-01')
+
+    expect(plays.map((play) => play.id)).toEqual([records[0].id])
+    expect(
+      requestsTo('history').every(
+        ([input]) => new URL(input).searchParams.get('server_id') === 'j1',
+      ),
+    ).toBe(true)
+  })
+
+  it("reads the plays of every server of the chosen one's type", async () => {
+    route({ servers, users, history })
+
+    const { getTracearrPlays } = await loadWith(true)
+    const plays = await getTracearrPlays('2026-01-01')
+
+    expect(plays.map((play) => play.id).sort()).toEqual(
+      [records[0].id, records[1].id, records[3].id].sort(),
+    )
+    expect(
+      requestsTo('history').every(
+        ([input]) => !new URL(input).searchParams.has('server_id'),
+      ),
+    ).toBe(true)
+  })
+
+  it("keeps only the chosen server's rating keys, which open its items", async () => {
+    route({ servers, users, history })
+
+    const { getTracearrPlays } = await loadWith(true)
+    const plays = await getTracearrPlays('2026-01-01')
+    const byServer = (serverId: string) =>
+      plays.find((play) => play.id.startsWith(serverId))
+
+    expect(byServer('j1')).toMatchObject({
+      ratingKey: 'j1-episode',
+      grandparentRatingKey: 'j1-show',
+      showMediaId: 'show-1',
+    })
+    expect(byServer('j2')).toMatchObject({
+      ratingKey: null,
+      grandparentRatingKey: null,
+      showMediaId: 'show-1',
+    })
+  })
+
+  it('keeps the two histories apart', async () => {
+    route({ servers, users, history })
+
+    const one = (await loadWith(false)).getTracearrKey()
+    const all = (await loadWith(true)).getTracearrKey()
+
+    expect(one).not.toBe(all)
+    expect(all.startsWith(one)).toBe(true)
+  })
+
+  it("finds a user's first play on any of the servers", async () => {
+    route({ servers, users, history })
+
+    const { getTracearrFirstPlay } = await loadWith(true)
+
+    await expect(getTracearrFirstPlay('j1user')).resolves.toMatchObject({
+      date: records[3].started_at,
+      play: { id: records[3].id },
+    })
+
+    const serverIds = requestsTo('history').map(([input]) =>
+      new URL(input).searchParams.get('server_id'),
+    )
+
+    expect(new Set(serverIds)).toEqual(new Set(['j1', 'j2']))
+  })
+
+  it("only finds the chosen server's first play by default", async () => {
+    route({ servers, users, history })
+
+    const { getTracearrFirstPlay } = await loadWith(false)
+
+    await expect(getTracearrFirstPlay('j1user')).resolves.toMatchObject({
+      date: records[0].started_at,
+    })
+  })
+
+  it('shows the streams of every server of the type', async () => {
+    route({
+      servers,
+      users,
+      streams: () => ({
+        data: ['j1', 'j2', 'p1'].map((serverId) => ({
+          ...record(serverId, now),
+          username: 'jane',
+          state: 'playing',
+          progress_ms: 0,
+        })),
+        summary: { total: 3 },
+      }),
+    })
+
+    const { getTracearrActivity } = await loadWith(true)
+    const activity = await getTracearrActivity()
+
+    expect(activity?.stream_count).toBe(2)
+    expect(
+      new URL(requestsTo('streams')[0][0]).searchParams.has('server_id'),
+    ).toBe(false)
+  })
+
+  it("links a title from the chosen server's availability", async () => {
+    route({
+      servers,
+      users,
+      'media/show-1': () => ({
+        id: 'show-1',
+        year: 2005,
+        imdb_id: null,
+        tmdb_id: null,
+        tvdb_id: null,
+        availability: [
+          { server_id: 'j2', rating_key: 'j2-show', removed_at: null },
+          { server_id: 'j1', rating_key: 'j1-show', removed_at: null },
+        ],
+      }),
+    })
+
+    const { getTracearrMedia } = await loadWith(true)
+
+    await expect(getTracearrMedia('show-1')).resolves.toMatchObject({
+      ratingKey: 'j1-show',
+    })
+  })
+
+  it('marks a title removed only once it is gone from every server', async () => {
+    const availability = [
+      { server_id: 'j2', rating_key: 'j2-show', removed_at: null },
+      { server_id: 'j1', rating_key: 'j1-show', removed_at: '2026-10-01' },
+    ]
+
+    route({
+      servers,
+      users,
+      'media/show-1': () => ({
+        id: 'show-1',
+        year: 2005,
+        imdb_id: null,
+        tmdb_id: null,
+        tvdb_id: null,
+        availability,
+      }),
+    })
+
+    const one = await loadWith(false)
+    const onOne = await one.getTracearrMedia('show-1')
+
+    expect(onOne.isDeleted).toBe(true)
+    expect(onOne).not.toHaveProperty('ratingKey')
+
+    const all = await loadWith(true)
+    const onAll = await all.getTracearrMedia('show-1')
+
+    // Still on j2, but j1's key is the only one that opens it here
+    expect(onAll.isDeleted).toBe(false)
+    expect(onAll).not.toHaveProperty('ratingKey')
+  })
+})
