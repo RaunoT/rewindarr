@@ -376,7 +376,6 @@
     },
     "Total": {
       "duration": "<total>Kokku</total> kulutasid sa <duration>{durationValue}</duration> <plex>{serverName}'is!</plex>",
-      "nonStop": "Järjest mängituna oleks see <duration>{days, plural, one {# päev} other {# päeva}}</duration>!",
       "averageMore": "See on <difference>{percent, number, percent} rohkem</difference> kui keskmisel kasutajal, kes vaatas <duration>{durationValue}</duration>.",
       "averageTimes": "See on <difference>{times, number}× rohkem</difference> kui keskmisel kasutajal, kes vaatas <duration>{durationValue}</duration>.",
       "averageLess": "See on <difference>{percent, number, percent} vähem</difference> kui keskmisel kasutajal, kes vaatas <duration>{durationValue}</duration>.",
