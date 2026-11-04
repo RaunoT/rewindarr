@@ -344,6 +344,7 @@
       "fullscreen": "Plein écran",
       "label": "Histoires du Rewind",
       "storyPosition": "Histoire {current} sur {total}",
+      "storyNumber": "Histoire {current}",
       "introTitle": "Touchez pour passer d'une histoire à l'autre",
       "introBack": "Retour",
       "introForward": "Suivant",

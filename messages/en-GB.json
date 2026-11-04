@@ -344,6 +344,7 @@
       "fullscreen": "Full screen",
       "label": "Rewind stories",
       "storyPosition": "Story {current} of {total}",
+      "storyNumber": "Story {current}",
       "introTitle": "Tap to move through your stories",
       "introBack": "Back",
       "introForward": "Next",

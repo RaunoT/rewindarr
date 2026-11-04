@@ -344,6 +344,7 @@
       "fullscreen": "Täisekraan",
       "label": "Rewind'i lood",
       "storyPosition": "{current}. lugu {total}-st",
+      "storyNumber": "{current}. lugu",
       "introTitle": "Puuduta, et lugude vahel liikuda",
       "introBack": "Tagasi",
       "introForward": "Edasi",

@@ -1,4 +1,4 @@
-import { RewindStory } from '@/types/rewind'
+import { RewindStory, RewindTotals } from '@/types/rewind'
 import { getRewindBreakdown, hasRewindPlays } from '@/utils/helpers'
 import { getMediaServerName } from '@/utils/mediaServerName'
 import { ClockIcon, TrophyIcon } from '@heroicons/react/24/outline'
@@ -7,7 +7,10 @@ import { getAverageMessage } from '../averageMessage'
 import RewindBreakdown from '../RewindBreakdown'
 import RewindStat from '../RewindStat'
 
-export default function StoryTotal({ userRewind, settings }: RewindStory) {
+export default function StoryTotal({
+  userRewind,
+  settings,
+}: RewindStory<RewindTotals>) {
   const t = useTranslations('Rewind.Total')
   const { nonStopDays, average, topPercent } = userRewind.duration
   const averageMessage = average && getAverageMessage(average.difference)

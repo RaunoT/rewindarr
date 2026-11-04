@@ -344,6 +344,7 @@
       "fullscreen": "Schermo intero",
       "label": "Storie del Rewind",
       "storyPosition": "Storia {current} di {total}",
+      "storyNumber": "Storia {current}",
       "introTitle": "Tocca per scorrere le tue storie",
       "introBack": "Indietro",
       "introForward": "Avanti",

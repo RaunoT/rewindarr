@@ -152,7 +152,7 @@ describe('hasRewindPlays', () => {
       hasRewindPlays({
         shows: none,
         movies: none,
-        audio: { ...none, topTrack: null },
+        audio: { ...none },
       }),
     ).toBe(false)
   })
@@ -162,7 +162,7 @@ describe('hasRewindPlays', () => {
       hasRewindPlays({
         shows: none,
         movies: none,
-        audio: { ...none, count: 3, topTrack: null },
+        audio: { ...none, count: 3 },
       }),
     ).toBe(true)
   })
@@ -193,7 +193,7 @@ describe('getRewindBreakdown', () => {
           duration_value: 10800,
           server_duration_value: 10000,
         },
-        audio: { ...none, topTrack: null },
+        audio: { ...none },
       }),
     ).toEqual([
       { type: 'movie', value: '3 hrs', share: 0.75, serverShare: 0.25 },
@@ -211,7 +211,7 @@ describe('getRewindBreakdown', () => {
           server_duration_value: 3600,
         },
         movies: none,
-        audio: { ...none, server_duration_value: 3600, topTrack: null },
+        audio: { ...none, server_duration_value: 3600 },
       }),
     ).toEqual([
       { type: 'show', value: '1 hr', share: 1, serverShare: 0.5 },
@@ -233,7 +233,6 @@ describe('getRewindBreakdown', () => {
           ...none,
           duration: '5 mins',
           duration_value: 300,
-          topTrack: null,
         },
       }),
     ).toEqual([
@@ -246,7 +245,7 @@ describe('getRewindBreakdown', () => {
       getRewindBreakdown({
         shows: { ...none, server_duration_value: 3600 },
         movies: { ...none, server_duration_value: 3600 },
-        audio: { ...none, topTrack: null },
+        audio: { ...none },
       }),
     ).toEqual([])
   })
