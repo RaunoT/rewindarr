@@ -36,6 +36,8 @@ export type RequestsReach = {
   duration: number
   // The request the most other people watched
   top: TitleStat
+  // Whether the user has a play of it that counts
+  isTopWatched: boolean
 }
 
 export type ServerYear = {
@@ -186,16 +188,20 @@ export function getRequestsReach(
       const requestedAt = new Date(request.createdAt).getTime()
       // Each play is matched on its own, as two shows with one name share a
       // title in the stats
-      const othersPlays = plays.filter(
+      const requestedPlays = plays.filter(
         (play) =>
-          play.userId !== userId &&
-          play.startedAt >= requestedAt &&
-          isRequestedTitle(request, play) &&
-          isRequestedSeason(request, play),
+          isRequestedTitle(request, play) && isRequestedSeason(request, play),
+      )
+      const othersPlays = requestedPlays.filter(
+        (play) => play.userId !== userId && play.startedAt >= requestedAt,
       )
       const title = othersPlays.length ? sumUp(othersPlays, minPercent) : null
+      // At any time, as the user may have watched it before asking for it
+      const isWatched = requestedPlays.some(
+        (play) => play.userId === userId && isCountedPlay(play, minPercent),
+      )
 
-      return title?.users ? [{ title, plays: othersPlays }] : []
+      return title?.users ? [{ title, plays: othersPlays, isWatched }] : []
     })
 
   if (!reached.length) {
@@ -208,12 +214,16 @@ export function getRequestsReach(
     'id',
   )
   const total = sumUp(reachedPlays, minPercent)
+  const top = rankTitles(reached.map(({ title }) => title))[0]
 
   return {
     users: total.users,
     requests: reached.length,
     duration: total.duration,
-    top: rankTitles(reached.map(({ title }) => title))[0],
+    top,
+    isTopWatched: reached.some(
+      ({ title, isWatched }) => title === top && isWatched,
+    ),
   }
 }
 

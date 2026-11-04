@@ -175,6 +175,8 @@ describe('getRewindSocial', () => {
       requests: 1,
       duration: '1 hr',
       item: { type: 'movie', data: { title: 'Arrival' } },
+      // Only Bob watched it
+      isItemWatched: false,
     })
   })
 })
