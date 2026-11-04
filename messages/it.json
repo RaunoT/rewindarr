@@ -475,7 +475,8 @@
     "RequestsReach": {
       "users": "{usersValue, plural, one {<count># altra persona</count> ha guardato} other {<count># altre persone</count> hanno guardato}} quello che hai <requests>richiesto</requests>",
       "duration": "{usersValue, plural, one {Ha passato} other {Insieme, hanno passato}} <duration>{durationValue}</duration> a {requestsValue, plural, one {guardarlo} other {guardarli}}",
-      "top": "{requestsValue, plural, one {Era <title>{titleValue}</title>} other {<title>{titleValue}</title> ha raggiunto più persone}}"
+      "top": "{requestsValue, plural, one {Era <title>{titleValue}</title>} other {<title>{titleValue}</title> ha raggiunto più persone}}",
+      "unwatched": "Il bello è che tu <still>non l'hai ancora guardato</still> <emoji>🙈</emoji>"
     },
     "ServerYear": {
       "duration": "{usersValue, plural, one {<users># persona</users> ha passato} other {Insieme, <users># persone</users> hanno passato}} <duration>{durationValue}</duration> su <plex>{serverName}</plex>",
