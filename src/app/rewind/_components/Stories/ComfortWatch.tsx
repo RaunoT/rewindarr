@@ -15,33 +15,39 @@ export default function StoryComfortWatch({
     return null
   }
 
-  const isEpisode = comfortWatch.episode !== null
+  const { episode } = comfortWatch
+  const isEpisode = episode !== null
 
   return (
     <>
       <RewindStat>
         <p>
           {t.rich(isEpisode ? 'episode' : 'movie', {
-            titleValue: comfortWatch.episode ?? comfortWatch.item.title,
-            title: (chunks) => (
+            comfort: (chunks) => (
               <span className='rewind-cat'>
                 {chunks}
                 <HeartIcon />
               </span>
             ),
-            showValue: comfortWatch.item.title,
-            show: (chunks) => <span className='rewind-cat'>{chunks}</span>,
+            countValue: comfortWatch.watches,
+            count: (chunks) => <span className='rewind-stat'>{chunks}</span>,
           })}
         </p>
       </RewindStat>
 
       <RewindStat step={1} noScale>
-        <p className='mb-2'>
-          {t.rich(isEpisode ? 'episodePlays' : 'moviePlays', {
-            countValue: comfortWatch.watches,
-            count: (chunks) => <span className='rewind-stat'>{chunks}</span>,
-          })}
-        </p>
+        {/* The card is the show, so the episode is named above it. An episode
+            without a title is left to the card. */}
+        {episode && (
+          <p className='mb-2'>
+            {t.rich('episodeTitle', {
+              titleValue: episode,
+              title: (chunks) => <span className='rewind-cat'>{chunks}</span>,
+              showValue: comfortWatch.item.title,
+              show: (chunks) => <span className='rewind-cat'>{chunks}</span>,
+            })}
+          </p>
+        )}
 
         <TitleMomentCard
           card={comfortWatch}

@@ -241,6 +241,17 @@ export function isPlayOfItem(
   )
 }
 
+// An item's plays that count and its watch time, as its row shows them
+export function getItemTotals(
+  plays: Play[],
+  minPercent: number,
+): Pick<TautulliItemRow, 'total_plays' | 'total_duration'> {
+  return {
+    total_plays: plays.filter((play) => isCountedPlay(play, minPercent)).length,
+    total_duration: getDuration(plays),
+  }
+}
+
 // Episodes roll up into their show and tracks into their artist. The newest
 // play with a rating key and a poster points at the current library item.
 // Without one, the rating key matters more than the poster, as it's what the
@@ -264,8 +275,7 @@ function toItemRow(plays: Play[], minPercent: number): TautulliItemRow {
     ...EMPTY_ROW,
     title: titleByType[play.mediaType] || play.title,
     year: isMovie ? play.year : null,
-    total_plays: countedPlays.length,
-    total_duration: getDuration(plays),
+    ...getItemTotals(plays, minPercent),
     users_watched: uniqBy(countedPlays, 'identityId').length,
     rating_key: ratingKey,
     grandparent_rating_key: ratingKey,

@@ -400,10 +400,9 @@
       "noData": "Vous n'avez écouté aucune <audio>musique</audio> sur <from>{serverName}</from>"
     },
     "ComfortWatch": {
-      "movie": "Votre valeur sûre était <title>{titleValue}</title>",
-      "episode": "Votre valeur sûre était <title>{titleValue}</title>, un épisode de <show>{showValue}</show>",
-      "moviePlays": "Vous l'avez regardé <count>{countValue, plural, one {une fois} other {# fois}}</count>",
-      "episodePlays": "Vous l'avez regardé <count>{countValue, plural, one {une fois} other {# fois}}</count>"
+      "movie": "Votre <comfort>valeur sûre</comfort> était un film, regardé <count>{countValue, plural, one {une fois} other {# fois}}</count>",
+      "episode": "Votre <comfort>valeur sûre</comfort> était un épisode, regardé <count>{countValue, plural, one {une fois} other {# fois}}</count>",
+      "episodeTitle": "C'était <title>{titleValue}</title> de <show>{showValue}</show>"
     },
     "TimeTravel": {
       "decade": "Vous avez passé <share>{shareValue, number, percent}</share> de votre temps de visionnage dans <decade>les années {decadeValue}</decade>",
@@ -491,10 +490,10 @@
       "month": "Votre mois le plus chargé a été <month>{monthValue}</month>, avec <duration>{durationValue}</duration> de lecture",
       "hours": "Heures",
       "monthChart": "Diagramme à barres du temps de lecture par mois. Mois le plus actif : {monthValue} avec {durationValue}.",
-      "binge": "Votre plus gros marathon a eu lieu le <date>{dateValue}</date>",
+      "binge": "Votre <binge>plus gros marathon</binge> a eu lieu le <date>{dateValue}</date>",
       "bingeEpisodes": "Vous avez enchaîné <count>{countValue, plural, one {# épisode} other {# épisodes}}</count>, soit <duration>{durationValue}</duration> au total",
       "bingeShow": "Et cette série, c'était <show>{showValue}</show>",
-      "day": "Votre plus grosse journée a été le <date>{dateValue}</date>, avec <duration>{durationValue}</duration> de lecture",
+      "day": "Votre <day>plus grosse journée</day> a été le <date>{dateValue}</date>, avec <duration>{durationValue}</duration> de lecture",
       "dayTitles": "Voici ce qui était au programme",
       "moreTitles": "{count, plural, one {# autre} other {# autres}}",
       "streak": "Votre record : <days>{count, plural, one {# jour} other {# jours}} d'affilée</days> avec au moins une lecture, du <start>{startValue}</start> au <end>{endValue}</end>"

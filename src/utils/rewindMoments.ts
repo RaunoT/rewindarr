@@ -3,7 +3,7 @@ import { HistoryPlay } from '@/types/statsSource'
 import { TautulliItemRow } from '@/types/tautulli'
 import { groupBy, max, maxBy, min, orderBy, sumBy, uniq } from 'lodash'
 import { isSameBinge } from './binges'
-import { isCountedPlay } from './playStats'
+import { getItemTotals, groupPlays, isCountedPlay } from './playStats'
 import { toDateKey, toDayNumber } from './timeZone'
 
 // Below these, a moment is too small to be worth a story
@@ -282,7 +282,18 @@ export async function getRewindMoments(
   const binge = getBiggestBinge(plays, minPlayPercent, timeZone)
   const biggestDay = getBiggestDay(plays, timeZone)
   const [bingeItem, dayItems] = await Promise.all([
-    binge && getItem(binge.play),
+    // The card is looked up from one play, so its watch time and plays are
+    // the user's for the show in the period, as in the top lists
+    binge &&
+      getItem(binge.play).then((item) => {
+        const showPlays = groupPlays(
+          plays.filter((play) => play.mediaType === 'episode'),
+        ).find((group) => group.some((play) => play.id === binge.play.id)) ?? [
+          binge.play,
+        ]
+
+        return item && { ...item, ...getItemTotals(showPlays, minPlayPercent) }
+      }),
     Promise.all(biggestDay?.titles.map(({ play }) => getItem(play)) ?? []),
   ])
 

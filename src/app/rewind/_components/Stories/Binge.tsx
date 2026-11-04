@@ -1,9 +1,8 @@
 import { MEDIA_ICONS } from '@/components/icons'
 import MediaItems from '@/components/MediaItem/MediaItems'
 import { RewindStory } from '@/types/rewind'
-import { RATING_STATISTICS } from '@/utils/constants'
 import { secondsToTime } from '@/utils/formatting'
-import { CalendarIcon } from '@heroicons/react/24/outline'
+import { ForwardIcon } from '@heroicons/react/24/outline'
 import { useFormatter, useTranslations } from 'next-intl'
 import { DAY_FORMAT, formatMomentDate } from '../momentDate'
 import RewindStat from '../RewindStat'
@@ -23,13 +22,14 @@ export default function StoryBinge({ userRewind, settings }: RewindStory) {
       <RewindStat>
         <p>
           {t.rich('binge', {
-            dateValue: formatMomentDate(format, binge.date, DAY_FORMAT),
-            date: (chunks) => (
+            binge: (chunks) => (
               <span className='rewind-cat'>
                 {chunks}
-                <CalendarIcon />
+                <ForwardIcon />
               </span>
             ),
+            dateValue: formatMomentDate(format, binge.date, DAY_FORMAT),
+            date: (chunks) => <span className='rewind-cat'>{chunks}</span>,
           })}
         </p>
       </RewindStat>
@@ -67,13 +67,7 @@ export default function StoryBinge({ userRewind, settings }: RewindStory) {
               rows
               settings={settings}
               isRanked={false}
-              // The card is looked up from a single play, so its watch time
-              // and plays would only count that one
-              activeStats={settings.general.activeItemStatistics.filter(
-                (stat) =>
-                  stat === 'year' ||
-                  (RATING_STATISTICS as readonly string[]).includes(stat),
-              )}
+              activeStats={settings.general.activeItemStatistics}
             />
           </div>
         )}

@@ -33,14 +33,15 @@ export default function StoryBiggestDay({ userRewind }: RewindStory) {
       <RewindStat>
         <p>
           {t.rich('day', {
-            dateValue: formatMomentDate(format, biggestDay.date, DAY_FORMAT),
-            durationValue: secondsToTime(biggestDay.duration, tRoot),
-            date: (chunks) => (
+            day: (chunks) => (
               <span className='rewind-cat'>
                 {chunks}
                 <CalendarIcon />
               </span>
             ),
+            dateValue: formatMomentDate(format, biggestDay.date, DAY_FORMAT),
+            durationValue: secondsToTime(biggestDay.duration, tRoot),
+            date: (chunks) => <span className='rewind-cat'>{chunks}</span>,
             duration: (chunks) => <span className='rewind-stat'>{chunks}</span>,
           })}
         </p>

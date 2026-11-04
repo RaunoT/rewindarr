@@ -2,7 +2,6 @@ import MediaItems from '@/components/MediaItem/MediaItems'
 import { PublicSettings } from '@/types/settings'
 import { MediaServer } from '@/types/statsSource'
 import { TitleCard } from '@/types/titleMoments'
-import { RATING_STATISTICS } from '@/utils/constants'
 
 type Props = {
   card: TitleCard
@@ -12,8 +11,8 @@ type Props = {
   isYearShown?: boolean
 }
 
-// A title a story is about, with its year and ratings. Its watch time and
-// plays would only count the play the card was made from.
+// A title a story is about, with the user's watch time and plays of it in the
+// period
 export default function TitleMomentCard({
   card,
   mediaServer,
@@ -30,9 +29,7 @@ export default function TitleMomentCard({
         settings={settings}
         isRanked={false}
         activeStats={settings.general.activeItemStatistics.filter(
-          (stat) =>
-            (isYearShown && stat === 'year') ||
-            (RATING_STATISTICS as readonly string[]).includes(stat),
+          (stat) => isYearShown || stat !== 'year',
         )}
       />
     </div>
