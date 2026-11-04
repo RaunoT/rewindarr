@@ -184,7 +184,13 @@ export type StatsSource = {
     since: string,
     withMatch: boolean,
   ) => Promise<Genres>
-  getPlaysByTime: (userId: string, since: string) => Promise<PlaysByTime>
+  // In the timezone, or the Rewindarr server's without one
+  getPlaysByTime: (
+    userId: string,
+    libraries: TautulliLibrary[],
+    since: string,
+    timeZone?: string,
+  ) => Promise<PlaysByTime>
   // Null when the user has no plays or the source couldn't be asked
   getFirstPlay: (userId: string) => Promise<FirstPlay | null>
   // A play's movie, show or artist as a row, with its poster and ratings. With

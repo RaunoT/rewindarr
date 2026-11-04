@@ -208,6 +208,8 @@ export const DASHBOARD_PERIOD_COOKIE_NAME = 'dashboardPeriod'
 // So the server renders the activity with its details open or closed, as the
 // browser will
 export const ACTIVITY_DETAILS_COOKIE_NAME = 'activityDetails'
+// The browser's timezone, so Rewind counts hours and days where the viewer is
+export const TIME_ZONE_COOKIE_NAME = 'timeZone'
 // Dashboard lists start with this many rows, and "Show more" adds as many again
 export const DASHBOARD_PAGE_SIZE = 5
 // Each row costs the source and TMDB a lookup, so the URL can't ask for more

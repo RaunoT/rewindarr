@@ -1,6 +1,7 @@
 import HistoryReading from '@/components/HistoryReading'
 import { authOptions } from '@/lib/auth'
 import { RewindUser, UserRewind } from '@/types/rewind'
+import { TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
 import {
   formatMonthYear,
   formatTimeSince,
@@ -29,6 +30,7 @@ import {
 } from '@/utils/helpers'
 import { getPlexThemeUrl, getPlexTrackUrl } from '@/utils/plexAudio'
 import { toPublicSettings } from '@/utils/publicSettings'
+import { getRewindMoments } from '@/utils/rewindMoments'
 import { getMusicUrl, getThemeSongUrl } from '@/utils/rewindMusic'
 import {
   getActiveUsers,
@@ -38,11 +40,13 @@ import {
   getMediaServer,
   getStatsSource,
 } from '@/utils/statsSource'
+import { toTimeZone } from '@/utils/timeZone'
 import { getTitleMoments } from '@/utils/titleMoments'
 import { sumBy } from 'lodash'
 import { Metadata } from 'next'
 import { getServerSession } from 'next-auth'
 import { getLocale, getTranslations } from 'next-intl/server'
+import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import RewindStories from './_components/RewindStories'
@@ -100,9 +104,18 @@ async function RewindContent({ userId }: { userId?: string }) {
 
   const t = await getTranslations()
   const locale = await getLocale()
+  const timeZone = toTimeZone(
+    (await cookies()).get(TIME_ZONE_COOKIE_NAME)?.value,
+  )
   // Ranked once, for both the users' top and the average user
   const viewersRequest = getStatsSource(settings).getTopUsers({
     since: startDate,
+    libraries,
+  })
+  // Read once, for every stat from the user's own plays
+  const userPlaysRequest = getStatsSource(settings).getHistoryPlays({
+    since: startDate,
+    userId: user.id,
     libraries,
   })
   const [
@@ -119,6 +132,7 @@ async function RewindContent({ userId }: { userId?: string }) {
     genres,
     viewers,
     topTrack,
+    moments,
   ] = await Promise.all([
     getTopMediaItems(user.id, libraries),
     getTopMediaStats(user.id, libraries),
@@ -127,12 +141,20 @@ async function RewindContent({ userId }: { userId?: string }) {
     getLibrariesDurationByType(libraries),
     getMediaServer(),
     viewersRequest.then((users) => getUsersTop(user.id, startDate, { users })),
-    getPlaybackHabits(user.id),
+    getPlaybackHabits(user.id, libraries, timeZone),
     getStatsSource(settings).getFirstPlay(user.id),
     getTopPeople(user.id, libraries),
     getGenres(user.id, libraries),
     viewersRequest,
     getTopTrack(user.id, libraries),
+    userPlaysRequest.then((plays) =>
+      getRewindMoments(plays, {
+        since: startDate,
+        minPlayPercent: settings.general.minPlayPercent,
+        timeZone,
+        getPlayItem: (play) => getStatsSource(settings).getPlayItem(play),
+      }),
+    ),
   ])
   // The card for the first play needs its poster and ratings looked up. Its
   // all-time watch time and plays wait for the whole history to be read.
@@ -146,11 +168,7 @@ async function RewindContent({ userId }: { userId?: string }) {
   // The viewer's plays in the period, and all of them once the whole history
   // has been read, for what was new to them and what they never finished
   const [plays, allPlays] = await Promise.all([
-    getStatsSource(settings).getHistoryPlays({
-      since: startDate,
-      userId: user.id,
-      libraries,
-    }),
+    userPlaysRequest,
     hasFirstPlayTotals
       ? getStatsSource(settings).getHistoryPlays({
           since: new Date(0).toISOString(),
@@ -236,6 +254,7 @@ async function RewindContent({ userId }: { userId?: string }) {
             }
           : null,
     },
+    moments,
     libraries: libraries,
     libraries_total_size: librariesTotalSize.size,
     libraries_size_is_partial: librariesTotalSize.isPartial,
