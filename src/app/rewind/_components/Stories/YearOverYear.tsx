@@ -4,6 +4,7 @@ import { getMediaServerName } from '@/utils/mediaServerName'
 import { BackwardIcon } from '@heroicons/react/24/outline'
 import { useLocale, useTranslations } from 'next-intl'
 import { getAverageMessage } from '../averageMessage'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
 export default function StoryYearOverYear({
@@ -40,10 +41,7 @@ export default function StoryYearOverYear({
               settings.general.serverName ||
               getMediaServerName(settings.connection.mediaServerType),
             before: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <BackwardIcon />
-              </span>
+              <RewindCat icon={<BackwardIcon />}>{chunks}</RewindCat>
             ),
             duration: (chunks) => <span className='rewind-stat'>{chunks}</span>,
             plex: (chunks) => chunks,
@@ -56,9 +54,7 @@ export default function StoryYearOverYear({
           {t.rich(changeMessage.key, {
             ...changeMessage.values,
             difference: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks} <changeMessage.Icon />
-              </span>
+              <RewindCat icon={<changeMessage.Icon />}>{chunks}</RewindCat>
             ),
           })}
         </p>

@@ -2,6 +2,7 @@ import MediaItems from '@/components/MediaItem/MediaItems'
 import { RewindStory } from '@/types/rewind'
 import { UsersIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
 export default function StoryUsersTop({ userRewind, settings }: RewindStory) {
@@ -13,10 +14,7 @@ export default function StoryUsersTop({ userRewind, settings }: RewindStory) {
         <p className='mb-2'>
           {t.rich('top', {
             users: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <UsersIcon />
-              </span>
+              <RewindCat icon={<UsersIcon />}>{chunks}</RewindCat>
             ),
           })}
         </p>

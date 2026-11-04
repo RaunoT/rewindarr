@@ -2,6 +2,7 @@ import MediaItems from '@/components/MediaItem/MediaItems'
 import { RewindStory } from '@/types/rewind'
 import { FilmIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 import useCountdown from '../useCountdown'
 
@@ -15,10 +16,7 @@ export default function StoryMoviesTop({ userRewind, settings }: RewindStory) {
         <p className='mb-2'>
           {t.rich('topMovies', {
             top: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <FilmIcon />
-              </span>
+              <RewindCat icon={<FilmIcon />}>{chunks}</RewindCat>
             ),
             count: userRewind.movies.top.length,
           })}

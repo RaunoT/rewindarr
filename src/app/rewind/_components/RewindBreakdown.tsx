@@ -3,6 +3,7 @@
 import { MEDIA_ICONS } from '@/components/icons'
 import { RewindBreakdownItem } from '@/utils/helpers'
 import { useTranslations } from 'next-intl'
+import RewindCat from './RewindCat'
 import ShareBar from './ShareBar'
 
 type Props = {
@@ -44,10 +45,9 @@ export default function RewindBreakdown({ items }: Props) {
           return (
             <li key={item.type}>
               <div className='mb-2 flex flex-wrap items-baseline justify-between gap-x-4'>
-                <span className='rewind-cat'>
+                <RewindCat icon={<Icon />}>
                   {t(LABEL_KEYS[item.type])}
-                  <Icon />
-                </span>
+                </RewindCat>
                 <span className='font-semibold'>{item.value}</span>
               </div>
               {item.share !== null && (

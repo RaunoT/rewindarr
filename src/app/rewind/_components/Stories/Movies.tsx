@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 import CountUp from '../CountUp'
 import PlaytimeShare from '../PlaytimeShare'
 import PreviousFavorite from '../PreviousFavorite'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
 export default function StoryMovies({ userRewind, settings }: RewindStory) {
@@ -23,10 +24,7 @@ export default function StoryMovies({ userRewind, settings }: RewindStory) {
                   <span className='rewind-stat'>{chunks}</span>
                 ),
                 movies: (chunks) => (
-                  <span className='rewind-cat'>
-                    {chunks}
-                    <FilmIcon />
-                  </span>
+                  <RewindCat icon={<FilmIcon />}>{chunks}</RewindCat>
                 ),
               })}
             </p>
@@ -85,10 +83,7 @@ export default function StoryMovies({ userRewind, settings }: RewindStory) {
           <p>
             {t.rich('noData', {
               movies: (chunks) => (
-                <span className='rewind-cat'>
-                  {chunks}
-                  <FilmIcon />
-                </span>
+                <RewindCat icon={<FilmIcon />}>{chunks}</RewindCat>
               ),
               serverName:
                 settings.general.serverName ||

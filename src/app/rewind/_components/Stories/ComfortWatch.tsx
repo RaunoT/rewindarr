@@ -1,6 +1,7 @@
 import { RewindStory } from '@/types/rewind'
 import { HeartIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 import TitleMomentCard from '../TitleMomentCard'
 
@@ -24,10 +25,7 @@ export default function StoryComfortWatch({
         <p>
           {t.rich(isEpisode ? 'episode' : 'movie', {
             comfort: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <HeartIcon />
-              </span>
+              <RewindCat icon={<HeartIcon />}>{chunks}</RewindCat>
             ),
             countValue: comfortWatch.watches,
             count: (chunks) => <span className='rewind-stat'>{chunks}</span>,

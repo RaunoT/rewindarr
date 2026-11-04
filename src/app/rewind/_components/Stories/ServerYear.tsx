@@ -6,6 +6,7 @@ import { hasRewindPlays } from '@/utils/helpers'
 import { getMediaServerName } from '@/utils/mediaServerName'
 import { UsersIcon } from '@heroicons/react/24/outline'
 import { useFormatter, useTranslations } from 'next-intl'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
 export default function StoryServerYear({ userRewind, settings }: RewindStory) {
@@ -50,10 +51,7 @@ export default function StoryServerYear({ userRewind, settings }: RewindStory) {
               getMediaServerName(settings.connection.mediaServerType),
             plex: (chunks) => chunks,
             users: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <UsersIcon />
-              </span>
+              <RewindCat icon={<UsersIcon />}>{chunks}</RewindCat>
             ),
             duration: (chunks) => <span className='rewind-stat'>{chunks}</span>,
           })}
@@ -78,10 +76,7 @@ export default function StoryServerYear({ userRewind, settings }: RewindStory) {
               titleValue: serverYear.movie.data.title,
               title: (chunks) => <span className='rewind-cat'>{chunks}</span>,
               movies: (chunks) => (
-                <span className='rewind-cat'>
-                  {chunks}
-                  <MEDIA_ICONS.movie />
-                </span>
+                <RewindCat icon={<MEDIA_ICONS.movie />}>{chunks}</RewindCat>
               ),
             })}
           </p>
@@ -97,10 +92,7 @@ export default function StoryServerYear({ userRewind, settings }: RewindStory) {
               titleValue: serverYear.show.data.title,
               title: (chunks) => <span className='rewind-cat'>{chunks}</span>,
               shows: (chunks) => (
-                <span className='rewind-cat'>
-                  {chunks}
-                  <MEDIA_ICONS.show />
-                </span>
+                <RewindCat icon={<MEDIA_ICONS.show />}>{chunks}</RewindCat>
               ),
             })}
           </p>

@@ -3,6 +3,7 @@ import { RewindStory } from '@/types/rewind'
 import { getMediaServerName } from '@/utils/mediaServerName'
 import { FingerPrintIcon } from '@heroicons/react/24/outline'
 import { useFormatter, useTranslations } from 'next-intl'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
 export default function StoryOnlyYou({ userRewind, settings }: RewindStory) {
@@ -25,10 +26,7 @@ export default function StoryOnlyYou({ userRewind, settings }: RewindStory) {
             countValue: onlyYou.count,
             count: (chunks) => <span className='rewind-stat'>{chunks}</span>,
             only: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <FingerPrintIcon />
-              </span>
+              <RewindCat icon={<FingerPrintIcon />}>{chunks}</RewindCat>
             ),
           })}
         </p>

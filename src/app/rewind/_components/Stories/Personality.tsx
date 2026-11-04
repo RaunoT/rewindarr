@@ -3,6 +3,7 @@ import { SparklesIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import { PERSONALITY_ICONS } from '../personalityIcons'
 import PersonalityStatText from '../PersonalityStatText'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
 export default function StoryPersonality({ userRewind }: RewindStory) {
@@ -21,10 +22,7 @@ export default function StoryPersonality({ userRewind }: RewindStory) {
         <p>
           {t.rich('intro', {
             personality: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <SparklesIcon />
-              </span>
+              <RewindCat icon={<SparklesIcon />}>{chunks}</RewindCat>
             ),
           })}
         </p>
@@ -32,10 +30,9 @@ export default function StoryPersonality({ userRewind }: RewindStory) {
 
       <RewindStat step={1}>
         <p>
-          <span className='rewind-cat'>
+          <RewindCat icon={<Icon />}>
             {t(`types.${personality.type}.name`)}
-            <Icon />
-          </span>
+          </RewindCat>
         </p>
         <p className='mt-2'>{t(`types.${personality.type}.description`)}</p>
       </RewindStat>

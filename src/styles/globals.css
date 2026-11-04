@@ -255,14 +255,14 @@
     @apply text-plex inline-block font-semibold;
   }
 
+  /* Wraps with the statement like other text. RewindCat keeps an icon on the
+     line of the last character. */
   .rewind-cat {
     @apply text-plex font-semibold;
 
-    /* Sized to the text, so icons shrink along with a statement. Inline, so
-       a name that wraps keeps its icon after the last word instead of
-       centring it beside the whole name. */
-    > img,
-    > svg {
+    /* Sized to the text, so icons shrink along with a statement. Any depth, as
+       RewindCat nests the icon with the last character. */
+    svg {
       @apply text-plex/80 ml-[0.15em] inline-block size-[0.9em] align-[-0.1em];
     }
   }

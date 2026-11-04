@@ -3,6 +3,7 @@ import { CalendarDaysIcon } from '@heroicons/react/24/outline'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 import RewindBarChart from '../RewindBarChart'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
 // 2024-01-07 is a Sunday, so adding the index lands on the matching weekday and
@@ -45,10 +46,7 @@ export default function StoryHabitsDay({ userRewind }: RewindStory) {
           {t.rich('day', {
             dayValue: peakDay,
             day: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <CalendarDaysIcon />
-              </span>
+              <RewindCat icon={<CalendarDaysIcon />}>{chunks}</RewindCat>
             ),
           })}
         </p>

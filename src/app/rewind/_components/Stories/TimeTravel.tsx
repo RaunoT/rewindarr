@@ -1,6 +1,7 @@
 import { RewindStory } from '@/types/rewind'
 import { ClockIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 import TitleMomentCard from '../TitleMomentCard'
 
@@ -21,10 +22,7 @@ export default function StoryTimeTravel({ userRewind, settings }: RewindStory) {
             share: (chunks) => <span className='rewind-stat'>{chunks}</span>,
             decadeValue: timeTravel.decade,
             decade: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <ClockIcon />
-              </span>
+              <RewindCat icon={<ClockIcon />}>{chunks}</RewindCat>
             ),
           })}
         </p>

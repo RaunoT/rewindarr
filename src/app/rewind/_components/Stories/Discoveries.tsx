@@ -1,6 +1,7 @@
 import { RewindStory } from '@/types/rewind'
 import { PauseIcon, SparklesIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 import TitleMomentCard from '../TitleMomentCard'
 
@@ -50,10 +51,7 @@ export default function StoryDiscoveries({
                 {
                   titleValue: discoveries.top.item.title,
                   title: (chunks) => (
-                    <span className='rewind-cat'>
-                      {chunks}
-                      <SparklesIcon />
-                    </span>
+                    <RewindCat icon={<SparklesIcon />}>{chunks}</RewindCat>
                   ),
                   durationValue: discoveries.top.duration,
                   duration: (chunks) => (
@@ -83,10 +81,7 @@ export default function StoryDiscoveries({
               ),
               titleValue: gaveUp.title,
               title: (chunks) => (
-                <span className='rewind-cat'>
-                  {chunks}
-                  <PauseIcon />
-                </span>
+                <RewindCat icon={<PauseIcon />}>{chunks}</RewindCat>
               ),
             })}
           </p>
