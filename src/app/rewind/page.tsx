@@ -1,6 +1,7 @@
 import HistoryReading from '@/components/HistoryReading'
 import { authOptions } from '@/lib/auth'
 import { RewindUser, UserRewind } from '@/types/rewind'
+import { TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
 import {
   formatMonthYear,
   formatTimeSince,
@@ -39,10 +40,12 @@ import {
   getMediaServer,
   getStatsSource,
 } from '@/utils/statsSource'
+import { toTimeZone } from '@/utils/timeZone'
 import { sumBy } from 'lodash'
 import { Metadata } from 'next'
 import { getServerSession } from 'next-auth'
 import { getLocale, getTranslations } from 'next-intl/server'
+import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import RewindStories from './_components/RewindStories'
@@ -100,6 +103,9 @@ async function RewindContent({ userId }: { userId?: string }) {
 
   const t = await getTranslations()
   const locale = await getLocale()
+  const timeZone = toTimeZone(
+    (await cookies()).get(TIME_ZONE_COOKIE_NAME)?.value,
+  )
   // Ranked once, for both the users' top and the average user
   const viewersRequest = getStatsSource(settings).getTopUsers({
     since: startDate,
@@ -134,7 +140,7 @@ async function RewindContent({ userId }: { userId?: string }) {
     getLibrariesDurationByType(libraries),
     getMediaServer(),
     viewersRequest.then((users) => getUsersTop(user.id, startDate, { users })),
-    getPlaybackHabits(user.id),
+    getPlaybackHabits(user.id, libraries, timeZone),
     getStatsSource(settings).getFirstPlay(user.id),
     getTopPeople(user.id, libraries),
     getGenres(user.id, libraries),
