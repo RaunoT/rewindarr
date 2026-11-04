@@ -79,6 +79,7 @@ export default async function getRewindSocial(
             requests: reach.requests,
             duration: secondsToTime(reach.duration, t),
             item: reachItem,
+            isItemWatched: reach.isTopWatched,
           }
         : null,
     serverYear: server && {

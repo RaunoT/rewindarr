@@ -1,8 +1,8 @@
 'use client'
 
 import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion'
-import { MediaServer } from '@/types/statsSource'
 import { TautulliItemRow } from '@/types/tautulli'
+import { Deeplink } from '@/utils/deeplink'
 import clsx from 'clsx'
 import { debounce } from 'lodash'
 import { motion, useAnimation } from 'motion/react'
@@ -16,7 +16,7 @@ type Props = {
   parentRef: RefObject<HTMLDivElement | null>
   loggedInUserId?: string
   // Makes the title open it in the media server
-  serverLink?: { mediaServer: MediaServer; ratingKey: number | string } | null
+  serverLink?: Deeplink | null
 }
 
 export default function MediaItemTitle({

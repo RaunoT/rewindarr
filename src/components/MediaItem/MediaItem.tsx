@@ -8,7 +8,7 @@ import { PublicSettings } from '@/types/settings'
 import { MediaServer } from '@/types/statsSource'
 import { TautulliItemRow } from '@/types/tautulli'
 import { DASHBOARD_PAGE_SIZE, EXTERNAL_LINK_NAMES } from '@/utils/constants'
-import { getDeeplinkRatingKeyFromRow } from '@/utils/deeplink'
+import { getRowDeeplink } from '@/utils/deeplink'
 import { getExternalLinks, getRatedSites } from '@/utils/externalLinks'
 import { formatMonthYear, secondsToTime } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
@@ -60,7 +60,6 @@ export default function MediaItem({
   const t = useTranslations('MediaItem')
   const locale = useLocale()
   const isUsers = type === 'users'
-  const deeplinkRatingKey = getDeeplinkRatingKeyFromRow(data, type)
   const posterSrc = !data.thumb
     ? null
     : data.thumb.startsWith('https://image.tmdb.org')
@@ -81,10 +80,7 @@ export default function MediaItem({
   const externalLinks = links.filter(({ site }) => !ratedSites.includes(site))
   const ratingLinks = Object.fromEntries(links.map((link) => [link.site, link]))
   // The title and poster open it in the media server, unless it's gone
-  const serverLink =
-    !isUsers && !data.is_deleted && mediaServer && deeplinkRatingKey
-      ? { mediaServer, ratingKey: deeplinkRatingKey }
-      : null
+  const serverLink = isUsers ? null : getRowDeeplink(data, type, mediaServer)
   const poster = (
     <div className='poster max-sm:w-12'>
       {!isUsers ? (

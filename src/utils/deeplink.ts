@@ -35,6 +35,9 @@ export function getDeeplinkRatingKeyFromSession(
   return session.rating_key
 }
 
+// What a title's and poster's links to the media server open
+export type Deeplink = { mediaServer: MediaServer; ratingKey: number | string }
+
 export function getDeeplinkRatingKeyFromRow(
   item: TautulliItemRow,
   type?: string,
@@ -44,4 +47,19 @@ export function getDeeplinkRatingKeyFromRow(
   }
 
   return item.rating_key
+}
+
+// A movie, show or artist row's link, unless it's gone from the media server
+export function getRowDeeplink(
+  item: TautulliItemRow | null | undefined,
+  type: string,
+  mediaServer: MediaServer | null | undefined,
+): Deeplink | null {
+  if (!item || item.is_deleted || !mediaServer) {
+    return null
+  }
+
+  const ratingKey = getDeeplinkRatingKeyFromRow(item, type)
+
+  return ratingKey ? { mediaServer, ratingKey } : null
 }

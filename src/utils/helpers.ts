@@ -147,8 +147,10 @@ export type RewindBreakdownItem = {
   // Of the user's total across the listed types, from 0 to 1, null when only
   // every user's is split
   share: number | null
-  // The same for every user, null without any on the server
-  serverShare: number | null
+  // What the user's share is compared with: the average user's share of their
+  // own total, or every user's together when the user has none. Null without
+  // anyone to compare with.
+  otherShare: number | null
 }
 
 function sortBreakdown<T extends Omit<RewindBreakdownItem, 'value'>>(
@@ -157,13 +159,41 @@ function sortBreakdown<T extends Omit<RewindBreakdownItem, 'value'>>(
   return items.sort(
     (a, b) =>
       (b.share ?? 0) - (a.share ?? 0) ||
-      (b.serverShare ?? 0) - (a.serverShare ?? 0),
+      (b.otherShare ?? 0) - (a.otherShare ?? 0),
   )
 }
 
-// The user's time split by media type next to every user's, most played by
-// the user first. Types nobody played are left out, and without any time of
-// the user's own there is nothing to split.
+// Each user's split of their own total, averaged over the users with any, so
+// a heavy user counts as much as a light one. Null with fewer than two such
+// users, as there's nobody else to compare with.
+export function getAverageShares<K extends string>(
+  users: Partial<Record<K, number>>[],
+  keys: readonly K[],
+): Record<K, number> | null {
+  const splits = users.flatMap((user) => {
+    const total = keys.reduce((sum, key) => sum + (user[key] ?? 0), 0)
+
+    return total > 0 ? [{ user, total }] : []
+  })
+
+  if (splits.length < 2) {
+    return null
+  }
+
+  return Object.fromEntries(
+    keys.map((key) => [
+      key,
+      splits.reduce(
+        (sum, { user, total }) => sum + (user[key] ?? 0) / total,
+        0,
+      ) / splits.length,
+    ]),
+  ) as Record<K, number>
+}
+
+// The user's time split by media type next to the average user's, most played
+// by the user first. Types nobody played are left out, and without any time
+// of the user's own there is nothing to split.
 export function getRewindBreakdown({
   shows,
   movies,
@@ -173,12 +203,8 @@ export function getRewindBreakdown({
     { type: 'show' as const, ...shows },
     { type: 'movie' as const, ...movies },
     { type: 'artist' as const, ...audio },
-  ].filter((item) => item.duration_value || item.server_duration_value)
+  ].filter((item) => item.duration_value || item.average_share)
   const total = types.reduce((sum, item) => sum + (item.duration_value ?? 0), 0)
-  const serverTotal = types.reduce(
-    (sum, item) => sum + (item.server_duration_value ?? 0),
-    0,
-  )
 
   if (!total) {
     return []
@@ -189,33 +215,46 @@ export function getRewindBreakdown({
       type: item.type,
       value: item.duration,
       share: (item.duration_value ?? 0) / total,
-      serverShare: serverTotal
-        ? (item.server_duration_value ?? 0) / serverTotal
-        : null,
+      otherShare: item.average_share,
     })),
   )
 }
 
-// The user's requests split by type next to every user's, like the breakdown
-// of the time. Without requests of the user's own, only every user's are split.
+// The user's requests split by type next to the average user's, like the
+// breakdown of the time. Without requests of the user's own, every user's are
+// split together instead, to go with their counts.
 export function getRequestsBreakdown(
   requests: NonNullable<UserRewind['requests']>,
 ): (Omit<RewindBreakdownItem, 'value' | 'type'> & {
   type: 'movie' | 'show'
   count: number
 })[] {
-  const { user } = requests
+  const { user, averageShares } = requests
   const types = [
-    { type: 'movie' as const, count: requests.movies, userCount: user.movies },
-    { type: 'show' as const, count: requests.shows, userCount: user.shows },
+    {
+      type: 'movie' as const,
+      count: requests.movies,
+      userCount: user.movies,
+      averageShare: averageShares?.movies ?? null,
+    },
+    {
+      type: 'show' as const,
+      count: requests.shows,
+      userCount: user.shows,
+      averageShare: averageShares?.shows ?? null,
+    },
   ].filter((item) => item.count)
+  // Split over the listed types only, like the average user's, so requests of
+  // any other type don't shrink one side's bars
+  const userTotal = user.movies + user.shows
+  const total = requests.movies + requests.shows
 
   return sortBreakdown(
     types.map((item) => ({
       type: item.type,
-      count: user.total ? item.userCount : item.count,
-      share: user.total ? item.userCount / user.total : null,
-      serverShare: item.count / requests.total,
+      count: userTotal ? item.userCount : item.count,
+      share: userTotal ? item.userCount / userTotal : null,
+      otherShare: userTotal ? item.averageShare : item.count / total,
     })),
   )
 }

@@ -173,7 +173,62 @@ describe('getRequestsReach', () => {
       duration: 4 * 60 * 60,
       // Seen by more people, though the show has as many plays
       top: { play: { title: 'Arrival' }, users: 2, plays: 2 },
+      isTopWatched: true,
     })
+  })
+
+  it('tells whether the user watched the top one, even before asking', () => {
+    const requests = [
+      request(1, { media: { tmdbId: 1, ratingKey: '100' } }),
+      request(2, { type: 'tv', media: { tmdbId: 2, ratingKey: '200' } }),
+    ]
+    const otherPlays = [
+      play('arrival-bob', BOB, { title: 'Arrival', ratingKey: '100' }),
+      play('arrival-carol', CAROL, { title: 'Arrival', ratingKey: '100' }),
+      episode('dark-bob', BOB, 'Dark', { grandparentRatingKey: '200' }),
+    ]
+
+    // Only the one fewer people watched
+    expect(
+      getRequestsReach(
+        requests,
+        [
+          ...otherPlays,
+          episode('dark', ALICE, 'Dark', { grandparentRatingKey: '200' }),
+        ],
+        '1',
+        MIN_PERCENT,
+      ),
+    ).toMatchObject({
+      top: { play: { title: 'Arrival' } },
+      isTopWatched: false,
+    })
+    // Not far enough to count
+    expect(
+      getRequestsReach(
+        requests,
+        [
+          ...otherPlays,
+          play('arrival', ALICE, { ratingKey: '100', percentComplete: 10 }),
+        ],
+        '1',
+        MIN_PERCENT,
+      ),
+    ).toMatchObject({ isTopWatched: false })
+    expect(
+      getRequestsReach(
+        requests,
+        [
+          ...otherPlays,
+          play('arrival', ALICE, {
+            ratingKey: '100',
+            startedAt: new Date('2026-04-01T20:00:00Z').getTime(),
+          }),
+        ],
+        '1',
+        MIN_PERCENT,
+      ),
+    ).toMatchObject({ isTopWatched: true })
   })
 
   it('leaves out another show with the same name', () => {

@@ -10,7 +10,6 @@ import {
 } from '@/utils/formatting'
 import {
   getGenres,
-  getLibrariesDurationByType,
   getPlaybackHabits,
   getRequestsTotals,
   getTopMediaItems,
@@ -18,6 +17,7 @@ import {
   getTopPeople,
   getTopTrack,
   getUserTotalDuration,
+  getUsersDurationByType,
   getlibrariesTotalSize,
 } from '@/utils/getRewind'
 import getRewindSocial from '@/utils/getRewindSocial'
@@ -26,6 +26,7 @@ import getUsersTop from '@/utils/getUsersTop'
 import {
   canViewFeature,
   getAverage,
+  getAverageShares,
   getDifference,
   getRewindStartDate,
   getViewer,
@@ -146,22 +147,17 @@ async function getTotals(
   viewersRequest: Promise<TautulliItemRow[] | null>,
 ): Promise<RewindTotals> {
   const settings = getSettings()
-  const [
-    t,
-    userTotalDuration,
-    topMediaStats,
-    librariesDurationByType,
-    viewers,
-  ] = await Promise.all([
-    getTranslations(),
-    getUserTotalDuration(userId, libraries),
-    getTopMediaStats(userId, libraries),
-    getLibrariesDurationByType(libraries),
-    viewersRequest,
-  ])
+  const [t, userTotalDuration, topMediaStats, usersDurationByType, viewers] =
+    await Promise.all([
+      getTranslations(),
+      getUserTotalDuration(userId, libraries),
+      getTopMediaStats(userId, libraries),
+      getUsersDurationByType(libraries),
+      viewersRequest,
+    ])
   const isUserExcluded = settings.general.excludedUsers.includes(userId)
   // The server's totals leave excluded users out, so an excluded user's own
-  // time is added back, here and in the totals by type
+  // time is added back, here and in the average split by type
   const isUserAddedBack = isUserExcluded && userTotalDuration > 0
   // From the ranked users' own time, so plays nobody can be matched to aren't
   // spread over the users who can
@@ -172,15 +168,24 @@ async function getTotals(
         (isUserAddedBack ? userTotalDuration : 0),
       viewers.length + (isUserAddedBack ? 1 : 0),
     )
-
-  function getServerDuration(type: 'shows' | 'movies' | 'audio') {
-    const duration = librariesDurationByType[type]
-
-    return duration === null
-      ? null
-      : duration +
-          (isUserExcluded ? (topMediaStats[type].durationValue ?? 0) : 0)
-  }
+  // Each user's own split, so heavy users don't outweigh the rest
+  const averageShares =
+    usersDurationByType &&
+    getAverageShares(
+      [
+        ...usersDurationByType.values(),
+        ...(isUserAddedBack
+          ? [
+              {
+                shows: topMediaStats.shows.durationValue ?? 0,
+                movies: topMediaStats.movies.durationValue ?? 0,
+                audio: topMediaStats.audio.durationValue ?? 0,
+              },
+            ]
+          : []),
+      ],
+      ['shows', 'movies', 'audio'],
+    )
 
   return {
     duration: {
@@ -197,21 +202,21 @@ async function getTotals(
       count: topMediaStats.shows.count,
       duration: topMediaStats.shows.duration,
       duration_value: topMediaStats.shows.durationValue,
-      server_duration_value: getServerDuration('shows'),
+      average_share: averageShares?.shows ?? null,
       percentage: topMediaStats.shows.percentage,
     },
     movies: {
       count: topMediaStats.movies.count,
       duration: topMediaStats.movies.duration,
       duration_value: topMediaStats.movies.durationValue,
-      server_duration_value: getServerDuration('movies'),
+      average_share: averageShares?.movies ?? null,
       percentage: topMediaStats.movies.percentage,
     },
     audio: {
       count: topMediaStats.audio.count,
       duration: topMediaStats.audio.duration,
       duration_value: topMediaStats.audio.durationValue,
-      server_duration_value: getServerDuration('audio'),
+      average_share: averageShares?.audio ?? null,
       percentage: topMediaStats.audio.percentage,
     },
   }

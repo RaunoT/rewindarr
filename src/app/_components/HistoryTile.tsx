@@ -3,6 +3,7 @@ import SkeletonLine from '@/components/SkeletonLine'
 import { UserAvatar } from '@/components/UserBadge'
 import { DashboardSearchParams } from '@/types/dashboard'
 import { Settings } from '@/types/settings'
+import { MediaServer } from '@/types/statsSource'
 import { TautulliLibrary } from '@/types/tautulli'
 import { getRecentPlays } from '@/utils/getHistory'
 import { getImageProxyUrl } from '@/utils/imageProxy'
@@ -19,6 +20,7 @@ type Props = {
   libraries: TautulliLibrary[]
   // The dashboard's, which the history shares
   period: DashboardSearchParams['period']
+  mediaServer: Promise<MediaServer | null>
 }
 
 // The newest plays, like the activity tile's streams
@@ -27,18 +29,21 @@ export default async function HistoryTile({
   session,
   libraries,
   period,
+  mediaServer: mediaServerPromise,
 }: Props) {
   const t = await getTranslations()
-  const { plays, progress } = await getRecentPlays(TILE_ITEM_COUNT, libraries)
+  const [{ plays, progress }, mediaServer] = await Promise.all([
+    getRecentPlays(TILE_ITEM_COUNT, libraries),
+    mediaServerPromise,
+  ])
   const locale = await getLocale()
   const now = await getNow()
 
   return (
-    <Link
-      href={`/history${period ? `?period=${period}` : ''}`}
-      className='glass-sheet group focus-visible:focus-ring flex flex-col gap-4 transition-colors hover:bg-white/5'
-    >
-      <HistoryTileHeading />
+    <div className='glass-sheet tile'>
+      <HistoryTileHeading
+        href={`/history${period ? `?period=${period}` : ''}`}
+      />
       {plays.length ? (
         <ul className='space-y-2 text-sm'>
           {plays.slice(0, TILE_ITEM_COUNT).map((play, index) => {
@@ -78,6 +83,13 @@ export default async function HistoryTile({
                 }
                 aside={<UserAvatar user={user} className='size-6' />}
                 hasGlow={index === 0}
+                // Like a history card's without the title's lookup, which
+                // says whether it's been deleted or re-added since
+                deeplink={
+                  mediaServer && play.ratingKey
+                    ? { mediaServer, ratingKey: play.ratingKey }
+                    : null
+                }
               />
             )
           })}
@@ -90,7 +102,7 @@ export default async function HistoryTile({
       ) : (
         <p className='text-sm text-neutral-400'>{t('History.noPlays')}</p>
       )}
-    </Link>
+    </div>
   )
 }
 
@@ -116,16 +128,28 @@ export function HistoryTileSkeleton() {
   )
 }
 
-async function HistoryTileHeading() {
+// Opens the history once the tile has loaded
+async function HistoryTileHeading({ href }: { href?: string }) {
   const t = await getTranslations('History')
+  const heading = (
+    <>
+      <ClockIcon className='size-5 text-neutral-400' />
+      {t('title')}
+    </>
+  )
 
   return (
     <div className='flex items-center justify-between gap-3'>
-      <h2 className='flex items-center gap-2 font-semibold'>
-        <ClockIcon className='size-5 text-neutral-400' />
-        {t('title')}
+      <h2 className='font-semibold'>
+        {href ? (
+          <Link href={href} className='tile-link flex items-center gap-2'>
+            {heading}
+          </Link>
+        ) : (
+          <span className='flex items-center gap-2'>{heading}</span>
+        )}
       </h2>
-      <ChevronRightIcon className='size-4 text-neutral-500 transition-transform group-hover:translate-x-0.5' />
+      <ChevronRightIcon className='tile-chevron' />
     </div>
   )
 }
