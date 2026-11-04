@@ -15,13 +15,16 @@ const ITEM_TYPES = {
 } as const
 // The media whose release year is worth travelling to
 const VIDEO_TYPES: PlayMediaType[] = ['movie', 'episode']
+
 // Less than this on a movie reads as a misclick, not a try
-const MIN_GAVE_UP_MS = 10 * 60 * 1000
+export const MIN_GAVE_UP_MS = 10 * 60 * 1000
+
 const MIN_GAVE_UP_PERCENT = 10
 // Past this, only the credits were left
 const MAX_GAVE_UP_PERCENT = 90
+
 // A movie played this recently may still be finished
-const GAVE_UP_AFTER_MS = 14 * 24 * 60 * 60 * 1000
+export const GAVE_UP_AFTER_MS = 14 * 24 * 60 * 60 * 1000
 
 export type ComfortWatch = {
   // The newest play of it, for its card

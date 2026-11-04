@@ -504,6 +504,134 @@
       "timeSince": "That's <timeSince>{timeSinceValue}</timeSince> and counting!",
       "title": "It all started with <title>{titleValue}</title>"
     },
+    "Personality": {
+      "intro": "We've crunched the numbers. Your <personality>viewing personality</personality> is…",
+      "earnedBy": "What gave you away:",
+      "types": {
+        "nightOwl": {
+          "name": "The Night Owl",
+          "description": "When everyone else turns in, your screen lights up. The best episodes start after dark."
+        },
+        "earlyBird": {
+          "name": "The Early Bird",
+          "description": "You press play before the coffee's even brewed. Who needs morning TV?"
+        },
+        "weekendWarrior": {
+          "name": "The Weekend Warrior",
+          "description": "Weekdays are for work. Saturdays and Sundays belong to the couch."
+        },
+        "binger": {
+          "name": "The Binger",
+          "description": "“Just one more episode” isn't a promise. It's a way of life."
+        },
+        "marathoner": {
+          "name": "The Marathoner",
+          "description": "Day after day after day, you kept the streak alive."
+        },
+        "completionist": {
+          "name": "The Completionist",
+          "description": "You start it, you finish it. No movie left behind."
+        },
+        "explorer": {
+          "name": "The Explorer",
+          "description": "New shows, new sounds, new worlds. Your watchlist needs a passport."
+        },
+        "timeTraveller": {
+          "name": "The Time Traveler",
+          "description": "Why live in the present when the classics are right there?"
+        },
+        "loyalist": {
+          "name": "The Loyalist",
+          "description": "When you find something you love, you stick with it. Again and again."
+        },
+        "cinephile": {
+          "name": "The Cinephile",
+          "description": "Lights down, phone away. For you, movies come first and everything else comes second."
+        },
+        "seriesDevotee": {
+          "name": "The Series Devotee",
+          "description": "Cliffhangers, story arcs and season finales: you're in it for the long haul."
+        },
+        "musicLover": {
+          "name": "The Music Lover",
+          "description": "Your server is your record collection, and the volume's always up."
+        },
+        "freeSpirit": {
+          "name": "The Free Spirit",
+          "description": "No rules, no routine. You watch whatever you like, whenever you like, and that's the beauty of it."
+        }
+      },
+      "stats": {
+        "peakHour": "You pressed play most often around <stat>{hourValue}</stat>",
+        "hoursShare": "<stat>{share, number, percent}</stat> of your plays started between {fromValue} and {toValue}",
+        "weekendShare": "<stat>{share, number, percent}</stat> of your plays were on weekends",
+        "peakDay": "Your favorite day was <stat>{dayValue}</stat>",
+        "binge": "<stat>{episodes, plural, one {# episode} other {# episodes}}</stat> of <title>{titleValue}</title> in one go",
+        "streak": "<stat>{days, plural, one {# day} other {# days}}</stat> in a row with something on",
+        "completion": "You finished <stat>{finished, number} of the {started, number}</stat> movies you started",
+        "newShows": "<stat>{count, plural, one {# show} other {# shows}}</stat> new to you",
+        "newArtists": "<stat>{count, plural, one {# artist} other {# artists}}</stat> new to you",
+        "titles": "<stat>{count, plural, one {# title} other {# different titles}}</stat> played in all",
+        "decade": "<stat>{share, number, percent}</stat> of your watch time in <title>the {decade}s</title>",
+        "oldest": "As far back as <stat>{year}</stat>, with <title>{titleValue}</title>",
+        "comfortWatch": "<title>{titleValue}</title>, watched <stat>{watches, plural, one {once} other {# times}}</stat>",
+        "comfortWatchEpisode": "<title>{titleValue}</title> from {showValue}, watched <stat>{watches, plural, one {once} other {# times}}</stat>",
+        "topTitle": "<stat>{share, number, percent}</stat> of your time went to <title>{titleValue}</title>",
+        "share": {
+          "shows": "<stat>{share, number, percent}</stat> of your time went to shows",
+          "movies": "<stat>{share, number, percent}</stat> of your time went to movies",
+          "audio": "<stat>{share, number, percent}</stat> of your time went to music"
+        },
+        "count": {
+          "shows": "<stat>{count, plural, one {# episode} other {# episodes}}</stat> watched",
+          "movies": "<stat>{count, plural, one {# movie} other {# movies}}</stat> watched",
+          "audio": "<stat>{count, plural, one {# track} other {# tracks}}</stat> played"
+        },
+        "total": "<stat>{durationValue}</stat> of playtime in all"
+      }
+    },
+    "Summary": {
+      "title": {
+        "server": "{serverName} Rewind",
+        "year": "Rewind {year}",
+        "years": "Rewind {start}–{end}"
+      },
+      "period": "{start} – {end}",
+      "top": {
+        "show": "Top show",
+        "movie": "Top movie",
+        "artist": "Top artist"
+      },
+      "totalTime": "Total time",
+      "highlights": {
+        "topPercent": {
+          "label": "Among viewers",
+          "value": "Top {percent, number, percent}"
+        },
+        "genre": {
+          "label": "Top genre"
+        },
+        "binge": {
+          "label": "Biggest binge",
+          "value": "{count, plural, one {# episode} other {# episodes}}"
+        },
+        "streak": {
+          "label": "Longest streak",
+          "value": "{count, plural, one {# day} other {# days}}"
+        },
+        "month": {
+          "label": "Busiest month"
+        },
+        "day": {
+          "label": "Favorite day"
+        }
+      },
+      "personality": "Viewing personality",
+      "save": "Save image",
+      "saving": "Saving…",
+      "share": "Share",
+      "failed": "The image couldn't be made. Please try again."
+    },
     "Goodbye": {
       "thanks": "Thanks for tuning in to your <plex>{serverName} Rewind</plex>, <user>{userValue}!</user>",
       "sorry": "Sorry you couldn't find any content to watch or listen to this time around. Better luck next time!",

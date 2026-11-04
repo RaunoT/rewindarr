@@ -33,6 +33,11 @@ import { getPlexThemeUrl, getPlexTrackUrl } from '@/utils/plexAudio'
 import { toPublicSettings } from '@/utils/publicSettings'
 import { getRewindMoments } from '@/utils/rewindMoments'
 import { getMusicUrl, getThemeSongUrl } from '@/utils/rewindMusic'
+import {
+  getPersonality,
+  getPersonalitySignals,
+  getPlaySignals,
+} from '@/utils/rewindPersonality'
 import { getNonStopDays, getTopPercent } from '@/utils/rewindTotal'
 import {
   getActiveUsers,
@@ -268,6 +273,15 @@ async function RewindContent({ userId }: { userId?: string }) {
     social,
     user: user,
   }
+
+  // Read from the stats above, once they're all in
+  userRewind.personality = getPersonality(
+    getPersonalitySignals(
+      userRewind,
+      getPlaySignals(plays, settings.general.minPlayPercent),
+    ),
+  )
+
   const isSeerrActive =
     settings.connection.seerrUrl && settings.connection.seerrApiKey
 

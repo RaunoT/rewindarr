@@ -504,6 +504,134 @@
       "timeSince": "¡Ya van <timeSince>{timeSinceValue}</timeSince> y contando!",
       "title": "Todo empezó con <title>{titleValue}</title>"
     },
+    "Personality": {
+      "intro": "Hemos hecho cuentas. Tu <personality>perfil de espectador</personality> es…",
+      "earnedBy": "Lo que te delató:",
+      "types": {
+        "nightOwl": {
+          "name": "El Búho nocturno",
+          "description": "Cuando todos se van a dormir, tu pantalla se enciende. Los mejores episodios empiezan al caer la noche."
+        },
+        "earlyBird": {
+          "name": "El Madrugador",
+          "description": "Le das al play antes de que el café esté listo. ¿Quién necesita la tele matinal?"
+        },
+        "weekendWarrior": {
+          "name": "El Guerrero del finde",
+          "description": "Los días laborables son para trabajar. Los sábados y domingos, para el sofá."
+        },
+        "binger": {
+          "name": "El Devorador de series",
+          "description": "«Solo un episodio más» no es una promesa, es un estilo de vida."
+        },
+        "marathoner": {
+          "name": "El Maratonista",
+          "description": "Día tras día tras día, nunca bajaste el ritmo."
+        },
+        "completionist": {
+          "name": "El Completista",
+          "description": "Lo que empiezas, lo terminas. Ninguna película a medias."
+        },
+        "explorer": {
+          "name": "El Explorador",
+          "description": "Nuevas series, nuevos sonidos, nuevos mundos. Tu lista tiene pasaporte."
+        },
+        "timeTraveller": {
+          "name": "El Viajero del tiempo",
+          "description": "¿Para qué vivir en el presente si tienes los clásicos a mano?"
+        },
+        "loyalist": {
+          "name": "El Fiel",
+          "description": "Cuando encuentras algo que te encanta, no lo sueltas. Una y otra vez."
+        },
+        "cinephile": {
+          "name": "El Cinéfilo",
+          "description": "Luces apagadas, móvil fuera. Para ti, primero el cine y después todo lo demás."
+        },
+        "seriesDevotee": {
+          "name": "El Seriéfilo",
+          "description": "Cliffhangers, tramas y finales de temporada: estás aquí para quedarte."
+        },
+        "musicLover": {
+          "name": "El Melómano",
+          "description": "Tu servidor es tu colección de discos, y el volumen siempre está al máximo."
+        },
+        "freeSpirit": {
+          "name": "El Espíritu libre",
+          "description": "Sin reglas ni rutinas. Ves lo que quieres cuando quieres, y eso es lo mejor."
+        }
+      },
+      "stats": {
+        "peakHour": "Tu hora favorita para darle al play: <stat>{hourValue}</stat>",
+        "hoursShare": "El <stat>{share, number, percent}</stat> de tus reproducciones empezó entre las {fromValue} y las {toValue}",
+        "weekendShare": "El <stat>{share, number, percent}</stat> de tus reproducciones fue en fin de semana",
+        "peakDay": "Tu día favorito fue el <stat>{dayValue}</stat>",
+        "binge": "<stat>{episodes, plural, one {# episodio} other {# episodios}}</stat> de <title>{titleValue}</title> de una sentada",
+        "streak": "<stat>{days, plural, one {# día seguido} other {# días seguidos}}</stat> con al menos una reproducción",
+        "completion": "Terminaste <stat>{finished, number} de las {started, number}</stat> películas que empezaste",
+        "newShows": "<stat>{count, plural, one {# serie nueva} other {# series nuevas}}</stat> para ti",
+        "newArtists": "<stat>{count, plural, one {# artista nuevo} other {# artistas nuevos}}</stat> para ti",
+        "titles": "<stat>{count, plural, one {# título} other {# títulos distintos}}</stat> en total",
+        "decade": "El <stat>{share, number, percent}</stat> de tu tiempo en <title>la década de {decade}</title>",
+        "oldest": "Hasta <stat>{year}</stat>, con <title>{titleValue}</title>",
+        "comfortWatch": "Viste <title>{titleValue}</title> <stat>{watches, plural, one {una vez} other {# veces}}</stat>",
+        "comfortWatchEpisode": "Viste <title>{titleValue}</title> de {showValue} <stat>{watches, plural, one {una vez} other {# veces}}</stat>",
+        "topTitle": "El <stat>{share, number, percent}</stat> de tu tiempo fue para <title>{titleValue}</title>",
+        "share": {
+          "shows": "El <stat>{share, number, percent}</stat> de tu tiempo fue para series",
+          "movies": "El <stat>{share, number, percent}</stat> de tu tiempo fue para películas",
+          "audio": "El <stat>{share, number, percent}</stat> de tu tiempo fue para música"
+        },
+        "count": {
+          "shows": "<stat>{count, plural, one {# episodio visto} other {# episodios vistos}}</stat>",
+          "movies": "<stat>{count, plural, one {# película vista} other {# películas vistas}}</stat>",
+          "audio": "<stat>{count, plural, one {# canción escuchada} other {# canciones escuchadas}}</stat>"
+        },
+        "total": "<stat>{durationValue}</stat> de reproducción en total"
+      }
+    },
+    "Summary": {
+      "title": {
+        "server": "{serverName} Rewind",
+        "year": "Rewind {year}",
+        "years": "Rewind {start}–{end}"
+      },
+      "period": "{start} – {end}",
+      "top": {
+        "show": "Serie favorita",
+        "movie": "Película favorita",
+        "artist": "Artista favorito"
+      },
+      "totalTime": "Tiempo total",
+      "highlights": {
+        "topPercent": {
+          "label": "Ranking",
+          "value": "Top {percent, number, percent}"
+        },
+        "genre": {
+          "label": "Género favorito"
+        },
+        "binge": {
+          "label": "Mayor maratón",
+          "value": "{count, plural, one {# episodio} other {# episodios}}"
+        },
+        "streak": {
+          "label": "Mejor racha",
+          "value": "{count, plural, one {# día} other {# días}}"
+        },
+        "month": {
+          "label": "Mes más activo"
+        },
+        "day": {
+          "label": "Día favorito"
+        }
+      },
+      "personality": "Perfil de espectador",
+      "save": "Guardar",
+      "saving": "Guardando…",
+      "share": "Compartir",
+      "failed": "No se pudo crear la imagen. Inténtalo de nuevo."
+    },
     "Goodbye": {
       "thanks": "¡Gracias por ver tu <plex>{serverName} Rewind</plex>, <user>{userValue}!</user>",
       "sorry": "Lo sentimos, esta vez no encontraste nada que ver o escuchar. ¡Más suerte la próxima vez!",
