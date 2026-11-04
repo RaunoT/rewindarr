@@ -22,7 +22,10 @@ import StoryMoviesActors from './Stories/MoviesActors'
 import StoryMoviesDirectors from './Stories/MoviesDirectors'
 import StoryMoviesGenres from './Stories/MoviesGenres'
 import StoryMoviesTop from './Stories/MoviesTop'
+import StoryOnlyYou from './Stories/OnlyYou'
 import StoryRequests from './Stories/Requests'
+import StoryRequestsReach from './Stories/RequestsReach'
+import StoryServerYear from './Stories/ServerYear'
 import StoryShows from './Stories/Shows'
 import StoryShowsActors from './Stories/ShowsActors'
 import StoryShowsGenres from './Stories/ShowsGenres'
@@ -112,6 +115,12 @@ export default function RewindStories({ userRewind, settings, music }: Props) {
     ...(isSeerrActive && userRewind.requests
       ? [createStory('requests', StoryRequests)]
       : []),
+    ...(isSeerrActive && userRewind.social.requestsReach
+      ? [createStory('requests_reach', StoryRequestsReach)]
+      : []),
+    ...(userRewind.social.serverYear
+      ? [createStory('server_year', StoryServerYear)]
+      : []),
     ...(userRewind.duration.user && hasShowLibraries && userRewind.shows.top[0]
       ? [createStory('shows', StoryShows)]
       : []),
@@ -160,6 +169,9 @@ export default function RewindStories({ userRewind, settings, music }: Props) {
       : []),
     ...(userRewind.genres.match
       ? [createStory('taste_match', StoryTasteMatch)]
+      : []),
+    ...(userRewind.social.onlyYou
+      ? [createStory('only_you', StoryOnlyYou)]
       : []),
     ...(userRewind.moments.binge ? [createStory('binge', StoryBinge)] : []),
     ...(userRewind.moments.biggestDay

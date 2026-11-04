@@ -461,6 +461,24 @@
       "score": "Your genres are a <score>{scoreValue}</score> match",
       "genres": "You both love <genres>{genresValue}</genres>"
     },
+    "OnlyYou": {
+      "count": "{countValue, plural, one {<count># title</count> you watched was} other {<count># titles</count> you watched were}} <only>yours alone</only>",
+      "nobodyElse": "Nobody else on <plex>{serverName}</plex> watched {countValue, plural, one {it} other {them}}",
+      "nobodyElseShare": "Nobody else on <plex>{serverName}</plex> watched {countValue, plural, one {it} other {them}}. That's <share>{shareValue}</share> of the titles you watched.",
+      "top": "{countValue, plural, one {It was <title>{titleValue}</title>} other {Your favorite of them was <title>{titleValue}</title>}}"
+    },
+    "RequestsReach": {
+      "users": "{usersValue, plural, one {<count># other person</count>} other {<count># other people</count>}} watched what you <requests>asked for</requests>",
+      "duration": "{usersValue, plural, one {They} other {Together, they}} spent <duration>{durationValue}</duration> watching {requestsValue, plural, one {it} other {them}}",
+      "top": "{requestsValue, plural, one {It was <title>{titleValue}</title>} other {<title>{titleValue}</title> reached the most people}}"
+    },
+    "ServerYear": {
+      "duration": "{usersValue, plural, one {<users># person</users> spent} other {Together, <users># people</users> spent}} <duration>{durationValue}</duration> on <plex>{serverName}</plex>",
+      "durationAway": "While you were away, {usersValue, plural, one {<users># person</users>} other {<users># people</users>}} spent <duration>{durationValue}</duration> on <plex>{serverName}</plex>",
+      "share": "<share>{shareValue}</share> of that was you",
+      "movie": "The most watched <movies>movie</movies> was <title>{titleValue}</title>",
+      "show": "The most watched <shows>show</shows> was <title>{titleValue}</title>"
+    },
     "Moments": {
       "month": "Your busiest month was <month>{monthValue}</month>, with <duration>{durationValue}</duration> of playtime",
       "hours": "Hours",

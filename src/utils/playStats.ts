@@ -167,7 +167,7 @@ function getMediaId(play: Play): string | null {
   }
 }
 
-function getRatingKey(play: Play): string | null {
+export function getRatingKey(play: Play): string | null {
   return play.mediaType === 'movie' ? play.ratingKey : play.grandparentRatingKey
 }
 
@@ -185,7 +185,7 @@ function getTitleKey(play: Play): string {
 // Plex gives an item a new rating key when it's re-added, and imported
 // history has none, so plays group by the source's media id and otherwise by
 // title, like Tautulli's top_movies, top_tv and top_music stats.
-export function groupPlays(plays: Play[]): Play[][] {
+export function groupPlays<T extends Play>(plays: T[]): T[][] {
   const mediaIdsByTitle = new Map<string, string>()
 
   for (const play of plays) {

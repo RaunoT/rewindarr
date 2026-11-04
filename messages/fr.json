@@ -461,6 +461,24 @@
       "score": "Vos genres correspondent à <score>{scoreValue}</score>",
       "genres": "Vous adorez tous les deux <genres>{genresValue}</genres>"
     },
+    "OnlyYou": {
+      "count": "{countValue, plural, one {<count># titre</count> que vous avez regardé était <only>rien qu'à vous</only>} other {<count># titres</count> que vous avez regardés étaient <only>rien qu'à vous</only>}}",
+      "nobodyElse": "Personne d'autre sur <plex>{serverName}</plex> ne {countValue, plural, one {l'a regardé} other {les a regardés}}",
+      "nobodyElseShare": "Personne d'autre sur <plex>{serverName}</plex> ne {countValue, plural, one {l'a regardé} other {les a regardés}}. Cela représente <share>{shareValue}</share> des titres que vous avez regardés.",
+      "top": "{countValue, plural, one {C'était <title>{titleValue}</title>} other {Votre favori parmi eux était <title>{titleValue}</title>}}"
+    },
+    "RequestsReach": {
+      "users": "{usersValue, plural, one {<count># autre personne</count> a regardé} other {<count># autres personnes</count> ont regardé}} ce que vous avez <requests>demandé</requests>",
+      "duration": "{usersValue, plural, one {Elle a passé} other {Ensemble, elles ont passé}} <duration>{durationValue}</duration> à {requestsValue, plural, one {le regarder} other {les regarder}}",
+      "top": "{requestsValue, plural, one {C'était <title>{titleValue}</title>} other {<title>{titleValue}</title> a touché le plus de monde}}"
+    },
+    "ServerYear": {
+      "duration": "{usersValue, plural, one {<users># personne</users> a passé} other {Ensemble, <users># personnes</users> ont passé}} <duration>{durationValue}</duration> sur <plex>{serverName}</plex>",
+      "durationAway": "Pendant votre absence, {usersValue, plural, one {<users># personne</users> a passé} other {<users># personnes</users> ont passé}} <duration>{durationValue}</duration> sur <plex>{serverName}</plex>",
+      "share": "Vous en représentez <share>{shareValue}</share>",
+      "movie": "Le <movies>film</movies> le plus regardé était <title>{titleValue}</title>",
+      "show": "La <shows>série</shows> la plus regardée était <title>{titleValue}</title>"
+    },
     "Moments": {
       "month": "Votre mois le plus chargé a été <month>{monthValue}</month>, avec <duration>{durationValue}</duration> de lecture",
       "hours": "Heures",

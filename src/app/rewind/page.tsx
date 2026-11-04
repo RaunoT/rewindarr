@@ -19,6 +19,7 @@ import {
   getUserTotalDuration,
   getlibrariesTotalSize,
 } from '@/utils/getRewind'
+import getRewindSocial from '@/utils/getRewindSocial'
 import getSettings from '@/utils/getSettings'
 import getUsersTop from '@/utils/getUsersTop'
 import {
@@ -132,6 +133,7 @@ async function RewindContent({ userId }: { userId?: string }) {
     genres,
     viewers,
     topTrack,
+    social,
     moments,
   ] = await Promise.all([
     getTopMediaItems(user.id, libraries),
@@ -147,6 +149,7 @@ async function RewindContent({ userId }: { userId?: string }) {
     getGenres(user.id, libraries),
     viewersRequest,
     getTopTrack(user.id, libraries),
+    getRewindSocial(user.id, libraries),
     userPlaysRequest.then((plays) =>
       getRewindMoments(plays, {
         since: startDate,
@@ -259,6 +262,7 @@ async function RewindContent({ userId }: { userId?: string }) {
     libraries_total_size: librariesTotalSize.size,
     libraries_size_is_partial: librariesTotalSize.isPartial,
     media_server: mediaServer,
+    social,
     user: user,
   }
   const isSeerrActive =
