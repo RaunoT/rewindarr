@@ -261,7 +261,7 @@
       "externalLinksDescription": "Quand la note d'un site est affichée, c'est la note qui y renvoie",
       "itemStatistics": "Statistiques des éléments",
       "minPlayPercent": "Compter comme lecture à partir de %",
-      "minPlayPercentDescription": "Les lectures plus courtes n'ajoutent que de la durée de visionnage",
+      "minPlayPercentDescription": "Les lectures plus courtes n'ajoutent que de la durée de visionnage. Celles dont la durée totale est inconnue doivent aussi atteindre 30 secondes",
       "minPlayPercentError": "Le seuil de lecture doit être un nombre entier entre 0 et 100.",
       "privacy": "Confidentialité",
       "excludedUsers": "Utilisateurs exclus",
@@ -431,6 +431,8 @@
       "count": "Vous avez regardé <count>{countValue, number}</count> <episodes>{countValue, plural, one {épisode} other {épisodes}}</episodes> au total !",
       "favorite": "Votre favori était",
       "only": "La seule série que vous avez regardée était",
+      "previousFavorite": "{period, select, year {L'année précédente} other {La dernière fois}}, c'était <title>{titleValue}</title>",
+      "sameFavorite": "C'était déjà votre favori <before>{period, select, year {l'année précédente} other {la dernière fois}}</before> !",
       "noData": "Vous n'avez regardé aucune <shows>série</shows> sur <plex>{serverName}</plex> <emoji>😥</emoji>"
     },
     "Requests": {
@@ -450,6 +452,8 @@
       "count": "Vous avez regardé <count>{countValue, number}</count> <movies>{countValue, plural, one {film} other {films}}</movies> au total !",
       "favorite": "Votre favori était",
       "only": "Le seul film que vous avez regardé était",
+      "previousFavorite": "{period, select, year {L'année précédente} other {La dernière fois}}, c'était <title>{titleValue}</title>",
+      "sameFavorite": "C'était déjà votre favori <before>{period, select, year {l'année précédente} other {la dernière fois}}</before> !",
       "noData": "Vous n'avez regardé aucun <movies>film</movies> sur <plex>{serverName}</plex> <emoji>😵‍💫</emoji>"
     },
     "People": {
@@ -495,6 +499,15 @@
       "moreTitles": "{count, plural, one {# autre} other {# autres}}",
       "streak": "Votre record : <days>{count, plural, one {# jour} other {# jours}} d'affilée</days> avec au moins une lecture, du <start>{startValue}</start> au <end>{endValue}</end>"
     },
+    "YearOverYear": {
+      "yearBefore": "<before>L'année précédente</before>, vous avez passé <duration>{durationValue}</duration> sur <plex>{serverName}</plex>",
+      "rangeBefore": "<before>De {startValue} à {endValue}</before>, vous avez passé <duration>{durationValue}</duration> sur <plex>{serverName}</plex>",
+      "monthBefore": "<before>En {startValue}</before>, vous avez passé <duration>{durationValue}</duration> sur <plex>{serverName}</plex>",
+      "averageMore": "Cette fois-ci, c'est <difference>{percent, number, percent} de plus</difference>",
+      "averageTimes": "Cette fois-ci, c'est <difference>{times, number}× plus</difference>",
+      "averageLess": "Cette fois-ci, c'est <difference>{percent, number, percent} de moins</difference>",
+      "averageSame": "Cette fois-ci, c'est <difference>à peu près autant</difference>"
+    },
     "Habits": {
       "day": "Votre jour préféré pour regarder était le <day>{dayValue}</day>",
       "hour": "Et vous lanciez la lecture surtout vers <hour>{hourValue}</hour>",
@@ -505,6 +518,134 @@
       "since": "Vous regardez <plex>{serverName}</plex> depuis <date>{dateValue}</date>",
       "timeSince": "Cela fait déjà <timeSince>{timeSinceValue}</timeSince> !",
       "title": "Tout a commencé avec <title>{titleValue}</title>"
+    },
+    "Personality": {
+      "intro": "Les comptes sont faits. Votre <personality>profil de spectateur</personality> est…",
+      "earnedBy": "Ce qui vous a trahi :",
+      "types": {
+        "nightOwl": {
+          "name": "Le Noctambule",
+          "description": "Quand tout le monde va se coucher, votre écran s'allume. Les meilleurs épisodes commencent à la nuit tombée."
+        },
+        "earlyBird": {
+          "name": "Le Lève-tôt",
+          "description": "Vous lancez la lecture avant même que le café soit prêt. Qui a besoin des matinales ?"
+        },
+        "weekendWarrior": {
+          "name": "Le Guerrier du week-end",
+          "description": "La semaine, c'est pour le travail. Le samedi et le dimanche, c'est pour le canapé."
+        },
+        "binger": {
+          "name": "Le Boulimique de séries",
+          "description": "« Encore un épisode », ce n'est pas une promesse, c'est un mode de vie."
+        },
+        "marathoner": {
+          "name": "Le Marathonien",
+          "description": "Jour après jour après jour, vous avez tenu le rythme sans faiblir."
+        },
+        "completionist": {
+          "name": "Le Jusqu'au-boutiste",
+          "description": "Ce qui est commencé est fini. Aucun film laissé en plan."
+        },
+        "explorer": {
+          "name": "L'Explorateur",
+          "description": "Nouvelles séries, nouveaux sons, nouveaux mondes. Votre liste de lecture a un passeport."
+        },
+        "timeTraveller": {
+          "name": "Le Voyageur temporel",
+          "description": "Pourquoi vivre au présent quand les classiques sont à portée de main ?"
+        },
+        "loyalist": {
+          "name": "Le Fidèle",
+          "description": "Quand vous aimez quelque chose, vous y revenez. Encore et encore."
+        },
+        "cinephile": {
+          "name": "Le Cinéphile",
+          "description": "Lumières éteintes, téléphone rangé. Pour vous, le cinéma passe avant tout le reste."
+        },
+        "seriesDevotee": {
+          "name": "Le Sérivore",
+          "description": "Cliffhangers, arcs narratifs et finales de saison : vous êtes là pour la durée."
+        },
+        "musicLover": {
+          "name": "Le Mélomane",
+          "description": "Votre serveur est votre discothèque, et le volume est toujours à fond."
+        },
+        "freeSpirit": {
+          "name": "L'Esprit libre",
+          "description": "Pas de règles, pas de routine. Vous regardez ce que vous voulez, quand vous voulez, et c'est tout le charme."
+        }
+      },
+      "stats": {
+        "peakHour": "Vous lanciez la lecture surtout vers <stat>{hourValue}</stat>",
+        "hoursShare": "<stat>{share, number, percent}</stat> de vos lectures ont commencé entre {fromValue} et {toValue}",
+        "weekendShare": "<stat>{share, number, percent}</stat> de vos lectures ont eu lieu le week-end",
+        "peakDay": "Votre jour préféré était le <stat>{dayValue}</stat>",
+        "binge": "<stat>{episodes, plural, one {# épisode} other {# épisodes}}</stat> de <title>{titleValue}</title> d'une traite",
+        "streak": "<stat>{days, plural, one {# jour} other {# jours}}</stat> d'affilée avec au moins une lecture",
+        "completion": "Vous avez terminé <stat>{finished, number} des {started, number}</stat> films commencés",
+        "newShows": "<stat>{count, plural, one {# série} other {# séries}}</stat> {count, plural, one {découverte} other {découvertes}}",
+        "newArtists": "<stat>{count, plural, one {# artiste} other {# artistes}}</stat> {count, plural, one {découvert} other {découverts}}",
+        "titles": "<stat>{count, plural, one {# titre} other {# titres différents}}</stat> au total",
+        "decade": "<stat>{share, number, percent}</stat> de votre temps de visionnage dans <title>les années {decade}</title>",
+        "oldest": "Jusqu'en <stat>{year}</stat>, avec <title>{titleValue}</title>",
+        "comfortWatch": "<title>{titleValue}</title>, vu <stat>{watches, plural, one {une fois} other {# fois}}</stat>",
+        "comfortWatchEpisode": "<title>{titleValue}</title> de {showValue}, vu <stat>{watches, plural, one {une fois} other {# fois}}</stat>",
+        "topTitle": "<stat>{share, number, percent}</stat> de votre temps pour <title>{titleValue}</title>",
+        "share": {
+          "shows": "<stat>{share, number, percent}</stat> de votre temps pour les séries",
+          "movies": "<stat>{share, number, percent}</stat> de votre temps pour les films",
+          "audio": "<stat>{share, number, percent}</stat> de votre temps pour la musique"
+        },
+        "count": {
+          "shows": "<stat>{count, plural, one {# épisode regardé} other {# épisodes regardés}}</stat>",
+          "movies": "<stat>{count, plural, one {# film regardé} other {# films regardés}}</stat>",
+          "audio": "<stat>{count, plural, one {# morceau écouté} other {# morceaux écoutés}}</stat>"
+        },
+        "total": "<stat>{durationValue}</stat> de lecture au total"
+      }
+    },
+    "Summary": {
+      "title": {
+        "server": "{serverName} Rewind",
+        "year": "Rewind {year}",
+        "years": "Rewind {start}–{end}"
+      },
+      "period": "{start} – {end}",
+      "top": {
+        "show": "Série favorite",
+        "movie": "Film favori",
+        "artist": "Artiste favori"
+      },
+      "totalTime": "Temps total",
+      "highlights": {
+        "topPercent": {
+          "label": "Classement",
+          "value": "Top {percent, number, percent}"
+        },
+        "genre": {
+          "label": "Genre favori"
+        },
+        "binge": {
+          "label": "Plus gros marathon",
+          "value": "{count, plural, one {# épisode} other {# épisodes}}"
+        },
+        "streak": {
+          "label": "Record d'affilée",
+          "value": "{count, plural, one {# jour} other {# jours}}"
+        },
+        "month": {
+          "label": "Mois le plus actif"
+        },
+        "day": {
+          "label": "Jour préféré"
+        }
+      },
+      "personality": "Profil de spectateur",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…",
+      "share": "Partager",
+      "failed": "Impossible de créer l'image. Veuillez réessayer."
     },
     "Goodbye": {
       "thanks": "Merci d'avoir suivi votre <plex>{serverName} Rewind</plex>, <user>{userValue} !</user>",

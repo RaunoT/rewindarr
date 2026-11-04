@@ -5,6 +5,7 @@ import { FilmIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import CountUp from '../CountUp'
 import PlaytimeShare from '../PlaytimeShare'
+import PreviousFavorite from '../PreviousFavorite'
 import RewindStat from '../RewindStat'
 
 export default function StoryMovies({ userRewind, settings }: RewindStory) {
@@ -72,6 +73,12 @@ export default function StoryMovies({ userRewind, settings }: RewindStory) {
               />
             </div>
           </RewindStat>
+
+          <PreviousFavorite
+            yearOverYear={userRewind.yearOverYear}
+            type='movies'
+            step={4}
+          />
         </>
       ) : (
         <RewindStat noScale>

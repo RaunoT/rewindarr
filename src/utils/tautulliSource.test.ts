@@ -243,6 +243,7 @@ function play(userId: string, overrides: Partial<Play> = {}): Play {
     seasonNumber: null,
     episodeNumber: null,
     transcodeDecision: null,
+    lengthMs: null,
     ...overrides,
   }
 }

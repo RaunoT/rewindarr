@@ -2,6 +2,7 @@
 
 import { UserRewind } from '@/types/rewind'
 import { PublicSettings } from '@/types/settings'
+import { hasRewindPlays } from '@/utils/helpers'
 import { FC } from 'react'
 import Snow from './Snow'
 import Stories from './Stories'
@@ -23,6 +24,7 @@ import StoryMoviesDirectors from './Stories/MoviesDirectors'
 import StoryMoviesGenres from './Stories/MoviesGenres'
 import StoryMoviesTop from './Stories/MoviesTop'
 import StoryOnlyYou from './Stories/OnlyYou'
+import StoryPersonality from './Stories/Personality'
 import StoryRequests from './Stories/Requests'
 import StoryRequestsReach from './Stories/RequestsReach'
 import StoryServerYear from './Stories/ServerYear'
@@ -30,11 +32,13 @@ import StoryShows from './Stories/Shows'
 import StoryShowsActors from './Stories/ShowsActors'
 import StoryShowsGenres from './Stories/ShowsGenres'
 import StoryShowsTop from './Stories/ShowsTop'
+import StorySummary from './Stories/Summary'
 import StoryTasteMatch from './Stories/TasteMatch'
 import StoryTimeTravel from './Stories/TimeTravel'
 import StoryTotal from './Stories/Total'
 import StoryUsersTop from './Stories/UsersTop'
 import StoryWelcome from './Stories/Welcome'
+import StoryYearOverYear from './Stories/YearOverYear'
 import { getStoryArt } from './storyArt'
 
 type StoryComponent = {
@@ -108,6 +112,9 @@ export default function RewindStories({ userRewind, settings, music }: Props) {
     createStory('welcome', StoryWelcome),
     createStory('total', StoryTotal),
     ...(userRewind.moments.monthly ? [createStory('months', StoryMonths)] : []),
+    ...(userRewind.yearOverYear
+      ? [createStory('year_over_year', StoryYearOverYear)]
+      : []),
     ...(userRewind.duration.user && hasShowLibraries && userRewind.shows.top[0]
       ? [createStory('shows', StoryShows)]
       : []),
@@ -188,6 +195,13 @@ export default function RewindStories({ userRewind, settings, music }: Props) {
       : []),
     ...(userRewind.firstPlay
       ? [createStory('first_play', StoryFirstPlay)]
+      : []),
+    ...(userRewind.personality
+      ? [createStory('personality', StoryPersonality)]
+      : []),
+    // Sums up the stories before it, so it comes last
+    ...(hasRewindPlays(userRewind)
+      ? [createStory('summary', StorySummary)]
       : []),
     createStory('goodbye', StoryGoodbye),
   ]

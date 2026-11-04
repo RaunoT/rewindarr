@@ -90,6 +90,8 @@ export function toTautulliPlay(row: TautulliHistoryRow): Play | null {
       mediaType === 'episode' ? toIndex(row.parent_media_index) : null,
     episodeNumber: mediaType === 'episode' ? toIndex(row.media_index) : null,
     transcodeDecision: row.transcode_decision || null,
+    // get_history works out the percent from it, but doesn't give it
+    lengthMs: null,
   }
 }
 

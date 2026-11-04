@@ -15,13 +15,16 @@ const ITEM_TYPES = {
 } as const
 // The media whose release year is worth travelling to
 const VIDEO_TYPES: PlayMediaType[] = ['movie', 'episode']
+
 // Less than this on a movie reads as a misclick, not a try
-const MIN_GAVE_UP_MS = 10 * 60 * 1000
+export const MIN_GAVE_UP_MS = 10 * 60 * 1000
+
 const MIN_GAVE_UP_PERCENT = 10
 // Past this, only the credits were left
 const MAX_GAVE_UP_PERCENT = 90
+
 // A movie played this recently may still be finished
-const GAVE_UP_AFTER_MS = 14 * 24 * 60 * 60 * 1000
+export const GAVE_UP_AFTER_MS = 14 * 24 * 60 * 60 * 1000
 
 export type ComfortWatch = {
   // The newest play of it, for its card
@@ -76,16 +79,19 @@ function getEpisodeKey(play: Play): string {
 // it adds up to. The time includes the short plays a split watch starts with.
 function getWatchCount(plays: Play[], minPercent: number): number {
   const countedPlays = plays.filter((play) => isCountedPlay(play, minPercent))
-  // A play from the start lasts its percent of the length, a resumed one less.
-  // Only the plays that count get far enough to tell it.
-  const length = Math.max(
-    0,
-    ...countedPlays.map(({ durationMs, percentComplete }) =>
-      percentComplete ? durationMs / (percentComplete / 100) : 0,
-    ),
-  )
+  // The source's length where it gives one. Otherwise a play from the start
+  // lasts its percent of the length, a resumed one less, and only the plays
+  // that count get far enough to tell it.
+  const length =
+    Math.max(0, ...plays.map((play) => play.lengthMs ?? 0)) ||
+    Math.max(
+      0,
+      ...countedPlays.map(({ durationMs, percentComplete }) =>
+        percentComplete ? durationMs / (percentComplete / 100) : 0,
+      ),
+    )
 
-  // Without a percent complete, the length is unknown
+  // Without a length or a percent complete, the length is unknown
   if (!length) {
     return countedPlays.length
   }
