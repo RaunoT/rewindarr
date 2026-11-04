@@ -146,10 +146,18 @@ function getDuration(plays: Play[]): number {
   return Math.round(sumBy(plays, 'durationMs') / 1000)
 }
 
-// Plays short of the percent in the settings still add their watch time. A
-// play the source has no percent complete for counts.
+// The percent complete is where a play stopped, so reopening an item at its
+// end logs a play near 100% that lasted seconds. Like a scrobble, a play needs
+// this long to count.
+export const MIN_PLAY_MS = 30 * 1000
+
+// Plays short of the percent in the settings, or of half a minute, still add
+// their watch time. A play the source has no percent complete for counts.
 export function isCountedPlay(play: Play, minPercent: number): boolean {
-  return play.percentComplete === null || play.percentComplete >= minPercent
+  return (
+    play.durationMs >= MIN_PLAY_MS &&
+    (play.percentComplete === null || play.percentComplete >= minPercent)
+  )
 }
 
 function getMinPlayPercent(): number {

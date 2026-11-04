@@ -9,6 +9,7 @@ import {
   filterPlays,
   getExcludedIdentityIds,
   isCountedPlay,
+  MIN_PLAY_MS,
   StatsUser,
   toSourceId,
 } from './playStats'
@@ -27,7 +28,7 @@ function play(
     id,
     startedAt: new Date(startedAt).getTime(),
     mediaType: 'movie' as PlayMediaType,
-    durationMs: 1000,
+    durationMs: 60 * 1000,
     percentComplete: null,
     title: id,
     showTitle: null,
@@ -296,6 +297,34 @@ describe('plays short of the percent in the settings', () => {
     expect(
       isCountedPlay(
         play('unknown', '2026-03-01', { percentComplete: null }),
+        50,
+      ),
+    ).toBe(true)
+  })
+
+  it('count as plays only from half a minute, whatever the percent', () => {
+    // Opened again at its end, which the source logs near 100%
+    expect(
+      isCountedPlay(
+        play('reopened', '2026-03-01', { durationMs: 0, percentComplete: 98 }),
+        50,
+      ),
+    ).toBe(false)
+    expect(
+      isCountedPlay(
+        play('short', '2026-03-01', {
+          durationMs: MIN_PLAY_MS - 1,
+          percentComplete: null,
+        }),
+        0,
+      ),
+    ).toBe(false)
+    expect(
+      isCountedPlay(
+        play('track', '2026-03-01', {
+          durationMs: MIN_PLAY_MS,
+          percentComplete: 50,
+        }),
         50,
       ),
     ).toBe(true)
