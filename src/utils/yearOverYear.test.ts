@@ -40,6 +40,7 @@ function play(
     startedAt: new Date(startedAt).getTime(),
     mediaType: 'movie',
     durationMs: 90 * MINUTE,
+    lengthMs: null,
     percentComplete: 100,
     title: id,
     showTitle: null,
