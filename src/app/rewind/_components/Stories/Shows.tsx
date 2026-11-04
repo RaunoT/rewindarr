@@ -4,6 +4,7 @@ import { RewindStory } from '@/types/rewind'
 import { getMediaServerName } from '@/utils/mediaServerName'
 import { useTranslations } from 'next-intl'
 import CountUp from '../CountUp'
+import { isFavorite } from '../favorite'
 import PlaytimeShare from '../PlaytimeShare'
 import PreviousFavorite from '../PreviousFavorite'
 import RewindCat from '../RewindCat'
@@ -11,6 +12,10 @@ import RewindStat from '../RewindStat'
 
 export default function StoryShows({ userRewind, settings }: RewindStory) {
   const t = useTranslations('Rewind.Shows')
+  const top = userRewind.shows.top[0]
+  const isOnly = userRewind.shows.top.length === 1
+  // Without a rewatch, it's only the one with the most watch time
+  const isTopFavorite = isFavorite(top)
 
   return (
     <>
@@ -57,16 +62,14 @@ export default function StoryShows({ userRewind, settings }: RewindStory) {
 
           <RewindStat step={3} noScale>
             <p className='mb-2'>
-              {t(userRewind.shows.top.length > 1 ? 'favorite' : 'only')}{' '}
-              <span className='rewind-cat'>
-                {userRewind.shows.top[0].title}
-              </span>
+              {t(isOnly ? 'only' : isTopFavorite ? 'favorite' : 'mostTime')}{' '}
+              <span className='rewind-cat'>{top.title}</span>
             </p>
 
             <div className='text-base leading-normal font-normal tracking-normal'>
               <MediaItems
                 type='show'
-                items={Array(userRewind.shows.top[0])}
+                items={[top]}
                 mediaServer={userRewind.media_server}
                 rows
                 settings={settings}
@@ -74,11 +77,14 @@ export default function StoryShows({ userRewind, settings }: RewindStory) {
             </div>
           </RewindStat>
 
-          <PreviousFavorite
-            yearOverYear={userRewind.yearOverYear}
-            type='shows'
-            step={4}
-          />
+          {/* Last time's favourite would follow on from this one */}
+          {isTopFavorite && (
+            <PreviousFavorite
+              yearOverYear={userRewind.yearOverYear}
+              type='shows'
+              step={4}
+            />
+          )}
         </>
       ) : (
         <RewindStat noScale>

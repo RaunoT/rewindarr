@@ -78,8 +78,10 @@ export function splitPlays<T extends Play>(
 
 // The movie or show the user spent the most time on in the earlier period,
 // and whether it's the period's favourite. Time ranks them, as in the
-// stories, but the earlier favourite needs a play that counts. The period's
-// favourite is the one its story shows, so a tie can't make them disagree.
+// stories, but the earlier favourite needs a play that counts. Like the
+// stories, it's only a favourite when it was played again, and null
+// otherwise. The period's favourite is the one its story shows, so a tie
+// can't make them disagree.
 export function getFavoriteChange(
   { previous, current }: PeriodPlays,
   mediaType: PlayMediaType,
@@ -106,7 +108,11 @@ export function getFavoriteChange(
     (title) => sumBy(title.previous, 'durationMs'),
   )
 
-  if (!previousTop) {
+  if (
+    !previousTop ||
+    previousTop.previous.filter((play) => isCountedPlay(play, minPercent))
+      .length < 2
+  ) {
     return null
   }
 
