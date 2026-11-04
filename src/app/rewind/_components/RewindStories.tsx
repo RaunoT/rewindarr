@@ -96,15 +96,6 @@ export default function RewindStories({ userRewind, settings, music }: Props) {
   const stories = [
     createStory('welcome', StoryWelcome),
     createStory('total', StoryTotal),
-    ...(userRewind.usersTop && userRewind.usersTop.length > 1
-      ? [createStory('users_top', StoryUsersTop)]
-      : []),
-    ...(userRewind.libraries_total_size && isLibrariesSizeAndCountActive
-      ? [createStory('libraries', StoryLibraries)]
-      : []),
-    ...(isSeerrActive && userRewind.requests
-      ? [createStory('requests', StoryRequests)]
-      : []),
     ...(userRewind.duration.user && hasShowLibraries && userRewind.shows.top[0]
       ? [createStory('shows', StoryShows)]
       : []),
@@ -142,14 +133,24 @@ export default function RewindStories({ userRewind, settings, music }: Props) {
     ...(userRewind.audio.top.length && hasAudioLibraries
       ? [createStory('audio_top', StoryAudioTop)]
       : []),
-    ...(userRewind.genres.match
-      ? [createStory('taste_match', StoryTasteMatch)]
-      : []),
     ...(userRewind.habits.peakDayIndex !== null
       ? [createStory('habits_day', StoryHabitsDay)]
       : []),
     ...(userRewind.habits.peakHour !== null
       ? [createStory('habits_hour', StoryHabitsHour)]
+      : []),
+    ...(userRewind.genres.match
+      ? [createStory('taste_match', StoryTasteMatch)]
+      : []),
+    // The other users and the server come after the viewer's own stories
+    ...(userRewind.usersTop && userRewind.usersTop.length > 1
+      ? [createStory('users_top', StoryUsersTop)]
+      : []),
+    ...(isSeerrActive && userRewind.requests
+      ? [createStory('requests', StoryRequests)]
+      : []),
+    ...(userRewind.libraries_total_size && isLibrariesSizeAndCountActive
+      ? [createStory('libraries', StoryLibraries)]
       : []),
     ...(userRewind.firstPlay
       ? [createStory('first_play', StoryFirstPlay)]

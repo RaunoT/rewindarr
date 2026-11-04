@@ -39,6 +39,8 @@ type Props = {
   loggedInUserId?: string
   // Without a place in a ranking, there's no number before the poster
   isRanked?: boolean
+  // Only set in a countdown, and true until the countdown reaches the row
+  isHidden?: boolean
 }
 
 export default function MediaItem({
@@ -50,6 +52,7 @@ export default function MediaItem({
   settings,
   loggedInUserId,
   isRanked = true,
+  isHidden,
 }: Props) {
   const translations = useTranslations()
   const t = useTranslations('MediaItem')
@@ -112,12 +115,16 @@ export default function MediaItem({
       className={clsx(
         'flex items-center gap-3 py-2.5 not-first:border-t not-first:border-white/10 first:pt-0 last:pb-0 motion-reduce:transform-none! motion-reduce:opacity-100! max-sm:flex-wrap sm:gap-4',
         serverLink && 'media-link-group',
+        isHidden && 'invisible',
       )}
       variants={slideDown}
       initial='hidden'
-      animate='show'
-      // Rows added by "Show more" stagger from the first of them
-      transition={{ delay: (i % DASHBOARD_PAGE_SIZE) * 0.075 }}
+      animate={isHidden ? 'hidden' : 'show'}
+      // Rows added by "Show more" stagger from the first of them, and a
+      // countdown's rows show on their own
+      transition={{
+        delay: isHidden === undefined ? (i % DASHBOARD_PAGE_SIZE) * 0.075 : 0,
+      }}
     >
       {/* The rank stays level with the poster, however tall the details get.
           On phones it's a badge on the poster's corner, and the poster is

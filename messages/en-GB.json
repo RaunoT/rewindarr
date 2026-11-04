@@ -348,13 +348,13 @@
       "introDismiss": "Got it"
     },
     "Common": {
-      "topShows": "Here's your <top>top {count, plural, one {show} other {# shows}}</top>",
-      "topShowActors": "Here's your <top>top {count, plural, one {show actor} other {# show actors}}</top>",
-      "topShowGenres": "Here's your <top>top {count, plural, one {show genre} other {# show genres}}</top>",
-      "topMovies": "Here's your <top>top {count, plural, one {movie} other {# movies}}</top>",
-      "topDirectors": "Here's your <top>top {count, plural, one {director} other {# directors}}</top>",
-      "topMovieActors": "Here's your <top>top {count, plural, one {movie actor} other {# movie actors}}</top>",
-      "topMovieGenres": "Here's your <top>top {count, plural, one {movie genre} other {# movie genres}}</top>",
+      "topShows": "Counting down your <top>top {count, plural, one {show} other {# shows}}</top>",
+      "topShowActors": "The <top>{count, plural, one {actor} other {# actors}}</top> who kept you company in your shows",
+      "topShowGenres": "Your go-to <top>show {count, plural, one {genre} other {genres}}</top>",
+      "topMovies": "Drumroll for your <top>top {count, plural, one {movie} other {# movies}}</top>",
+      "topDirectors": "Behind the camera: your <top>top {count, plural, one {director} other {# directors}}</top>",
+      "topMovieActors": "The <top>{count, plural, one {star} other {# stars}}</top> you saw the most in movies",
+      "topMovieGenres": "The <top>{count, plural, one {genre} other {# genres}}</top> that ruled your movie nights",
       "topArtists": "{count, plural, one {Here's <top>the only artist</top> you listened to} other {Here's your <top>top # artists</top>}}",
       "percentage": "That's <percentage>{percentageValue}</percentage> of your total playtime.",
       "shows": "Shows",
@@ -373,10 +373,12 @@
     },
     "Total": {
       "duration": "You spent a <total>total</total> of <duration>{durationValue}</duration> on <plex>{serverName}!</plex>",
+      "nonStop": "Played back to back, it would last <duration>{days, plural, one {# day} other {# days}}</duration>!",
       "averageMore": "That's <difference>{percent, number, percent} more</difference> than the average user, who watched <duration>{durationValue}</duration>.",
       "averageTimes": "That's <difference>{times, number}× as much</difference> as the average user, who watched <duration>{durationValue}</duration>.",
       "averageLess": "That's <difference>{percent, number, percent} less</difference> than the average user, who watched <duration>{durationValue}</duration>.",
       "averageSame": "That's <difference>about the same</difference> as the average user, who watched <duration>{durationValue}</duration>.",
+      "topPercent": "You're in the <top>top {percent, number, percent}</top> of viewers on <plex>{serverName}!</plex>",
       "noData": "You haven't played anything on <plex>{serverName}</plex> <emoji>😫</emoji>",
       "breakdown": "Here's where all that time went:"
     },

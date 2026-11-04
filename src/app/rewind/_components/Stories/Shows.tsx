@@ -3,6 +3,7 @@ import MediaItems from '@/components/MediaItem/MediaItems'
 import { RewindStory } from '@/types/rewind'
 import { getMediaServerName } from '@/utils/mediaServerName'
 import { useTranslations } from 'next-intl'
+import CountUp from '../CountUp'
 import PlaytimeShare from '../PlaytimeShare'
 import RewindStat from '../RewindStat'
 
@@ -43,7 +44,9 @@ export default function StoryShows({ userRewind, settings }: RewindStory) {
                 {t.rich('count', {
                   countValue: userRewind.shows.count,
                   count: (chunks) => (
-                    <span className='rewind-stat'>{chunks}</span>
+                    <span className='rewind-stat'>
+                      <CountUp value={userRewind.shows.count}>{chunks}</CountUp>
+                    </span>
                   ),
                   episodes: (chunks) => (
                     <span className='rewind-cat'>{chunks}</span>

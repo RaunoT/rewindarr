@@ -30,6 +30,7 @@ import {
 import { getPlexThemeUrl, getPlexTrackUrl } from '@/utils/plexAudio'
 import { toPublicSettings } from '@/utils/publicSettings'
 import { getMusicUrl, getThemeSongUrl } from '@/utils/rewindMusic'
+import { getNonStopDays, getTopPercent } from '@/utils/rewindTotal'
 import {
   getActiveUsers,
   getHistoryProgress,
@@ -168,12 +169,14 @@ async function RewindContent({ userId }: { userId?: string }) {
   const userRewind: UserRewind = {
     duration: {
       user: secondsToTime(userTotalDuration, t),
+      nonStopDays: getNonStopDays(userTotalDuration),
       average: averageDuration
         ? {
             duration: secondsToTime(averageDuration, t),
             difference: getDifference(userTotalDuration, averageDuration),
           }
         : null,
+      topPercent: viewers && getTopPercent(viewers, user.id, userTotalDuration),
     },
     usersTop: usersTop?.items ?? null,
     shows: {

@@ -3,10 +3,12 @@ import { UserIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import RewindStat from '../RewindStat'
 import TopPeople from '../TopPeople'
+import useCountdown from '../useCountdown'
 
 export default function StoryShowsActors({ userRewind }: RewindStory) {
   const t = useTranslations('Rewind.Common')
   const actors = userRewind.people.showActors
+  const shownFrom = useCountdown(actors.length)
 
   return (
     <RewindStat noScale>
@@ -23,7 +25,7 @@ export default function StoryShowsActors({ userRewind }: RewindStory) {
       </p>
 
       <div className='text-base leading-normal font-normal tracking-normal'>
-        <TopPeople people={actors} type='show' />
+        <TopPeople people={actors} type='show' shownFrom={shownFrom} />
       </div>
     </RewindStat>
   )

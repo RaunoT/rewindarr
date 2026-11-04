@@ -348,13 +348,13 @@
       "introDismiss": "Ho capito"
     },
     "Common": {
-      "topShows": "Ecco la tua <top>{count, plural, one {serie più vista} other {top # delle serie}}</top>",
-      "topShowActors": "Ecco {count, plural, one {il tuo <top>attore di serie più visto</top>} other {la tua <top>top # degli attori di serie</top>}}",
-      "topShowGenres": "Ecco {count, plural, one {il tuo <top>genere di serie più visto</top>} other {la tua <top>top # dei generi di serie</top>}}",
-      "topMovies": "Ecco {count, plural, one {il tuo <top>film più visto</top>} other {la tua <top>top # dei film</top>}}",
-      "topDirectors": "Ecco {count, plural, one {il tuo <top>regista più visto</top>} other {la tua <top>top # dei registi</top>}}",
-      "topMovieActors": "Ecco {count, plural, one {il tuo <top>attore di film più visto</top>} other {la tua <top>top # degli attori di film</top>}}",
-      "topMovieGenres": "Ecco {count, plural, one {il tuo <top>genere di film più visto</top>} other {la tua <top>top # dei generi di film</top>}}",
+      "topShows": "Conto alla rovescia: la tua <top>{count, plural, one {serie più vista} other {top # delle serie}}</top>",
+      "topShowActors": "{count, plural, one {<top>L'attore</top> che ti ha fatto più compagnia nelle serie} other {<top>I # attori</top> che ti hanno fatto più compagnia nelle serie}}",
+      "topShowGenres": "{count, plural, one {Il tuo <top>genere di serie</top> preferito} other {I tuoi <top>generi di serie</top> preferiti}}",
+      "topMovies": "Rullo di tamburi per {count, plural, one {il tuo <top>film più visto</top>} other {la tua <top>top # dei film</top>}}",
+      "topDirectors": "Dietro la macchina da presa: {count, plural, one {il tuo <top>regista più visto</top>} other {la tua <top>top # dei registi</top>}}",
+      "topMovieActors": "{count, plural, one {<top>La star</top> che hai visto di più nei film} other {<top>Le # star</top> che hai visto di più nei film}}",
+      "topMovieGenres": "{count, plural, one {<top>Il genere</top> che ha dominato le tue serate cinema} other {<top>I # generi</top> che hanno dominato le tue serate cinema}}",
       "topArtists": "Ecco {count, plural, one {<top>l'unico artista</top> che hai ascoltato} other {la tua <top>top # degli artisti</top>}}",
       "percentage": "<percentage>{percentageValue}</percentage> del tuo tempo di riproduzione totale.",
       "shows": "Serie",
@@ -373,10 +373,12 @@
     },
     "Total": {
       "duration": "Hai passato in <total>totale</total> <duration>{durationValue}</duration> su <plex>{serverName}!</plex>",
+      "nonStop": "Riprodotto tutto di fila, durerebbe <duration>{days, plural, one {# giorno} other {# giorni}}</duration>!",
       "averageMore": "Cioè <difference>{percent, number, percent} in più</difference> dell'utente medio, che ha guardato <duration>{durationValue}</duration>.",
       "averageTimes": "Cioè <difference>{times, number}× il tempo</difference> dell'utente medio, che ha guardato <duration>{durationValue}</duration>.",
       "averageLess": "Cioè <difference>{percent, number, percent} in meno</difference> dell'utente medio, che ha guardato <duration>{durationValue}</duration>.",
       "averageSame": "È <difference>più o meno quanto</difference> l'utente medio, che ha guardato <duration>{durationValue}</duration>.",
+      "topPercent": "Sei nel <top>top {percent, number, percent}</top> degli spettatori di <plex>{serverName}!</plex>",
       "noData": "Non hai riprodotto niente su <plex>{serverName}</plex> <emoji>😫</emoji>",
       "breakdown": "Ecco come hai trascorso questo tempo:"
     },
