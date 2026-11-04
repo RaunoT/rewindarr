@@ -55,7 +55,7 @@ export default function RewindBreakdown({ items }: Props) {
                   share={item.share}
                   label={t('you')}
                   delay={index * 0.15}
-                  isUser
+                  variant='user'
                 />
               )}
               {item.serverShare !== null && (
