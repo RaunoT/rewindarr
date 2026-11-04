@@ -8,7 +8,7 @@ import { TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import clsx from 'clsx'
 import Image from 'next/image'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
 import stars from '../_assets/stars.png'
 import GlobalContextProvider from './GlobalContextProvider'
@@ -40,6 +40,13 @@ const SIDEBAR_ROUTES = [
 ]
 const queryClient = new QueryClient()
 
+function readTimeZoneCookie() {
+  return document.cookie
+    .split('; ')
+    .find((cookie) => cookie.startsWith(`${TIME_ZONE_COOKIE_NAME}=`))
+    ?.split('=')[1]
+}
+
 export default function AppProvider({
   children,
   missingSetting,
@@ -50,6 +57,7 @@ export default function AppProvider({
   isActivityDetailsHidden,
 }: Props) {
   const pathname = usePathname()
+  const router = useRouter()
   // Not during setup or before logging in, when there's nothing to browse yet
   const hasSidebar =
     !missingSetting &&
@@ -57,13 +65,22 @@ export default function AppProvider({
     (pathname === '/' ||
       SIDEBAR_ROUTES.some((route) => pathname.startsWith(route)))
 
-  // On every page, so it's there by the time Rewind is opened. Rewind reads
-  // the server's timezone until then.
+  // Saved on every page, so it's there by the time Rewind is opened. A Rewind
+  // rendered without it, or with an old one, is rendered again once it's saved.
   useEffect(() => {
     const { timeZone } = Intl.DateTimeFormat().resolvedOptions()
 
+    if (readTimeZoneCookie() === timeZone) {
+      return
+    }
+
     document.cookie = `${TIME_ZONE_COOKIE_NAME}=${timeZone}; path=/; max-age=31536000; samesite=lax`
-  }, [])
+
+    // With cookies blocked, rendering again would change nothing
+    if (pathname.startsWith('/rewind') && readTimeZoneCookie() === timeZone) {
+      router.refresh()
+    }
+  }, [pathname, router])
 
   useEffect(() => {
     if (!pathname.startsWith('/settings')) {
