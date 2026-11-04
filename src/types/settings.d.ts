@@ -62,7 +62,8 @@ export type RewindSettings = {
   isActive: boolean
   isAdminOnly: boolean
   isLibrariesSizeAndCountActive: boolean
-  // The viewer's top show's theme song plays during the show stories
+  // The theme songs of the viewer's top show, top movie and binged show, and
+  // their top track, play during their stories
   isThemeMusicActive: boolean
   music: RewindMusic | null
   isSnowActive: boolean

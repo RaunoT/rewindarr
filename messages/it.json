@@ -376,7 +376,6 @@
     },
     "Total": {
       "duration": "Hai passato in <total>totale</total> <duration>{durationValue}</duration> su <plex>{serverName}!</plex>",
-      "nonStop": "Riprodotto tutto di fila, durerebbe <duration>{days, plural, one {# giorno} other {# giorni}}</duration>!",
       "averageMore": "Cioè <difference>{percent, number, percent} in più</difference> dell'utente medio, che ha guardato <duration>{durationValue}</duration>.",
       "averageTimes": "Cioè <difference>{times, number}× il tempo</difference> dell'utente medio, che ha guardato <duration>{durationValue}</duration>.",
       "averageLess": "Cioè <difference>{percent, number, percent} in meno</difference> dell'utente medio, che ha guardato <duration>{durationValue}</duration>.",

@@ -12,7 +12,7 @@ export default function StoryTotal({
   settings,
 }: RewindStory<RewindTotals>) {
   const t = useTranslations('Rewind.Total')
-  const { nonStopDays, average, topPercent } = userRewind.duration
+  const { average, topPercent } = userRewind.duration
   const averageMessage = average && getAverageMessage(average.difference)
   // A single type would only repeat the total
   const breakdown = getRewindBreakdown(userRewind)
@@ -42,21 +42,8 @@ export default function StoryTotal({
             </p>
           </RewindStat>
 
-          {nonStopDays !== null && (
-            <RewindStat step={1}>
-              <p>
-                {t.rich('nonStop', {
-                  days: nonStopDays,
-                  duration: (chunks) => (
-                    <span className='rewind-stat'>{chunks}</span>
-                  ),
-                })}
-              </p>
-            </RewindStat>
-          )}
-
           {average && averageMessage && (
-            <RewindStat step={2}>
+            <RewindStat step={1}>
               <p>
                 {t.rich(averageMessage.key, {
                   ...averageMessage.values,
@@ -75,7 +62,7 @@ export default function StoryTotal({
           )}
 
           {topPercent !== null && (
-            <RewindStat step={3}>
+            <RewindStat step={2}>
               <p>
                 {t.rich('topPercent', {
                   percent: topPercent / 100,
@@ -94,7 +81,7 @@ export default function StoryTotal({
           )}
 
           {hasBreakdown && (
-            <RewindStat step={4} noScale>
+            <RewindStat step={3} noScale>
               <p>{t('breakdown')}</p>
               <RewindBreakdown items={breakdown} />
             </RewindStat>
