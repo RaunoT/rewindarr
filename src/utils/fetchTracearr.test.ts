@@ -876,6 +876,136 @@ describe('malformed responses', () => {
   })
 })
 
+describe('repeated item lookups', () => {
+  const handlers: Handlers = {
+    servers: () => ({ data: [plexServer('s1')] }),
+    'media/m1': () => ({
+      id: 'm1',
+      tmdb_id: 70523,
+      availability: [{ server_id: 's1', removed_at: null }],
+    }),
+    'media/m2': () => ({
+      id: 'm2',
+      tmdb_id: 1399,
+      availability: [{ server_id: 's1', removed_at: null }],
+    }),
+  }
+
+  it('looks each item up once for every caller', async () => {
+    route(handlers)
+
+    const { getTracearrMedia } = await load('s1')
+    const lookups = await Promise.all([
+      getTracearrMedia('m1'),
+      getTracearrMedia('m1'),
+      getTracearrMedia('m2'),
+    ])
+
+    await getTracearrMedia('m1')
+
+    expect(lookups.map((media) => media.ids?.tmdb)).toEqual([
+      70523, 70523, 1399,
+    ])
+    expect(requestsTo('media/m1')).toHaveLength(1)
+    expect(requestsTo('media/m2')).toHaveLength(1)
+  })
+
+  it('looks the item up again after 5 minutes', async () => {
+    route(handlers)
+    vi.useFakeTimers({ toFake: ['Date'] })
+
+    const { getTracearrMedia } = await load('s1')
+
+    await getTracearrMedia('m1')
+    vi.advanceTimersByTime(4 * 60 * 1000)
+    await getTracearrMedia('m1')
+
+    expect(requestsTo('media/m1')).toHaveLength(1)
+
+    vi.advanceTimersByTime(2 * 60 * 1000)
+    await getTracearrMedia('m1')
+
+    expect(requestsTo('media/m1')).toHaveLength(2)
+  })
+
+  it('asks again after a failed lookup', async () => {
+    let isDown = true
+
+    route({
+      ...handlers,
+      'media/m1': (url) => {
+        if (isDown) {
+          throw new TypeError('fetch failed')
+        }
+
+        return handlers['media/m1'](url)
+      },
+    })
+
+    const { getTracearrMedia } = await load('s1')
+
+    await expect(getTracearrMedia('m1')).resolves.toMatchObject({
+      isDeleted: false,
+      ids: undefined,
+    })
+
+    isDown = false
+
+    await expect(getTracearrMedia('m1')).resolves.toMatchObject({
+      ids: { tmdb: 70523 },
+    })
+    expect(requestsTo('media/m1')).toHaveLength(2)
+  })
+
+  // Like the one Next.js throws from fetch to mark a route dynamic, which goes
+  // on to Next.js instead of counting as a failed lookup
+  it('asks again after a lookup that threw', async () => {
+    let isDynamic = true
+
+    route({
+      ...handlers,
+      'media/m1': (url) => {
+        if (isDynamic) {
+          throw Object.assign(new Error('Dynamic server usage'), {
+            digest: 'DYNAMIC_SERVER_USAGE',
+          })
+        }
+
+        return handlers['media/m1'](url)
+      },
+    })
+
+    const { getTracearrMedia } = await load('s1')
+
+    await expect(getTracearrMedia('m1')).rejects.toMatchObject({
+      digest: 'DYNAMIC_SERVER_USAGE',
+    })
+
+    isDynamic = false
+
+    await expect(getTracearrMedia('m1')).resolves.toMatchObject({
+      ids: { tmdb: 70523 },
+    })
+    expect(requestsTo('media/m1')).toHaveLength(2)
+  })
+
+  it('looks the item up again for another server', async () => {
+    route({
+      ...handlers,
+      servers: () => ({ data: [plexServer('s1'), plexServer('s2')] }),
+    })
+
+    const { getTracearrMedia } = await load('s1')
+    const { default: getSettings } = await import('./getSettings')
+
+    await getTracearrMedia('m1')
+    vi.mocked(getSettings).mockReturnValue(setup('s2'))
+    await getTracearrMedia('m1')
+
+    expect(requestsTo('media/m1')).toHaveLength(2)
+  })
+})
+
 describe('getTracearrFirstPlay', () => {
   const DAY = 24 * 60 * 60 * 1000
   const firstPlayAt = Date.parse('2021-03-15T20:00:00.000Z')
