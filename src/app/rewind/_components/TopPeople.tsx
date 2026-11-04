@@ -5,9 +5,8 @@ import { MEDIA_ICONS, STAT_ICONS } from '@/components/icons'
 import Rank from '@/components/MediaItem/Rank'
 import { TopPerson } from '@/types/statsSource'
 import { secondsToTime } from '@/utils/formatting'
-import { slideDown } from '@/utils/motion'
-import clsx from 'clsx'
-import { motion } from 'motion/react'
+import { countdownRow } from '@/utils/motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { useFormatter, useTranslations } from 'next-intl'
 import { useId, useLayoutEffect, useRef, useState } from 'react'
 
@@ -15,15 +14,14 @@ type Props = {
   people: TopPerson[]
   // What the titles they're counted by are
   type: 'movie' | 'show'
-  // The index of the highest place the countdown shows. The places above it
-  // keep their room, unseen and unheard, until it reaches them.
+  // The index of the highest place the countdown shows. Only the places from
+  // it down are listed, so each new one comes in at the top.
   shownFrom: number
 }
 
 type RowProps = Omit<Props, 'people' | 'shownFrom'> & {
   person: TopPerson
   i: number
-  isHidden: boolean
 }
 
 // The names that fit on a line before "and more"
@@ -33,15 +31,13 @@ const TOGETHER_NAMES = 2
 export default function TopPeople({ people, shownFrom, ...props }: Props) {
   return (
     <ol className='mt-4 flex flex-col text-white sm:mt-5'>
-      {people.map((person, i) => (
-        <PersonRow
-          key={person.name}
-          person={person}
-          i={i}
-          isHidden={i < shownFrom}
-          {...props}
-        />
-      ))}
+      <AnimatePresence>
+        {people.map((person, i) =>
+          i < shownFrom ? null : (
+            <PersonRow key={person.name} person={person} i={i} {...props} />
+          ),
+        )}
+      </AnimatePresence>
     </ol>
   )
 }
@@ -100,7 +96,7 @@ function findCut(
   }
 }
 
-function PersonRow({ person, i, type, isHidden }: RowProps) {
+function PersonRow({ person, i, type }: RowProps) {
   const translations = useTranslations()
   const t = useTranslations('Rewind.People')
   const format = useFormatter()
@@ -161,13 +157,12 @@ function PersonRow({ person, i, type, isHidden }: RowProps) {
 
   return (
     <motion.li
-      className={clsx(
-        'flex items-center gap-3 py-2.5 not-first:border-t not-first:border-white/10 first:pt-0 last:pb-0 motion-reduce:transform-none! motion-reduce:opacity-100! sm:gap-4',
-        isHidden && 'invisible',
-      )}
-      variants={slideDown}
+      className='flex items-center gap-3 py-2.5 not-first:border-t not-first:border-white/10 first:pt-0 last:pb-0 motion-reduce:transform-none! motion-reduce:opacity-100! sm:gap-4'
+      variants={countdownRow}
       initial='hidden'
-      animate={isHidden ? 'hidden' : 'show'}
+      animate='show'
+      exit='exit'
+      layout='position'
     >
       {/* The portrait moves in by the rank badge's overhang on phones */}
       <div className='relative flex shrink-0 items-center gap-3 max-sm:pt-1 max-sm:pl-1 sm:gap-4'>
