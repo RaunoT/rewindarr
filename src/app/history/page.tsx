@@ -335,7 +335,7 @@ async function HistoryContent({
             <li key={day.key}>
               {/* Stays at the top while its day scrolls by, until the next
                   day's pushes it out */}
-              <h2 className='glass-pill sticky top-4 z-20 mb-3 w-fit bg-neutral-900/70 px-3 py-1 text-sm font-medium text-neutral-300'>
+              <h2 className='glass-pill sticky top-(--page-top) z-20 mb-3 w-fit bg-neutral-900/70 px-3 py-1 text-sm font-medium text-neutral-300'>
                 {getDayLabel(day.date, now, locale)}
               </h2>
               <ul className='flex flex-col text-white'>

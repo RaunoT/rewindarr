@@ -106,7 +106,7 @@ export default function AppProvider({
                 // The same 16px around the page, the sidebar and between blocks.
                 // Clipped rather than hidden, which would make it a scroll
                 // container and keep sticky things inside from sticking.
-                'group/main flex h-full min-h-dvh flex-col items-center overflow-x-clip p-4',
+                'group/main flex h-full min-h-dvh flex-col items-center overflow-x-clip p-4 pt-(--page-top)',
                 {
                   'justify-center':
                     (pathname === '/' && !hasSidebar) ||
@@ -130,7 +130,7 @@ export default function AppProvider({
               </div>
 
               {/* The sidebar, or a page's header on smaller screens, shows these controls instead */}
-              <HeaderControls className='absolute top-4 right-4 z-10 max-lg:group-has-[[data-page-header]]/main:hidden lg:group-data-[sidebar]/app:hidden' />
+              <HeaderControls className='absolute top-(--page-top) right-4 z-10 max-lg:group-has-[[data-page-header]]/main:hidden lg:group-data-[sidebar]/app:hidden' />
 
               {hasSidebar && (
                 <SourceOutageNotice

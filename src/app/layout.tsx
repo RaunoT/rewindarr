@@ -99,6 +99,7 @@ export default async function RootLayout({ children }: Props) {
   return (
     <html lang={locale}>
       <body className='h-full min-h-dvh bg-black text-white'>
+        <div className='status-bar-fade' aria-hidden />
         <SerwistProvider
           swUrl='/sw.js'
           disable={process.env.NODE_ENV === 'development'}
