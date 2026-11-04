@@ -1,11 +1,12 @@
 import { Play, PlayMediaType } from '@/types/playHistory'
+import { TautulliItemRow } from '@/types/tautulli'
 import { PreviousFavorite, YearOverYear } from '@/types/yearOverYear'
 import { maxBy, minBy, sumBy, uniq } from 'lodash'
 import { getTranslations } from 'next-intl/server'
 import { secondsToTime } from './formatting'
 import getSettings from './getSettings'
 import { getDifference, getRewindStartDate } from './helpers'
-import { groupPlays, isCountedPlay } from './playStats'
+import { groupPlays, isCountedPlay, isPlayOfItem } from './playStats'
 import { toDateKey } from './timeZone'
 
 const DAY = 24 * 60 * 60 * 1000
@@ -21,6 +22,9 @@ export type PeriodPlays<T extends Play = Play> = {
   previous: T[]
   current: T[]
 }
+
+// The period's favourite, as its story's card shows it
+export type FavoriteItem = Pick<TautulliItemRow, 'media_id' | 'title' | 'year'>
 
 export type FavoriteChange = {
   // The newest play of the earlier favourite, for its title
@@ -45,6 +49,7 @@ type CompareOptions = {
   minPlayPercent: number
   // The server's without one
   timeZone?: string
+  favorites?: Partial<Record<'shows' | 'movies', FavoriteItem>>
 }
 
 function getDuration(plays: Play[]): number {
@@ -72,13 +77,19 @@ export function splitPlays<T extends Play>(
 }
 
 // The movie or show the user spent the most time on in the earlier period,
-// and whether they still did in the period. Time ranks them, as in the
-// stories, but the earlier favourite needs a play that counts.
+// and whether it's the period's favourite. Time ranks them, as in the
+// stories, but the earlier favourite needs a play that counts. The period's
+// favourite is the one its story shows, so a tie can't make them disagree.
 export function getFavoriteChange(
   { previous, current }: PeriodPlays,
   mediaType: PlayMediaType,
   minPercent: number,
+  favorite?: FavoriteItem,
 ): FavoriteChange | null {
+  if (!favorite) {
+    return null
+  }
+
   const previousIds = new Set(previous.map((play) => play.id))
   const typePlays = [...previous, ...current].filter(
     (play) => play.mediaType === mediaType,
@@ -87,12 +98,7 @@ export function getFavoriteChange(
   const titles = groupPlays(typePlays).map((plays) => ({
     plays,
     previous: plays.filter((play) => previousIds.has(play.id)),
-    current: plays.filter((play) => !previousIds.has(play.id)),
   }))
-  const currentTop = maxBy(
-    titles.filter((title) => title.current.length),
-    (title) => sumBy(title.current, 'durationMs'),
-  )
   const previousTop = maxBy(
     titles.filter((title) =>
       title.previous.some((play) => isCountedPlay(play, minPercent)),
@@ -100,13 +106,13 @@ export function getFavoriteChange(
     (title) => sumBy(title.previous, 'durationMs'),
   )
 
-  if (!currentTop || !previousTop) {
+  if (!previousTop) {
     return null
   }
 
   return {
     play: maxBy(previousTop.plays, 'startedAt')!,
-    isSame: currentTop === previousTop,
+    isSame: previousTop.plays.some((play) => isPlayOfItem(play, favorite)),
   }
 }
 
@@ -115,7 +121,13 @@ export function getFavoriteChange(
 // and without a play that counts in the period.
 export function compareYears(
   allPlays: Play[],
-  { since, now = Date.now(), minPlayPercent, timeZone }: CompareOptions,
+  {
+    since,
+    now = Date.now(),
+    minPlayPercent,
+    timeZone,
+    favorites,
+  }: CompareOptions,
 ): YearComparison | null {
   const previousSince = getPreviousStart(since, now)
   const firstPlay = minBy(allPlays, 'startedAt')
@@ -148,8 +160,18 @@ export function compareYears(
     previousSince,
     previousDuration,
     difference: getDifference(getDuration(periods.current), previousDuration),
-    shows: getFavoriteChange(periods, 'episode', minPlayPercent),
-    movies: getFavoriteChange(periods, 'movie', minPlayPercent),
+    shows: getFavoriteChange(
+      periods,
+      'episode',
+      minPlayPercent,
+      favorites?.shows,
+    ),
+    movies: getFavoriteChange(
+      periods,
+      'movie',
+      minPlayPercent,
+      favorites?.movies,
+    ),
   }
 }
 
@@ -174,6 +196,7 @@ function toPreviousFavorite({
 export async function getYearOverYear(
   allPlays: Play[] | null,
   timeZone?: string,
+  favorites?: CompareOptions['favorites'],
 ): Promise<YearOverYear | null> {
   if (!allPlays) {
     return null
@@ -185,6 +208,7 @@ export async function getYearOverYear(
     since,
     minPlayPercent: settings.general.minPlayPercent,
     timeZone,
+    favorites,
   })
 
   if (!comparison) {

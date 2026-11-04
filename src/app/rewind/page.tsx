@@ -183,7 +183,10 @@ async function RewindContent({ userId }: { userId?: string }) {
       : null,
   ])
   const titleMoments = await getTitleMoments(plays, allPlays)
-  const yearOverYear = await getYearOverYear(allPlays, timeZone)
+  const yearOverYear = await getYearOverYear(allPlays, timeZone, {
+    shows: topMediaItems.shows[0],
+    movies: topMediaItems.movies[0],
+  })
   const isUserExcluded = settings.general.excludedUsers.includes(user.id)
   // The server's totals leave excluded users out, so an excluded user's own
   // time is added back, here and in the totals by type

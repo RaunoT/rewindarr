@@ -221,6 +221,26 @@ export function groupPlays<T extends Play>(plays: T[]): T[][] {
   )
 }
 
+// Whether a play is of an item made from plays, matched by the media id or the
+// title, the way the plays are grouped
+export function isPlayOfItem(
+  play: Play,
+  item: Pick<TautulliItemRow, 'media_id' | 'title' | 'year'>,
+): boolean {
+  const mediaId = getMediaId(play)
+
+  if (item.media_id && mediaId) {
+    return mediaId === item.media_id
+  }
+
+  const title = item.title.trim().toLowerCase()
+
+  return (
+    getTitleKey(play) ===
+    (play.mediaType === 'movie' ? `${title}|${item.year ?? ''}` : title)
+  )
+}
+
 // Episodes roll up into their show and tracks into their artist. The newest
 // play with a rating key and a poster points at the current library item.
 // Without one, the rating key matters more than the poster, as it's what the

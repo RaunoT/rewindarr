@@ -89,6 +89,11 @@ function daily(
   )
 }
 
+// The period's favourite, as its story's card shows it
+function favorite(title: string, year: number | null = null) {
+  return { title, year, media_id: null }
+}
+
 // 15 hours over 10 days the year before, and 21 hours in the past year
 const previousYear = daily('before', '2024-11-10T20:00:00Z', 10, {
   title: 'Alien',
@@ -126,7 +131,12 @@ describe('splitPlays', () => {
 
 describe('compareYears', () => {
   it('compares the time with the year before', () => {
-    expect(compareYears([...previousYear, ...pastYear], OPTIONS)).toEqual({
+    expect(
+      compareYears([...previousYear, ...pastYear], {
+        ...OPTIONS,
+        favorites: { movies: favorite('Dune', 2020) },
+      }),
+    ).toEqual({
       previousSince: PREVIOUS_SINCE,
       previousDuration: 15 * 60 * 60,
       difference: 40,
@@ -237,6 +247,7 @@ describe('getFavoriteChange', () => {
       },
       'episode',
       MIN_PERCENT,
+      favorite('The Bear'),
     )
 
     expect(change).toEqual({
@@ -259,6 +270,7 @@ describe('getFavoriteChange', () => {
       },
       'movie',
       MIN_PERCENT,
+      favorite('Dune', 2020),
     )
 
     expect(change).toEqual({
@@ -283,6 +295,7 @@ describe('getFavoriteChange', () => {
       },
       'movie',
       MIN_PERCENT,
+      favorite('abandoned', 2020),
     )
 
     expect(change).toEqual({
@@ -297,8 +310,29 @@ describe('getFavoriteChange', () => {
       current: [play('dune', '2026-01-01')],
     }
 
-    expect(getFavoriteChange(periods, 'movie', MIN_PERCENT)).toBeNull()
+    expect(
+      getFavoriteChange(periods, 'movie', MIN_PERCENT, favorite('dune', 2020)),
+    ).toBeNull()
     expect(getFavoriteChange(periods, 'episode', MIN_PERCENT)).toBeNull()
+  })
+
+  it("goes by the card's favourite when two titles tie in the period", () => {
+    const periods = {
+      previous: [play('alien-1', '2025-01-01', { title: 'Alien' })],
+      current: [
+        play('heat', '2026-01-01', { title: 'Heat' }),
+        play('alien-2', '2026-01-02', { title: 'Alien' }),
+      ],
+    }
+
+    expect(
+      getFavoriteChange(periods, 'movie', MIN_PERCENT, favorite('Heat', 2020))
+        ?.isSame,
+    ).toBe(false)
+    expect(
+      getFavoriteChange(periods, 'movie', MIN_PERCENT, favorite('Alien', 2020))
+        ?.isSame,
+    ).toBe(true)
   })
 })
 
@@ -327,7 +361,12 @@ describe('getYearOverYear', () => {
   ]
 
   it('compares the past year with the year before', async () => {
-    expect(await getYearOverYear(shows, 'UTC')).toEqual({
+    expect(
+      await getYearOverYear(shows, 'UTC', {
+        shows: favorite('The Bear'),
+        movies: favorite('Dune', 2020),
+      }),
+    ).toEqual({
       since: '2024-11-03',
       until: '2025-11-03',
       isPastYear: true,

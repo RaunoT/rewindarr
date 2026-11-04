@@ -9,6 +9,7 @@ import {
   filterPlays,
   getExcludedIdentityIds,
   isCountedPlay,
+  isPlayOfItem,
   MIN_PLAY_MS,
   StatsUser,
   toSourceId,
@@ -75,6 +76,30 @@ describe('toSourceId', () => {
     expect(toSourceId('12345')).toBe(12345)
     expect(toSourceId('a1b2c3')).toBe('a1b2c3')
     expect(toSourceId(null)).toBe(0)
+  })
+})
+
+describe('isPlayOfItem', () => {
+  it('matches by the media id, or else by the title and year', () => {
+    const dune = play('dune', '2026-03-01', {
+      title: 'Dune',
+      year: 2021,
+      mediaId: 'm1',
+    })
+    const imported = { ...dune, mediaId: null }
+
+    expect(
+      isPlayOfItem(dune, { title: 'Other', year: null, media_id: 'm1' }),
+    ).toBe(true)
+    expect(
+      isPlayOfItem(dune, { title: 'Dune', year: 2021, media_id: 'm2' }),
+    ).toBe(false)
+    expect(
+      isPlayOfItem(imported, { title: ' dune ', year: 2021, media_id: 'm1' }),
+    ).toBe(true)
+    expect(
+      isPlayOfItem(imported, { title: 'Dune', year: 1984, media_id: null }),
+    ).toBe(false)
   })
 })
 
