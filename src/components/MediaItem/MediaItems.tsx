@@ -14,6 +14,9 @@ type Props = {
   isRanked?: boolean
   // In place of the item statistics chosen in the settings
   activeStats?: string[]
+  // In a countdown, the index of the highest place shown. The places above it
+  // keep their room, unseen and unheard, until it reaches them.
+  shownFrom?: number
 }
 
 export default function MediaItems({
@@ -25,6 +28,7 @@ export default function MediaItems({
   loggedInUserId,
   isRanked,
   activeStats = settings.general.activeItemStatistics,
+  shownFrom,
 }: Props) {
   return (
     <ul
@@ -44,6 +48,7 @@ export default function MediaItems({
           settings={settings}
           loggedInUserId={loggedInUserId}
           isRanked={isRanked}
+          isHidden={shownFrom === undefined ? undefined : i < shownFrom}
         />
       ))}
     </ul>

@@ -76,11 +76,16 @@ export type UserRewind = {
   }
   duration: {
     user: string
+    // The user's time in days, as if watched in one go, null under a day
+    nonStopDays: number | null
     // Null without anyone else to compare with
     average: {
       duration: string
       difference: number
     } | null
+    // The top percent of users the user is in by their time, null with too
+    // few users or outside the top quarter
+    topPercent: number | null
   }
   // Formatted on the server, null without any play
   firstPlay: {

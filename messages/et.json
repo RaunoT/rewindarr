@@ -348,13 +348,13 @@
       "introDismiss": "Selge"
     },
     "Common": {
-      "topShows": "Siin on sinu <top>{count, plural, one {enim vaadatud seriaal} other {# enim vaadatud seriaali}}</top>",
-      "topShowActors": "Siin on sinu <top>{count, plural, one {enim vaadatud seriaalinäitleja} other {# enim vaadatud seriaalinäitlejat}}</top>",
-      "topShowGenres": "Siin on sinu <top>{count, plural, one {enim vaadatud seriaaližanr} other {# enim vaadatud seriaaližanrit}}</top>",
-      "topMovies": "Siin on sinu <top>{count, plural, one {enim vaadatud film} other {# enim vaadatud filmi}}</top>",
-      "topDirectors": "Siin on sinu <top>{count, plural, one {enim vaadatud režissöör} other {# enim vaadatud režissööri}}</top>",
-      "topMovieActors": "Siin on sinu <top>{count, plural, one {enim vaadatud filminäitleja} other {# enim vaadatud filminäitlejat}}</top>",
-      "topMovieGenres": "Siin on sinu <top>{count, plural, one {enim vaadatud filmižanr} other {# enim vaadatud filmižanrit}}</top>",
+      "topShows": "Algab tagasiloendus: sinu <top>{count, plural, one {enim vaadatud seriaal} other {# enim vaadatud seriaali}}</top>",
+      "topShowActors": "{count, plural, one {<top>Näitleja</top>, kes pakkus sulle seriaalides kõige rohkem seltsi} other {<top># näitlejat</top>, kes pakkusid sulle seriaalides kõige rohkem seltsi}}",
+      "topShowGenres": "Sinu seriaalide <top>{count, plural, one {lemmikžanr} other {lemmikžanrid}}</top>",
+      "topMovies": "Trummipõrin! Sinu <top>{count, plural, one {enim vaadatud film} other {# enim vaadatud filmi}}</top>",
+      "topDirectors": "Kaamera taga: sinu <top>{count, plural, one {enim vaadatud režissöör} other {# enim vaadatud režissööri}}</top>",
+      "topMovieActors": "<top>{count, plural, one {Filmitäht} other {# filmitähte}}</top>, keda sa kõige rohkem nägid",
+      "topMovieGenres": "{count, plural, one {<top>Žanr</top>, mis valitses} other {<top># žanrit</top>, mis valitsesid}} sinu filmiõhtuid",
       "topArtists": "Siin on {count, plural, one {<top>ainus artist</top>, keda kuulasid} other {sinu <top># enim kuulatud esitajat</top>}}",
       "percentage": "See on <percentage>{percentageValue}</percentage> kogu sinu esitusajast.",
       "shows": "Seriaalid",
@@ -373,10 +373,12 @@
     },
     "Total": {
       "duration": "<total>Kokku</total> kulutasid sa <duration>{durationValue}</duration> <plex>{serverName}'is!</plex>",
+      "nonStop": "Järjest mängituna oleks see <duration>{days, plural, one {# päev} other {# päeva}}</duration>!",
       "averageMore": "See on <difference>{percent, number, percent} rohkem</difference> kui keskmisel kasutajal, kes vaatas <duration>{durationValue}</duration>.",
       "averageTimes": "See on <difference>{times, number}× rohkem</difference> kui keskmisel kasutajal, kes vaatas <duration>{durationValue}</duration>.",
       "averageLess": "See on <difference>{percent, number, percent} vähem</difference> kui keskmisel kasutajal, kes vaatas <duration>{durationValue}</duration>.",
       "averageSame": "See on <difference>umbes sama palju</difference> kui keskmisel kasutajal, kes vaatas <duration>{durationValue}</duration>.",
+      "topPercent": "Sa kuulud <plex>{serverName}'i</plex> vaatajate <top>{percent, number, percent} tippu</top>!",
       "noData": "Sa ei mänginud midagi <plex>{serverName}'ist</plex> <emoji>😫</emoji>",
       "breakdown": "Nii jagunes sinu aeg:"
     },

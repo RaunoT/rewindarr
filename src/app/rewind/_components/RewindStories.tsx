@@ -106,21 +106,6 @@ export default function RewindStories({ userRewind, settings, music }: Props) {
     createStory('welcome', StoryWelcome),
     createStory('total', StoryTotal),
     ...(userRewind.moments.monthly ? [createStory('months', StoryMonths)] : []),
-    ...(userRewind.usersTop && userRewind.usersTop.length > 1
-      ? [createStory('users_top', StoryUsersTop)]
-      : []),
-    ...(userRewind.libraries_total_size && isLibrariesSizeAndCountActive
-      ? [createStory('libraries', StoryLibraries)]
-      : []),
-    ...(isSeerrActive && userRewind.requests
-      ? [createStory('requests', StoryRequests)]
-      : []),
-    ...(isSeerrActive && userRewind.social.requestsReach
-      ? [createStory('requests_reach', StoryRequestsReach)]
-      : []),
-    ...(userRewind.social.serverYear
-      ? [createStory('server_year', StoryServerYear)]
-      : []),
     ...(userRewind.duration.user && hasShowLibraries && userRewind.shows.top[0]
       ? [createStory('shows', StoryShows)]
       : []),
@@ -167,12 +152,6 @@ export default function RewindStories({ userRewind, settings, music }: Props) {
     ...(userRewind.titleMoments.discoveries || userRewind.titleMoments.gaveUp
       ? [createStory('discoveries', StoryDiscoveries)]
       : []),
-    ...(userRewind.genres.match
-      ? [createStory('taste_match', StoryTasteMatch)]
-      : []),
-    ...(userRewind.social.onlyYou
-      ? [createStory('only_you', StoryOnlyYou)]
-      : []),
     ...(userRewind.moments.binge ? [createStory('binge', StoryBinge)] : []),
     ...(userRewind.moments.biggestDay
       ? [createStory('biggest_day', StoryBiggestDay)]
@@ -182,6 +161,28 @@ export default function RewindStories({ userRewind, settings, music }: Props) {
       : []),
     ...(userRewind.habits.peakHour !== null
       ? [createStory('habits_hour', StoryHabitsHour)]
+      : []),
+    ...(userRewind.genres.match
+      ? [createStory('taste_match', StoryTasteMatch)]
+      : []),
+    ...(userRewind.social.onlyYou
+      ? [createStory('only_you', StoryOnlyYou)]
+      : []),
+    // The other users and the server come after the viewer's own stories
+    ...(userRewind.usersTop && userRewind.usersTop.length > 1
+      ? [createStory('users_top', StoryUsersTop)]
+      : []),
+    ...(isSeerrActive && userRewind.requests
+      ? [createStory('requests', StoryRequests)]
+      : []),
+    ...(isSeerrActive && userRewind.social.requestsReach
+      ? [createStory('requests_reach', StoryRequestsReach)]
+      : []),
+    ...(userRewind.social.serverYear
+      ? [createStory('server_year', StoryServerYear)]
+      : []),
+    ...(userRewind.libraries_total_size && isLibrariesSizeAndCountActive
+      ? [createStory('libraries', StoryLibraries)]
       : []),
     ...(userRewind.firstPlay
       ? [createStory('first_play', StoryFirstPlay)]

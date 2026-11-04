@@ -3,9 +3,11 @@ import MediaItems from '@/components/MediaItem/MediaItems'
 import { RewindStory } from '@/types/rewind'
 import { useTranslations } from 'next-intl'
 import RewindStat from '../RewindStat'
+import useCountdown from '../useCountdown'
 
 export default function StoryShowsTop({ userRewind, settings }: RewindStory) {
   const t = useTranslations('Rewind.Common')
+  const shownFrom = useCountdown(userRewind.shows.top.length)
 
   return (
     <>
@@ -29,6 +31,7 @@ export default function StoryShowsTop({ userRewind, settings }: RewindStory) {
             mediaServer={userRewind.media_server}
             rows
             settings={settings}
+            shownFrom={shownFrom}
           />
         </div>
       </RewindStat>

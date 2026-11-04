@@ -3,6 +3,7 @@ import { RewindStory } from '@/types/rewind'
 import { getMediaServerName } from '@/utils/mediaServerName'
 import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
+import CountUp from '../CountUp'
 import PlaytimeShare from '../PlaytimeShare'
 import RewindStat from '../RewindStat'
 
@@ -40,7 +41,9 @@ export default function StoryAudio({ userRewind, settings }: RewindStory) {
                 {t.rich('count', {
                   countValue: userRewind.audio.count,
                   count: (chunks) => (
-                    <span className='rewind-stat'>{chunks}</span>
+                    <span className='rewind-stat'>
+                      <CountUp value={userRewind.audio.count}>{chunks}</CountUp>
+                    </span>
                   ),
                   tracks: (chunks) => (
                     <span className='rewind-cat'>{chunks}</span>

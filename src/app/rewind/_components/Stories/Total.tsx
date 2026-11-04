@@ -1,7 +1,7 @@
 import { RewindStory } from '@/types/rewind'
 import { getRewindBreakdown, hasRewindPlays } from '@/utils/helpers'
 import { getMediaServerName } from '@/utils/mediaServerName'
-import { ClockIcon } from '@heroicons/react/24/outline'
+import { ClockIcon, TrophyIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import { getAverageMessage } from '../averageMessage'
 import RewindBreakdown from '../RewindBreakdown'
@@ -9,7 +9,7 @@ import RewindStat from '../RewindStat'
 
 export default function StoryTotal({ userRewind, settings }: RewindStory) {
   const t = useTranslations('Rewind.Total')
-  const { average } = userRewind.duration
+  const { nonStopDays, average, topPercent } = userRewind.duration
   const averageMessage = average && getAverageMessage(average.difference)
   // A single type would only repeat the total
   const breakdown = getRewindBreakdown(userRewind)
@@ -39,8 +39,21 @@ export default function StoryTotal({ userRewind, settings }: RewindStory) {
             </p>
           </RewindStat>
 
-          {average && averageMessage && (
+          {nonStopDays !== null && (
             <RewindStat step={1}>
+              <p>
+                {t.rich('nonStop', {
+                  days: nonStopDays,
+                  duration: (chunks) => (
+                    <span className='rewind-stat'>{chunks}</span>
+                  ),
+                })}
+              </p>
+            </RewindStat>
+          )}
+
+          {average && averageMessage && (
+            <RewindStat step={2}>
               <p>
                 {t.rich(averageMessage.key, {
                   ...averageMessage.values,
@@ -58,8 +71,27 @@ export default function StoryTotal({ userRewind, settings }: RewindStory) {
             </RewindStat>
           )}
 
+          {topPercent !== null && (
+            <RewindStat step={3}>
+              <p>
+                {t.rich('topPercent', {
+                  percent: topPercent / 100,
+                  serverName:
+                    settings.general.serverName ||
+                    getMediaServerName(settings.connection.mediaServerType),
+                  top: (chunks) => (
+                    <span className='rewind-cat'>
+                      {chunks} <TrophyIcon />
+                    </span>
+                  ),
+                  plex: (chunks) => chunks,
+                })}
+              </p>
+            </RewindStat>
+          )}
+
           {hasBreakdown && (
-            <RewindStat step={2} noScale>
+            <RewindStat step={4} noScale>
               <p>{t('breakdown')}</p>
               <RewindBreakdown items={breakdown} />
             </RewindStat>

@@ -348,13 +348,13 @@
       "introDismiss": "Verstanden"
     },
     "Common": {
-      "topShows": "{count, plural, one {Hier ist deine <top>meistgesehene Serie</top>} other {Hier sind deine <top>Top # Serien</top>}}",
-      "topShowActors": "{count, plural, one {Hier ist dein <top>meistgesehener Serienschauspieler</top>} other {Hier sind deine <top>Top # Serienschauspieler</top>}}",
-      "topShowGenres": "{count, plural, one {Hier ist dein <top>meistgesehenes Seriengenre</top>} other {Hier sind deine <top>Top # Seriengenres</top>}}",
-      "topMovies": "{count, plural, one {Hier ist dein <top>meistgesehener Film</top>} other {Hier sind deine <top>Top # Filme</top>}}",
-      "topDirectors": "{count, plural, one {Hier ist dein <top>meistgesehener Regisseur</top>} other {Hier sind deine <top>Top # Regisseure</top>}}",
-      "topMovieActors": "{count, plural, one {Hier ist dein <top>meistgesehener Filmschauspieler</top>} other {Hier sind deine <top>Top # Filmschauspieler</top>}}",
-      "topMovieGenres": "{count, plural, one {Hier ist dein <top>meistgesehenes Filmgenre</top>} other {Hier sind deine <top>Top # Filmgenres</top>}}",
+      "topShows": "Countdown deiner <top>{count, plural, one {meistgesehenen Serie} other {Top # Serien}}</top>",
+      "topShowActors": "{count, plural, one {Der <top>Schauspieler</top>, der dir in deinen Serien am meisten Gesellschaft geleistet hat} other {Die <top># Schauspieler</top>, die dir in deinen Serien am meisten Gesellschaft geleistet haben}}",
+      "topShowGenres": "{count, plural, one {Dein liebstes <top>Seriengenre</top>} other {Deine liebsten <top>Seriengenres</top>}}",
+      "topMovies": "{count, plural, one {Trommelwirbel für deinen <top>meistgesehenen Film</top>} other {Trommelwirbel für deine <top>Top # Filme</top>}}",
+      "topDirectors": "Hinter der Kamera: {count, plural, one {dein <top>meistgesehener Regisseur</top>} other {deine <top>Top # Regisseure</top>}}",
+      "topMovieActors": "{count, plural, one {Der <top>Star</top>, den du in Filmen am meisten gesehen hast} other {Die <top># Stars</top>, die du in Filmen am meisten gesehen hast}}",
+      "topMovieGenres": "{count, plural, one {Das <top>Genre</top>, das deine Filmabende bestimmt hat} other {Die <top># Genres</top>, die deine Filmabende bestimmt haben}}",
       "topArtists": "{count, plural, one {Hier ist <top>der einzige Künstler</top>, den du gehört hast} other {Hier sind deine <top>Top # Künstler</top>}}",
       "percentage": "Das sind <percentage>{percentageValue}</percentage> deiner gesamten Wiedergabezeit.",
       "shows": "Serien",
@@ -373,10 +373,12 @@
     },
     "Total": {
       "duration": "Du hast <total>insgesamt</total> <duration>{durationValue}</duration> auf <plex>{serverName}</plex> verbracht!",
+      "nonStop": "Am Stück abgespielt hätte das <duration>{days, plural, one {# Tag} other {# Tage}}</duration> gedauert!",
       "averageMore": "Das sind <difference>{percent, number, percent} mehr</difference> als beim durchschnittlichen Benutzer, der <duration>{durationValue}</duration> geschaut hat.",
       "averageTimes": "Das ist <difference>{times, number}× so viel</difference> wie beim durchschnittlichen Benutzer, der <duration>{durationValue}</duration> geschaut hat.",
       "averageLess": "Das sind <difference>{percent, number, percent} weniger</difference> als beim durchschnittlichen Benutzer, der <duration>{durationValue}</duration> geschaut hat.",
       "averageSame": "Das ist <difference>etwa gleich viel</difference> wie beim durchschnittlichen Benutzer, der <duration>{durationValue}</duration> geschaut hat.",
+      "topPercent": "Du gehörst zu den <top>Top {percent, number, percent}</top> der Zuschauer auf <plex>{serverName}</plex>!",
       "noData": "Du hast nichts auf <plex>{serverName}</plex> abgespielt <emoji>😫</emoji>",
       "breakdown": "So hast du diese Zeit verbracht:"
     },

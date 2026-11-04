@@ -3,9 +3,11 @@ import { RewindStory } from '@/types/rewind'
 import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import RewindStat from '../RewindStat'
+import useCountdown from '../useCountdown'
 
 export default function StoryAudioTop({ userRewind, settings }: RewindStory) {
   const t = useTranslations('Rewind.Common')
+  const shownFrom = useCountdown(userRewind.audio.top.length)
 
   return (
     <>
@@ -29,6 +31,7 @@ export default function StoryAudioTop({ userRewind, settings }: RewindStory) {
             mediaServer={userRewind.media_server}
             rows
             settings={settings}
+            shownFrom={shownFrom}
           />
         </div>
       </RewindStat>
