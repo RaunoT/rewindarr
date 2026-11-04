@@ -157,8 +157,10 @@ export function getBiggestBinge(
         duration: Math.round(sumBy(binge, 'durationMs') / 1000),
         // The newest, which points at the show as it is now
         play: binge[0],
+        // When it began, which also settles a tie between two on one day
+        startedAt: binge[binge.length - 1].startedAt,
       })),
-    ['episodes', 'duration', 'date'],
+    ['episodes', 'duration', 'startedAt'],
     ['desc', 'desc', 'asc'],
   )
 

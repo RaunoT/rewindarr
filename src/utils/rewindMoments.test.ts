@@ -226,6 +226,17 @@ describe('getBiggestBinge', () => {
     ).toBe('2026-03-05')
   })
 
+  it('picks the earlier of two tied binges on the same day', () => {
+    const plays = [
+      ...['08', '09', '10'].map((hour) =>
+        episode(`2026-03-01T${hour}:00:00Z`, theBear),
+      ),
+      ...['18', '19', '20'].map((hour) => episode(`2026-03-01T${hour}:00:00Z`)),
+    ]
+
+    expect(getBiggestBinge(plays, MIN_PERCENT, 'UTC')?.title).toBe('The Bear')
+  })
+
   it('leaves out music', () => {
     const plays = ['18', '19', '20', '21'].map((hour) =>
       play(`2026-03-14T${hour}:00:00Z`, {
