@@ -18,17 +18,30 @@ import { Readable } from 'stream'
 
 export const dynamic = 'force-dynamic'
 
-// The track plays wherever Rewind can be seen
+// Saved under the uploaded name. "Laul ä.mp3" is "Laul _.mp3" for clients
+// that only read the plain ASCII name.
+function getContentDisposition(name: string) {
+  const fallback = name.replace(/[^\x20-\x7e]|["\\]/g, '_')
+  const encoded = encodeURIComponent(name).replace(
+    /['()*]/g,
+    (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`,
+  )
+
+  return `attachment; filename="${fallback}"; filename*=UTF-8''${encoded}`
+}
+
+// The track plays wherever Rewind can be seen. Admins can also download it
+// from the settings while Rewind is hidden.
 export async function GET(request: Request) {
   const settings = getSettings()
   const session = await getServerSession(authOptions)
   const music = settings.rewind.music
+  const isDownload = new URL(request.url).searchParams.has('download')
+  const canGet =
+    canViewFeature(settings, 'rewind', getViewer(session)) ||
+    (isDownload && (await canManageSettings(settings)))
 
-  if (
-    !canViewFeature(settings, 'rewind', getViewer(session)) ||
-    !music ||
-    !getMusicUrl(settings)
-  ) {
+  if (!canGet || !music || !getMusicUrl(settings)) {
     return new Response(null, { status: 404 })
   }
 
@@ -41,6 +54,10 @@ export async function GET(request: Request) {
     'Cache-Control': 'private, max-age=31536000, immutable',
     'Content-Security-Policy': 'sandbox',
   })
+
+  if (isDownload) {
+    headers.set('Content-Disposition', getContentDisposition(music.name))
+  }
 
   if (range === 'invalid') {
     headers.set('Content-Range', `bytes */${size}`)

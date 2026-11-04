@@ -281,6 +281,7 @@
       "musicFileDetails": "{format} · {size}",
       "musicUpload": "Carica",
       "musicReplace": "Sostituisci",
+      "musicDownload": "Scarica",
       "musicRemove": "Rimuovi",
       "musicSaving": "Salvataggio…",
       "musicTypeError": "Scegli un file MP3, M4A, AAC, OGG, Opus, WAV o FLAC.",

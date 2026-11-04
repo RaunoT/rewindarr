@@ -135,14 +135,27 @@ export default function RewindMusicUpload({ initialMusic }: Props) {
                 : t('musicUpload')}
           </button>
           {music && (
-            <button
-              type='button'
-              className='link text-sm'
-              onClick={() => send({ method: 'DELETE' })}
-              disabled={isBusy}
-            >
-              {t('musicRemove')}
-            </button>
+            <>
+              {/* The file name comes from the response */}
+              <a
+                href={`${MUSIC_URL}?download&v=${music.updatedAt}`}
+                download
+                className='link text-sm'
+                aria-disabled={isBusy}
+                // Links can't be disabled, and the file may be changing
+                onClick={(e) => isBusy && e.preventDefault()}
+              >
+                {t('musicDownload')}
+              </a>
+              <button
+                type='button'
+                className='link text-sm'
+                onClick={() => send({ method: 'DELETE' })}
+                disabled={isBusy}
+              >
+                {t('musicRemove')}
+              </button>
+            </>
           )}
         </div>
         <input
