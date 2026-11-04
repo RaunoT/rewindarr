@@ -39,6 +39,7 @@ import StoryTotal from './Stories/Total'
 import StoryUsersTop from './Stories/UsersTop'
 import StoryWelcome from './Stories/Welcome'
 import StoryYearOverYear from './Stories/YearOverYear'
+import { getStoryArt } from './storyArt'
 
 type StoryComponent = {
   userRewind: UserRewind
@@ -91,6 +92,7 @@ export default function RewindStories({ userRewind, settings, music }: Props) {
         <Component userRewind={userRewind} settings={settings} />
       ),
       music: sources.filter((url) => url !== null),
+      art: getStoryArt(id, userRewind),
     }
   }
 
