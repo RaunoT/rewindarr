@@ -429,6 +429,8 @@
       "count": "You watched <count>{countValue, number}</count> <episodes>{countValue, plural, one {episode} other {episodes}}</episodes> in total!",
       "favorite": "Your favorite was",
       "only": "The only show you watched was",
+      "previousFavorite": "{period, select, year {The year before} other {Last time}}, it was <title>{titleValue}</title>",
+      "sameFavorite": "It was your favorite <before>{period, select, year {the year before} other {last time}}</before> too!",
       "noData": "You didn't watch any <shows>shows</shows> on <plex>{serverName}</plex> <emoji>😥</emoji>"
     },
     "Requests": {
@@ -448,6 +450,8 @@
       "count": "You watched <count>{countValue, number}</count> <movies>{countValue, plural, one {movie} other {movies}}</movies> in total!",
       "favorite": "Your favorite was",
       "only": "The only movie you watched was",
+      "previousFavorite": "{period, select, year {The year before} other {Last time}}, it was <title>{titleValue}</title>",
+      "sameFavorite": "It was your favorite <before>{period, select, year {the year before} other {last time}}</before> too!",
       "noData": "You didn't watch any <movies>movies</movies> on <plex>{serverName}</plex> <emoji>😵‍💫</emoji>"
     },
     "People": {
@@ -492,6 +496,15 @@
       "dayTitles": "Here's what you spent it on",
       "moreTitles": "{count, plural, one {# more} other {# more}}",
       "streak": "Your longest streak was <days>{count, plural, one {# day} other {# days}} in a row</days>, from <start>{startValue}</start> to <end>{endValue}</end>"
+    },
+    "YearOverYear": {
+      "yearBefore": "<before>The year before</before>, you spent <duration>{durationValue}</duration> on <plex>{serverName}</plex>",
+      "rangeBefore": "<before>From {startValue} to {endValue}</before>, you spent <duration>{durationValue}</duration> on <plex>{serverName}</plex>",
+      "monthBefore": "<before>In {startValue}</before>, you spent <duration>{durationValue}</duration> on <plex>{serverName}</plex>",
+      "averageMore": "This time, you spent <difference>{percent, number, percent} more</difference>",
+      "averageTimes": "This time, you spent <difference>{times, number}× as much</difference>",
+      "averageLess": "This time, you spent <difference>{percent, number, percent} less</difference>",
+      "averageSame": "This time, you spent <difference>about the same</difference>"
     },
     "Habits": {
       "day": "Your favorite day to watch was <day>{dayValue}</day>",

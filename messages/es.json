@@ -429,6 +429,8 @@
       "count": "¡Viste <count>{countValue, number}</count> <episodes>{countValue, plural, one {episodio} other {episodios}}</episodes> en total!",
       "favorite": "Lo que más viste fue",
       "only": "La única serie que viste fue",
+      "previousFavorite": "{period, select, year {El año anterior} other {La última vez}} fue <title>{titleValue}</title>",
+      "sameFavorite": "¡<before>{period, select, year {El año anterior} other {La última vez}}</before> también fue lo que más viste!",
       "noData": "No viste ninguna <shows>serie</shows> en <plex>{serverName}</plex> <emoji>😥</emoji>"
     },
     "Requests": {
@@ -448,6 +450,8 @@
       "count": "¡Viste <count>{countValue, number}</count> <movies>{countValue, plural, one {película} other {películas}}</movies> en total!",
       "favorite": "Lo que más viste fue",
       "only": "La única película que viste fue",
+      "previousFavorite": "{period, select, year {El año anterior} other {La última vez}} fue <title>{titleValue}</title>",
+      "sameFavorite": "¡<before>{period, select, year {El año anterior} other {La última vez}}</before> también fue lo que más viste!",
       "noData": "No viste ninguna <movies>película</movies> en <plex>{serverName}</plex> <emoji>😵‍💫</emoji>"
     },
     "People": {
@@ -492,6 +496,15 @@
       "dayTitles": "Así lo llenaste",
       "moreTitles": "{count, plural, one {# más} other {# más}}",
       "streak": "Tu récord: <days>{count, plural, one {# día} other {# días}} seguidos</days> con al menos una reproducción, del <start>{startValue}</start> al <end>{endValue}</end>"
+    },
+    "YearOverYear": {
+      "yearBefore": "<before>El año anterior</before> pasaste <duration>{durationValue}</duration> en <plex>{serverName}</plex>",
+      "rangeBefore": "<before>De {startValue} a {endValue}</before> pasaste <duration>{durationValue}</duration> en <plex>{serverName}</plex>",
+      "monthBefore": "<before>En {startValue}</before> pasaste <duration>{durationValue}</duration> en <plex>{serverName}</plex>",
+      "averageMore": "Esta vez fue un <difference>{percent, number, percent} más</difference>",
+      "averageTimes": "Esta vez fue <difference>{times, number}× más</difference>",
+      "averageLess": "Esta vez fue un <difference>{percent, number, percent} menos</difference>",
+      "averageSame": "Esta vez fue <difference>más o menos lo mismo</difference>"
     },
     "Habits": {
       "day": "Tu día favorito para ver contenido fue el <day>{dayValue}</day>",
