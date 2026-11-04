@@ -9,6 +9,22 @@ export const slideDown = {
   },
 }
 
+// A countdown's next place comes in from above, over the places it pushes down
+export const countdownRow = {
+  hidden: {
+    opacity: 0,
+    y: -30,
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.15 },
+  },
+}
+
 export const fadeIn = {
   hidden: {
     opacity: 0,
