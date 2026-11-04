@@ -154,6 +154,20 @@ describe('getComfortWatch', () => {
     expect(getComfortWatch(plays, 80)?.watches).toBe(2)
   })
 
+  it("uses the source's length over the one the stops point to", () => {
+    // Each watched for 80 minutes of 100, but sought back to stop at 40%
+    const plays = ['heat-1', 'heat-2', 'heat-3'].map((id, i) =>
+      play(id, `2026-0${i + 2}-01`, {
+        title: 'Heat',
+        lengthMs: 100 * MINUTE,
+        durationMs: 80 * MINUTE,
+        percentComplete: 40,
+      }),
+    )
+
+    expect(getComfortWatch(plays, MIN_PERCENT)?.watches).toBe(2)
+  })
+
   it('counts the plays without a percent complete', () => {
     const plays = [
       play('heat-1', '2026-02-01', { title: 'Heat', percentComplete: null }),
