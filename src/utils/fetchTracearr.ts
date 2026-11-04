@@ -1062,7 +1062,8 @@ export async function getTracearrLibrariesSize(
 // and Rewinds opened close together look up many of the same shows. So every
 // caller shares one lookup per item for a few minutes, like the other answers,
 // the ones asking while it's in flight too. A failed lookup isn't kept, so the
-// next caller asks again.
+// next caller asks again. The answer covers every server, and each caller picks
+// out the rows of the server in use then.
 function fetchMedia(mediaId: string): Promise<TracearrMedia | null> {
   const key = `${getCacheKey()}|${mediaId}`
   const now = Date.now()
