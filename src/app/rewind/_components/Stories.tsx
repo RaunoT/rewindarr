@@ -466,8 +466,10 @@ export default function Stories({ stories }: Props) {
           {currentStory.type === 'component' ? (
             currentStory.component()
           ) : (
-            // Only shows when it takes a moment
-            <div className='animate-fade-in animation-delay-300'>
+            // Only shows when it takes a moment. Centred in the space below the
+            // progress bar, which the slide only does vertically and on wider
+            // screens.
+            <div className='animate-fade-in animation-delay-300 absolute inset-0 flex items-center justify-center pt-8'>
               <Loader />
             </div>
           )}
