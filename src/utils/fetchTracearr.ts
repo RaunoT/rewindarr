@@ -102,10 +102,6 @@ const DAY = 24 * 60 * 60 * 1000
 // The share of the rate limit that paced requests leave for everything else
 const RATE_LIMIT_RESERVE = 0.2
 const FIRST_PLAY_CACHE_TTL = DAY
-// An item's IDs don't change, and it's only added or removed now and then.
-// One Rewind looks a show up for its actors, its genres and the taste match,
-// and the next Rewinds look up many of the same shows.
-const MEDIA_CACHE_TTL = 60 * 60 * 1000
 // Plex came out in 2008, so no play is older
 const EARLIEST_PLAY = Date.UTC(2008, 0, 1)
 // Plex numbers the server owner's local account 1.
@@ -1062,9 +1058,11 @@ export async function getTracearrLibrariesSize(
   )
 }
 
-// Every caller shares one lookup per item until it expires, the ones asking
-// while it's in flight too. A failed lookup isn't kept, so the next caller
-// asks again.
+// One Rewind looks a show up for its actors, its genres and the taste match,
+// and Rewinds opened close together look up many of the same shows. So every
+// caller shares one lookup per item for a few minutes, like the other answers,
+// the ones asking while it's in flight too. A failed lookup isn't kept, so the
+// next caller asks again.
 function fetchMedia(mediaId: string): Promise<TracearrMedia | null> {
   const key = `${getCacheKey()}|${mediaId}`
   const now = Date.now()
@@ -1093,7 +1091,7 @@ function fetchMedia(mediaId: string): Promise<TracearrMedia | null> {
   state.media.set(key, entry)
   entry.media.then((media) => {
     if (media) {
-      entry.expiresAt = Date.now() + MEDIA_CACHE_TTL
+      entry.expiresAt = Date.now() + CACHE_TTL
     } else {
       forget()
     }

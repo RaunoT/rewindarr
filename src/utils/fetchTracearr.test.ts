@@ -910,14 +910,14 @@ describe('repeated item lookups', () => {
     expect(requestsTo('media/m2')).toHaveLength(1)
   })
 
-  it('looks the item up again after an hour', async () => {
+  it('looks the item up again after 5 minutes', async () => {
     route(handlers)
     vi.useFakeTimers({ toFake: ['Date'] })
 
     const { getTracearrMedia } = await load('s1')
 
     await getTracearrMedia('m1')
-    vi.advanceTimersByTime(59 * 60 * 1000)
+    vi.advanceTimersByTime(4 * 60 * 1000)
     await getTracearrMedia('m1')
 
     expect(requestsTo('media/m1')).toHaveLength(1)
