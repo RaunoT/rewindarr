@@ -16,12 +16,13 @@ export default function StoryComfortWatch({
   }
 
   const { episode } = comfortWatch
+  const isEpisode = episode !== null
 
   return (
     <>
       <RewindStat>
         <p>
-          {t.rich(episode ? 'episode' : 'movie', {
+          {t.rich(isEpisode ? 'episode' : 'movie', {
             comfort: (chunks) => (
               <span className='rewind-cat'>
                 {chunks}
@@ -35,7 +36,8 @@ export default function StoryComfortWatch({
       </RewindStat>
 
       <RewindStat step={1} noScale>
-        {/* The card is the show, so the episode is named above it */}
+        {/* The card is the show, so the episode is named above it. An episode
+            without a title is left to the card. */}
         {episode && (
           <p className='mb-2'>
             {t.rich('episodeTitle', {
