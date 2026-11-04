@@ -30,7 +30,7 @@ Run `pnpm lint:all` and `pnpm test` before every PR. CI also runs `pnpm build`.
 - Commits and PR titles follow Conventional Commits: `type(scope): description`. Types are enforced by `commitlint.config.ts`: `feat`, `fix`, `ui` (custom, for UI changes), `perf`, `docs`, `revert`, `chore`, `refactor`, `build`, `ci`, `style`, `test`.
 - Branch names follow `type(scope)/short-description`, for example `feat(dashboard)/new-widget` or `fix/null-pointer`.
 - PR descriptions follow `.github/pull_request_template.md`: a summary, a test plan with the URL paths to check, and for UI changes a before/after table. `gh` can't upload files, so name each file in the table's cells; the user drags them in on GitHub.
-- Releases are automated by semantic-release: pre-releases from `develop`, releases from `main`, with a backmerge from `main` to `develop`. `feat` bumps minor; `fix`, `ui`, `perf`, `build`, `ci`, `revert` and `refactor` bump patch; `docs`, `chore`, `style` and `test` do not release. Never edit versions or changelogs by hand.
+- Releases are automated by semantic-release: pre-releases from `develop` (the Pre-release workflow is started by hand), releases from `main`, with a backmerge from `main` to `develop`. `feat` bumps minor; `fix`, `ui`, `perf`, `build`, `ci`, `revert` and `refactor` bump patch; `docs`, `chore`, `style` and `test` do not release. Never edit versions or changelogs by hand.
 - Husky runs lint-staged on commit and commitlint on the message. Do not skip the hooks.
 
 ## Architecture

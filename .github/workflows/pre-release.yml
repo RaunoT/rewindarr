@@ -1,9 +1,10 @@
 name: Pre-release
 
+# Started by hand from the Actions tab (or `gh workflow run pre-release.yml
+# --ref develop`), so a burst of merges into develop gives one pre-release
+# instead of a run per merge.
 on:
-  push:
-    branches:
-      - develop
+  workflow_dispatch:
 
 concurrency:
   group: pre-release-${{ github.ref }}
@@ -17,6 +18,16 @@ jobs:
     name: Lint & test build
     runs-on: ubuntu-latest
     steps:
+      # A manual run can be started on any branch, but pre-releases only come
+      # from develop.
+      - name: Check the branch
+        if: github.ref != 'refs/heads/develop'
+        env:
+          REF: ${{ github.ref_name }}
+        run: |
+          echo "Pre-releases are made from develop, not $REF."
+          exit 1
+
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
