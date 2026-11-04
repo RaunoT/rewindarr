@@ -39,7 +39,7 @@ import {
   getPersonalitySignals,
   getPlaySignals,
 } from '@/utils/rewindPersonality'
-import { getNonStopDays, getTopPercent } from '@/utils/rewindTotal'
+import { getTopPercent } from '@/utils/rewindTotal'
 import {
   getActiveUsers,
   getHistoryProgress,
@@ -185,7 +185,6 @@ async function getTotals(
   return {
     duration: {
       user: secondsToTime(userTotalDuration, t),
-      nonStopDays: getNonStopDays(userTotalDuration),
       average: averageDuration
         ? {
             duration: secondsToTime(averageDuration, t),

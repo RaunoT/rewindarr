@@ -86,8 +86,6 @@ export type UserRewind = {
   }
   duration: {
     user: string
-    // The user's time in days, as if watched in one go, null under a day
-    nonStopDays: number | null
     // Null without anyone else to compare with
     average: {
       duration: string
