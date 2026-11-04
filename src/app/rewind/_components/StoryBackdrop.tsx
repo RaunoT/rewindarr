@@ -2,6 +2,7 @@
 
 import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion'
 import { instantTransition } from '@/utils/motion'
+import clsx from 'clsx'
 import { AnimatePresence, motion } from 'motion/react'
 import Image, { getImageProps } from 'next/image'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -80,12 +81,22 @@ type ArtProps = {
 // or too bright
 function Art({ src, isInstant, onError }: ArtProps) {
   const imageRef = useRef<HTMLImageElement>(null)
-  const [dimming, setDimming] = useState<number | null>(null)
+  const dimmingRef = useRef<number | null>(null)
+  // More dimming applies at once, so the text never sits on art brighter than
+  // it allows, while less fades in
+  const [dimming, setDimming] = useState<{
+    value: number
+    isInstant: boolean
+  } | null>(null)
   const measure = useCallback(() => {
     const image = imageRef.current
 
     if (image?.complete && image.naturalWidth) {
-      setDimming(measureDimming(image))
+      const value = measureDimming(image)
+      const previous = dimmingRef.current
+
+      dimmingRef.current = value
+      setDimming({ value, isInstant: previous !== null && value > previous })
     }
   }, [])
 
@@ -125,8 +136,12 @@ function Art({ src, isInstant, onError }: ArtProps) {
         onError={onError}
       />
       <div
-        className='absolute inset-0 bg-black transition-opacity duration-700 motion-reduce:transition-none'
-        style={{ opacity: dimming ?? 1 }}
+        className={clsx(
+          'absolute inset-0 bg-black',
+          !dimming?.isInstant &&
+            'transition-opacity duration-700 motion-reduce:transition-none',
+        )}
+        style={{ opacity: dimming?.value ?? 1 }}
       />
     </motion.div>
   )
