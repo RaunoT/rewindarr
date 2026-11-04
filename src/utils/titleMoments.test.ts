@@ -429,6 +429,51 @@ describe('getTitleMoments', () => {
     expect(moments.gaveUp).toBeNull()
   })
 
+  it("gives the cards the user's plays and watch time in the period", async () => {
+    const moments = await getTitleMoments(
+      [
+        ...plays,
+        episode('friends-2', '2026-04-01', 'Friends', [1, 2], {
+          percentComplete: 10,
+        }),
+      ],
+      null,
+    )
+
+    // The show's plays, not only the comfort watch episode's
+    expect(moments.comfortWatch?.item).toMatchObject({
+      total_plays: 2,
+      total_duration: 3 * 30 * 60,
+    })
+  })
+
+  it("counts a comfort watch movie's plays as its watches", async () => {
+    const moments = await getTitleMoments(
+      [
+        play('alien-1', '2026-01-01', { title: 'Alien' }),
+        play('alien-2', '2026-02-01', { title: 'Alien' }),
+        // Split into two plays that each count
+        play('alien-3', '2026-03-01', {
+          title: 'Alien',
+          durationMs: 45 * MINUTE,
+          percentComplete: 50,
+        }),
+        play('alien-4', '2026-03-01', {
+          title: 'Alien',
+          durationMs: 45 * MINUTE,
+          percentComplete: 100,
+        }),
+      ],
+      null,
+    )
+
+    expect(moments.comfortWatch).toMatchObject({ watches: 3 })
+    expect(moments.comfortWatch?.item).toMatchObject({
+      total_plays: 3,
+      total_duration: 3 * 90 * 60,
+    })
+  })
+
   it('waits for the whole history for what came before the period', async () => {
     const moments = await getTitleMoments(plays, null)
 

@@ -425,17 +425,29 @@ describe('getRewindMoments', () => {
     timeZone: 'UTC',
   }
 
-  it("looks up the binged show's card", async () => {
-    const item = { title: 'Severance' } as TautulliItemRow
+  it("looks up the binged show's card, with the show's plays in the period", async () => {
+    const item = {
+      title: 'Severance',
+      total_plays: 1,
+      total_duration: 3600,
+    } as TautulliItemRow
     const getPlayItem = vi.fn().mockResolvedValue(item)
-    const moments = await getRewindMoments(binge, { ...options, getPlayItem })
+    const moments = await getRewindMoments(
+      [
+        ...binge,
+        episode('2026-03-20T20:00:00Z', { percentComplete: 20 }),
+        episode('2026-03-21T20:00:00Z', theBear),
+      ],
+      { ...options, getPlayItem },
+    )
 
     expect(moments.binge).toEqual({
       date: '2026-03-14',
       title: 'Severance',
       episodes: 3,
       duration: 3 * 3600,
-      item,
+      // A play that doesn't count still adds its watch time
+      item: { ...item, total_plays: 3, total_duration: 4 * 3600 },
     })
     expect(getPlayItem).toHaveBeenCalledWith(binge[2])
   })

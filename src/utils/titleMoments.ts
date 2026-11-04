@@ -4,7 +4,7 @@ import { groupBy, mapValues, minBy, orderBy, sumBy } from 'lodash'
 import { getTranslations } from 'next-intl/server'
 import { secondsToTime } from './formatting'
 import getSettings from './getSettings'
-import { groupPlays, isCountedPlay } from './playStats'
+import { getItemTotals, groupPlays, isCountedPlay } from './playStats'
 import { getStatsSource } from './statsSource'
 
 // What a play rolls up into, as in the dashboard's lists
@@ -290,16 +290,34 @@ export async function getTitleMoments(
   const discoveries = allPlays && getDiscoveries(plays, allPlays, minPercent)
   const gaveUp = allPlays && getGaveUp(plays, allPlays, minPercent)
 
-  // Without a user, the card's watch time and plays are only this play's
+  // The card is looked up from one play, so its watch time and plays are the
+  // user's for the item in the period, as in the top lists
   async function getCard(play: Play): Promise<TitleCard> {
+    const itemPlays = groupPlays(ofType(plays, play.mediaType)).find((group) =>
+      group.some((other) => other.id === play.id),
+    ) ?? [play]
+
     return {
-      item: await source.getPlayItem(play),
+      item: {
+        ...(await source.getPlayItem(play)),
+        ...getItemTotals(itemPlays, minPercent),
+      },
       type: ITEM_TYPES[play.mediaType],
     }
   }
 
   const [comfortCard, oldestCard, discoveryCard] = await Promise.all([
-    comfortWatch && getCard(comfortWatch.play),
+    comfortWatch &&
+      getCard(comfortWatch.play).then((card) =>
+        // A movie's plays are its watches, as the story counts them. An
+        // episode's card is its show, with all of the show's plays.
+        comfortWatch.isEpisode
+          ? card
+          : {
+              ...card,
+              item: { ...card.item, total_plays: comfortWatch.watches },
+            },
+      ),
     timeTravel && getCard(timeTravel.oldest.play),
     discoveries && getCard(discoveries.top.play),
   ])
