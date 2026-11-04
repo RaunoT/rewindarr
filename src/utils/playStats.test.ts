@@ -370,10 +370,54 @@ describe('plays short of the percent in the settings', () => {
   })
 
   it('are left out of the hours and days', async () => {
-    const { hourly, daily } = await getStats().getPlaysByTime('2', '2026-01-01')
+    const { hourly, daily } = await getStats().getPlaysByTime(
+      '2',
+      [movies],
+      '2026-01-01',
+    )
 
     expect(sum(hourly)).toBe(1)
     expect(sum(daily)).toBe(1)
+  })
+})
+
+describe('getPlaysByTime', () => {
+  const movies = { section_type: 'movie' } as TautulliLibrary
+
+  function getStats(getPlays: () => Promise<Play[]>) {
+    vi.mocked(getSettings).mockReturnValue({
+      general: { excludedUsers: [], minPlayPercent: 50 },
+    } as unknown as ReturnType<typeof getSettings>)
+
+    return createPlayStats({
+      getPlays,
+      getUsers: async () => [user('1', 'alice')],
+      getMediaData: async () => ({ thumb: '', isDeleted: false }),
+    })
+  }
+
+  it('counts only the plays in the libraries', async () => {
+    const getPlays = vi.fn(async () => plays)
+
+    await getStats(getPlays).getPlaysByTime('1', [movies], '2026-01-01')
+
+    expect(getPlays).toHaveBeenCalledWith('2026-01-01', [movies])
+  })
+
+  it('counts the hours and days in the timezone', async () => {
+    // Saturday at 02:30 in UTC, still Friday evening in New York
+    const late = play('late', '2026-03-07T02:30:00Z')
+    const stats = getStats(async () => [late])
+    const utc = await stats.getPlaysByTime('1', [movies], '2026-01-01', 'UTC')
+    const newYork = await stats.getPlaysByTime(
+      '1',
+      [movies],
+      '2026-01-01',
+      'America/New_York',
+    )
+
+    expect([utc.hourly[2], utc.daily[6]]).toEqual([1, 1])
+    expect([newYork.hourly[21], newYork.daily[5]]).toEqual([1, 1])
   })
 })
 

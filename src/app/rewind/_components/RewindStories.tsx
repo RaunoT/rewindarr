@@ -7,11 +7,16 @@ import Snow from './Snow'
 import Stories from './Stories'
 import StoryAudio from './Stories/Audio'
 import StoryAudioTop from './Stories/AudioTop'
+import StoryBiggestDay from './Stories/BiggestDay'
+import StoryBinge from './Stories/Binge'
+import StoryComfortWatch from './Stories/ComfortWatch'
+import StoryDiscoveries from './Stories/Discoveries'
 import StoryFirstPlay from './Stories/FirstPlay'
 import StoryGoodbye from './Stories/Goodbye'
 import StoryHabitsDay from './Stories/HabitsDay'
 import StoryHabitsHour from './Stories/HabitsHour'
 import StoryLibraries from './Stories/Libraries'
+import StoryMonths from './Stories/Months'
 import StoryMovies from './Stories/Movies'
 import StoryMoviesActors from './Stories/MoviesActors'
 import StoryMoviesDirectors from './Stories/MoviesDirectors'
@@ -26,6 +31,7 @@ import StoryShowsActors from './Stories/ShowsActors'
 import StoryShowsGenres from './Stories/ShowsGenres'
 import StoryShowsTop from './Stories/ShowsTop'
 import StoryTasteMatch from './Stories/TasteMatch'
+import StoryTimeTravel from './Stories/TimeTravel'
 import StoryTotal from './Stories/Total'
 import StoryUsersTop from './Stories/UsersTop'
 import StoryWelcome from './Stories/Welcome'
@@ -99,6 +105,7 @@ export default function RewindStories({ userRewind, settings, music }: Props) {
   const stories = [
     createStory('welcome', StoryWelcome),
     createStory('total', StoryTotal),
+    ...(userRewind.moments.monthly ? [createStory('months', StoryMonths)] : []),
     ...(userRewind.usersTop && userRewind.usersTop.length > 1
       ? [createStory('users_top', StoryUsersTop)]
       : []),
@@ -151,11 +158,24 @@ export default function RewindStories({ userRewind, settings, music }: Props) {
     ...(userRewind.audio.top.length && hasAudioLibraries
       ? [createStory('audio_top', StoryAudioTop)]
       : []),
+    ...(userRewind.titleMoments.comfortWatch
+      ? [createStory('comfort_watch', StoryComfortWatch)]
+      : []),
+    ...(userRewind.titleMoments.timeTravel
+      ? [createStory('time_travel', StoryTimeTravel)]
+      : []),
+    ...(userRewind.titleMoments.discoveries || userRewind.titleMoments.gaveUp
+      ? [createStory('discoveries', StoryDiscoveries)]
+      : []),
     ...(userRewind.genres.match
       ? [createStory('taste_match', StoryTasteMatch)]
       : []),
     ...(userRewind.social.onlyYou
       ? [createStory('only_you', StoryOnlyYou)]
+      : []),
+    ...(userRewind.moments.binge ? [createStory('binge', StoryBinge)] : []),
+    ...(userRewind.moments.biggestDay
+      ? [createStory('biggest_day', StoryBiggestDay)]
       : []),
     ...(userRewind.habits.peakDayIndex !== null
       ? [createStory('habits_day', StoryHabitsDay)]

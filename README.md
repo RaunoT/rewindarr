@@ -56,7 +56,7 @@ services:
       - NEXTAUTH_SECRET= # (required) used to encrypt auth JWT token, generate one with `openssl rand -base64 32`
       - NEXTAUTH_URL=http://localhost:8383 # (required) change to your domain if you are exposing the app to the internet
       - NEXT_PUBLIC_SITE_URL=http://localhost:8383 # (required) change to your domain if you are exposing the app to the internet
-      - TZ=Europe/London # (optional) your timezone, used for viewing habits and finish times
+      - TZ=Europe/London # (optional) your timezone, used for finish times. Rewind's viewing habits use each viewer's own.
       - PUID=1000 # (optional) user ID the app runs as, defaults to 1000
       - PGID=1000 # (optional) group ID the app runs as, defaults to 1000
     volumes:

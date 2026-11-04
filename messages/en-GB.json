@@ -395,6 +395,24 @@
       "topTrackPlays": "You played it <count>{countValue, plural, one {once} other {# times}}</count>",
       "noData": "You didn't listen to any <audio>music</audio> on <from>{serverName}</from>"
     },
+    "ComfortWatch": {
+      "movie": "Your comfort watch was <title>{titleValue}</title>",
+      "episode": "Your comfort watch was <title>{titleValue}</title> from <show>{showValue}</show>",
+      "moviePlays": "You watched it <count>{countValue, plural, one {once} other {# times}}</count>",
+      "episodePlays": "You watched it <count>{countValue, plural, one {once} other {# times}}</count>"
+    },
+    "TimeTravel": {
+      "decade": "You spent <share>{shareValue, number, percent}</share> of your watch time in <decade>the {decadeValue}s</decade>",
+      "oldest": "The furthest back you went was <year>{yearValue}</year>, with <title>{titleValue}</title>"
+    },
+    "Discoveries": {
+      "shows": "You discovered <showsCount>{showsValue, number}</showsCount> <shows>new {showsValue, plural, one {show} other {shows}}</shows>",
+      "artists": "You discovered <artistsCount>{artistsValue, number}</artistsCount> <artists>new {artistsValue, plural, one {artist} other {artists}}</artists>",
+      "showsAndArtists": "You discovered <showsCount>{showsValue, number}</showsCount> <shows>new {showsValue, plural, one {show} other {shows}}</shows> and <artistsCount>{artistsValue, number}</artistsCount> <artists>new {artistsValue, plural, one {artist} other {artists}}</artists>",
+      "top": "Your biggest find was <title>{titleValue}</title>, which got <duration>{durationValue}</duration> of your time",
+      "only": "It was <title>{titleValue}</title>, which got <duration>{durationValue}</duration> of your time",
+      "gaveUp": "One that got away: you made it <percent>{percentValue, number, percent}</percent> into <title>{titleValue}</title>. Maybe next time?"
+    },
     "Libraries": {
       "filesize": "Did you know that everything on <plex>{serverName}</plex> takes up <size>{sizeValue}</size> of <filesize>storage</filesize>?",
       "sizePartial": "Some libraries have no size data. Enable “Calculate Total File Sizes” in Tautulli.",
@@ -460,6 +478,18 @@
       "share": "<share>{shareValue}</share> of that was you",
       "movie": "The most watched <movies>movie</movies> was <title>{titleValue}</title>",
       "show": "The most watched <shows>show</shows> was <title>{titleValue}</title>"
+    },
+    "Moments": {
+      "month": "Your busiest month was <month>{monthValue}</month>, with <duration>{durationValue}</duration> of playtime",
+      "hours": "Hours",
+      "monthChart": "Bar chart of playtime per month. Busiest month: {monthValue} with {durationValue}.",
+      "binge": "Your biggest binge was on <date>{dateValue}</date>",
+      "bingeEpisodes": "You watched <count>{countValue, plural, one {# episode} other {# episodes}}</count> back to back, <duration>{durationValue}</duration> in all",
+      "bingeShow": "And the show was <show>{showValue}</show>",
+      "day": "Your biggest day was <date>{dateValue}</date>, when you clocked up <duration>{durationValue}</duration>",
+      "dayTitles": "Here's what you spent it on",
+      "moreTitles": "{count, plural, one {# more} other {# more}}",
+      "streak": "Your longest streak was <days>{count, plural, one {# day} other {# days}} in a row</days>, from <start>{startValue}</start> to <end>{endValue}</end>"
     },
     "Habits": {
       "day": "Your favourite day to watch was <day>{dayValue}</day>",
