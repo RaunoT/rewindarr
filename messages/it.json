@@ -395,6 +395,24 @@
       "topTrackPlays": "L'hai ascoltato <count>{countValue, plural, one {una volta} other {# volte}}</count>",
       "noData": "Non hai ascoltato <audio>musica</audio> su <from>{serverName}</from>"
     },
+    "ComfortWatch": {
+      "movie": "Il film che hai rivisto più volte è stato <title>{titleValue}</title>",
+      "episode": "L'episodio che hai rivisto più volte è stato <title>{titleValue}</title> di <show>{showValue}</show>",
+      "moviePlays": "L'hai guardato <count>{countValue, plural, one {una volta} other {# volte}}</count>",
+      "episodePlays": "L'hai guardato <count>{countValue, plural, one {una volta} other {# volte}}</count>"
+    },
+    "TimeTravel": {
+      "decade": "Hai trascorso il <share>{shareValue, number, percent}</share> del tuo tempo negli <decade>anni {decadeValue}</decade>",
+      "oldest": "Il viaggio più lontano ti ha portato nel <year>{yearValue}</year>, con <title>{titleValue}</title>"
+    },
+    "Discoveries": {
+      "shows": "Hai scoperto <showsCount>{showsValue, number}</showsCount> <shows>{showsValue, plural, one {nuova serie} other {nuove serie}}</shows>",
+      "artists": "Hai scoperto <artistsCount>{artistsValue, number}</artistsCount> <artists>{artistsValue, plural, one {nuovo artista} other {nuovi artisti}}</artists>",
+      "showsAndArtists": "Hai scoperto <showsCount>{showsValue, number}</showsCount> <shows>{showsValue, plural, one {nuova serie} other {nuove serie}}</shows> e <artistsCount>{artistsValue, number}</artistsCount> <artists>{artistsValue, plural, one {nuovo artista} other {nuovi artisti}}</artists>",
+      "top": "La tua scoperta più grande è stata <title>{titleValue}</title>, con <duration>{durationValue}</duration> del tuo tempo",
+      "only": "Si tratta di <title>{titleValue}</title>, con <duration>{durationValue}</duration> del tuo tempo",
+      "gaveUp": "Uno ti è sfuggito: <title>{titleValue}</title> si è fermato al <percent>{percentValue, number, percent}</percent>. Magari la prossima volta?"
+    },
     "Libraries": {
       "filesize": "Lo sapevi che tutti i contenuti su <plex>{serverName}</plex> occupano <size>{sizeValue}</size> di <filesize>spazio</filesize>?",
       "sizePartial": "Alcune librerie non hanno dati sulle dimensioni. Attiva «Calculate Total File Sizes» in Tautulli.",

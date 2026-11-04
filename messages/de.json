@@ -395,6 +395,24 @@
       "topTrackPlays": "Du hast ihn <count>{countValue, plural, one {einmal} other {#-mal}}</count> gehört",
       "noData": "Du hast keine <audio>Musik</audio> auf {serverName} <from>gehört</from>"
     },
+    "ComfortWatch": {
+      "movie": "Dein Wohlfühlfilm war <title>{titleValue}</title>",
+      "episode": "Deine Wohlfühlfolge war <title>{titleValue}</title> aus <show>{showValue}</show>",
+      "moviePlays": "Du hast ihn <count>{countValue, plural, one {einmal} other {#-mal}}</count> gesehen",
+      "episodePlays": "Du hast sie <count>{countValue, plural, one {einmal} other {#-mal}}</count> gesehen"
+    },
+    "TimeTravel": {
+      "decade": "Du hast <share>{shareValue, number, percent}</share> deiner Zeit in den <decade>{decadeValue}ern</decade> verbracht",
+      "oldest": "Am weitesten zurück ging es ins Jahr <year>{yearValue}</year>, mit <title>{titleValue}</title>"
+    },
+    "Discoveries": {
+      "shows": "Du hast <showsCount>{showsValue, number}</showsCount> <shows>{showsValue, plural, one {neue Serie} other {neue Serien}}</shows> entdeckt",
+      "artists": "Du hast <artistsCount>{artistsValue, number}</artistsCount> <artists>{artistsValue, plural, one {neuen Künstler} other {neue Künstler}}</artists> entdeckt",
+      "showsAndArtists": "Du hast <showsCount>{showsValue, number}</showsCount> <shows>{showsValue, plural, one {neue Serie} other {neue Serien}}</shows> und <artistsCount>{artistsValue, number}</artistsCount> <artists>{artistsValue, plural, one {neuen Künstler} other {neue Künstler}}</artists> entdeckt",
+      "top": "Deine größte Entdeckung war <title>{titleValue}</title>, mit <duration>{durationValue}</duration> deiner Zeit",
+      "only": "Es war <title>{titleValue}</title>, mit <duration>{durationValue}</duration> deiner Zeit",
+      "gaveUp": "Einer ist dir entwischt: Bei <title>{titleValue}</title> bist du bis <percent>{percentValue, number, percent}</percent> gekommen. Vielleicht beim nächsten Mal?"
+    },
     "Libraries": {
       "filesize": "Wusstest du, dass alle Inhalte auf <plex>{serverName}</plex> zusammen <size>{sizeValue}</size> <filesize>Speicherplatz</filesize> belegen?",
       "sizePartial": "Für einige Bibliotheken liegen keine Größenangaben vor. Aktiviere „Calculate Total File Sizes“ in Tautulli.",

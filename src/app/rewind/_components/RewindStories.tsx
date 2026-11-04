@@ -9,6 +9,8 @@ import StoryAudio from './Stories/Audio'
 import StoryAudioTop from './Stories/AudioTop'
 import StoryBiggestDay from './Stories/BiggestDay'
 import StoryBinge from './Stories/Binge'
+import StoryComfortWatch from './Stories/ComfortWatch'
+import StoryDiscoveries from './Stories/Discoveries'
 import StoryFirstPlay from './Stories/FirstPlay'
 import StoryGoodbye from './Stories/Goodbye'
 import StoryHabitsDay from './Stories/HabitsDay'
@@ -26,6 +28,7 @@ import StoryShowsActors from './Stories/ShowsActors'
 import StoryShowsGenres from './Stories/ShowsGenres'
 import StoryShowsTop from './Stories/ShowsTop'
 import StoryTasteMatch from './Stories/TasteMatch'
+import StoryTimeTravel from './Stories/TimeTravel'
 import StoryTotal from './Stories/Total'
 import StoryUsersTop from './Stories/UsersTop'
 import StoryWelcome from './Stories/Welcome'
@@ -145,6 +148,15 @@ export default function RewindStories({ userRewind, settings, music }: Props) {
     // there's only one
     ...(userRewind.audio.top.length && hasAudioLibraries
       ? [createStory('audio_top', StoryAudioTop)]
+      : []),
+    ...(userRewind.titleMoments.comfortWatch
+      ? [createStory('comfort_watch', StoryComfortWatch)]
+      : []),
+    ...(userRewind.titleMoments.timeTravel
+      ? [createStory('time_travel', StoryTimeTravel)]
+      : []),
+    ...(userRewind.titleMoments.discoveries || userRewind.titleMoments.gaveUp
+      ? [createStory('discoveries', StoryDiscoveries)]
       : []),
     ...(userRewind.genres.match
       ? [createStory('taste_match', StoryTasteMatch)]

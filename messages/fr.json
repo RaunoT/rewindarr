@@ -395,6 +395,24 @@
       "topTrackPlays": "Vous l'avez écouté <count>{countValue, plural, one {une fois} other {# fois}}</count>",
       "noData": "Vous n'avez écouté aucune <audio>musique</audio> sur <from>{serverName}</from>"
     },
+    "ComfortWatch": {
+      "movie": "Votre valeur sûre était <title>{titleValue}</title>",
+      "episode": "Votre valeur sûre était <title>{titleValue}</title>, un épisode de <show>{showValue}</show>",
+      "moviePlays": "Vous l'avez regardé <count>{countValue, plural, one {une fois} other {# fois}}</count>",
+      "episodePlays": "Vous l'avez regardé <count>{countValue, plural, one {une fois} other {# fois}}</count>"
+    },
+    "TimeTravel": {
+      "decade": "Vous avez passé <share>{shareValue, number, percent}</share> de votre temps de visionnage dans <decade>les années {decadeValue}</decade>",
+      "oldest": "Votre voyage le plus lointain remonte à <year>{yearValue}</year>, avec <title>{titleValue}</title>"
+    },
+    "Discoveries": {
+      "shows": "Vous avez découvert <showsCount>{showsValue, number}</showsCount> <shows>{showsValue, plural, one {nouvelle série} other {nouvelles séries}}</shows>",
+      "artists": "Vous avez découvert <artistsCount>{artistsValue, number}</artistsCount> <artists>{artistsValue, plural, one {nouvel artiste} other {nouveaux artistes}}</artists>",
+      "showsAndArtists": "Vous avez découvert <showsCount>{showsValue, number}</showsCount> <shows>{showsValue, plural, one {nouvelle série} other {nouvelles séries}}</shows> et <artistsCount>{artistsValue, number}</artistsCount> <artists>{artistsValue, plural, one {nouvel artiste} other {nouveaux artistes}}</artists>",
+      "top": "Votre plus belle découverte était <title>{titleValue}</title>, avec <duration>{durationValue}</duration> au compteur",
+      "only": "Il s'agissait de <title>{titleValue}</title>, avec <duration>{durationValue}</duration> au compteur",
+      "gaveUp": "Un film vous a échappé : <title>{titleValue}</title>, arrêté à <percent>{percentValue, number, percent}</percent>. Ce sera pour une prochaine fois ?"
+    },
     "Libraries": {
       "filesize": "Saviez-vous que tout le contenu de <plex>{serverName}</plex> occupe <size>{sizeValue}</size> de <filesize>stockage</filesize> ?",
       "sizePartial": "Certaines bibliothèques n'ont pas de données de taille. Activez « Calculate Total File Sizes » dans Tautulli.",
