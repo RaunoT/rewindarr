@@ -113,6 +113,20 @@ describe('getRequestsTotals', () => {
     })
   })
 
+  it("averages each requester's split of their movies and shows", async () => {
+    vi.mocked(fetchSeerrStats).mockResolvedValue([
+      request('movie', 1),
+      request('music', 1),
+      request('tv', 2),
+      request('music', 3),
+    ])
+
+    const totals = await getRequestsTotals('1')
+
+    // User 3 has no movies or shows to split
+    expect(totals?.averageShares).toEqual({ movies: 0.5, shows: 0.5 })
+  })
+
   it('counts zero requests when there were none', async () => {
     vi.mocked(fetchSeerrStats).mockResolvedValue([])
 

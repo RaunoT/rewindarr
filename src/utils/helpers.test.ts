@@ -322,6 +322,29 @@ describe('getRequestsBreakdown', () => {
     ).toEqual([{ type: 'movie', count: 1, share: 1, otherShare: 1 }])
   })
 
+  it('splits only movies and shows, like the average user', () => {
+    expect(
+      getRequestsBreakdown({
+        ...requests,
+        total: 12,
+        user: { total: 6, movies: 1, shows: 3 },
+      }),
+    ).toEqual([
+      { type: 'show', count: 3, share: 0.75, otherShare: 0.3 },
+      { type: 'movie', count: 1, share: 0.25, otherShare: 0.7 },
+    ])
+    expect(
+      getRequestsBreakdown({
+        ...requests,
+        total: 12,
+        user: { total: 2, movies: 0, shows: 0 },
+      }),
+    ).toEqual([
+      { type: 'movie', count: 6, share: null, otherShare: 0.6 },
+      { type: 'show', count: 4, share: null, otherShare: 0.4 },
+    ])
+  })
+
   it('has no other bar with nobody else to compare with', () => {
     expect(getRequestsBreakdown({ ...requests, averageShares: null })).toEqual([
       { type: 'show', count: 3, share: 0.75, otherShare: null },

@@ -244,13 +244,17 @@ export function getRequestsBreakdown(
       averageShare: averageShares?.shows ?? null,
     },
   ].filter((item) => item.count)
+  // Split over the listed types only, like the average user's, so requests of
+  // any other type don't shrink one side's bars
+  const userTotal = user.movies + user.shows
+  const total = requests.movies + requests.shows
 
   return sortBreakdown(
     types.map((item) => ({
       type: item.type,
-      count: user.total ? item.userCount : item.count,
-      share: user.total ? item.userCount / user.total : null,
-      otherShare: user.total ? item.averageShare : item.count / requests.total,
+      count: userTotal ? item.userCount : item.count,
+      share: userTotal ? item.userCount / userTotal : null,
+      otherShare: userTotal ? item.averageShare : item.count / total,
     })),
   )
 }
