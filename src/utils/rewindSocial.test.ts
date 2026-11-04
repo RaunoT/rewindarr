@@ -175,6 +175,24 @@ describe('getRequestsReach', () => {
     })
   })
 
+  it('leaves out another show with the same name', () => {
+    const requests = [
+      request(1, { type: 'tv', media: { tmdbId: 2, ratingKey: '200' } }),
+    ]
+    const plays = [
+      episode('office-bob', BOB, 'The Office', { grandparentRatingKey: '200' }),
+      // The British one
+      episode('office-carol', CAROL, 'The Office', {
+        grandparentRatingKey: '900',
+      }),
+    ]
+
+    expect(getRequestsReach(requests, plays, '1', MIN_PERCENT)).toMatchObject({
+      users: 1,
+      top: { play: { id: 'office-bob' }, users: 1 },
+    })
+  })
+
   it("matches Jellyfin's IDs and movies' TMDB IDs, not episodes'", () => {
     const requests = [
       request(1, { media: { tmdbId: 1, jellyfinMediaId: 'AB12-CD34' } }),

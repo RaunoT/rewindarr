@@ -175,7 +175,6 @@ export function getRequestsReach(
   userId: string,
   minPercent: number,
 ): RequestsReach | null {
-  const titles = getTitles(plays)
   const reached = requests
     .filter(
       (request) =>
@@ -185,17 +184,15 @@ export function getRequestsReach(
     )
     .flatMap((request) => {
       const requestedAt = new Date(request.createdAt).getTime()
-      const othersPlays = titles
-        .filter((title) =>
-          title.some((play) => isRequestedTitle(request, play)),
-        )
-        .flat()
-        .filter(
-          (play) =>
-            play.userId !== userId &&
-            play.startedAt >= requestedAt &&
-            isRequestedSeason(request, play),
-        )
+      // Each play is matched on its own, as two shows with one name share a
+      // title in the stats
+      const othersPlays = plays.filter(
+        (play) =>
+          play.userId !== userId &&
+          play.startedAt >= requestedAt &&
+          isRequestedTitle(request, play) &&
+          isRequestedSeason(request, play),
+      )
       const title = othersPlays.length ? sumUp(othersPlays, minPercent) : null
 
       return title?.users ? [{ title, plays: othersPlays }] : []
