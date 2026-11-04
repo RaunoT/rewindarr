@@ -1,11 +1,12 @@
 'use client'
 
-import { UserRewind } from '@/types/rewind'
+import usePromiseValue from '@/hooks/usePromiseValue'
+import { RewindTotals, RewindUser, UserRewind } from '@/types/rewind'
 import { PublicSettings } from '@/types/settings'
 import { hasRewindPlays } from '@/utils/helpers'
 import { FC } from 'react'
 import Snow from './Snow'
-import Stories from './Stories'
+import Stories, { Story } from './Stories'
 import StoryAudio from './Stories/Audio'
 import StoryAudioTop from './Stories/AudioTop'
 import StoryBiggestDay from './Stories/BiggestDay'
@@ -40,26 +41,35 @@ import StoryUsersTop from './Stories/UsersTop'
 import StoryWelcome from './Stories/Welcome'
 import StoryYearOverYear from './Stories/YearOverYear'
 import { getStoryArt } from './storyArt'
+import { joinStorySections } from './storySections'
 
 type StoryComponent = {
   userRewind: UserRewind
   settings: PublicSettings
 }
 
-export type RewindMusicUrls = {
+export type RewindThemes = {
   // The top show's and top movie's theme songs, best first
   showThemes: string[]
   movieThemes: string[]
   // The viewer's most played track, from the media server
   topTrack: string | null
-  // The admin's own track
-  track: string | null
+}
+
+// What the stories after the total show, which takes the longest to read
+export type RewindData = {
+  userRewind: UserRewind
+  themes: RewindThemes
 }
 
 type Props = {
-  userRewind: UserRewind
+  user: RewindUser
   settings: PublicSettings
-  music: RewindMusicUrls
+  // The admin's own track, which every story falls back to
+  track: string | null
+  // Read while the welcome shows, the total first
+  totals: Promise<RewindTotals>
+  rewind: Promise<RewindData>
 }
 
 // Where the top show's and top movie's theme songs play
@@ -73,8 +83,51 @@ const MOVIE_STORIES = [
 ]
 const AUDIO_STORIES = ['audio', 'audio_top']
 
-export default function RewindStories({ userRewind, settings, music }: Props) {
-  function createStory(id: string, Component: FC<StoryComponent>) {
+export default function RewindStories({
+  user,
+  settings,
+  track,
+  totals: totalsRequest,
+  rewind: rewindRequest,
+}: Props) {
+  const totals = usePromiseValue(totalsRequest)
+  const rewind = usePromiseValue(rewindRequest)
+  const music = track ? [track] : []
+  const welcome: Story = {
+    id: 'welcome',
+    type: 'component',
+    component: () => <StoryWelcome userRewind={{ user }} settings={settings} />,
+    music,
+  }
+  // Its place is known before its numbers are
+  const total: Story = totals
+    ? {
+        id: 'total',
+        type: 'component',
+        component: () => <StoryTotal userRewind={totals} settings={settings} />,
+        music,
+      }
+    : { id: 'total', type: 'loading', music }
+  const stories = joinStorySections<Story>(
+    [[welcome], [total], rewind ? getStories(rewind, settings, track) : null],
+    { id: 'more', type: 'loading', music },
+  )
+
+  return (
+    <>
+      {settings.rewind.isSnowActive && <Snow />}
+      <Stories stories={stories} />
+    </>
+  )
+}
+
+// The stories after the total, the ones without anything to show left out
+function getStories(
+  { userRewind, themes: music }: RewindData,
+  settings: PublicSettings,
+  track: string | null,
+): Story[] {
+  function createStory(id: string, Component: FC<StoryComponent>): Story {
     // The track also stands in for a title without a theme song
     const themes = SHOW_STORIES.includes(id)
       ? music.showThemes
@@ -83,11 +136,11 @@ export default function RewindStories({ userRewind, settings, music }: Props) {
         : AUDIO_STORIES.includes(id) && music.topTrack
           ? [music.topTrack]
           : []
-    const sources = [...themes, music.track]
+    const sources = [...themes, track]
 
     return {
       id,
-      type: 'component' as const,
+      type: 'component',
       component: () => (
         <Component userRewind={userRewind} settings={settings} />
       ),
@@ -108,9 +161,8 @@ export default function RewindStories({ userRewind, settings, music }: Props) {
   const hasAudioLibraries = userRewind.libraries.some(
     (library) => library.section_type === 'artist',
   )
-  const stories = [
-    createStory('welcome', StoryWelcome),
-    createStory('total', StoryTotal),
+
+  return [
     ...(userRewind.moments.monthly ? [createStory('months', StoryMonths)] : []),
     ...(userRewind.yearOverYear
       ? [createStory('year_over_year', StoryYearOverYear)]
@@ -205,11 +257,4 @@ export default function RewindStories({ userRewind, settings, music }: Props) {
       : []),
     createStory('goodbye', StoryGoodbye),
   ]
-
-  return (
-    <>
-      {settings.rewind.isSnowActive && <Snow />}
-      <Stories stories={stories} />
-    </>
-  )
 }

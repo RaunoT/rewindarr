@@ -4,6 +4,7 @@ import {
   readStorage,
   writeStorage,
 } from '@/app/_components/GlobalContextProvider'
+import Loader from '@/components/Loader'
 import useFullscreen from '@/hooks/useFullscreen'
 import useStoryMusic from '@/hooks/useStoryMusic'
 import { trackEvent } from '@/utils/analytics'
@@ -49,15 +50,22 @@ export const StoryStepContext = createContext<StoryStep>({
 // Lets the last story offer to start over
 export const StoryRestartContext = createContext<() => void>(() => {})
 
-type Story = {
+export type Story = {
   // Names the story in analytics
   id: string
-  type: 'component'
-  component: () => ReactNode
   // What plays during the story, in order of preference
   music?: string[]
   // The art behind the story, tried in turn
   art?: string[]
+} & (
+  | { type: 'component'; component: () => ReactNode }
+  // Still on the way, so it shows as loading
+  | { type: 'loading' }
+)
+
+type StoryView = {
+  story: string
+  story_number: number
 }
 
 type Props = {
@@ -122,6 +130,9 @@ export default function Stories({ stories }: Props) {
   const [isSoundOn, setIsSoundOn] = useState(false)
   // The browser wouldn't start the music before the visitor interacted
   const [isSoundBlocked, setIsSoundBlocked] = useState(false)
+  // The tracks a click started, null before one. Safari only plays those, and
+  // the stories still on the way bring more.
+  const [unlockedMusic, setUnlockedMusic] = useState<string[] | null>(null)
   const [announcement, setAnnouncement] = useState('')
   const [step, setStep] = useState(0)
   // The steps of the current story's statements
@@ -138,6 +149,8 @@ export default function Stories({ stories }: Props) {
   const shouldRestoreFocusRef = useRef(false)
   const shouldSeekToEndRef = useRef(false)
   const trackedIndexRef = useRef<number | null>(null)
+  // Views wait here until every story is in, as each carries the count
+  const untrackedViewsRef = useRef<StoryView[]>([])
   const hasTrackedCompleteRef = useRef(false)
   const tapStartRef = useRef<{
     pointerId: number
@@ -147,6 +160,10 @@ export default function Stories({ stories }: Props) {
   } | null>(null)
   const currentStory = stories[currentIndex]
   const currentStoryId = currentStory?.id
+  const isCurrentStoryIn = currentStory?.type === 'component'
+  // The stories still on the way can leave some out, so until they're in,
+  // neither the count nor the progress bar is known
+  const isComplete = stories.every((story) => story.type === 'component')
   // The card, so the art and the snow fill the screen too
   const getPlayer = useCallback(
     () => sectionRef.current?.closest('.rewind-player'),
@@ -157,12 +174,25 @@ export default function Stories({ stories }: Props) {
     () => [...new Set(stories.flatMap((story) => story.music ?? []))],
     [stories],
   )
+  const hasLockedMusic =
+    !!unlockedMusic && musicUrls.some((url) => !unlockedMusic.includes(url))
   const waitForInteraction = useCallback(() => setIsSoundBlocked(true), [])
-  const { unlock: unlockMusic } = useStoryMusic({
+  const { unlock } = useStoryMusic({
     sources: currentStory?.music ?? NO_MUSIC,
     isPlaying: isSoundOn && !isHidden && isIntroShown === false,
     onBlocked: waitForInteraction,
   })
+  const unlockMusic = useCallback(() => {
+    unlock(musicUrls)
+    setUnlockedMusic(musicUrls)
+  }, [unlock, musicUrls])
+  const getPositionLabel = useCallback(
+    (index: number) =>
+      isComplete
+        ? t('storyPosition', { current: index + 1, total: stories.length })
+        : t('storyNumber', { current: index + 1 }),
+    [isComplete, stories.length, t],
+  )
   // A statement that is left out leaves a gap in the steps, which is skipped
   const storySteps = useMemo(
     () => [...new Set(steps)].sort((a, b) => a - b),
@@ -190,11 +220,9 @@ export default function Stories({ stories }: Props) {
       shouldSeekToEndRef.current = isAtEnd
       setStep(0)
       setCurrentIndex(index)
-      setAnnouncement(
-        t('storyPosition', { current: index + 1, total: stories.length }),
-      )
+      setAnnouncement(getPositionLabel(index))
     },
-    [currentIndex, stories.length, t],
+    [currentIndex, stories.length, getPositionLabel],
   )
   const goToNext = useCallback(() => {
     if (nextStep !== undefined) {
@@ -233,22 +261,22 @@ export default function Stories({ stories }: Props) {
 
     // The music waits for the intro, and this click lets it start
     if (isSoundOn) {
-      unlockMusic(musicUrls)
+      unlockMusic()
     }
-  }, [isSoundOn, unlockMusic, musicUrls])
+  }, [isSoundOn, unlockMusic])
   // Music that waits for a click shows as off, so the button starts it
   const isSoundAudible = isSoundOn && !isSoundBlocked
   const toggleSound = useCallback(() => {
     const isOn = !isSoundAudible
 
     if (isOn) {
-      unlockMusic(musicUrls)
+      unlockMusic()
     }
 
     setIsSoundOn(isOn)
     setIsSoundBlocked(false)
     writeStorage(SOUND_KEY, isOn ? 'on' : 'off')
-  }, [isSoundAudible, unlockMusic, musicUrls])
+  }, [isSoundAudible, unlockMusic])
   const handlePointerDown = useCallback((e: PointerEvent<HTMLDivElement>) => {
     tapStartRef.current =
       !e.isPrimary ||
@@ -311,9 +339,10 @@ export default function Stories({ stories }: Props) {
   }, [])
 
   // Browsers only start audio on a click or a key press, so blocked music
-  // starts on the visitor's first one, wherever it is
+  // starts on the visitor's first one, wherever it is, as does the music of
+  // the stories that came in after the sound was let through
   useEffect(() => {
-    if (!isSoundBlocked || !isSoundOn) {
+    if ((!isSoundBlocked && !hasLockedMusic) || !isSoundOn) {
       return
     }
 
@@ -326,7 +355,7 @@ export default function Stories({ stories }: Props) {
 
       listeners.abort()
       setIsSoundBlocked(false)
-      unlockMusic(musicUrls)
+      unlockMusic()
     }
 
     document.addEventListener('click', start, {
@@ -339,7 +368,7 @@ export default function Stories({ stories }: Props) {
     })
 
     return () => listeners.abort()
-  }, [isSoundBlocked, isSoundOn, unlockMusic, musicUrls])
+  }, [isSoundBlocked, hasLockedMusic, isSoundOn, unlockMusic])
 
   useEffect(() => {
     if (isIntroShown) {
@@ -374,23 +403,36 @@ export default function Stories({ stories }: Props) {
 
   useEffect(() => {
     // The refs keep Strict Mode's second run, or a re-render, from counting
-    // the same view again
-    if (!currentStoryId || trackedIndexRef.current === currentIndex) {
+    // the same view again. A story still on the way counts once it's in.
+    if (!isCurrentStoryIn) {
+      trackedIndexRef.current = null
+    } else if (currentStoryId && trackedIndexRef.current !== currentIndex) {
+      trackedIndexRef.current = currentIndex
+      untrackedViewsRef.current.push({
+        story: currentStoryId,
+        story_number: currentIndex + 1,
+      })
+    }
+
+    if (!isComplete) {
       return
     }
 
-    trackedIndexRef.current = currentIndex
-    trackEvent('rewind_story_view', {
-      story: currentStoryId,
-      story_number: currentIndex + 1,
-      story_count: stories.length,
-    })
+    for (const view of untrackedViewsRef.current.splice(0)) {
+      trackEvent('rewind_story_view', { ...view, story_count: stories.length })
+    }
 
     if (currentIndex === stories.length - 1 && !hasTrackedCompleteRef.current) {
       hasTrackedCompleteRef.current = true
       trackEvent('rewind_complete', { story_count: stories.length })
     }
-  }, [currentIndex, currentStoryId, stories.length])
+  }, [
+    currentIndex,
+    currentStoryId,
+    isCurrentStoryIn,
+    isComplete,
+    stories.length,
+  ])
 
   useEffect(() => {
     if (shouldRestoreFocusRef.current) {
@@ -413,7 +455,16 @@ export default function Stories({ stories }: Props) {
   const slide = useMemo(
     () =>
       currentStory ? (
-        <Fragment key={currentIndex}>{currentStory.component()}</Fragment>
+        <Fragment key={currentIndex}>
+          {currentStory.type === 'component' ? (
+            currentStory.component()
+          ) : (
+            // Only shows when it takes a moment
+            <div className='animate-fade-in animation-delay-300'>
+              <Loader />
+            </div>
+          )}
+        </Fragment>
       ) : null,
     [currentIndex, currentStory],
   )
@@ -441,26 +492,33 @@ export default function Stories({ stories }: Props) {
           className='absolute -top-4 -right-0.5 -left-0.5 z-20 flex'
           inert={!!isIntroShown}
         >
-          {stories.map((_, index) => (
-            <button
-              key={index}
-              className='group flex-1 cursor-pointer overflow-hidden px-0.5 py-4'
-              onClick={() => goTo(index)}
-              aria-label={t('goToStory', { index: index + 1 })}
-              aria-current={index === currentIndex ? 'step' : undefined}
-            >
-              <span className='block h-1 overflow-hidden rounded-full bg-white/15 transition-colors group-hover:bg-white/30'>
-                {index < currentIndex ? (
-                  <span className='link-dark block h-full w-full bg-white' />
-                ) : index === currentIndex ? (
-                  <span
-                    className='link-dark block h-full w-full origin-left bg-white transition-transform duration-300 ease-out'
-                    style={{ transform: `scaleX(${progress})` }}
-                  />
-                ) : null}
-              </span>
-            </button>
-          ))}
+          {/* As on the loading page, until the stories are all in */}
+          {!isComplete && (
+            <div className='flex-1 px-0.5 py-4'>
+              <div className='skeleton h-1' />
+            </div>
+          )}
+          {isComplete &&
+            stories.map((_, index) => (
+              <button
+                key={index}
+                className='group flex-1 cursor-pointer overflow-hidden px-0.5 py-4'
+                onClick={() => goTo(index)}
+                aria-label={t('goToStory', { index: index + 1 })}
+                aria-current={index === currentIndex ? 'step' : undefined}
+              >
+                <span className='block h-1 overflow-hidden rounded-full bg-white/15 transition-colors group-hover:bg-white/30'>
+                  {index < currentIndex ? (
+                    <span className='link-dark block h-full w-full bg-white' />
+                  ) : index === currentIndex ? (
+                    <span
+                      className='link-dark block h-full w-full origin-left bg-white transition-transform duration-300 ease-out'
+                      style={{ transform: `scaleX(${progress})` }}
+                    />
+                  ) : null}
+                </span>
+              </button>
+            ))}
         </div>
 
         {/* Story content with tap navigation */}
@@ -468,10 +526,7 @@ export default function Stories({ stories }: Props) {
           ref={slideRef}
           role='group'
           aria-roledescription='slide'
-          aria-label={t('storyPosition', {
-            current: currentIndex + 1,
-            total: stories.length,
-          })}
+          aria-label={getPositionLabel(currentIndex)}
           tabIndex={-1}
           inert={!!isIntroShown}
           // A phone's screen can be shorter than a story, which then scrolls

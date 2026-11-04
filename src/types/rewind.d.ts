@@ -31,7 +31,7 @@ export type TopTrack = {
   isOnly: boolean
 }
 
-type LibraryRewind = {
+type LibraryTotals = {
   count: number
   duration: string
   // In seconds, null without a library of the type
@@ -40,6 +40,9 @@ type LibraryRewind = {
   server_duration_value: number | null
   // Of the user's total playtime, empty when it rounds to 0%
   percentage: string
+}
+
+type LibraryRewind = LibraryTotals & {
   top: TautulliItemRow[]
 }
 
@@ -113,7 +116,15 @@ export type UserRewind = {
   user: RewindUser
 }
 
-export type RewindStory = {
-  userRewind: UserRewind
+// What the total story shows, which is read before the rest
+export type RewindTotals = Pick<UserRewind, 'duration'> & {
+  shows: LibraryTotals
+  movies: LibraryTotals
+  audio: LibraryTotals
+}
+
+// The stories shown before the rest is in take only what they show
+export type RewindStory<T = UserRewind> = {
+  userRewind: T
   settings: PublicSettings
 }

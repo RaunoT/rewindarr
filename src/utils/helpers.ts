@@ -1,5 +1,5 @@
 import { DashboardSearchParams } from '@/types/dashboard'
-import { UserRewind } from '@/types/rewind'
+import { RewindTotals, UserRewind } from '@/types/rewind'
 import { Settings, StatisticsSource } from '@/types/settings'
 import { TautulliLibrary } from '@/types/tautulli'
 import { kebabCase } from 'lodash'
@@ -136,7 +136,7 @@ export function hasRewindPlays({
   shows,
   movies,
   audio,
-}: Pick<UserRewind, 'shows' | 'movies' | 'audio'>): boolean {
+}: Pick<RewindTotals, 'shows' | 'movies' | 'audio'>): boolean {
   return shows.count + movies.count + audio.count > 0
 }
 
@@ -168,7 +168,7 @@ export function getRewindBreakdown({
   shows,
   movies,
   audio,
-}: Pick<UserRewind, 'shows' | 'movies' | 'audio'>): RewindBreakdownItem[] {
+}: Pick<RewindTotals, 'shows' | 'movies' | 'audio'>): RewindBreakdownItem[] {
   const types = [
     { type: 'show' as const, ...shows },
     { type: 'movie' as const, ...movies },

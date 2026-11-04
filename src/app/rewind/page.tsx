@@ -1,6 +1,7 @@
 import HistoryReading from '@/components/HistoryReading'
 import { authOptions } from '@/lib/auth'
-import { RewindUser, UserRewind } from '@/types/rewind'
+import { RewindTotals, RewindUser, UserRewind } from '@/types/rewind'
+import { TautulliItemRow, TautulliLibrary } from '@/types/tautulli'
 import { TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
 import {
   formatMonthYear,
@@ -57,7 +58,7 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
-import RewindStories from './_components/RewindStories'
+import RewindStories, { RewindData } from './_components/RewindStories'
 import Loading from './loading'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -110,8 +111,6 @@ async function RewindContent({ userId }: { userId?: string }) {
     return <HistoryReading progress={progress} isInCard />
   }
 
-  const t = await getTranslations()
-  const locale = await getLocale()
   const timeZone = toTimeZone(
     (await cookies()).get(TIME_ZONE_COOKIE_NAME)?.value,
   )
@@ -120,6 +119,119 @@ async function RewindContent({ userId }: { userId?: string }) {
     since: startDate,
     libraries,
   })
+  // Not waited for, so the welcome shows while they're read. The rest reads
+  // the totals too, instead of reading them again.
+  const totals = getTotals(user.id, libraries, viewersRequest)
+  const rewind = getRewind(user, libraries, timeZone, {
+    viewersRequest,
+    totals,
+  })
+
+  return (
+    <RewindStories
+      user={user}
+      settings={toPublicSettings(settings)}
+      track={getMusicUrl(settings)}
+      totals={totals}
+      rewind={rewind}
+    />
+  )
+}
+
+// The total story's, which only need the plays, so they're in long before the
+// rest
+async function getTotals(
+  userId: string,
+  libraries: TautulliLibrary[],
+  viewersRequest: Promise<TautulliItemRow[] | null>,
+): Promise<RewindTotals> {
+  const settings = getSettings()
+  const [
+    t,
+    userTotalDuration,
+    topMediaStats,
+    librariesDurationByType,
+    viewers,
+  ] = await Promise.all([
+    getTranslations(),
+    getUserTotalDuration(userId, libraries),
+    getTopMediaStats(userId, libraries),
+    getLibrariesDurationByType(libraries),
+    viewersRequest,
+  ])
+  const isUserExcluded = settings.general.excludedUsers.includes(userId)
+  // The server's totals leave excluded users out, so an excluded user's own
+  // time is added back, here and in the totals by type
+  const isUserAddedBack = isUserExcluded && userTotalDuration > 0
+  // From the ranked users' own time, so plays nobody can be matched to aren't
+  // spread over the users who can
+  const averageDuration =
+    viewers &&
+    getAverage(
+      sumBy(viewers, 'total_duration') +
+        (isUserAddedBack ? userTotalDuration : 0),
+      viewers.length + (isUserAddedBack ? 1 : 0),
+    )
+
+  function getServerDuration(type: 'shows' | 'movies' | 'audio') {
+    const duration = librariesDurationByType[type]
+
+    return duration === null
+      ? null
+      : duration +
+          (isUserExcluded ? (topMediaStats[type].durationValue ?? 0) : 0)
+  }
+
+  return {
+    duration: {
+      user: secondsToTime(userTotalDuration, t),
+      nonStopDays: getNonStopDays(userTotalDuration),
+      average: averageDuration
+        ? {
+            duration: secondsToTime(averageDuration, t),
+            difference: getDifference(userTotalDuration, averageDuration),
+          }
+        : null,
+      topPercent: viewers && getTopPercent(viewers, userId, userTotalDuration),
+    },
+    shows: {
+      count: topMediaStats.shows.count,
+      duration: topMediaStats.shows.duration,
+      duration_value: topMediaStats.shows.durationValue,
+      server_duration_value: getServerDuration('shows'),
+      percentage: topMediaStats.shows.percentage,
+    },
+    movies: {
+      count: topMediaStats.movies.count,
+      duration: topMediaStats.movies.duration,
+      duration_value: topMediaStats.movies.durationValue,
+      server_duration_value: getServerDuration('movies'),
+      percentage: topMediaStats.movies.percentage,
+    },
+    audio: {
+      count: topMediaStats.audio.count,
+      duration: topMediaStats.audio.duration,
+      duration_value: topMediaStats.audio.durationValue,
+      server_duration_value: getServerDuration('audio'),
+      percentage: topMediaStats.audio.percentage,
+    },
+  }
+}
+
+type SharedRequests = {
+  viewersRequest: Promise<TautulliItemRow[] | null>
+  totals: Promise<RewindTotals>
+}
+
+// What the stories after the total show, with the totals
+async function getRewind(
+  user: RewindUser,
+  libraries: TautulliLibrary[],
+  timeZone: string | undefined,
+  { viewersRequest, totals: totalsRequest }: SharedRequests,
+): Promise<RewindData> {
+  const settings = getSettings()
+  const startDate = getRewindStartDate(settings)
   // Read once, for every stat from the user's own plays
   const userPlaysRequest = getStatsSource(settings).getHistoryPlays({
     since: startDate,
@@ -127,34 +239,30 @@ async function RewindContent({ userId }: { userId?: string }) {
     libraries,
   })
   const [
+    locale,
+    totals,
     topMediaItems,
-    topMediaStats,
-    userTotalDuration,
     librariesTotalSize,
-    librariesDurationByType,
     mediaServer,
     usersTop,
     habits,
     firstPlay,
     people,
     genres,
-    viewers,
     topTrack,
     social,
     moments,
   ] = await Promise.all([
+    getLocale(),
+    totalsRequest,
     getTopMediaItems(user.id, libraries),
-    getTopMediaStats(user.id, libraries),
-    getUserTotalDuration(user.id, libraries),
     getlibrariesTotalSize(libraries),
-    getLibrariesDurationByType(libraries),
     getMediaServer(),
     viewersRequest.then((users) => getUsersTop(user.id, startDate, { users })),
     getPlaybackHabits(user.id, libraries, timeZone),
     getStatsSource(settings).getFirstPlay(user.id),
     getTopPeople(user.id, libraries),
     getGenres(user.id, libraries),
-    viewersRequest,
     getTopTrack(user.id, libraries),
     getRewindSocial(user.id, libraries),
     userPlaysRequest.then((plays) =>
@@ -192,69 +300,14 @@ async function RewindContent({ userId }: { userId?: string }) {
     shows: topMediaItems.shows[0],
     movies: topMediaItems.movies[0],
   })
-  const isUserExcluded = settings.general.excludedUsers.includes(user.id)
-  // The server's totals leave excluded users out, so an excluded user's own
-  // time is added back, here and in the totals by type
-  const isUserAddedBack = isUserExcluded && userTotalDuration > 0
-  // From the ranked users' own time, so plays nobody can be matched to aren't
-  // spread over the users who can
-  const averageDuration =
-    viewers &&
-    getAverage(
-      sumBy(viewers, 'total_duration') +
-        (isUserAddedBack ? userTotalDuration : 0),
-      viewers.length + (isUserAddedBack ? 1 : 0),
-    )
-
-  function getServerDuration(type: 'shows' | 'movies' | 'audio') {
-    const duration = librariesDurationByType[type]
-
-    return duration === null
-      ? null
-      : duration +
-          (isUserExcluded ? (topMediaStats[type].durationValue ?? 0) : 0)
-  }
-
   const userRewind: UserRewind = {
-    duration: {
-      user: secondsToTime(userTotalDuration, t),
-      nonStopDays: getNonStopDays(userTotalDuration),
-      average: averageDuration
-        ? {
-            duration: secondsToTime(averageDuration, t),
-            difference: getDifference(userTotalDuration, averageDuration),
-          }
-        : null,
-      topPercent: viewers && getTopPercent(viewers, user.id, userTotalDuration),
-    },
+    duration: totals.duration,
     usersTop: usersTop?.items ?? null,
-    shows: {
-      top: topMediaItems.shows,
-      count: topMediaStats.shows.count,
-      duration: topMediaStats.shows.duration,
-      duration_value: topMediaStats.shows.durationValue,
-      server_duration_value: getServerDuration('shows'),
-      percentage: topMediaStats.shows.percentage,
-    },
-    movies: {
-      top: topMediaItems.movies,
-      count: topMediaStats.movies.count,
-      duration: topMediaStats.movies.duration,
-      duration_value: topMediaStats.movies.durationValue,
-      server_duration_value: getServerDuration('movies'),
-      percentage: topMediaStats.movies.percentage,
-    },
+    shows: { top: topMediaItems.shows, ...totals.shows },
+    movies: { top: topMediaItems.movies, ...totals.movies },
     people,
     genres,
-    audio: {
-      top: topMediaItems.audio,
-      count: topMediaStats.audio.count,
-      duration: topMediaStats.audio.duration,
-      duration_value: topMediaStats.audio.durationValue,
-      server_duration_value: getServerDuration('audio'),
-      percentage: topMediaStats.audio.percentage,
-      topTrack,
-    },
+    audio: { top: topMediaItems.audio, ...totals.audio, topTrack },
     titleMoments,
     yearOverYear,
     habits: habits,
@@ -301,29 +354,25 @@ async function RewindContent({ userId }: { userId?: string }) {
   const topShow = topMediaItems.shows[0]
   const topMovie = topMediaItems.movies[0]
 
-  return (
-    <RewindStories
-      userRewind={userRewind}
-      settings={toPublicSettings(settings)}
-      music={{
-        showThemes: isThemeMusicActive
-          ? [
-              getPlexThemeUrl(settings, topShow?.rating_key),
-              getThemeSongUrl(topShow?.tvdb_id),
-            ].filter((url) => url !== null)
-          : [],
-        movieThemes: isThemeMusicActive
-          ? [getPlexThemeUrl(settings, topMovie?.rating_key)].filter(
-              (url) => url !== null,
-            )
-          : [],
-        topTrack: isThemeMusicActive
-          ? getPlexTrackUrl(settings, topTrack?.ratingKey)
-          : null,
-        track: getMusicUrl(settings),
-      }}
-    />
-  )
+  return {
+    userRewind,
+    themes: {
+      showThemes: isThemeMusicActive
+        ? [
+            getPlexThemeUrl(settings, topShow?.rating_key),
+            getThemeSongUrl(topShow?.tvdb_id),
+          ].filter((url) => url !== null)
+        : [],
+      movieThemes: isThemeMusicActive
+        ? [getPlexThemeUrl(settings, topMovie?.rating_key)].filter(
+            (url) => url !== null,
+          )
+        : [],
+      topTrack: isThemeMusicActive
+        ? getPlexTrackUrl(settings, topTrack?.ratingKey)
+        : null,
+    },
+  }
 }
 
 type Props = {
