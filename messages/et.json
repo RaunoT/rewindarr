@@ -317,8 +317,6 @@
     "profilePictureAlt": "Kasutaja {name} profiilipilt",
     "time": {
       "zero": "0 min",
-      "month": "{count, plural, one {# kuu} other {# kuud}}",
-      "week": "{count, plural, one {# näd} other {# näd}}",
       "day": "{count, plural, one {# päev} other {# päeva}}",
       "hr": "{count, plural, one {# t} other {# t}}",
       "min": "{count, plural, one {# min} other {# min}}",

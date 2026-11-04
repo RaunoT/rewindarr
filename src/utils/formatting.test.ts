@@ -14,7 +14,6 @@ import {
   getInitials,
   millisecondsToTimeString,
   secondsToTime,
-  timeToSeconds,
   TranslateFunction,
 } from './formatting'
 
@@ -23,7 +22,6 @@ const t: TranslateFunction = (key, params) => translator(key as never, params)
 const MINUTE = 60
 const HOUR = 60 * MINUTE
 const DAY = 24 * HOUR
-const MONTH = 2629746
 
 describe('secondsToTime', () => {
   it('returns the zero label for zero, negative or non-finite input', () => {
@@ -56,7 +54,7 @@ describe('secondsToTime', () => {
   it('drops seconds next to a larger unit', () => {
     expect(secondsToTime(DAY + 10, t)).toBe('1 day')
     expect(secondsToTime(DAY + 40, t)).toBe('1 day 1 min')
-    expect(secondsToTime(MONTH + 10, t)).toBe('1 mth')
+    expect(secondsToTime(45 * DAY + 10, t)).toBe('45 days')
   })
 
   it('shows at most two units', () => {
@@ -64,24 +62,10 @@ describe('secondsToTime', () => {
     expect(secondsToTime(DAY + 2 * HOUR + 10 * MINUTE, t)).toBe('1 day 2 hrs')
   })
 
-  it('uses weeks and months for long durations', () => {
-    expect(secondsToTime(8 * DAY, t)).toBe('1 wk 1 day')
-    expect(secondsToTime(MONTH + 14 * DAY, t)).toBe('1 mth 2 wks')
-    expect(secondsToTime(2 * MONTH, t)).toBe('2 mths')
-  })
-})
-
-describe('timeToSeconds', () => {
-  it('parses the duration strings Tautulli returns', () => {
-    expect(timeToSeconds('1 day 2 hrs 10 mins')).toBe(
-      DAY + 2 * HOUR + 10 * MINUTE,
-    )
-    expect(timeToSeconds('3 hrs 5 mins')).toBe(3 * HOUR + 5 * MINUTE)
-    expect(timeToSeconds('45 secs')).toBe(45)
-  })
-
-  it('returns 0 for an empty string', () => {
-    expect(timeToSeconds('')).toBe(0)
+  it('counts long durations in days', () => {
+    expect(secondsToTime(8 * DAY, t)).toBe('8 days')
+    expect(secondsToTime(45 * DAY + 3 * HOUR, t)).toBe('45 days 3 hrs')
+    expect(secondsToTime(400 * DAY + 59 * MINUTE + 50, t)).toBe('400 days 1 hr')
   })
 })
 
