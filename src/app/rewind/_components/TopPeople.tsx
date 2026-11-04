@@ -6,6 +6,7 @@ import Rank from '@/components/MediaItem/Rank'
 import { TopPerson } from '@/types/statsSource'
 import { secondsToTime } from '@/utils/formatting'
 import { countdownRow } from '@/utils/motion'
+import clsx from 'clsx'
 import { AnimatePresence, motion } from 'motion/react'
 import { useFormatter, useTranslations } from 'next-intl'
 import { useId, useLayoutEffect, useRef, useState } from 'react'
@@ -14,14 +15,17 @@ type Props = {
   people: TopPerson[]
   // What the titles they're counted by are
   type: 'movie' | 'show'
-  // The index of the highest place the countdown shows. Only the places from
-  // it down are listed, so each new one comes in at the top.
+  // The index of the highest place the countdown shows. The places from it
+  // down are listed first, so each new one comes in at the top, and the
+  // places above it keep their room below them, unseen.
   shownFrom: number
 }
 
 type RowProps = Omit<Props, 'people' | 'shownFrom'> & {
   person: TopPerson
   i: number
+  // A place not reached yet, which keeps its room so the story doesn't move
+  isPlaceholder?: boolean
 }
 
 // The names that fit on a line before "and more"
@@ -30,14 +34,27 @@ const TOGETHER_NAMES = 2
 // Ranked like the top movies, with the person's portrait as the poster
 export default function TopPeople({ people, shownFrom, ...props }: Props) {
   return (
-    <ol className='mt-4 flex flex-col text-white sm:mt-5'>
-      <AnimatePresence>
+    <ol className='relative mt-4 flex flex-col overflow-hidden text-white sm:mt-5'>
+      {/* A place stepped back from leaves the flow at once, so its
+          placeholder doesn't make the list taller while it fades */}
+      <AnimatePresence mode='popLayout'>
         {people.map((person, i) =>
           i < shownFrom ? null : (
             <PersonRow key={person.name} person={person} i={i} {...props} />
           ),
         )}
       </AnimatePresence>
+      {people.map((person, i) =>
+        i < shownFrom ? (
+          <PersonRow
+            key={`placeholder-${person.name}`}
+            person={person}
+            i={i}
+            isPlaceholder
+            {...props}
+          />
+        ) : null,
+      )}
     </ol>
   )
 }
@@ -96,7 +113,7 @@ function findCut(
   }
 }
 
-function PersonRow({ person, i, type }: RowProps) {
+function PersonRow({ person, i, type, isPlaceholder }: RowProps) {
   const translations = useTranslations()
   const t = useTranslations('Rewind.People')
   const format = useFormatter()
@@ -157,12 +174,15 @@ function PersonRow({ person, i, type }: RowProps) {
 
   return (
     <motion.li
-      className='flex items-center gap-3 py-2.5 not-first:border-t not-first:border-white/10 first:pt-0 last:pb-0 motion-reduce:transform-none! motion-reduce:opacity-100! sm:gap-4'
+      className={clsx(
+        'flex items-center gap-3 py-2.5 not-first:border-t not-first:border-white/10 first:pt-0 last:pb-0 motion-reduce:transform-none! motion-reduce:opacity-100! sm:gap-4',
+        isPlaceholder && 'invisible',
+      )}
       variants={countdownRow}
-      initial='hidden'
+      initial={isPlaceholder ? false : 'hidden'}
       animate='show'
       exit='exit'
-      layout='position'
+      layout={isPlaceholder ? undefined : 'position'}
     >
       {/* The portrait moves in by the rank badge's overhang on phones */}
       <div className='relative flex shrink-0 items-center gap-3 max-sm:pt-1 max-sm:pl-1 sm:gap-4'>

@@ -15,8 +15,9 @@ type Props = {
   isRanked?: boolean
   // In place of the item statistics chosen in the settings
   activeStats?: string[]
-  // In a countdown, the index of the highest place shown. Only the places
-  // from it down are listed, so each new one comes in at the top.
+  // In a countdown, the index of the highest place shown. The places from it
+  // down are listed first, so each new one comes in at the top, and the
+  // places above it keep their room below them, unseen.
   shownFrom?: number
 }
 
@@ -31,32 +32,50 @@ export default function MediaItems({
   activeStats = settings.general.activeItemStatistics,
   shownFrom,
 }: Props) {
-  const isCountdown = shownFrom !== undefined
-  const rowsList = items.map((itemData, i) =>
-    isCountdown && i < shownFrom ? null : (
+  function renderItem(
+    itemData: TautulliItemRow,
+    i: number,
+    countdown?: 'reached' | 'placeholder',
+  ) {
+    return (
       <MediaItem
         data={itemData}
         i={i}
-        key={i}
+        key={countdown === 'placeholder' ? `placeholder-${i}` : i}
         type={type}
         mediaServer={mediaServer}
         activeStats={activeStats}
         settings={settings}
         loggedInUserId={loggedInUserId}
         isRanked={isRanked}
-        isCountdown={isCountdown}
+        countdown={countdown}
       />
-    ),
-  )
+    )
+  }
 
   return (
     <ul
       className={clsx(
-        'flex flex-col overflow-hidden text-white',
+        'relative flex flex-col overflow-hidden text-white',
         rows && 'mt-4 sm:mt-5',
       )}
     >
-      {isCountdown ? <AnimatePresence>{rowsList}</AnimatePresence> : rowsList}
+      {shownFrom === undefined ? (
+        items.map((itemData, i) => renderItem(itemData, i))
+      ) : (
+        <>
+          {/* A place stepped back from leaves the flow at once, so its
+              placeholder doesn't make the list taller while it fades */}
+          <AnimatePresence mode='popLayout'>
+            {items.map((itemData, i) =>
+              i < shownFrom ? null : renderItem(itemData, i, 'reached'),
+            )}
+          </AnimatePresence>
+          {items.map((itemData, i) =>
+            i < shownFrom ? renderItem(itemData, i, 'placeholder') : null,
+          )}
+        </>
+      )}
     </ul>
   )
 }
