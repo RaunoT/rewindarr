@@ -395,6 +395,24 @@
       "topTrackPlays": "La escuchaste <count>{countValue, plural, one {una vez} other {# veces}}</count>",
       "noData": "No escuchaste <audio>música</audio> en <from>{serverName}</from>"
     },
+    "ComfortWatch": {
+      "movie": "La película a la que más volviste fue <title>{titleValue}</title>",
+      "episode": "El episodio al que más volviste fue <title>{titleValue}</title> de <show>{showValue}</show>",
+      "moviePlays": "La viste <count>{countValue, plural, one {una vez} other {# veces}}</count>",
+      "episodePlays": "Lo viste <count>{countValue, plural, one {una vez} other {# veces}}</count>"
+    },
+    "TimeTravel": {
+      "decade": "Pasaste el <share>{shareValue, number, percent}</share> de tu tiempo en <decade>la década de {decadeValue}</decade>",
+      "oldest": "Lo más lejos que viajaste fue a <year>{yearValue}</year>, con <title>{titleValue}</title>"
+    },
+    "Discoveries": {
+      "shows": "Descubriste <showsCount>{showsValue, number}</showsCount> <shows>{showsValue, plural, one {serie nueva} other {series nuevas}}</shows>",
+      "artists": "Descubriste <artistsCount>{artistsValue, number}</artistsCount> <artists>{artistsValue, plural, one {artista nuevo} other {artistas nuevos}}</artists>",
+      "showsAndArtists": "Descubriste <showsCount>{showsValue, number}</showsCount> <shows>{showsValue, plural, one {serie nueva} other {series nuevas}}</shows> y <artistsCount>{artistsValue, number}</artistsCount> <artists>{artistsValue, plural, one {artista nuevo} other {artistas nuevos}}</artists>",
+      "top": "Tu mayor descubrimiento fue <title>{titleValue}</title>, con <duration>{durationValue}</duration> de tu tiempo",
+      "only": "Fue <title>{titleValue}</title>, con <duration>{durationValue}</duration> de tu tiempo",
+      "gaveUp": "Una se te escapó: llegaste al <percent>{percentValue, number, percent}</percent> de <title>{titleValue}</title>. ¿Quizás la próxima vez?"
+    },
     "Libraries": {
       "filesize": "¿Sabías que todo lo que hay en <plex>{serverName}</plex> ocupa <size>{sizeValue}</size> de <filesize>almacenamiento</filesize>?",
       "sizePartial": "Algunas bibliotecas no tienen datos de tamaño. Activa “Calculate Total File Sizes” en Tautulli.",

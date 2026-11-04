@@ -395,6 +395,24 @@
       "topTrackPlays": "Sa kuulasid seda <count>{countValue, plural, one {ühe korra} other {# korda}}</count>",
       "noData": "Sa ei kuulanud <audio>muusikat</audio> <from>{serverName}'ist</from>"
     },
+    "ComfortWatch": {
+      "movie": "Film, mille juurde sa ikka ja jälle tagasi tulid, oli <title>{titleValue}</title>",
+      "episode": "Osa, mille juurde sa ikka ja jälle tagasi tulid, oli <title>{titleValue}</title> sarjast <show>{showValue}</show>",
+      "moviePlays": "Sa vaatasid seda <count>{countValue, plural, one {ühe korra} other {# korda}}</count>",
+      "episodePlays": "Sa vaatasid seda <count>{countValue, plural, one {ühe korra} other {# korda}}</count>"
+    },
+    "TimeTravel": {
+      "decade": "Veetsid <share>{shareValue, number, percent}</share> oma vaatamisajast <decade>{decadeValue}. aastatel</decade>",
+      "oldest": "Kõige kaugemale minevikku viis sind <title>{titleValue}</title> aastast <year>{yearValue}</year>"
+    },
+    "Discoveries": {
+      "shows": "Sa avastasid <showsCount>{showsValue, number}</showsCount> <shows>{showsValue, plural, one {uue sarja} other {uut sarja}}</shows>",
+      "artists": "Sa avastasid <artistsCount>{artistsValue, number}</artistsCount> <artists>{artistsValue, plural, one {uue artisti} other {uut artisti}}</artists>",
+      "showsAndArtists": "Sa avastasid <showsCount>{showsValue, number}</showsCount> <shows>{showsValue, plural, one {uue sarja} other {uut sarja}}</shows> ja <artistsCount>{artistsValue, number}</artistsCount> <artists>{artistsValue, plural, one {uue artisti} other {uut artisti}}</artists>",
+      "top": "Suurim avastus oli <title>{titleValue}</title>, millele kulus sul <duration>{durationValue}</duration>",
+      "only": "See oli <title>{titleValue}</title>, millele kulus sul <duration>{durationValue}</duration>",
+      "gaveUp": "Üks jäi pooleli: <title>{titleValue}</title> sai vaadatud <percent>{percentValue, number, percent}</percent> ulatuses. Ehk järgmisel korral?"
+    },
     "Libraries": {
       "filesize": "Kas teadsid, et kogu sisu <plex>{serverName}'is</plex> võtab <size>{sizeValue}</size> <filesize>kettaruumi</filesize>?",
       "sizePartial": "Mõne kogumiku suurus on teadmata. Lülita Tautullis sisse „Calculate Total File Sizes“.",

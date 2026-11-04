@@ -38,6 +38,7 @@ import {
   getMediaServer,
   getStatsSource,
 } from '@/utils/statsSource'
+import { getTitleMoments } from '@/utils/titleMoments'
 import { sumBy } from 'lodash'
 import { Metadata } from 'next'
 import { getServerSession } from 'next-auth'
@@ -142,6 +143,23 @@ async function RewindContent({ userId }: { userId?: string }) {
         hasFirstPlayTotals ? user.id : undefined,
       )
     : null
+  // The viewer's plays in the period, and all of them once the whole history
+  // has been read, for what was new to them and what they never finished
+  const [plays, allPlays] = await Promise.all([
+    getStatsSource(settings).getHistoryPlays({
+      since: startDate,
+      userId: user.id,
+      libraries,
+    }),
+    hasFirstPlayTotals
+      ? getStatsSource(settings).getHistoryPlays({
+          since: new Date(0).toISOString(),
+          userId: user.id,
+          libraries,
+        })
+      : null,
+  ])
+  const titleMoments = await getTitleMoments(plays, allPlays)
   const isUserExcluded = settings.general.excludedUsers.includes(user.id)
   // The server's totals leave excluded users out, so an excluded user's own
   // time is added back, here and in the totals by type
@@ -203,6 +221,7 @@ async function RewindContent({ userId }: { userId?: string }) {
       percentage: topMediaStats.audio.percentage,
       topTrack,
     },
+    titleMoments,
     habits: habits,
     firstPlay: firstPlay && {
       date: formatMonthYear(firstPlay.date, locale, 'long'),

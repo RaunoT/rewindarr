@@ -395,6 +395,24 @@
       "topTrackPlays": "You played it <count>{countValue, plural, one {once} other {# times}}</count>",
       "noData": "You didn't listen to any <audio>music</audio> on <from>{serverName}</from>"
     },
+    "ComfortWatch": {
+      "movie": "Your comfort watch was <title>{titleValue}</title>",
+      "episode": "Your comfort watch was <title>{titleValue}</title> from <show>{showValue}</show>",
+      "moviePlays": "You watched it <count>{countValue, plural, one {once} other {# times}}</count>",
+      "episodePlays": "You watched it <count>{countValue, plural, one {once} other {# times}}</count>"
+    },
+    "TimeTravel": {
+      "decade": "You spent <share>{shareValue, number, percent}</share> of your watch time in <decade>the {decadeValue}s</decade>",
+      "oldest": "The furthest back you went was <year>{yearValue}</year>, with <title>{titleValue}</title>"
+    },
+    "Discoveries": {
+      "shows": "You discovered <showsCount>{showsValue, number}</showsCount> <shows>new {showsValue, plural, one {show} other {shows}}</shows>",
+      "artists": "You discovered <artistsCount>{artistsValue, number}</artistsCount> <artists>new {artistsValue, plural, one {artist} other {artists}}</artists>",
+      "showsAndArtists": "You discovered <showsCount>{showsValue, number}</showsCount> <shows>new {showsValue, plural, one {show} other {shows}}</shows> and <artistsCount>{artistsValue, number}</artistsCount> <artists>new {artistsValue, plural, one {artist} other {artists}}</artists>",
+      "top": "Your biggest find was <title>{titleValue}</title>, which got <duration>{durationValue}</duration> of your time",
+      "only": "It was <title>{titleValue}</title>, which got <duration>{durationValue}</duration> of your time",
+      "gaveUp": "One that got away: you made it <percent>{percentValue, number, percent}</percent> into <title>{titleValue}</title>. Maybe next time?"
+    },
     "Libraries": {
       "filesize": "Did you know that everything on <plex>{serverName}</plex> takes up <size>{sizeValue}</size> of <filesize>storage</filesize>?",
       "sizePartial": "Some libraries have no size data. Enable “Calculate Total File Sizes” in Tautulli.",
