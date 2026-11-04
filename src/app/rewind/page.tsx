@@ -150,8 +150,7 @@ async function RewindContent({ userId }: { userId?: string }) {
       getRewindMoments(plays, {
         since: startDate,
         minPlayPercent: settings.general.minPlayPercent,
-        // The server's, until the viewer's is known
-        timeZone: undefined,
+        timeZone,
         getPlayItem: (play) => getStatsSource(settings).getPlayItem(play),
       }),
     ),
