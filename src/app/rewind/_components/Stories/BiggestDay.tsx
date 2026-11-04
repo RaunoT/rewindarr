@@ -6,6 +6,7 @@ import { getImageProxyUrl } from '@/utils/imageProxy'
 import { CalendarIcon, FireIcon } from '@heroicons/react/24/outline'
 import { useFormatter, useTranslations } from 'next-intl'
 import { DAY_FORMAT, formatMomentDate, SHORT_DAY_FORMAT } from '../momentDate'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
 function getPoster(item: TautulliItemRow) {
@@ -34,10 +35,7 @@ export default function StoryBiggestDay({ userRewind }: RewindStory) {
         <p>
           {t.rich('day', {
             day: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <CalendarIcon />
-              </span>
+              <RewindCat icon={<CalendarIcon />}>{chunks}</RewindCat>
             ),
             dateValue: formatMomentDate(format, biggestDay.date, DAY_FORMAT),
             durationValue: secondsToTime(biggestDay.duration, tRoot),
@@ -85,10 +83,7 @@ export default function StoryBiggestDay({ userRewind }: RewindStory) {
               ),
               endValue: formatMomentDate(format, streak.end, SHORT_DAY_FORMAT),
               days: (chunks) => (
-                <span className='rewind-cat'>
-                  {chunks}
-                  <FireIcon />
-                </span>
+                <RewindCat icon={<FireIcon />}>{chunks}</RewindCat>
               ),
               start: (chunks) => <span className='rewind-cat'>{chunks}</span>,
               end: (chunks) => <span className='rewind-cat'>{chunks}</span>,

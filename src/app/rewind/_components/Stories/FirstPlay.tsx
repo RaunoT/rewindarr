@@ -4,6 +4,7 @@ import { RATING_STATISTICS } from '@/utils/constants'
 import { getMediaServerName } from '@/utils/mediaServerName'
 import { CalendarIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
 export default function StoryFirstPlay({ userRewind, settings }: RewindStory) {
@@ -25,10 +26,7 @@ export default function StoryFirstPlay({ userRewind, settings }: RewindStory) {
             plex: (chunks) => chunks,
             dateValue: firstPlay.date,
             date: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <CalendarIcon />
-              </span>
+              <RewindCat icon={<CalendarIcon />}>{chunks}</RewindCat>
             ),
           })}
         </p>

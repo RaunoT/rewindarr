@@ -3,6 +3,7 @@ import { ClockIcon } from '@heroicons/react/24/outline'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 import RewindBarChart from '../RewindBarChart'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
 // Context hours for the axis (edges are skipped so labels stay in bounds). The
@@ -59,10 +60,7 @@ export default function StoryHabitsHour({ userRewind }: RewindStory) {
           {t.rich('hour', {
             hourValue: peakHourLabel,
             hour: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <ClockIcon />
-              </span>
+              <RewindCat icon={<ClockIcon />}>{chunks}</RewindCat>
             ),
           })}
         </p>

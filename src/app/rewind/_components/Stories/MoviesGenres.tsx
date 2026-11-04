@@ -1,6 +1,7 @@
 import { RewindStory } from '@/types/rewind'
 import { TagIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 import TopGenres from '../TopGenres'
 
@@ -12,12 +13,7 @@ export default function StoryMoviesGenres({ userRewind }: RewindStory) {
     <RewindStat noScale>
       <p>
         {t.rich('topMovieGenres', {
-          top: (chunks) => (
-            <span className='rewind-cat'>
-              {chunks}
-              <TagIcon />
-            </span>
-          ),
+          top: (chunks) => <RewindCat icon={<TagIcon />}>{chunks}</RewindCat>,
           count: genres.length,
         })}
       </p>

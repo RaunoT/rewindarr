@@ -1,5 +1,6 @@
 import { useLocale } from 'next-intl'
 import { ReactNode } from 'react'
+import RewindCat from './RewindCat'
 
 type Props = {
   count: number
@@ -21,10 +22,7 @@ export default function StatListItem({ count, name, icon, library }: Props) {
       )}
       <span className='font-semibold'>{count.toLocaleString(locale)}</span>
       <span className='mx-2 text-neutral-400'>•</span>
-      <span className='rewind-cat'>
-        {name}
-        {icon}
-      </span>
+      <RewindCat icon={icon}>{name}</RewindCat>
     </li>
   )
 }

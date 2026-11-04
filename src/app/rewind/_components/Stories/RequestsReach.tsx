@@ -3,6 +3,7 @@ import MediaItems from '@/components/MediaItem/MediaItems'
 import { RewindStory } from '@/types/rewind'
 import { RATING_STATISTICS } from '@/utils/constants'
 import { useTranslations } from 'next-intl'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
 export default function StoryRequestsReach({
@@ -24,10 +25,7 @@ export default function StoryRequestsReach({
             usersValue: reach.users,
             count: (chunks) => <span className='rewind-stat'>{chunks}</span>,
             requests: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <STAT_ICONS.requests />
-              </span>
+              <RewindCat icon={<STAT_ICONS.requests />}>{chunks}</RewindCat>
             ),
           })}
         </p>

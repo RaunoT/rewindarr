@@ -2,6 +2,7 @@ import MediaItems from '@/components/MediaItem/MediaItems'
 import { RewindStory } from '@/types/rewind'
 import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 import useCountdown from '../useCountdown'
 
@@ -15,10 +16,7 @@ export default function StoryAudioTop({ userRewind, settings }: RewindStory) {
         <p className='mb-2'>
           {t.rich('topArtists', {
             top: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <MusicalNoteIcon />
-              </span>
+              <RewindCat icon={<MusicalNoteIcon />}>{chunks}</RewindCat>
             ),
             count: userRewind.audio.top.length,
           })}

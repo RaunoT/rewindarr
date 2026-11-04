@@ -2,6 +2,7 @@ import { MEDIA_ICONS } from '@/components/icons'
 import MediaItems from '@/components/MediaItem/MediaItems'
 import { RewindStory } from '@/types/rewind'
 import { useTranslations } from 'next-intl'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 import useCountdown from '../useCountdown'
 
@@ -15,10 +16,7 @@ export default function StoryShowsTop({ userRewind, settings }: RewindStory) {
         <p className='mb-2'>
           {t.rich('topShows', {
             top: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <MEDIA_ICONS.show />
-              </span>
+              <RewindCat icon={<MEDIA_ICONS.show />}>{chunks}</RewindCat>
             ),
             count: userRewind.shows.top.length,
           })}

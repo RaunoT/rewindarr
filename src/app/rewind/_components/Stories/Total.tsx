@@ -5,6 +5,7 @@ import { ClockIcon, TrophyIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import { getAverageMessage } from '../averageMessage'
 import RewindBreakdown from '../RewindBreakdown'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
 export default function StoryTotal({
@@ -30,9 +31,7 @@ export default function StoryTotal({
                   settings.general.serverName ||
                   getMediaServerName(settings.connection.mediaServerType),
                 total: (chunks) => (
-                  <span className='rewind-cat'>
-                    {chunks} <ClockIcon />
-                  </span>
+                  <RewindCat icon={<ClockIcon />}>{chunks}</RewindCat>
                 ),
                 duration: (chunks) => (
                   <span className='rewind-stat'>{chunks}</span>
@@ -49,9 +48,9 @@ export default function StoryTotal({
                   ...averageMessage.values,
                   durationValue: average.duration,
                   difference: (chunks) => (
-                    <span className='rewind-cat'>
-                      {chunks} <averageMessage.Icon />
-                    </span>
+                    <RewindCat icon={<averageMessage.Icon />}>
+                      {chunks}
+                    </RewindCat>
                   ),
                   duration: (chunks) => (
                     <span className='rewind-stat'>{chunks}</span>
@@ -70,9 +69,7 @@ export default function StoryTotal({
                     settings.general.serverName ||
                     getMediaServerName(settings.connection.mediaServerType),
                   top: (chunks) => (
-                    <span className='rewind-cat'>
-                      {chunks} <TrophyIcon />
-                    </span>
+                    <RewindCat icon={<TrophyIcon />}>{chunks}</RewindCat>
                   ),
                   plex: (chunks) => chunks,
                 })}

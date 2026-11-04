@@ -4,6 +4,7 @@ import { getRequestsBreakdown } from '@/utils/helpers'
 import { useFormatter, useTranslations } from 'next-intl'
 import { getAverageMessage } from '../averageMessage'
 import RewindBreakdown from '../RewindBreakdown'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
 export default function StoryRequests({ userRewind, settings }: RewindStory) {
@@ -26,10 +27,7 @@ export default function StoryRequests({ userRewind, settings }: RewindStory) {
         {t.rich('countTotal', {
           countValue: userRewind.requests.total,
           count: (chunks) => (
-            <span className='rewind-cat'>
-              {chunks}
-              <STAT_ICONS.requests />
-            </span>
+            <RewindCat icon={<STAT_ICONS.requests />}>{chunks}</RewindCat>
           ),
         })}
       </p>
@@ -44,10 +42,7 @@ export default function StoryRequests({ userRewind, settings }: RewindStory) {
             <p>
               {t.rich('noData', {
                 requests: (chunks) => (
-                  <span className='rewind-cat'>
-                    {chunks}
-                    <STAT_ICONS.requests />
-                  </span>
+                  <RewindCat icon={<STAT_ICONS.requests />}>{chunks}</RewindCat>
                 ),
                 emoji: (chunks) => <span className='not-italic'>{chunks}</span>,
               })}
@@ -61,10 +56,9 @@ export default function StoryRequests({ userRewind, settings }: RewindStory) {
                   <p>
                     {t.rich('noUserData', {
                       requests: (chunks) => (
-                        <span className='rewind-cat'>
+                        <RewindCat icon={<STAT_ICONS.requests />}>
                           {chunks}
-                          <STAT_ICONS.requests />
-                        </span>
+                        </RewindCat>
                       ),
                       requestLink: (chunks) => (
                         <a
@@ -101,10 +95,9 @@ export default function StoryRequests({ userRewind, settings }: RewindStory) {
                         <span className='rewind-cat'>{chunks}</span>
                       ),
                       requests: (chunks) => (
-                        <span className='rewind-cat'>
+                        <RewindCat icon={<STAT_ICONS.requests />}>
                           {chunks}
-                          <STAT_ICONS.requests />
-                        </span>
+                        </RewindCat>
                       ),
                     })}
                   </p>
@@ -117,9 +110,9 @@ export default function StoryRequests({ userRewind, settings }: RewindStory) {
                         ...averageMessage.values,
                         countValue: average.count,
                         difference: (chunks) => (
-                          <span className='rewind-cat'>
-                            {chunks} <averageMessage.Icon />
-                          </span>
+                          <RewindCat icon={<averageMessage.Icon />}>
+                            {chunks}
+                          </RewindCat>
                         ),
                         count: (chunks) => (
                           <span className='rewind-stat'>{chunks}</span>

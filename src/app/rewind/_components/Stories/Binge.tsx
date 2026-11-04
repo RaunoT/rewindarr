@@ -5,6 +5,7 @@ import { secondsToTime } from '@/utils/formatting'
 import { ForwardIcon } from '@heroicons/react/24/outline'
 import { useFormatter, useTranslations } from 'next-intl'
 import { DAY_FORMAT, formatMomentDate } from '../momentDate'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
 export default function StoryBinge({ userRewind, settings }: RewindStory) {
@@ -23,10 +24,7 @@ export default function StoryBinge({ userRewind, settings }: RewindStory) {
         <p>
           {t.rich('binge', {
             binge: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <ForwardIcon />
-              </span>
+              <RewindCat icon={<ForwardIcon />}>{chunks}</RewindCat>
             ),
             dateValue: formatMomentDate(format, binge.date, DAY_FORMAT),
             date: (chunks) => <span className='rewind-cat'>{chunks}</span>,
@@ -50,10 +48,7 @@ export default function StoryBinge({ userRewind, settings }: RewindStory) {
           {t.rich('bingeShow', {
             showValue: binge.title,
             show: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <MEDIA_ICONS.show />
-              </span>
+              <RewindCat icon={<MEDIA_ICONS.show />}>{chunks}</RewindCat>
             ),
           })}
         </p>

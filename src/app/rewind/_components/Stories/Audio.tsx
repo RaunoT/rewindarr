@@ -5,6 +5,7 @@ import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import CountUp from '../CountUp'
 import PlaytimeShare from '../PlaytimeShare'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
 export default function StoryAudio({ userRewind, settings }: RewindStory) {
@@ -23,10 +24,7 @@ export default function StoryAudio({ userRewind, settings }: RewindStory) {
                   <span className='rewind-stat'>{chunks}</span>
                 ),
                 audio: (chunks) => (
-                  <span className='rewind-cat'>
-                    {chunks}
-                    <MusicalNoteIcon />
-                  </span>
+                  <RewindCat icon={<MusicalNoteIcon />}>{chunks}</RewindCat>
                 ),
               })}
             </p>
@@ -116,10 +114,7 @@ export default function StoryAudio({ userRewind, settings }: RewindStory) {
           <p>
             {t.rich('noData', {
               audio: (chunks) => (
-                <span className='rewind-cat'>
-                  {chunks}
-                  <MusicalNoteIcon />
-                </span>
+                <RewindCat icon={<MusicalNoteIcon />}>{chunks}</RewindCat>
               ),
               serverName:
                 settings.general.serverName ||

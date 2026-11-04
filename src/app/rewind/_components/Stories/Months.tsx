@@ -4,6 +4,7 @@ import { ChartBarIcon } from '@heroicons/react/24/outline'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 import RewindBarChart from '../RewindBarChart'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
 const HOUR = 60 * 60
@@ -72,10 +73,7 @@ export default function StoryMonths({ userRewind }: RewindStory) {
             monthValue: peakMonth,
             durationValue: peakDuration,
             month: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <ChartBarIcon />
-              </span>
+              <RewindCat icon={<ChartBarIcon />}>{chunks}</RewindCat>
             ),
             duration: (chunks) => <span className='rewind-stat'>{chunks}</span>,
           })}

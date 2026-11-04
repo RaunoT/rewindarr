@@ -3,6 +3,7 @@ import { RewindStory } from '@/types/rewind'
 import { getMediaServerName } from '@/utils/mediaServerName'
 import { UserIcon } from '@heroicons/react/24/outline'
 import { useFormatter, useTranslations } from 'next-intl'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
 export default function StoryTasteMatch({ userRewind, settings }: RewindStory) {
@@ -30,10 +31,7 @@ export default function StoryTasteMatch({ userRewind, settings }: RewindStory) {
             plex: (chunks) => chunks,
             userValue: match.name,
             user: (chunks) => (
-              <span className='rewind-cat'>
-                {chunks}
-                <UserIcon />
-              </span>
+              <RewindCat icon={<UserIcon />}>{chunks}</RewindCat>
             ),
           })}
         </p>

@@ -1,6 +1,7 @@
 import { RewindStory } from '@/types/rewind'
 import { VideoCameraIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
+import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 import TopPeople from '../TopPeople'
 import useCountdown from '../useCountdown'
@@ -15,10 +16,7 @@ export default function StoryMoviesDirectors({ userRewind }: RewindStory) {
       <p className='mb-2'>
         {t.rich('topDirectors', {
           top: (chunks) => (
-            <span className='rewind-cat'>
-              {chunks}
-              <VideoCameraIcon />
-            </span>
+            <RewindCat icon={<VideoCameraIcon />}>{chunks}</RewindCat>
           ),
           count: directors.length,
         })}
