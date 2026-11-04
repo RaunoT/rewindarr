@@ -70,6 +70,17 @@ export default function StoryRequestsReach({
           />
         </div>
       </RewindStat>
+
+      {!reach.isItemWatched && (
+        <RewindStat step={3}>
+          <p>
+            {t.rich('unwatched', {
+              still: (chunks) => <span className='rewind-stat'>{chunks}</span>,
+              emoji: (chunks) => <span className='not-italic'>{chunks}</span>,
+            })}
+          </p>
+        </RewindStat>
+      )}
     </>
   )
 }

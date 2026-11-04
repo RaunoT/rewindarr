@@ -21,7 +21,11 @@ export default function RewindBreakdown({ items }: Props) {
   // Says whose bar is whose when there are both
   const hasLegend =
     items.some((item) => item.share !== null) &&
-    items.some((item) => item.serverShare !== null)
+    items.some((item) => item.otherShare !== null)
+  // Without the user's own, the other bar is every user's together
+  const otherLabel = items.some((item) => item.share !== null)
+    ? t('averageUser')
+    : t('allUsers')
 
   return (
     <div className='mt-4 not-italic'>
@@ -33,7 +37,7 @@ export default function RewindBreakdown({ items }: Props) {
           </span>
           <span className='flex items-center gap-1.5'>
             <span className='size-2.5 rounded-full bg-white/30' />
-            {t('allUsers')}
+            {otherLabel}
           </span>
         </div>
       )}
@@ -58,10 +62,10 @@ export default function RewindBreakdown({ items }: Props) {
                   variant='user'
                 />
               )}
-              {item.serverShare !== null && (
+              {item.otherShare !== null && (
                 <ShareBar
-                  share={item.serverShare}
-                  label={t('allUsers')}
+                  share={item.otherShare}
+                  label={otherLabel}
                   delay={index * 0.15 + 0.1}
                 />
               )}

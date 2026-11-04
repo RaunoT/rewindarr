@@ -317,8 +317,6 @@
     "profilePictureAlt": "Kasutaja {name} profiilipilt",
     "time": {
       "zero": "0 min",
-      "month": "{count, plural, one {# kuu} other {# kuud}}",
-      "week": "{count, plural, one {# näd} other {# näd}}",
       "day": "{count, plural, one {# päev} other {# päeva}}",
       "hr": "{count, plural, one {# t} other {# t}}",
       "min": "{count, plural, one {# min} other {# min}}",
@@ -364,7 +362,8 @@
       "movies": "Filmid",
       "audio": "Muusika",
       "you": "Sina",
-      "allUsers": "Kõik kasutajad"
+      "allUsers": "Kõik kasutajad",
+      "averageUser": "Keskmine kasutaja"
     },
     "Welcome": {
       "welcome": "Tere tulemast oma <rewind>{serverName} Rewind'i</rewind>, <user>{userValue}!</user>",
@@ -483,7 +482,8 @@
     "RequestsReach": {
       "users": "{usersValue, plural, one {<count># teine inimene</count> vaatas} other {<count># teist inimest</count> vaatasid}} seda, mida sa <requests>tellisid</requests>",
       "duration": "{usersValue, plural, one {Ta kulutas} other {Kokku kulutasid nad}} {requestsValue, plural, one {sellele} other {neile}} <duration>{durationValue}</duration>",
-      "top": "{requestsValue, plural, one {See oli <title>{titleValue}</title>} other {Kõige rohkem inimesi vaatas <title>{titleValue}</title>}}"
+      "top": "{requestsValue, plural, one {See oli <title>{titleValue}</title>} other {Kõige rohkem inimesi vaatas <title>{titleValue}</title>}}",
+      "unwatched": "Naljakas on see, et sa <still>pole seda ise veel vaadanud</still> <emoji>🙈</emoji>"
     },
     "ServerYear": {
       "duration": "{usersValue, plural, one {<users># inimene</users> kulutas} other {Kokku kulutasid <users># inimest</users>}} <plex>{serverName}'is</plex> <duration>{durationValue}</duration>",

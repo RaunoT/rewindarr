@@ -317,8 +317,6 @@
     "profilePictureAlt": "{name}'s profile picture",
     "time": {
       "zero": "0 mins",
-      "month": "{count, plural, one {# mth} other {# mths}}",
-      "week": "{count, plural, one {# wk} other {# wks}}",
       "day": "{count, plural, one {# day} other {# days}}",
       "hr": "{count, plural, one {# hr} other {# hrs}}",
       "min": "{count, plural, one {# min} other {# mins}}",
@@ -364,7 +362,8 @@
       "movies": "Movies",
       "audio": "Music",
       "you": "You",
-      "allUsers": "All users"
+      "allUsers": "All users",
+      "averageUser": "Average user"
     },
     "Welcome": {
       "welcome": "Welcome to your <rewind>{serverName} Rewind</rewind>, <user>{userValue}!</user>",
@@ -483,7 +482,8 @@
     "RequestsReach": {
       "users": "{usersValue, plural, one {<count># other person</count>} other {<count># other people</count>}} watched what you <requests>asked for</requests>",
       "duration": "{usersValue, plural, one {They} other {Together, they}} spent <duration>{durationValue}</duration> watching {requestsValue, plural, one {it} other {them}}",
-      "top": "{requestsValue, plural, one {It was <title>{titleValue}</title>} other {<title>{titleValue}</title> reached the most people}}"
+      "top": "{requestsValue, plural, one {It was <title>{titleValue}</title>} other {<title>{titleValue}</title> reached the most people}}",
+      "unwatched": "Funny thing is, you <still>still haven't watched it</still> yourself <emoji>🙈</emoji>"
     },
     "ServerYear": {
       "duration": "{usersValue, plural, one {<users># person</users> spent} other {Together, <users># people</users> spent}} <duration>{durationValue}</duration> on <plex>{serverName}</plex>",

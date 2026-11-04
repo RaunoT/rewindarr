@@ -10,9 +10,9 @@ export function secondsToTime(seconds: number, t: TranslateFunction): string {
     return t('Common.time.zero')
   }
 
+  // Days are the largest unit, so long durations stay exact and easy to
+  // compare, such as "45 days 3 hrs"
   const units = [
-    { label: 'month', duration: 2629746 },
-    { label: 'week', duration: 604800 },
     { label: 'day', duration: 86400 },
     { label: 'hr', duration: 3600 },
     { label: 'min', duration: 60 },
@@ -21,19 +21,15 @@ export function secondsToTime(seconds: number, t: TranslateFunction): string {
   const maxUnits = 2
   const result = []
 
-  let remainingSeconds = totalSeconds
+  // Rounding to whole minutes before the split keeps 59 min 30 sec from
+  // becoming "60 mins"
+  let remainingSeconds =
+    totalSeconds >= 60 ? Math.round(totalSeconds / 60) * 60 : totalSeconds
   let unitCount = 0
 
   for (const { label, duration } of units) {
     if (unitCount >= maxUnits) {
       break
-    }
-
-    // Rounding to whole minutes before the split keeps 59 min 30 sec from
-    // becoming "60 mins". It happens after the months, which aren't a whole
-    // number of minutes.
-    if (label === 'week' && totalSeconds >= 60) {
-      remainingSeconds = Math.round(remainingSeconds / 60) * 60
     }
 
     const value = Math.floor(remainingSeconds / duration)
@@ -47,10 +43,6 @@ export function secondsToTime(seconds: number, t: TranslateFunction): string {
   }
 
   return result.join(' ')
-}
-
-export function removeAfterMinutes(timeString: string): string {
-  return timeString.replace(/mins.*/, 'mins')
 }
 
 export function bytesToSize(
@@ -70,19 +62,6 @@ export function bytesToSize(
     value,
     unit: sizes[i],
   })
-}
-
-export function timeToSeconds(time: string): number {
-  const dayMatch = time.match(/([\d.]+) *day/)
-  const hourMatch = time.match(/([\d.]+) *hr/)
-  const minMatch = time.match(/([\d.]+) *min/)
-  const secMatch = time.match(/([\d.]+) *sec/)
-  const days = dayMatch ? parseFloat(dayMatch[1]) * 86400 : 0
-  const hours = hourMatch ? parseFloat(hourMatch[1]) * 3600 : 0
-  const mins = minMatch ? parseFloat(minMatch[1]) * 60 : 0
-  const secs = secMatch ? parseFloat(secMatch[1]) : 0
-
-  return days + hours + mins + secs
 }
 
 function formatOneDecimal(value: number, locale: string): string {

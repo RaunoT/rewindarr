@@ -36,8 +36,9 @@ type LibraryTotals = {
   duration: string
   // In seconds, null without a library of the type
   duration_value: number | null
-  // Every user's time on the type, in seconds
-  server_duration_value: number | null
+  // The average user's share of their own time that went to the type, from 0
+  // to 1, null without anyone else to compare with
+  average_share: number | null
   // Of the user's total playtime, empty when it rounds to 0%
   percentage: string
 }
@@ -60,6 +61,9 @@ export type UserRewind = {
           count: number
           difference: number
         } | null
+        // The average requester's split of their own requests, null without
+        // anyone else
+        averageShares: { movies: number; shows: number } | null
       })
     | null
   // How the user watched, null with too little to go on

@@ -317,8 +317,6 @@
     "profilePictureAlt": "Profilbild von {name}",
     "time": {
       "zero": "0 Min.",
-      "month": "{count, plural, one {# Mon.} other {# Mon.}}",
-      "week": "{count, plural, one {# Wo.} other {# Wo.}}",
       "day": "{count, plural, one {# Tg.} other {# Tg.}}",
       "hr": "{count, plural, one {# Std.} other {# Std.}}",
       "min": "{count, plural, one {# Min.} other {# Min.}}",
@@ -364,7 +362,8 @@
       "movies": "Filme",
       "audio": "Musik",
       "you": "Du",
-      "allUsers": "Alle Benutzer"
+      "allUsers": "Alle Benutzer",
+      "averageUser": "Durchschnittsbenutzer"
     },
     "Welcome": {
       "welcome": "Willkommen zu deinem <rewind>{serverName} Rewind</rewind>, <user>{userValue}!</user>",
@@ -483,7 +482,8 @@
     "RequestsReach": {
       "users": "{usersValue, plural, one {<count># andere Person</count> hat} other {<count># andere Personen</count> haben}} geschaut, was du <requests>angefragt</requests> hast",
       "duration": "{usersValue, plural, one {Sie hat} other {Zusammen haben sie}} <duration>{durationValue}</duration> mit {requestsValue, plural, one {deiner Anfrage} other {deinen Anfragen}} verbracht",
-      "top": "{requestsValue, plural, one {Es war <title>{titleValue}</title>} other {<title>{titleValue}</title> hat die meisten erreicht}}"
+      "top": "{requestsValue, plural, one {Es war <title>{titleValue}</title>} other {<title>{titleValue}</title> hat die meisten erreicht}}",
+      "unwatched": "Das Beste daran: Du <still>hast es selbst noch nicht geschaut</still> <emoji>🙈</emoji>"
     },
     "ServerYear": {
       "duration": "{usersValue, plural, one {<users># Person</users> hat} other {Zusammen haben <users># Personen</users>}} <duration>{durationValue}</duration> auf <plex>{serverName}</plex> verbracht",

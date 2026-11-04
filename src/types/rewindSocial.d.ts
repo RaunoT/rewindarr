@@ -28,6 +28,8 @@ export type RewindSocial = {
     duration: string
     // The request the most of them watched, with how many did
     item: SocialItem
+    // Whether the user watched it too
+    isItemWatched: boolean
   } | null
   // Everyone's year together. Null when nobody else played anything.
   serverYear: {
