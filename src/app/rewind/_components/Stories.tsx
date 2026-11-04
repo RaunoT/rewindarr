@@ -203,8 +203,11 @@ export default function Stories({ stories }: Props) {
   // Fills as the story's statements are stepped through
   const progress = storySteps.length ? shownSteps.length / storySteps.length : 0
   const canGoBack = currentIndex > 0 || shownSteps.length > 1
+  // A story still on the way holds the viewer there, or it would arrive
+  // behind them
   const canGoForward =
-    currentIndex < stories.length - 1 || nextStep !== undefined
+    isCurrentStoryIn &&
+    (currentIndex < stories.length - 1 || nextStep !== undefined)
   const goTo = useCallback(
     (index: number, isAtEnd = false) => {
       if (index < 0 || index >= stories.length || index === currentIndex) {
@@ -225,12 +228,16 @@ export default function Stories({ stories }: Props) {
     [currentIndex, stories.length, getPositionLabel],
   )
   const goToNext = useCallback(() => {
+    if (!isCurrentStoryIn) {
+      return
+    }
+
     if (nextStep !== undefined) {
       setStep(nextStep)
     } else {
       goTo(currentIndex + 1)
     }
-  }, [goTo, currentIndex, nextStep])
+  }, [goTo, currentIndex, nextStep, isCurrentStoryIn])
   // Hides the latest statement, or goes back a story from the first one
   const goToPrev = useCallback(() => {
     if (shownSteps.length > 1) {
