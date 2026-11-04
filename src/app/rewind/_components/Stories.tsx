@@ -4,14 +4,18 @@ import {
   readStorage,
   writeStorage,
 } from '@/app/_components/GlobalContextProvider'
+import useFullscreen from '@/hooks/useFullscreen'
 import useStoryMusic from '@/hooks/useStoryMusic'
 import { trackEvent } from '@/utils/analytics'
 import {
+  ArrowsPointingInIcon,
+  ArrowsPointingOutIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   SpeakerWaveIcon,
   SpeakerXMarkIcon,
 } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
 import { MotionConfig } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import {
@@ -21,12 +25,13 @@ import {
   ReactNode,
   useCallback,
   useEffect,
-  useId,
   useMemo,
   useRef,
   useState,
   useSyncExternalStore,
 } from 'react'
+import StoriesIntro from './StoriesIntro'
+import StoryBackdrop from './StoryBackdrop'
 
 type StoryStep = {
   // The latest statement shown, by its step in the story
@@ -51,6 +56,8 @@ type Story = {
   component: () => ReactNode
   // What plays during the story, in order of preference
   music?: string[]
+  // The art behind the story, tried in turn
+  art?: string[]
 }
 
 type Props = {
@@ -64,6 +71,7 @@ type Props = {
 const INTRO_SEEN_KEY = 'rewindIntroSeen'
 const SOUND_KEY = 'rewindSound'
 const NO_MUSIC: string[] = []
+const NO_ART: string[] = []
 // A longer press or a drag doesn't count as a tap
 const TAP_MAX_DURATION = 500
 const TAP_MAX_DISTANCE = 10
@@ -123,7 +131,7 @@ export default function Stories({ stories }: Props) {
     getIsHidden,
     getServerIsHidden,
   )
-  const introTitleId = useId()
+  const sectionRef = useRef<HTMLElement>(null)
   const slideRef = useRef<HTMLDivElement>(null)
   const introButtonRef = useRef<HTMLButtonElement>(null)
   const soundButtonRef = useRef<HTMLButtonElement>(null)
@@ -139,6 +147,12 @@ export default function Stories({ stories }: Props) {
   } | null>(null)
   const currentStory = stories[currentIndex]
   const currentStoryId = currentStory?.id
+  // The card, so the art and the snow fill the screen too
+  const getPlayer = useCallback(
+    () => sectionRef.current?.closest('.rewind-player'),
+    [],
+  )
+  const fullscreen = useFullscreen(getPlayer)
   const musicUrls = useMemo(
     () => [...new Set(stories.flatMap((story) => story.music ?? []))],
     [stories],
@@ -385,6 +399,11 @@ export default function Stories({ stories }: Props) {
     }
   }, [currentIndex, isIntroShown])
 
+  // A story scrolled down on a phone doesn't leave the next one scrolled
+  useEffect(() => {
+    slideRef.current?.scrollTo({ top: 0 })
+  }, [currentIndex])
+
   const storyStep = useMemo(
     () => ({ step, registerStep }),
     [step, registerStep],
@@ -403,8 +422,17 @@ export default function Stories({ stories }: Props) {
 
   return (
     <MotionConfig reducedMotion='user'>
+      <StoryBackdrop
+        srcs={currentStory.art ?? NO_ART}
+        nextSrcs={stories[currentIndex + 1]?.art ?? NO_ART}
+      />
       <section
-        className='relative flex flex-1 flex-col'
+        ref={sectionRef}
+        // Hidden behind the intro, which covers the whole player
+        className={clsx(
+          'relative flex flex-1 flex-col max-sm:min-h-0',
+          isIntroShown && 'invisible',
+        )}
         aria-roledescription='carousel'
         aria-label={t('label')}
       >
@@ -446,7 +474,9 @@ export default function Stories({ stories }: Props) {
           })}
           tabIndex={-1}
           inert={!!isIntroShown}
-          className='relative w-full flex-1 pt-8 outline-none select-none [-webkit-touch-callout:none] sm:flex sm:flex-col sm:justify-center'
+          // A phone's screen can be shorter than a story, which then scrolls
+          // between the progress bar and the buttons
+          className='relative w-full flex-1 pt-8 outline-none select-none [-webkit-touch-callout:none] max-sm:min-h-0 max-sm:overflow-y-auto max-sm:overscroll-contain sm:flex sm:flex-col sm:justify-center'
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
           onPointerCancel={() => {
@@ -454,58 +484,12 @@ export default function Stories({ stories }: Props) {
           }}
         >
           <StoryRestartContext value={restart}>
-            <StoryStepContext value={storyStep}>{slide}</StoryStepContext>
+            {/* The first story starts once the intro is dismissed */}
+            <StoryStepContext value={storyStep}>
+              {!isIntroShown && slide}
+            </StoryStepContext>
           </StoryRestartContext>
         </div>
-
-        {isIntroShown && (
-          <div
-            role='dialog'
-            aria-modal='true'
-            aria-labelledby={introTitleId}
-            className='absolute -inset-5 z-30 flex flex-col rounded-3xl bg-neutral-950/90 backdrop-blur-md'
-            onKeyDown={(e) => {
-              // "Got it" is its only control, so focus stays on it
-              if (e.key === 'Tab') {
-                e.preventDefault()
-              }
-            }}
-          >
-            <h2
-              id={introTitleId}
-              className='px-6 pt-12 text-center text-2xl font-semibold text-white'
-            >
-              {t('introTitle')}
-            </h2>
-            {/* Matches the slide's tap areas: the left third goes back. The
-                labels hang below the icons, so both line up however they
-                wrap. */}
-            <div className='flex flex-1 gap-2 px-5 py-6 text-center'>
-              <div className='intro-zone w-1/3'>
-                <span className='intro-zone-icon'>
-                  <ChevronLeftIcon className='size-6' />
-                </span>
-                <span className='intro-zone-label'>{t('introBack')}</span>
-              </div>
-              <div className='intro-zone flex-1'>
-                <span className='intro-zone-icon'>
-                  <ChevronRightIcon className='size-6' />
-                </span>
-                <span className='intro-zone-label'>{t('introForward')}</span>
-              </div>
-            </div>
-            <div className='flex justify-center px-6 pb-12'>
-              <button
-                ref={introButtonRef}
-                type='button'
-                className='button'
-                onClick={dismissIntro}
-              >
-                {t('introDismiss')}
-              </button>
-            </div>
-          </div>
-        )}
 
         <div className='mt-4 flex justify-between gap-2' inert={!!isIntroShown}>
           <div className='icon-button-group'>
@@ -526,21 +510,43 @@ export default function Stories({ stories }: Props) {
               <ChevronRightIcon className='size-5' />
             </button>
           </div>
-          {musicUrls.length > 0 && (
-            <div className='icon-button-group'>
-              <button
-                ref={soundButtonRef}
-                className='icon-button'
-                onClick={toggleSound}
-                aria-pressed={isSoundAudible}
-                aria-label={t('sound')}
-              >
-                {isSoundAudible ? (
-                  <SpeakerWaveIcon className='size-5' />
-                ) : (
-                  <SpeakerXMarkIcon className='size-5' />
-                )}
-              </button>
+          {(musicUrls.length > 0 || fullscreen.isSupported) && (
+            <div
+              className={clsx(
+                'icon-button-group',
+                // Full screen is only offered on wider screens
+                !musicUrls.length && 'max-sm:hidden',
+              )}
+            >
+              {musicUrls.length > 0 && (
+                <button
+                  ref={soundButtonRef}
+                  className='icon-button'
+                  onClick={toggleSound}
+                  aria-pressed={isSoundAudible}
+                  aria-label={t('sound')}
+                >
+                  {isSoundAudible ? (
+                    <SpeakerWaveIcon className='size-5' />
+                  ) : (
+                    <SpeakerXMarkIcon className='size-5' />
+                  )}
+                </button>
+              )}
+              {fullscreen.isSupported && (
+                <button
+                  className='icon-button max-sm:hidden'
+                  onClick={fullscreen.toggle}
+                  aria-pressed={fullscreen.isFullscreen}
+                  aria-label={t('fullscreen')}
+                >
+                  {fullscreen.isFullscreen ? (
+                    <ArrowsPointingInIcon className='size-5' />
+                  ) : (
+                    <ArrowsPointingOutIcon className='size-5' />
+                  )}
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -549,6 +555,10 @@ export default function Stories({ stories }: Props) {
           {announcement}
         </div>
       </section>
+
+      {isIntroShown && (
+        <StoriesIntro buttonRef={introButtonRef} onDismiss={dismissIntro} />
+      )}
     </MotionConfig>
   )
 }

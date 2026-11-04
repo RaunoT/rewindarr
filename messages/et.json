@@ -335,16 +335,18 @@
   },
   "Rewind": {
     "title": "Rewind",
+    "close": "Sulge Rewind",
     "Stories": {
       "goToStory": "Mine loole {index}",
       "previous": "Eelmine",
       "next": "Järgmine",
       "sound": "Heli",
+      "fullscreen": "Täisekraan",
       "label": "Rewind'i lood",
       "storyPosition": "{current}. lugu {total}-st",
-      "introTitle": "Kuidas liikuda",
-      "introBack": "Tagasi minemiseks puuduta vasakut poolt",
-      "introForward": "Edasi minemiseks puuduta paremat poolt",
+      "introTitle": "Puuduta, et lugude vahel liikuda",
+      "introBack": "Tagasi",
+      "introForward": "Edasi",
       "introDismiss": "Selge"
     },
     "Common": {

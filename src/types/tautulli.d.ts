@@ -61,6 +61,8 @@ export type TautulliItemRow = {
   thumb: string
   // TMDB's, for when the source can't serve its own
   tmdb_poster?: string | null
+  // TMDB's, for art behind the title
+  tmdb_backdrop?: string | null
   is_deleted: boolean
   rating: string | null
   // IMDb's from Radarr or Sonarr, Rotten Tomatoes' from its own search

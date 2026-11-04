@@ -335,16 +335,18 @@
   },
   "Rewind": {
     "title": "Rewind",
+    "close": "Fermer Rewind",
     "Stories": {
       "goToStory": "Aller à l'histoire {index}",
       "previous": "Précédent",
       "next": "Suivant",
       "sound": "Son",
+      "fullscreen": "Plein écran",
       "label": "Histoires du Rewind",
       "storyPosition": "Histoire {current} sur {total}",
-      "introTitle": "Comment naviguer",
-      "introBack": "Touchez le côté gauche pour revenir en arrière",
-      "introForward": "Touchez le côté droit pour avancer",
+      "introTitle": "Touchez pour passer d'une histoire à l'autre",
+      "introBack": "Retour",
+      "introForward": "Suivant",
       "introDismiss": "Compris"
     },
     "Common": {
