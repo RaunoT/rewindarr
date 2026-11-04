@@ -40,6 +40,7 @@ function play(id: string, userId: string, title: string): HistoryPlay {
     seasonNumber: null,
     episodeNumber: null,
     transcodeDecision: null,
+    lengthMs: null,
     userId,
     userName: '',
   }

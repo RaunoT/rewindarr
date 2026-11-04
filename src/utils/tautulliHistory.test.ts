@@ -88,6 +88,7 @@ describe('toTautulliPlay', () => {
       seasonNumber: null,
       episodeNumber: null,
       transcodeDecision: null,
+      lengthMs: null,
     })
   })
 
@@ -123,6 +124,7 @@ describe('toTautulliPlay', () => {
       seasonNumber: 0,
       episodeNumber: 3,
       transcodeDecision: 'copy',
+      lengthMs: null,
     })
   })
 

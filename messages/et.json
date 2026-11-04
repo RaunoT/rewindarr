@@ -261,7 +261,7 @@
       "externalLinksDescription": "Kui saidi hinnang on näha, viib saidile hoopis hinnang",
       "itemStatistics": "Kirje statistika",
       "minPlayPercent": "Loe mängimiseks alates %",
-      "minPlayPercentDescription": "Lühemad mängimised lisavad ainult vaatamisaega",
+      "minPlayPercentDescription": "Lühemad mängimised lisavad ainult vaatamisaega. Teadmata pikkusega mängimised vajavad ka vähemalt 30 sekundit",
       "minPlayPercentError": "Mängimise lävi peab olema täisarv vahemikus 0–100.",
       "privacy": "Privaatsus",
       "excludedUsers": "Välistatud kasutajad",
