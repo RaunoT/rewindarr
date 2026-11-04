@@ -41,6 +41,7 @@ function play(
     seasonNumber: null,
     episodeNumber: null,
     transcodeDecision: null,
+    lengthMs: null,
     ...user,
     ...overrides,
   }

@@ -146,10 +146,23 @@ function getDuration(plays: Play[]): number {
   return Math.round(sumBy(plays, 'durationMs') / 1000)
 }
 
-// Plays short of the percent in the settings still add their watch time. A
-// play the source has no percent complete for counts.
+// Without the item's length, only where a play stopped is known, and reopening
+// an item at its end logs a play near 100% that lasted seconds. So without it,
+// a play also needs this long.
+export const MIN_PLAY_MS = 30 * 1000
+
+// A play counts once its time reaches the settings' percent of the item's
+// length. Without the length, the percent is where it stopped, and a play
+// without one counts. Plays that don't count still add their watch time.
 export function isCountedPlay(play: Play, minPercent: number): boolean {
-  return play.percentComplete === null || play.percentComplete >= minPercent
+  if (play.lengthMs) {
+    return play.durationMs >= (play.lengthMs * minPercent) / 100
+  }
+
+  return (
+    play.durationMs >= MIN_PLAY_MS &&
+    (play.percentComplete === null || play.percentComplete >= minPercent)
+  )
 }
 
 function getMinPlayPercent(): number {
@@ -205,6 +218,26 @@ export function groupPlays<T extends Play>(plays: T[]): T[][] {
         getMediaId(play) ?? mediaIdsByTitle.get(titleKey) ?? `title:${titleKey}`
       )
     }),
+  )
+}
+
+// Whether a play is of an item made from plays, matched by the media id or the
+// title, the way the plays are grouped
+export function isPlayOfItem(
+  play: Play,
+  item: Pick<TautulliItemRow, 'media_id' | 'title' | 'year'>,
+): boolean {
+  const mediaId = getMediaId(play)
+
+  if (item.media_id && mediaId) {
+    return mediaId === item.media_id
+  }
+
+  const title = item.title.trim().toLowerCase()
+
+  return (
+    getTitleKey(play) ===
+    (play.mediaType === 'movie' ? `${title}|${item.year ?? ''}` : title)
   )
 }
 

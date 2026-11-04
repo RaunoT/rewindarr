@@ -38,6 +38,7 @@ import StoryTimeTravel from './Stories/TimeTravel'
 import StoryTotal from './Stories/Total'
 import StoryUsersTop from './Stories/UsersTop'
 import StoryWelcome from './Stories/Welcome'
+import StoryYearOverYear from './Stories/YearOverYear'
 
 type StoryComponent = {
   userRewind: UserRewind
@@ -109,6 +110,9 @@ export default function RewindStories({ userRewind, settings, music }: Props) {
     createStory('welcome', StoryWelcome),
     createStory('total', StoryTotal),
     ...(userRewind.moments.monthly ? [createStory('months', StoryMonths)] : []),
+    ...(userRewind.yearOverYear
+      ? [createStory('year_over_year', StoryYearOverYear)]
+      : []),
     ...(userRewind.duration.user && hasShowLibraries && userRewind.shows.top[0]
       ? [createStory('shows', StoryShows)]
       : []),

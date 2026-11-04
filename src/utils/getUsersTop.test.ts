@@ -90,6 +90,7 @@ function play(userId: number, mediaType: PlayMediaType, seconds = 60): Play {
     seasonNumber: null,
     episodeNumber: null,
     transcodeDecision: null,
+    lengthMs: null,
   }
 }
 

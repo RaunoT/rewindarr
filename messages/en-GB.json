@@ -261,7 +261,7 @@
       "externalLinksDescription": "When a site's rating is shown, the rating links to it instead",
       "itemStatistics": "Item statistics",
       "minPlayPercent": "Count as a play from %",
-      "minPlayPercentDescription": "Shorter plays only add watch time",
+      "minPlayPercentDescription": "Shorter plays only add watch time. Plays whose length isn't known also need 30 seconds",
       "minPlayPercentError": "The play threshold must be a whole number from 0 to 100.",
       "privacy": "Privacy",
       "excludedUsers": "Excluded users",
@@ -429,6 +429,8 @@
       "count": "You watched <count>{countValue, number}</count> <episodes>{countValue, plural, one {episode} other {episodes}}</episodes> in total!",
       "favorite": "Your favourite was",
       "only": "The only show you watched was",
+      "previousFavorite": "{period, select, year {The year before} other {Last time}}, it was <title>{titleValue}</title>",
+      "sameFavorite": "It was your favourite <before>{period, select, year {the year before} other {last time}}</before> too!",
       "noData": "You didn't watch any <shows>shows</shows> on <plex>{serverName}</plex> <emoji>😥</emoji>"
     },
     "Requests": {
@@ -448,6 +450,8 @@
       "count": "You watched <count>{countValue, number}</count> <movies>{countValue, plural, one {movie} other {movies}}</movies> in total!",
       "favorite": "Your favourite was",
       "only": "The only movie you watched was",
+      "previousFavorite": "{period, select, year {The year before} other {Last time}}, it was <title>{titleValue}</title>",
+      "sameFavorite": "It was your favourite <before>{period, select, year {the year before} other {last time}}</before> too!",
       "noData": "You didn't watch any <movies>movies</movies> on <plex>{serverName}</plex> <emoji>😵‍💫</emoji>"
     },
     "People": {
@@ -492,6 +496,15 @@
       "dayTitles": "Here's what you spent it on",
       "moreTitles": "{count, plural, one {# more} other {# more}}",
       "streak": "Your longest streak was <days>{count, plural, one {# day} other {# days}} in a row</days>, from <start>{startValue}</start> to <end>{endValue}</end>"
+    },
+    "YearOverYear": {
+      "yearBefore": "<before>The year before</before>, you spent <duration>{durationValue}</duration> on <plex>{serverName}</plex>",
+      "rangeBefore": "<before>From {startValue} to {endValue}</before>, you spent <duration>{durationValue}</duration> on <plex>{serverName}</plex>",
+      "monthBefore": "<before>In {startValue}</before>, you spent <duration>{durationValue}</duration> on <plex>{serverName}</plex>",
+      "averageMore": "This time, you spent <difference>{percent, number, percent} more</difference>",
+      "averageTimes": "This time, you spent <difference>{times, number}× as much</difference>",
+      "averageLess": "This time, you spent <difference>{percent, number, percent} less</difference>",
+      "averageSame": "This time, you spent <difference>about the same</difference>"
     },
     "Habits": {
       "day": "Your favourite day to watch was <day>{dayValue}</day>",

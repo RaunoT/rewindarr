@@ -93,6 +93,8 @@ export type TracearrDecision = 'directplay' | 'copy' | 'transcode'
 export type TracearrHistoryRecord = TracearrMediaFields & {
   id: string
   duration_ms: number | null
+  // Missing from older Tracearr versions
+  total_duration_ms?: number | null
   percent_complete: number | null
   started_at: string
   is_transcode: boolean | null

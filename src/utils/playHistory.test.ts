@@ -38,6 +38,7 @@ function play(id: string, hoursAgo: number, overrides: Partial<Play> = {}) {
     seasonNumber: null,
     episodeNumber: null,
     transcodeDecision: null,
+    lengthMs: null,
     ...overrides,
   } satisfies Play
 }

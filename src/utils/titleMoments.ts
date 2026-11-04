@@ -79,16 +79,19 @@ function getEpisodeKey(play: Play): string {
 // it adds up to. The time includes the short plays a split watch starts with.
 function getWatchCount(plays: Play[], minPercent: number): number {
   const countedPlays = plays.filter((play) => isCountedPlay(play, minPercent))
-  // A play from the start lasts its percent of the length, a resumed one less.
-  // Only the plays that count get far enough to tell it.
-  const length = Math.max(
-    0,
-    ...countedPlays.map(({ durationMs, percentComplete }) =>
-      percentComplete ? durationMs / (percentComplete / 100) : 0,
-    ),
-  )
+  // The source's length where it gives one. Otherwise a play from the start
+  // lasts its percent of the length, a resumed one less, and only the plays
+  // that count get far enough to tell it.
+  const length =
+    Math.max(0, ...plays.map((play) => play.lengthMs ?? 0)) ||
+    Math.max(
+      0,
+      ...countedPlays.map(({ durationMs, percentComplete }) =>
+        percentComplete ? durationMs / (percentComplete / 100) : 0,
+      ),
+    )
 
-  // Without a percent complete, the length is unknown
+  // Without a length or a percent complete, the length is unknown
   if (!length) {
     return countedPlays.length
   }

@@ -261,7 +261,7 @@
       "externalLinksDescription": "Quand la note d'un site est affichée, c'est la note qui y renvoie",
       "itemStatistics": "Statistiques des éléments",
       "minPlayPercent": "Compter comme lecture à partir de %",
-      "minPlayPercentDescription": "Les lectures plus courtes n'ajoutent que de la durée de visionnage",
+      "minPlayPercentDescription": "Les lectures plus courtes n'ajoutent que de la durée de visionnage. Celles dont la durée totale est inconnue doivent aussi atteindre 30 secondes",
       "minPlayPercentError": "Le seuil de lecture doit être un nombre entier entre 0 et 100.",
       "privacy": "Confidentialité",
       "excludedUsers": "Utilisateurs exclus",
@@ -429,6 +429,8 @@
       "count": "Vous avez regardé <count>{countValue, number}</count> <episodes>{countValue, plural, one {épisode} other {épisodes}}</episodes> au total !",
       "favorite": "Votre favori était",
       "only": "La seule série que vous avez regardée était",
+      "previousFavorite": "{period, select, year {L'année précédente} other {La dernière fois}}, c'était <title>{titleValue}</title>",
+      "sameFavorite": "C'était déjà votre favori <before>{period, select, year {l'année précédente} other {la dernière fois}}</before> !",
       "noData": "Vous n'avez regardé aucune <shows>série</shows> sur <plex>{serverName}</plex> <emoji>😥</emoji>"
     },
     "Requests": {
@@ -448,6 +450,8 @@
       "count": "Vous avez regardé <count>{countValue, number}</count> <movies>{countValue, plural, one {film} other {films}}</movies> au total !",
       "favorite": "Votre favori était",
       "only": "Le seul film que vous avez regardé était",
+      "previousFavorite": "{period, select, year {L'année précédente} other {La dernière fois}}, c'était <title>{titleValue}</title>",
+      "sameFavorite": "C'était déjà votre favori <before>{period, select, year {l'année précédente} other {la dernière fois}}</before> !",
       "noData": "Vous n'avez regardé aucun <movies>film</movies> sur <plex>{serverName}</plex> <emoji>😵‍💫</emoji>"
     },
     "People": {
@@ -492,6 +496,15 @@
       "dayTitles": "Voici ce qui était au programme",
       "moreTitles": "{count, plural, one {# autre} other {# autres}}",
       "streak": "Votre record : <days>{count, plural, one {# jour} other {# jours}} d'affilée</days> avec au moins une lecture, du <start>{startValue}</start> au <end>{endValue}</end>"
+    },
+    "YearOverYear": {
+      "yearBefore": "<before>L'année précédente</before>, vous avez passé <duration>{durationValue}</duration> sur <plex>{serverName}</plex>",
+      "rangeBefore": "<before>De {startValue} à {endValue}</before>, vous avez passé <duration>{durationValue}</duration> sur <plex>{serverName}</plex>",
+      "monthBefore": "<before>En {startValue}</before>, vous avez passé <duration>{durationValue}</duration> sur <plex>{serverName}</plex>",
+      "averageMore": "Cette fois-ci, c'est <difference>{percent, number, percent} de plus</difference>",
+      "averageTimes": "Cette fois-ci, c'est <difference>{times, number}× plus</difference>",
+      "averageLess": "Cette fois-ci, c'est <difference>{percent, number, percent} de moins</difference>",
+      "averageSame": "Cette fois-ci, c'est <difference>à peu près autant</difference>"
     },
     "Habits": {
       "day": "Votre jour préféré pour regarder était le <day>{dayValue}</day>",
