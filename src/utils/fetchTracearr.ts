@@ -689,6 +689,7 @@ function toPlay(record: TracearrHistoryRecord, baseUrl: string): Play | null {
     startedAt: new Date(record.started_at).getTime(),
     mediaType,
     durationMs: record.duration_ms ?? 0,
+    lengthMs: record.total_duration_ms || null,
     percentComplete: record.percent_complete ?? null,
     title: record.media_title,
     showTitle: record.show_title,

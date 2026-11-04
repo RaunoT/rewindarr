@@ -261,7 +261,7 @@
       "externalLinksDescription": "Si se muestra la valoración de un sitio, es la valoración la que enlaza a él",
       "itemStatistics": "Estadísticas por elemento",
       "minPlayPercent": "Contar como reproducción desde %",
-      "minPlayPercentDescription": "Las reproducciones más cortas solo suman tiempo de visualización",
+      "minPlayPercentDescription": "Las reproducciones más cortas solo suman tiempo de visualización. Las de duración desconocida también necesitan 30 segundos",
       "minPlayPercentError": "El umbral de reproducción debe ser un número entero entre 0 y 100.",
       "privacy": "Privacidad",
       "excludedUsers": "Usuarios excluidos",
