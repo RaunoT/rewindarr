@@ -1,5 +1,6 @@
 'use client'
 
+import SelectionActions from '@/components/SelectionActions'
 import { CheckIcon } from '@heroicons/react/24/outline'
 import { ReactNode, useState } from 'react'
 import {
@@ -85,9 +86,19 @@ export default function MultiSelect({
         </Label>
         <Popover
           offset={8}
-          className='glass-sheet menu thin-scrollbar max-h-80 min-w-(--trigger-width) overflow-y-auto'
+          className='glass-sheet menu flex max-h-80 min-w-(--trigger-width) flex-col'
         >
-          <ListBox items={options} className='outline-none'>
+          {/* Stays in sight while the list scrolls */}
+          <SelectionActions
+            options={options.map((option) => option.value)}
+            value={value}
+            onChange={setValue}
+            className='mb-1.5 shrink-0 justify-end border-b border-white/10 pb-1.5'
+          />
+          <ListBox
+            items={options}
+            className='thin-scrollbar min-h-0 overflow-y-auto outline-none'
+          >
             {(option) => (
               <ListBoxItem
                 id={option.value}
