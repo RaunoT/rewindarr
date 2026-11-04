@@ -6,8 +6,8 @@ import TitleDetails, {
 import SkeletonLine from '@/components/SkeletonLine'
 import UserBadge, { BadgeUser } from '@/components/UserBadge'
 import { PublicSettings } from '@/types/settings'
-import { MediaServer } from '@/types/statsSource'
 import { EXTERNAL_LINK_NAMES, RATING_STATISTICS } from '@/utils/constants'
+import { Deeplink } from '@/utils/deeplink'
 import {
   getExternalLinks,
   getRatedSites,
@@ -54,7 +54,7 @@ type Props = {
   // First among the links, such as a request's status in Seerr
   action?: ReactNode
   // The item in the media server, which the title and poster open
-  deeplink?: { mediaServer: MediaServer; ratingKey: number | string } | null
+  deeplink?: Deeplink | null
   // Two lines on the right, such as a play's date over its time
   aside: ReactNode
   // On phones, in place of the aside next to the title, for a card that shows

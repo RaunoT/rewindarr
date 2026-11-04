@@ -1,7 +1,9 @@
 import Avatar from '@/components/Avatar'
+import MediaServerLink from '@/components/MediaItem/MediaServerLink'
 import PosterImage from '@/components/PosterImage'
 import { RewindStory } from '@/types/rewind'
 import { trackEvent } from '@/utils/analytics'
+import { getRowDeeplink } from '@/utils/deeplink'
 import {
   ArrowDownTrayIcon,
   ArrowPathIcon,
@@ -166,8 +168,13 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
 
           {tops.length > 0 && (
             <ul className='mt-4 grid max-w-60 grid-cols-3 gap-3 sm:mt-6 sm:max-w-none'>
-              {tops.map(({ type, label, item, srcs }) => (
-                <li key={type} className='min-w-0'>
+              {tops.map(({ type, label, item, srcs }) => {
+                const deeplink = getRowDeeplink(
+                  item,
+                  type,
+                  userRewind.media_server,
+                )
+                const poster = (
                   <div className='poster w-full sm:w-full'>
                     <PosterImage
                       srcs={srcs}
@@ -175,14 +182,46 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
                       sizes='(min-width: 640px) 10rem, 6rem'
                     />
                   </div>
-                  <p className='text-plex mt-2 text-[0.625rem] font-semibold tracking-[0.14em] uppercase sm:text-xs'>
-                    {label}
-                  </p>
-                  <p className='truncate text-sm leading-snug font-medium text-neutral-100 sm:line-clamp-2 sm:[overflow-wrap:anywhere] sm:whitespace-normal'>
-                    {item.title}
-                  </p>
-                </li>
-              ))}
+                )
+
+                return (
+                  <li
+                    key={type}
+                    className={clsx('min-w-0', deeplink && 'media-link-group')}
+                  >
+                    {deeplink ? (
+                      <MediaServerLink
+                        title={item.title}
+                        mediaServer={deeplink.mediaServer}
+                        ratingKey={deeplink.ratingKey}
+                        isDuplicate
+                        className='block'
+                      >
+                        {poster}
+                      </MediaServerLink>
+                    ) : (
+                      poster
+                    )}
+                    <p className='text-plex mt-2 text-[0.625rem] font-semibold tracking-[0.14em] uppercase sm:text-xs'>
+                      {label}
+                    </p>
+                    <p className='truncate text-sm leading-snug font-medium text-neutral-100 sm:line-clamp-2 sm:[overflow-wrap:anywhere] sm:whitespace-normal'>
+                      {deeplink ? (
+                        <MediaServerLink
+                          title={item.title}
+                          mediaServer={deeplink.mediaServer}
+                          ratingKey={deeplink.ratingKey}
+                          className='media-link-title'
+                        >
+                          {item.title}
+                        </MediaServerLink>
+                      ) : (
+                        item.title
+                      )}
+                    </p>
+                  </li>
+                )
+              })}
             </ul>
           )}
         </div>

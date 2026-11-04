@@ -1,28 +1,32 @@
 import AutoRefresh from '@/components/AutoRefresh'
 import { MediaIcon } from '@/components/icons'
+import MediaServerLink from '@/components/MediaItem/MediaServerLink'
 import PosterImage from '@/components/PosterImage'
 import SkeletonLine from '@/components/SkeletonLine'
 import SourceUnreachable from '@/components/SourceUnreachable'
 import StatusMessage from '@/components/StatusMessage'
 import { DashboardSearchParams } from '@/types/dashboard'
 import { Settings } from '@/types/settings'
+import { MediaServer } from '@/types/statsSource'
 import { TautulliItemRow, TautulliLibrary } from '@/types/tautulli'
 import {
   DASHBOARD_PERIOD_COOKIE_NAME,
   getSiteUrl,
   SETTINGS_HREF,
 } from '@/utils/constants'
+import { Deeplink, getRowDeeplink } from '@/utils/deeplink'
 import { getItems } from '@/utils/getDashboard'
 import getPeriod, { parseCustomPeriod } from '@/utils/getPeriod'
 import { getHomeTiles, getViewer } from '@/utils/helpers'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import { toPublicSettings } from '@/utils/publicSettings'
-import { getHistoryProgress } from '@/utils/statsSource'
+import { getHistoryProgress, getMediaServer } from '@/utils/statsSource'
 import {
   BackwardIcon,
   ChevronRightIcon,
   InboxIcon,
 } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
 import { kebabCase } from 'lodash'
 import { Session } from 'next-auth'
 import { getTranslations } from 'next-intl/server'
@@ -59,6 +63,8 @@ export default async function Overview({
     (await cookies()).get(DASHBOARD_PERIOD_COOKIE_NAME)?.value,
   )
   const customPeriod = parseCustomPeriod(settings.dashboard.customPeriod)
+  // Asked once for the tiles' links, without holding up the page
+  const mediaServer = getMediaServer().catch(() => null)
   const periodLabel =
     period === '7days'
       ? t('PeriodSelectContent.7days')
@@ -101,7 +107,10 @@ export default async function Overview({
         <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
           {tiles.rewind && <RewindTile />}
           {tiles.activity && (
-            <ActivityTile settings={toPublicSettings(settings)} />
+            <ActivityTile
+              settings={toPublicSettings(settings)}
+              mediaServer={mediaServer}
+            />
           )}
           {tiles.history && (
             <Suspense fallback={<HistoryTileSkeleton />}>
@@ -110,6 +119,7 @@ export default async function Overview({
                 session={session}
                 libraries={libraries}
                 period={period}
+                mediaServer={mediaServer}
               />
             </Suspense>
           )}
@@ -124,6 +134,7 @@ export default async function Overview({
                   settings={settings}
                   period={period}
                   periodLabel={periodLabel}
+                  mediaServer={mediaServer}
                 />
               </Suspense>
             ))}
@@ -226,6 +237,7 @@ type LibraryTileProps = {
   settings: Settings
   period: DashboardSearchParams['period']
   periodLabel: string
+  mediaServer: Promise<MediaServer | null>
 }
 
 function getDashboardPeriod(value?: string): DashboardSearchParams['period'] {
@@ -241,10 +253,14 @@ async function LibraryTile({
   settings,
   period,
   periodLabel,
+  mediaServer: mediaServerPromise,
 }: LibraryTileProps) {
   const t = await getTranslations()
   const { daysAgo, string: since } = getPeriod(period, settings)
-  const progress = await getHistoryProgress(since, [library])
+  const [progress, mediaServer] = await Promise.all([
+    getHistoryProgress(since, [library]),
+    mediaServerPromise,
+  ])
   const items = progress
     ? []
     : (
@@ -256,33 +272,57 @@ async function LibraryTile({
       ).items
   const [top, ...rest] = items.slice(0, TILE_ITEM_COUNT)
   const topPosters = top ? [getPoster(top), top.tmdb_poster] : []
+  const topLink = getRowDeeplink(top, library.section_type, mediaServer)
+  const topPoster = (
+    <div className='poster w-12'>
+      <PosterImage srcs={topPosters} type={library.section_type} sizes='6rem' />
+    </div>
+  )
   const topLabel =
     library.section_type === 'artist'
       ? t('Home.mostListened')
       : t('Home.mostWatched')
 
   return (
-    <Link
-      href={`/dashboard/${kebabCase(library.section_name)}${period ? `?period=${period}` : ''}`}
-      className='glass-sheet group focus-visible:focus-ring flex flex-col gap-4 transition-colors hover:bg-white/5'
-    >
-      <TileHeading name={library.section_name} type={library.section_type} />
+    <div className='glass-sheet tile'>
+      <TileHeading
+        name={library.section_name}
+        type={library.section_type}
+        href={`/dashboard/${kebabCase(library.section_name)}${period ? `?period=${period}` : ''}`}
+      />
       {top ? (
         <div className='flex flex-col gap-3'>
           <TileGlow srcs={topPosters} />
-          <div className='flex items-center gap-3'>
-            <div className='poster w-12'>
-              <PosterImage
-                srcs={topPosters}
-                type={library.section_type}
-                sizes='6rem'
-              />
-            </div>
+          <div
+            className={clsx(
+              'flex items-center gap-3',
+              topLink && 'media-link-group',
+            )}
+          >
+            {topLink ? (
+              <MediaServerLink
+                title={top.title}
+                mediaServer={topLink.mediaServer}
+                ratingKey={topLink.ratingKey}
+                isDuplicate
+                className='shrink-0'
+              >
+                {topPoster}
+              </MediaServerLink>
+            ) : (
+              topPoster
+            )}
             <div className='min-w-0'>
               <p className='truncate text-xs text-neutral-400'>
                 {`${topLabel} · ${periodLabel}`}
               </p>
-              <p className='truncate font-medium'>{top.title}</p>
+              <p className='truncate font-medium'>
+                <TileTitle
+                  title={top.title}
+                  deeplink={topLink}
+                  className='media-link-title'
+                />
+              </p>
               <ul className='icon-stats-container mt-1.5'>
                 <li className='icon-stat-wrapper text-xs'>
                   <MediaIcon type={library.section_type} />
@@ -296,7 +336,15 @@ async function LibraryTile({
               {rest.map((item, i) => (
                 <li key={i} className='flex min-w-0 items-baseline gap-3'>
                   <span className='flex-1 truncate text-neutral-300'>
-                    {item.title}
+                    <TileTitle
+                      title={item.title}
+                      deeplink={getRowDeeplink(
+                        item,
+                        library.section_type,
+                        mediaServer,
+                      )}
+                      className='hover:text-white hover:underline hover:decoration-white/40 hover:underline-offset-4'
+                    />
                   </span>
                   <span className='shrink-0 text-xs text-neutral-500 tabular-nums'>
                     {t('MediaItem.statPlays', { count: item.total_plays })}
@@ -317,7 +365,31 @@ async function LibraryTile({
           {t('Dashboard.noActivity')}
         </p>
       )}
-    </Link>
+    </div>
+  )
+}
+
+type TileTitleProps = {
+  title: string
+  deeplink: Deeplink | null
+  className?: string
+}
+
+// A library tile's title, which opens it in the media server
+function TileTitle({ title, deeplink, className }: TileTitleProps) {
+  if (!deeplink) {
+    return title
+  }
+
+  return (
+    <MediaServerLink
+      title={title}
+      mediaServer={deeplink.mediaServer}
+      ratingKey={deeplink.ratingKey}
+      className={clsx('transition-colors', className)}
+    >
+      {title}
+    </MediaServerLink>
   )
 }
 
@@ -359,28 +431,40 @@ function getPoster(item: TautulliItemRow) {
     : getImageProxyUrl(item.thumb)
 }
 
-function TileHeading({ name, type }: { name?: string; type?: string }) {
+type TileHeadingProps = {
+  name?: string
+  type?: string
+  // The library's dashboard, once the tile has loaded
+  href?: string
+}
+
+function TileHeading({ name, type, href }: TileHeadingProps) {
+  const heading = name ? (
+    <>
+      {type && (
+        <MediaIcon type={type} className='size-5 shrink-0 text-neutral-400' />
+      )}
+      <span className='truncate'>{name}</span>
+    </>
+  ) : (
+    <>
+      <span className='skeleton size-5 shrink-0' />
+      <SkeletonLine width='w-24' />
+    </>
+  )
+
   return (
     <div className='flex items-center justify-between gap-3'>
-      <h2 className='flex min-w-0 items-center gap-2 font-semibold'>
-        {name ? (
-          <>
-            {type && (
-              <MediaIcon
-                type={type}
-                className='size-5 shrink-0 text-neutral-400'
-              />
-            )}
-            <span className='truncate'>{name}</span>
-          </>
+      <h2 className='min-w-0 font-semibold'>
+        {href ? (
+          <Link href={href} className='tile-link flex items-center gap-2'>
+            {heading}
+          </Link>
         ) : (
-          <>
-            <span className='skeleton size-5 shrink-0' />
-            <SkeletonLine width='w-24' />
-          </>
+          <span className='flex items-center gap-2'>{heading}</span>
         )}
       </h2>
-      <ChevronRightIcon className='size-4 shrink-0 text-neutral-500 transition-transform group-hover:translate-x-0.5' />
+      <ChevronRightIcon className='tile-chevron' />
     </div>
   )
 }
