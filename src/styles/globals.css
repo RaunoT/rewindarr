@@ -8,9 +8,26 @@
   --color-warning: var(--color-amber-300);
 }
 
+/* Added to the Home Screen on iOS or iPadOS */
+@custom-variant ios-app {
+  @media (display-mode: standalone) {
+    @supports (-webkit-touch-callout: none) {
+      @slot;
+    }
+  }
+}
+
 @layer base {
   :root {
     color-scheme: dark;
+
+    /* Where the page and anything pinned to the top starts. iOS 26+ blurs the
+       top of a Home Screen app under the status bar, so it starts below that. */
+    --page-top: --spacing(4);
+
+    @variant ios-app {
+      --page-top: --spacing(10);
+    }
   }
 
   ::selection {
@@ -822,6 +839,18 @@
     @apply opacity-0;
 
     animation: fade-in 0.5s ease forwards;
+  }
+
+  /* Fades whatever scrolls under the iOS status bar into black, from above the
+     top of the page down to --page-top */
+  .status-bar-fade {
+    @apply ios-app:block pointer-events-none fixed inset-x-0 -top-25 z-40 hidden h-[calc(--spacing(25)+var(--page-top))];
+
+    background: linear-gradient(
+      to bottom,
+      black calc(var(--spacing) * 25),
+      transparent
+    );
   }
 }
 
