@@ -72,9 +72,12 @@ function getEpisodeKey(play: Play): string {
 }
 
 // Sources split some watches into plays and log reopening an item at its end,
-// so the plays are capped by how many times its length the time adds up to
-function getWatchCount(countedPlays: Play[]): number {
-  // A play from the start lasts its percent of the length, a resumed one less
+// so the plays that count are capped by how many times its length the time on
+// it adds up to. The time includes the short plays a split watch starts with.
+function getWatchCount(plays: Play[], minPercent: number): number {
+  const countedPlays = plays.filter((play) => isCountedPlay(play, minPercent))
+  // A play from the start lasts its percent of the length, a resumed one less.
+  // Only the plays that count get far enough to tell it.
   const length = Math.max(
     0,
     ...countedPlays.map(({ durationMs, percentComplete }) =>
@@ -90,26 +93,25 @@ function getWatchCount(countedPlays: Play[]): number {
   // A watch counts from three quarters of the length
   return Math.min(
     countedPlays.length,
-    Math.floor(sumBy(countedPlays, 'durationMs') / length + 0.25),
+    Math.floor(sumBy(plays, 'durationMs') / length + 0.25),
   )
 }
 
 // The movie the user watched the most times, or an episode they watched more
-// times than any movie, from twice up. Only plays that count are counted.
+// times than any movie, from twice up. Each watch needs a play that counts.
 export function getComfortWatch(
   plays: Play[],
   minPercent: number,
 ): ComfortWatch | null {
-  const countedPlays = plays.filter((play) => isCountedPlay(play, minPercent))
-  const movies = groupPlays(ofType(countedPlays, 'movie'))
-  const episodes = groupPlays(ofType(countedPlays, 'episode')).flatMap(
-    (showPlays) => Object.values(groupBy(showPlays, getEpisodeKey)),
+  const movies = groupPlays(ofType(plays, 'movie'))
+  const episodes = groupPlays(ofType(plays, 'episode')).flatMap((showPlays) =>
+    Object.values(groupBy(showPlays, getEpisodeKey)),
   )
   // A tie goes to the movie, and then to the most time
   const [top] = orderBy(
     [...movies, ...episodes].map((group) => ({
       group,
-      watches: getWatchCount(group),
+      watches: getWatchCount(group, minPercent),
       isMovie: group[0].mediaType === 'movie',
       duration: sumBy(group, 'durationMs'),
     })),

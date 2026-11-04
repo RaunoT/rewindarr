@@ -138,6 +138,21 @@ describe('getComfortWatch', () => {
     expect(getComfortWatch(plays, MIN_PERCENT)).toBeNull()
   })
 
+  it('adds the short play a split watch starts with to its time', () => {
+    const plays = [
+      play('heat-1', '2026-02-01', { title: 'Heat', durationMs: 100 * MINUTE }),
+      // Watched again in two sittings, the first short of the percent
+      play('heat-2', '2026-03-01', {
+        title: 'Heat',
+        durationMs: 50 * MINUTE,
+        percentComplete: 50,
+      }),
+      play('heat-3', '2026-03-02', { title: 'Heat', durationMs: 50 * MINUTE }),
+    ]
+
+    expect(getComfortWatch(plays, 80)?.watches).toBe(2)
+  })
+
   it('counts the plays without a percent complete', () => {
     const plays = [
       play('heat-1', '2026-02-01', { title: 'Heat', percentComplete: null }),
