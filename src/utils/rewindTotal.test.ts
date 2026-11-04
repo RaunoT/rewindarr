@@ -61,6 +61,19 @@ describe('getTopPercent', () => {
     expect(getTopPercent(rankedUsers(9), 'excluded', 100 * 3600)).toBe(10)
   })
 
+  it('gives users with the same time the same place', () => {
+    // The first six of 20 tied, which spans the top quarter
+    const users = rankedUsers(20).map((user, i) => ({
+      ...user,
+      total_duration: i < 6 ? 30 * 3600 : user.total_duration,
+    }))
+
+    expect(getTopPercent(users, '1', 0)).toBe(5)
+    expect(getTopPercent(users, '6', 0)).toBe(5)
+    expect(getTopPercent(users, 'excluded', 30 * 3600)).toBe(5)
+    expect(getTopPercent(users, '7', 0)).toBeNull()
+  })
+
   it('is null for a user who is not ranked and has no time', () => {
     expect(getTopPercent(rankedUsers(20), 'excluded', 0)).toBeNull()
   })

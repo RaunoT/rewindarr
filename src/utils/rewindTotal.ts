@@ -9,23 +9,23 @@ const MAX_TOP_PERCENT = 25
 // The top percent of users the user is in by their time, rounded up so it
 // never flatters them: whole percents below 10, then fives. Null with too few
 // users or outside the top quarter. Excluded users aren't among the ranked
-// users, so they're placed by their own time.
+// users, so they're placed by their own time. Users with the same time share
+// the best place they tie for.
 export function getTopPercent(
   users: Pick<TautulliItemRow, 'user_id' | 'total_duration'>[],
   userId: string,
   duration: number,
 ): number | null {
-  const index = users.findIndex((user) => String(user.user_id) === userId)
-  const isRanked = index !== -1
+  const rankedUser = users.find((user) => String(user.user_id) === userId)
+  const userDuration = rankedUser?.total_duration ?? duration
 
-  if (!isRanked && duration <= 0) {
+  if (userDuration <= 0) {
     return null
   }
 
-  const rank = isRanked
-    ? index + 1
-    : users.filter((user) => user.total_duration > duration).length + 1
-  const count = users.length + (isRanked ? 0 : 1)
+  const rank =
+    users.filter((user) => user.total_duration > userDuration).length + 1
+  const count = users.length + (rankedUser ? 0 : 1)
 
   if (count < MIN_RANKED_USERS) {
     return null
