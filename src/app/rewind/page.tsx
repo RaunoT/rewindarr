@@ -18,6 +18,7 @@ import {
   getUserTotalDuration,
   getlibrariesTotalSize,
 } from '@/utils/getRewind'
+import getRewindSocial from '@/utils/getRewindSocial'
 import getSettings from '@/utils/getSettings'
 import getUsersTop from '@/utils/getUsersTop'
 import {
@@ -118,6 +119,7 @@ async function RewindContent({ userId }: { userId?: string }) {
     genres,
     viewers,
     topTrack,
+    social,
   ] = await Promise.all([
     getTopMediaItems(user.id, libraries),
     getTopMediaStats(user.id, libraries),
@@ -132,6 +134,7 @@ async function RewindContent({ userId }: { userId?: string }) {
     getGenres(user.id, libraries),
     viewersRequest,
     getTopTrack(user.id, libraries),
+    getRewindSocial(user.id, libraries),
   ])
   // The card for the first play needs its poster and ratings looked up. Its
   // all-time watch time and plays wait for the whole history to be read.
@@ -221,6 +224,7 @@ async function RewindContent({ userId }: { userId?: string }) {
     libraries_total_size: librariesTotalSize.size,
     libraries_size_is_partial: librariesTotalSize.isPartial,
     media_server: mediaServer,
+    social,
     user: user,
   }
   const isSeerrActive =

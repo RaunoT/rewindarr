@@ -443,6 +443,24 @@
       "score": "Teie žanrid kattuvad <score>{scoreValue}</score> ulatuses",
       "genres": "Teie mõlema lemmikud on <genres>{genresValue}</genres>"
     },
+    "OnlyYou": {
+      "count": "{countValue, plural, one {<count># film või sari</count>, mida vaatasid, oli} other {<count># filmi või sarja</count>, mida vaatasid, olid}} <only>ainult sinu</only>",
+      "nobodyElse": "Keegi teine <plex>{serverName}'is</plex> {countValue, plural, one {seda} other {neid}} ei vaadanud",
+      "nobodyElseShare": "Keegi teine <plex>{serverName}'is</plex> {countValue, plural, one {seda} other {neid}} ei vaadanud. See on <share>{shareValue}</share> kõigist filmidest ja sarjadest, mida vaatasid.",
+      "top": "{countValue, plural, one {See oli <title>{titleValue}</title>} other {Neist sinu lemmik oli <title>{titleValue}</title>}}"
+    },
+    "RequestsReach": {
+      "users": "{usersValue, plural, one {<count># teine inimene</count> vaatas} other {<count># teist inimest</count> vaatasid}} seda, mida sa <requests>tellisid</requests>",
+      "duration": "{usersValue, plural, one {Ta kulutas} other {Kokku kulutasid nad}} {requestsValue, plural, one {sellele} other {neile}} <duration>{durationValue}</duration>",
+      "top": "{requestsValue, plural, one {See oli <title>{titleValue}</title>} other {Kõige rohkem inimesi vaatas <title>{titleValue}</title>}}"
+    },
+    "ServerYear": {
+      "duration": "{usersValue, plural, one {<users># inimene</users> kulutas} other {Kokku kulutasid <users># inimest</users>}} <plex>{serverName}'is</plex> <duration>{durationValue}</duration>",
+      "durationAway": "Sel ajal, kui sa eemal olid, {usersValue, plural, one {kulutas <users># inimene</users>} other {kulutasid <users># inimest</users>}} <plex>{serverName}'is</plex> <duration>{durationValue}</duration>",
+      "share": "Sellest <share>{shareValue}</share> oli sinu",
+      "movie": "Kõige vaadatum <movies>film</movies> oli <title>{titleValue}</title>",
+      "show": "Kõige vaadatum <shows>sari</shows> oli <title>{titleValue}</title>"
+    },
     "Habits": {
       "day": "Sinu lemmik vaatamispäev oli <day>{dayValue}</day>",
       "hour": "Ja kõige sagedamini panid mängima umbes kell <hour>{hourValue}</hour>",

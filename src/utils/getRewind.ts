@@ -1,6 +1,7 @@
 import { TopTrack } from '@/types/rewind'
 import { TautulliLibrary, TautulliMediaReturnType } from '@/types/tautulli'
 import { getLocale, getTranslations } from 'next-intl/server'
+import { cache } from 'react'
 import { fetchSeerrStats, getMediaUserIds } from './fetchSeerr'
 import { formatPercent, secondsToTime } from './formatting'
 import getSettings from './getSettings'
@@ -234,6 +235,12 @@ export async function getPlaybackHabits(userId: string) {
   }
 }
 
+// The timeout signal opts Seerr's requests out of fetch's per-render
+// deduplication, so the requests' totals and reach share one read.
+export const fetchRewindRequests = cache((since: string) =>
+  fetchSeerrStats('request', since),
+)
+
 function countRequests(requests: { type: string }[]) {
   return {
     total: requests.length,
@@ -245,7 +252,7 @@ function countRequests(requests: { type: string }[]) {
 export async function getRequestsTotals(userId: string) {
   const settings = getSettings()
   const startDate = getRewindStartDate(settings)
-  const requests = await fetchSeerrStats('request', startDate)
+  const requests = await fetchRewindRequests(startDate)
 
   if (!requests) {
     return null

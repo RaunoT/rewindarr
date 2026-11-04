@@ -1,3 +1,4 @@
+import { RewindSocial } from './rewindSocial'
 import { PublicSettings } from './settings'
 import { Genres, MediaServer, TopPeople } from './statsSource'
 import { TautulliItemRow, TautulliLibrary } from './tautulli'
@@ -91,6 +92,7 @@ export type UserRewind = {
       hasTotals: boolean
     } | null
   } | null
+  social: RewindSocial
   user: RewindUser
 }
 
