@@ -4,6 +4,7 @@ import Toasts from '@/components/Toasts'
 import { Version } from '@/types'
 import { PublicSettings } from '@/types/settings'
 import { TautulliLibrary } from '@/types/tautulli'
+import { TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import clsx from 'clsx'
 import Image from 'next/image'
@@ -55,6 +56,14 @@ export default function AppProvider({
     canBrowse &&
     (pathname === '/' ||
       SIDEBAR_ROUTES.some((route) => pathname.startsWith(route)))
+
+  // On every page, so it's there by the time Rewind is opened. Rewind reads
+  // the server's timezone until then.
+  useEffect(() => {
+    const { timeZone } = Intl.DateTimeFormat().resolvedOptions()
+
+    document.cookie = `${TIME_ZONE_COOKIE_NAME}=${timeZone}; path=/; max-age=31536000; samesite=lax`
+  }, [])
 
   useEffect(() => {
     if (!pathname.startsWith('/settings')) {

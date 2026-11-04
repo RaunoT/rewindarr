@@ -218,11 +218,17 @@ function peakIndex(totals: number[]): number | null {
   return totals[maxIndex] > 0 ? maxIndex : null
 }
 
-export async function getPlaybackHabits(userId: string) {
+export async function getPlaybackHabits(
+  userId: string,
+  libraries: TautulliLibrary[],
+  timeZone?: string,
+) {
   const settings = getSettings()
   const { hourly, daily } = await getStatsSource(settings).getPlaysByTime(
     userId,
+    libraries,
     getRewindStartDate(settings),
+    timeZone,
   )
 
   return {
