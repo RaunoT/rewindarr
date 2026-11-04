@@ -69,6 +69,12 @@ type CachedValue = {
   pending: Promise<unknown> | null
 }
 
+type CachedMedia = {
+  media: Promise<TracearrMedia | null>
+  // Infinity while the lookup is in flight
+  expiresAt: number
+}
+
 type RateLimit = {
   limit: number
   remaining: number
@@ -78,6 +84,7 @@ type RateLimit = {
 type TracearrState = {
   cachedValues: Map<string, CachedValue>
   firstPlays: Map<string, { firstPlay: FirstPlay | null; expiresAt: number }>
+  media: Map<string, CachedMedia>
   rateLimit: RateLimit | null
   nextPacedRequestAt: number
   warnedMissingServerId: string
@@ -95,6 +102,10 @@ const DAY = 24 * 60 * 60 * 1000
 // The share of the rate limit that paced requests leave for everything else
 const RATE_LIMIT_RESERVE = 0.2
 const FIRST_PLAY_CACHE_TTL = DAY
+// An item's IDs don't change, and it's only added or removed now and then.
+// One Rewind looks a show up for its actors, its genres and the taste match,
+// and the next Rewinds look up many of the same shows.
+const MEDIA_CACHE_TTL = 60 * 60 * 1000
 // Plex came out in 2008, so no play is older
 const EARLIEST_PLAY = Date.UTC(2008, 0, 1)
 // Plex numbers the server owner's local account 1.
@@ -124,10 +135,15 @@ const globalForTracearr = globalThis as unknown as {
 const state = (globalForTracearr.plexRewindTracearr ??= {
   cachedValues: new Map(),
   firstPlays: new Map(),
+  media: new Map(),
   rateLimit: null,
   nextPacedRequestAt: 0,
   warnedMissingServerId: '',
 })
+
+// The dev server keeps the state across a hot reload, so it can be older
+// than the media cache
+state.media ??= new Map()
 
 export function getTracearrUrl(settings: Settings = getSettings()): string {
   return settings.connection.tracearrUrl.replace(/\/+$/, '')
@@ -1046,6 +1062,46 @@ export async function getTracearrLibrariesSize(
   )
 }
 
+// Every caller shares one lookup per item until it expires, the ones asking
+// while it's in flight too. A failed lookup isn't kept, so the next caller
+// asks again.
+function fetchMedia(mediaId: string): Promise<TracearrMedia | null> {
+  const key = `${getCacheKey()}|${mediaId}`
+  const now = Date.now()
+  const cached = state.media.get(key)
+
+  if (cached && now < cached.expiresAt) {
+    return cached.media
+  }
+
+  for (const [cacheKey, { expiresAt }] of state.media) {
+    if (now >= expiresAt) {
+      state.media.delete(cacheKey)
+    }
+  }
+
+  const entry: CachedMedia = {
+    media: fetchTracearr<TracearrMedia>(`media/${mediaId}`),
+    expiresAt: Infinity,
+  }
+  const forget = () => {
+    if (state.media.get(key) === entry) {
+      state.media.delete(key)
+    }
+  }
+
+  state.media.set(key, entry)
+  entry.media.then((media) => {
+    if (media) {
+      entry.expiresAt = Date.now() + MEDIA_CACHE_TTL
+    } else {
+      forget()
+    }
+  }, forget)
+
+  return entry.media
+}
+
 // Whether the item was removed from the media server, and its IDs. The saved IDs
 // and year stand in while Tracearr is down, so a show isn't looked up by its
 // title alone. Items removed before Tracearr first synced the libraries have no
@@ -1059,7 +1115,7 @@ export async function getTracearrMedia(
 
   const key = `${getTracearrKey()}|media|${mediaId}`
   const [media, serverId] = await Promise.all([
-    fetchTracearr<TracearrMedia>(`media/${mediaId}`),
+    fetchMedia(mediaId),
     getServerId(),
   ])
 
