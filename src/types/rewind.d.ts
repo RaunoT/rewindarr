@@ -1,6 +1,9 @@
+import { RewindMoments } from '@/utils/rewindMoments'
+import { RewindSocial } from './rewindSocial'
 import { PublicSettings } from './settings'
 import { Genres, MediaServer, TopPeople } from './statsSource'
 import { TautulliItemRow, TautulliLibrary } from './tautulli'
+import { TitleMoments } from './titleMoments'
 
 export type RewindUser = {
   id: string
@@ -63,6 +66,7 @@ export type UserRewind = {
     // The user's most played track, null without any
     topTrack: TopTrack | null
   }
+  titleMoments: TitleMoments
   habits: {
     peakHour: number | null
     peakDayIndex: number | null
@@ -96,6 +100,9 @@ export type UserRewind = {
       hasTotals: boolean
     } | null
   } | null
+  social: RewindSocial
+  // From the user's plays in the period
+  moments: RewindMoments
   user: RewindUser
 }
 

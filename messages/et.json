@@ -397,6 +397,24 @@
       "topTrackPlays": "Sa kuulasid seda <count>{countValue, plural, one {ühe korra} other {# korda}}</count>",
       "noData": "Sa ei kuulanud <audio>muusikat</audio> <from>{serverName}'ist</from>"
     },
+    "ComfortWatch": {
+      "movie": "Film, mille juurde sa ikka ja jälle tagasi tulid, oli <title>{titleValue}</title>",
+      "episode": "Osa, mille juurde sa ikka ja jälle tagasi tulid, oli <title>{titleValue}</title> sarjast <show>{showValue}</show>",
+      "moviePlays": "Sa vaatasid seda <count>{countValue, plural, one {ühe korra} other {# korda}}</count>",
+      "episodePlays": "Sa vaatasid seda <count>{countValue, plural, one {ühe korra} other {# korda}}</count>"
+    },
+    "TimeTravel": {
+      "decade": "Veetsid <share>{shareValue, number, percent}</share> oma vaatamisajast <decade>{decadeValue}. aastatel</decade>",
+      "oldest": "Kõige kaugemale minevikku viis sind <title>{titleValue}</title> aastast <year>{yearValue}</year>"
+    },
+    "Discoveries": {
+      "shows": "Sa avastasid <showsCount>{showsValue, number}</showsCount> <shows>{showsValue, plural, one {uue sarja} other {uut sarja}}</shows>",
+      "artists": "Sa avastasid <artistsCount>{artistsValue, number}</artistsCount> <artists>{artistsValue, plural, one {uue artisti} other {uut artisti}}</artists>",
+      "showsAndArtists": "Sa avastasid <showsCount>{showsValue, number}</showsCount> <shows>{showsValue, plural, one {uue sarja} other {uut sarja}}</shows> ja <artistsCount>{artistsValue, number}</artistsCount> <artists>{artistsValue, plural, one {uue artisti} other {uut artisti}}</artists>",
+      "top": "Suurim avastus oli <title>{titleValue}</title>, millele kulus sul <duration>{durationValue}</duration>",
+      "only": "See oli <title>{titleValue}</title>, millele kulus sul <duration>{durationValue}</duration>",
+      "gaveUp": "Üks jäi pooleli: <title>{titleValue}</title> sai vaadatud <percent>{percentValue, number, percent}</percent> ulatuses. Ehk järgmisel korral?"
+    },
     "Libraries": {
       "filesize": "Kas teadsid, et kogu sisu <plex>{serverName}'is</plex> võtab <size>{sizeValue}</size> <filesize>kettaruumi</filesize>?",
       "sizePartial": "Mõne kogumiku suurus on teadmata. Lülita Tautullis sisse „Calculate Total File Sizes“.",
@@ -444,6 +462,36 @@
       "closest": "<plex>{serverName}'i</plex> kasutajatest on sinu maitsele kõige lähemal <user>{userValue}</user>",
       "score": "Teie žanrid kattuvad <score>{scoreValue}</score> ulatuses",
       "genres": "Teie mõlema lemmikud on <genres>{genresValue}</genres>"
+    },
+    "OnlyYou": {
+      "count": "{countValue, plural, one {<count># film või sari</count>, mida vaatasid, oli} other {<count># filmi või sarja</count>, mida vaatasid, olid}} <only>ainult sinu</only>",
+      "nobodyElse": "Keegi teine <plex>{serverName}'is</plex> {countValue, plural, one {seda} other {neid}} ei vaadanud",
+      "nobodyElseShare": "Keegi teine <plex>{serverName}'is</plex> {countValue, plural, one {seda} other {neid}} ei vaadanud. See on <share>{shareValue}</share> kõigist filmidest ja sarjadest, mida vaatasid.",
+      "top": "{countValue, plural, one {See oli <title>{titleValue}</title>} other {Neist sinu lemmik oli <title>{titleValue}</title>}}"
+    },
+    "RequestsReach": {
+      "users": "{usersValue, plural, one {<count># teine inimene</count> vaatas} other {<count># teist inimest</count> vaatasid}} seda, mida sa <requests>tellisid</requests>",
+      "duration": "{usersValue, plural, one {Ta kulutas} other {Kokku kulutasid nad}} {requestsValue, plural, one {sellele} other {neile}} <duration>{durationValue}</duration>",
+      "top": "{requestsValue, plural, one {See oli <title>{titleValue}</title>} other {Kõige rohkem inimesi vaatas <title>{titleValue}</title>}}"
+    },
+    "ServerYear": {
+      "duration": "{usersValue, plural, one {<users># inimene</users> kulutas} other {Kokku kulutasid <users># inimest</users>}} <plex>{serverName}'is</plex> <duration>{durationValue}</duration>",
+      "durationAway": "Sel ajal, kui sa eemal olid, {usersValue, plural, one {kulutas <users># inimene</users>} other {kulutasid <users># inimest</users>}} <plex>{serverName}'is</plex> <duration>{durationValue}</duration>",
+      "share": "Sellest <share>{shareValue}</share> oli sinu",
+      "movie": "Kõige vaadatum <movies>film</movies> oli <title>{titleValue}</title>",
+      "show": "Kõige vaadatum <shows>sari</shows> oli <title>{titleValue}</title>"
+    },
+    "Moments": {
+      "month": "Sinu kõige aktiivsem kuu oli <month>{monthValue}</month>: <duration>{durationValue}</duration> esitusaega",
+      "hours": "Tunnid",
+      "monthChart": "Tulpdiagramm esitusajast kuude kaupa. Kõige aktiivsem kuu: {monthValue}, {durationValue}.",
+      "binge": "Sinu suurima seriaalimaratoni päev oli <date>{dateValue}</date>",
+      "bingeEpisodes": "Sa vaatasid järjest <count>{countValue, plural, one {# episoodi} other {# episoodi}}</count>, kokku <duration>{durationValue}</duration>",
+      "bingeShow": "Ja see seriaal oli <show>{showValue}</show>",
+      "day": "Sinu suurim päev oli <date>{dateValue}</date>, kui kogusid <duration>{durationValue}</duration> esitusaega",
+      "dayTitles": "Selle päeva täitsid need",
+      "moreTitles": "{count, plural, one {veel #} other {veel #}}",
+      "streak": "Sinu pikim seeria oli <days>{count, plural, one {# päev} other {# päeva}} järjest</days>, vahemikus <start>{startValue}</start> kuni <end>{endValue}</end>"
     },
     "Habits": {
       "day": "Sinu lemmik vaatamispäev oli <day>{dayValue}</day>",

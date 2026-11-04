@@ -397,6 +397,24 @@
       "topTrackPlays": "L'hai ascoltato <count>{countValue, plural, one {una volta} other {# volte}}</count>",
       "noData": "Non hai ascoltato <audio>musica</audio> su <from>{serverName}</from>"
     },
+    "ComfortWatch": {
+      "movie": "Il film che hai rivisto più volte è stato <title>{titleValue}</title>",
+      "episode": "L'episodio che hai rivisto più volte è stato <title>{titleValue}</title> di <show>{showValue}</show>",
+      "moviePlays": "L'hai guardato <count>{countValue, plural, one {una volta} other {# volte}}</count>",
+      "episodePlays": "L'hai guardato <count>{countValue, plural, one {una volta} other {# volte}}</count>"
+    },
+    "TimeTravel": {
+      "decade": "Hai trascorso il <share>{shareValue, number, percent}</share> del tuo tempo negli <decade>anni {decadeValue}</decade>",
+      "oldest": "Il viaggio più lontano ti ha portato nel <year>{yearValue}</year>, con <title>{titleValue}</title>"
+    },
+    "Discoveries": {
+      "shows": "Hai scoperto <showsCount>{showsValue, number}</showsCount> <shows>{showsValue, plural, one {nuova serie} other {nuove serie}}</shows>",
+      "artists": "Hai scoperto <artistsCount>{artistsValue, number}</artistsCount> <artists>{artistsValue, plural, one {nuovo artista} other {nuovi artisti}}</artists>",
+      "showsAndArtists": "Hai scoperto <showsCount>{showsValue, number}</showsCount> <shows>{showsValue, plural, one {nuova serie} other {nuove serie}}</shows> e <artistsCount>{artistsValue, number}</artistsCount> <artists>{artistsValue, plural, one {nuovo artista} other {nuovi artisti}}</artists>",
+      "top": "La tua scoperta più grande è stata <title>{titleValue}</title>, con <duration>{durationValue}</duration> del tuo tempo",
+      "only": "Si tratta di <title>{titleValue}</title>, con <duration>{durationValue}</duration> del tuo tempo",
+      "gaveUp": "Uno ti è sfuggito: <title>{titleValue}</title> si è fermato al <percent>{percentValue, number, percent}</percent>. Magari la prossima volta?"
+    },
     "Libraries": {
       "filesize": "Lo sapevi che tutti i contenuti su <plex>{serverName}</plex> occupano <size>{sizeValue}</size> di <filesize>spazio</filesize>?",
       "sizePartial": "Alcune librerie non hanno dati sulle dimensioni. Attiva «Calculate Total File Sizes» in Tautulli.",
@@ -444,6 +462,36 @@
       "closest": "Tra tutti su <plex>{serverName}</plex>, <user>{userValue}</user> è chi condivide di più i tuoi gusti",
       "score": "Affinità nei vostri generi: <score>{scoreValue}</score>",
       "genres": "Amate entrambi <genres>{genresValue}</genres>"
+    },
+    "OnlyYou": {
+      "count": "{countValue, plural, one {<count># titolo</count> che hai guardato era <only>solo tuo</only>} other {<count># titoli</count> che hai guardato erano <only>solo tuoi</only>}}",
+      "nobodyElse": "Nessun altro su <plex>{serverName}</plex> {countValue, plural, one {l'ha guardato} other {li ha guardati}}",
+      "nobodyElseShare": "Nessun altro su <plex>{serverName}</plex> {countValue, plural, one {l'ha guardato} other {li ha guardati}}. Cioè il <share>{shareValue}</share> dei titoli che hai guardato.",
+      "top": "{countValue, plural, one {Era <title>{titleValue}</title>} other {Il tuo preferito tra questi era <title>{titleValue}</title>}}"
+    },
+    "RequestsReach": {
+      "users": "{usersValue, plural, one {<count># altra persona</count> ha guardato} other {<count># altre persone</count> hanno guardato}} quello che hai <requests>richiesto</requests>",
+      "duration": "{usersValue, plural, one {Ha passato} other {Insieme, hanno passato}} <duration>{durationValue}</duration> a {requestsValue, plural, one {guardarlo} other {guardarli}}",
+      "top": "{requestsValue, plural, one {Era <title>{titleValue}</title>} other {<title>{titleValue}</title> ha raggiunto più persone}}"
+    },
+    "ServerYear": {
+      "duration": "{usersValue, plural, one {<users># persona</users> ha passato} other {Insieme, <users># persone</users> hanno passato}} <duration>{durationValue}</duration> su <plex>{serverName}</plex>",
+      "durationAway": "Mentre eri via, {usersValue, plural, one {<users># persona</users> ha passato} other {<users># persone</users> hanno passato}} <duration>{durationValue}</duration> su <plex>{serverName}</plex>",
+      "share": "Il <share>{shareValue}</share> di quel tempo era tuo",
+      "movie": "Il <movies>film</movies> più visto è stato <title>{titleValue}</title>",
+      "show": "La <shows>serie</shows> più vista è stata <title>{titleValue}</title>"
+    },
+    "Moments": {
+      "month": "Il tuo mese più intenso è stato <month>{monthValue}</month>, con <duration>{durationValue}</duration> di riproduzione",
+      "hours": "Ore",
+      "monthChart": "Grafico a barre del tempo di riproduzione per mese. Mese più attivo: {monthValue} con {durationValue}.",
+      "binge": "La tua maratona più lunga è stata <date>{dateValue}</date>",
+      "bingeEpisodes": "Hai guardato <count>{countValue, plural, one {# episodio} other {# episodi}}</count> di fila, per <duration>{durationValue}</duration> in tutto",
+      "bingeShow": "E la serie? <show>{showValue}</show>",
+      "day": "Il tuo giorno più intenso è stato <date>{dateValue}</date>, con <duration>{durationValue}</duration> di riproduzione",
+      "dayTitles": "Ecco cosa c'era in programma",
+      "moreTitles": "{count, plural, one {altro #} other {altri #}}",
+      "streak": "Il tuo record: <days>{count, plural, one {# giorno} other {# giorni}} di fila</days> con almeno una riproduzione, dal <start>{startValue}</start> al <end>{endValue}</end>"
     },
     "Habits": {
       "day": "Il giorno in cui hai guardato di più è stato <day>{dayValue}</day>",
