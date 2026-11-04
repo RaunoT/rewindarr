@@ -362,7 +362,8 @@
       "movies": "Filme",
       "audio": "Musik",
       "you": "Du",
-      "allUsers": "Alle Benutzer"
+      "allUsers": "Alle Benutzer",
+      "averageUser": "Durchschnittsbenutzer"
     },
     "Welcome": {
       "welcome": "Willkommen zu deinem <rewind>{serverName} Rewind</rewind>, <user>{userValue}!</user>",

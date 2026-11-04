@@ -362,7 +362,8 @@
       "movies": "Filmid",
       "audio": "Muusika",
       "you": "Sina",
-      "allUsers": "Kõik kasutajad"
+      "allUsers": "Kõik kasutajad",
+      "averageUser": "Keskmine kasutaja"
     },
     "Welcome": {
       "welcome": "Tere tulemast oma <rewind>{serverName} Rewind'i</rewind>, <user>{userValue}!</user>",
