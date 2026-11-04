@@ -317,8 +317,6 @@
     "profilePictureAlt": "Foto de perfil de {name}",
     "time": {
       "zero": "0 min",
-      "month": "{count, plural, one {# mes} other {# meses}}",
-      "week": "{count, plural, one {# sem.} other {# sem.}}",
       "day": "{count, plural, one {# d} other {# d}}",
       "hr": "{count, plural, one {# h} other {# h}}",
       "min": "{count, plural, one {# min} other {# min}}",

@@ -317,8 +317,6 @@
     "profilePictureAlt": "Immagine del profilo di {name}",
     "time": {
       "zero": "0 min",
-      "month": "{count, plural, one {# mese} other {# mesi}}",
-      "week": "{count, plural, one {# sett.} other {# sett.}}",
       "day": "{count, plural, one {# giorno} other {# giorni}}",
       "hr": "{count, plural, one {# h} other {# h}}",
       "min": "{count, plural, one {# min} other {# min}}",
