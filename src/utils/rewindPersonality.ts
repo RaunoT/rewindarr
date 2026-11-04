@@ -19,7 +19,7 @@ const MIN_TIMED_PLAYS = 20
 const NIGHT_HOURS = [22, 23, 0, 1, 2, 3]
 const MORNING_HOURS = [5, 6, 7, 8, 9]
 const WEEKEND_DAYS = [0, 6]
-const VIDEO_MEDIA: PersonalityMedia[] = ['shows', 'movies']
+const MEDIA: PersonalityMedia[] = ['shows', 'movies', 'audio']
 
 // What the rules read, from the viewer's stats in the period
 export type PersonalitySignals = {
@@ -145,8 +145,8 @@ function matchHours(
   )
 }
 
-// Time on one kind of media says something only when the server has movies or
-// shows besides it
+// Time on one kind of media says something only when the server has another
+// kind besides it
 function matchMedia(
   signals: PersonalitySignals,
   media: PersonalityMedia,
@@ -156,11 +156,11 @@ function matchMedia(
 ): Match | null {
   const share = (signals.durations[media] ?? 0) / getTotalDuration(signals)
   const count = signals.counts[media]
-  const hasOtherVideo = VIDEO_MEDIA.some(
+  const hasOtherMedia = MEDIA.some(
     (other) => other !== media && signals.durations[other] !== null,
   )
 
-  return count < minCount || !hasOtherVideo
+  return count < minCount || !hasOtherMedia
     ? null
     : toMatch(getStrength(share, threshold, strong), [
         { type: 'share', media, share },

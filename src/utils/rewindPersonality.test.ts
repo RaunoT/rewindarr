@@ -289,7 +289,7 @@ describe('getPersonality', () => {
     ).toBe('musicLover')
   })
 
-  it('needs other video on the server to tell a taste from what there is', () => {
+  it('needs another kind of media on the server to tell a taste from what there is', () => {
     expect(
       getPersonality(
         signals({
@@ -298,6 +298,16 @@ describe('getPersonality', () => {
         YEAR,
       )?.type,
     ).toBe('freeSpirit')
+    // Movies and music, but no shows
+    expect(
+      getPersonality(
+        signals({
+          durations: { shows: null, movies: 90 * HOUR, audio: 10 * HOUR },
+          counts: { shows: 0, movies: 30, audio: 40 },
+        }),
+        YEAR,
+      )?.type,
+    ).toBe('cinephile')
   })
 
   it('goes with the strongest signal', () => {

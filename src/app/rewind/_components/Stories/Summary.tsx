@@ -9,7 +9,13 @@ import {
 } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
-import { useCallback, useRef, useState, useSyncExternalStore } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react'
 import RewindStat from '../RewindStat'
 import {
   canShareImages,
@@ -21,6 +27,9 @@ import SummaryImage from '../SummaryImage'
 import useRewindSummary, { SummaryStat } from '../useRewindSummary'
 
 type Status = 'idle' | 'saving' | 'sharing' | 'failed'
+
+// After the story's own animations, which drawing the image would slow down
+const PREPARE_DELAY = 800
 
 function subscribeToNothing() {
   return () => {}
@@ -38,6 +47,9 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
   // Kept once drawn, so saving and then sharing draws it once
   const imageRef = useRef<Promise<Blob> | null>(null)
   const [status, setStatus] = useState<Status>('idle')
+  // Browsers only open the share sheet for a moment after the press, which
+  // drawing the image can outlast, so it's drawn beforehand
+  const [sharedImage, setSharedImage] = useState<Blob | 'failed' | null>(null)
   const canShare = useSyncExternalStore(
     subscribeToNothing,
     canShareImages,
@@ -66,6 +78,26 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
     return imageRef.current
   }, [])
 
+  useEffect(() => {
+    if (!canShare) {
+      return
+    }
+
+    let isActive = true
+
+    const timer = setTimeout(() => {
+      getImage().then(
+        (image) => isActive && setSharedImage(image),
+        () => isActive && setSharedImage('failed'),
+      )
+    }, PREPARE_DELAY)
+
+    return () => {
+      isActive = false
+      clearTimeout(timer)
+    }
+  }, [canShare, getImage])
+
   async function save() {
     if (isBusy) {
       return
@@ -84,15 +116,18 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
   }
 
   async function share() {
-    if (isBusy) {
+    if (isBusy || !sharedImage) {
       return
     }
 
     setStatus('sharing')
 
     try {
+      // Drawn again only when drawing it beforehand failed
+      const image = sharedImage === 'failed' ? await getImage() : sharedImage
+
       await navigator.share({
-        files: [toImageFile(await getImage(), summary.fileName)],
+        files: [toImageFile(image, summary.fileName)],
         title: summary.title,
       })
       setStatus('idle')
@@ -202,9 +237,9 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
                 type='button'
                 className='button button--glass aria-disabled:cursor-wait max-sm:px-4 max-sm:text-sm'
                 onClick={share}
-                aria-disabled={isBusy}
+                aria-disabled={isBusy || !sharedImage}
               >
-                {status === 'sharing' ? (
+                {status === 'sharing' || !sharedImage ? (
                   <ArrowPathIcon className='size-5 motion-safe:animate-spin' />
                 ) : (
                   <ShareIcon className='size-5' />
