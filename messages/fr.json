@@ -299,6 +299,8 @@
   "Common": {
     "dismiss": "Fermer",
     "none": "Aucun",
+    "selectAll": "Tout sélectionner",
+    "clear": "Effacer",
     "enabled": "Activé",
     "adminOnly": "Administrateurs uniquement",
     "status": "Statut",

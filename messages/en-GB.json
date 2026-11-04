@@ -299,6 +299,8 @@
   "Common": {
     "dismiss": "Dismiss",
     "none": "None",
+    "selectAll": "Select all",
+    "clear": "Clear",
     "enabled": "Enabled",
     "adminOnly": "Admins only",
     "status": "Status",

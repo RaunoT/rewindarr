@@ -103,17 +103,23 @@ export default function FilterSheet({
   )
 }
 
-// A filter in the sheet, under a heading of its own
+// A filter in the sheet, under a heading of its own, with any actions for it
+// beside the heading
 export function FilterGroup({
   label,
+  actions,
   children,
 }: {
   label: string
+  actions?: ReactNode
   children: ReactNode
 }) {
   return (
     <section className='flex flex-col gap-2'>
-      <h3 className='text-xs font-semibold text-neutral-400'>{label}</h3>
+      <div className='flex min-h-6 items-center justify-between gap-2'>
+        <h3 className='text-xs font-semibold text-neutral-400'>{label}</h3>
+        {actions}
+      </div>
       {children}
     </section>
   )

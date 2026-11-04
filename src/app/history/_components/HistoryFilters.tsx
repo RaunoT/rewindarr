@@ -7,6 +7,7 @@ import SearchPill from '@/components/filters/SearchPill'
 import SegmentedControl from '@/components/filters/SegmentedControl'
 import { UserList } from '@/components/filters/UserPicker'
 import { MediaIcon, STAT_ICONS } from '@/components/icons'
+import SelectionActions from '@/components/SelectionActions'
 import { PublicSettings } from '@/types/settings'
 import { PlayIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
@@ -231,7 +232,17 @@ export default function HistoryFilters({
             </FilterGroup>
           ) : (
             users.length > 1 && (
-              <FilterGroup label={tRoot('Common.users')}>
+              <FilterGroup
+                label={tRoot('Common.users')}
+                actions={
+                  <SelectionActions
+                    options={users.map((user) => user.value)}
+                    value={pickedUsers}
+                    onChange={(values) => setParam('user', values)}
+                    className='-mr-2.5'
+                  />
+                }
+              >
                 <UserList
                   label={tRoot('Common.users')}
                   options={users}
