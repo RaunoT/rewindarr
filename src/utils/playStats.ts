@@ -146,15 +146,14 @@ function getDuration(plays: Play[]): number {
   return Math.round(sumBy(plays, 'durationMs') / 1000)
 }
 
-// Without the item's length, only where a play stopped is known, so reopening
-// an item at its end logs a play near 100% that lasted seconds. Those plays
-// need this long to count too.
+// Without the item's length, only where a play stopped is known, and reopening
+// an item at its end logs a play near 100% that lasted seconds. So without it,
+// a play also needs this long.
 export const MIN_PLAY_MS = 30 * 1000
 
-// A play counts once its time reaches the percent in the settings of the
-// item's length, and plays short of it still add their watch time. Without
-// the length, the percent is where it stopped, and a play the source has no
-// percent for counts.
+// A play counts once its time reaches the settings' percent of the item's
+// length. Without the length, the percent is where it stopped, and a play
+// without one counts. Plays that don't count still add their watch time.
 export function isCountedPlay(play: Play, minPercent: number): boolean {
   if (play.lengthMs) {
     return play.durationMs >= (play.lengthMs * minPercent) / 100
