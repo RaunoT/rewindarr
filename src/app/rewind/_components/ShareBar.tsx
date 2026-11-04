@@ -6,19 +6,35 @@ import clsx from 'clsx'
 import { motion } from 'motion/react'
 import { useFormatter } from 'next-intl'
 
+// user: the user's own share, in Plex gold. userMuted: also the user's, but
+// not the one to look at first, like the genres below the top one. server:
+// everyone's share, next to the user's
+type Variant = 'user' | 'userMuted' | 'server'
+
 type Props = {
   share: number
   // Read before the percentage, when the bar's row doesn't say whose it is
   label?: string
   delay: number
-  isUser?: boolean
+  variant?: Variant
+}
+
+const BAR_CLASSES: Record<Variant, string> = {
+  user: 'bg-plex',
+  userMuted: 'bg-plex/40',
+  server: 'bg-white/30',
+}
+const SHARE_CLASSES: Record<Variant, string> = {
+  user: 'text-plex font-semibold',
+  userMuted: 'text-neutral-300',
+  server: 'text-neutral-400',
 }
 
 export default function ShareBar({
   share,
   label,
   delay,
-  isUser = false,
+  variant = 'server',
 }: Props) {
   const format = useFormatter()
   const shouldReduceMotion = usePrefersReducedMotion()
@@ -29,7 +45,7 @@ export default function ShareBar({
         <motion.div
           className={clsx(
             'h-full origin-left rounded-full',
-            isUser ? 'bg-plex' : 'bg-white/30',
+            BAR_CLASSES[variant],
           )}
           style={{ width: share > 0 ? `${Math.max(share * 100, 1)}%` : 0 }}
           initial={shouldReduceMotion ? false : { scaleX: 0 }}
@@ -44,7 +60,7 @@ export default function ShareBar({
       <span
         className={clsx(
           'text-right text-base tabular-nums',
-          isUser ? 'text-plex font-semibold' : 'text-neutral-400',
+          SHARE_CLASSES[variant],
         )}
       >
         {label && <span className='sr-only'>{label} </span>}
