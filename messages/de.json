@@ -376,7 +376,6 @@
     },
     "Total": {
       "duration": "Du hast <total>insgesamt</total> <duration>{durationValue}</duration> auf <plex>{serverName}</plex> verbracht!",
-      "nonStop": "Am Stück abgespielt hätte das <duration>{days, plural, one {# Tag} other {# Tage}}</duration> gedauert!",
       "averageMore": "Das sind <difference>{percent, number, percent} mehr</difference> als beim durchschnittlichen Benutzer, der <duration>{durationValue}</duration> geschaut hat.",
       "averageTimes": "Das ist <difference>{times, number}× so viel</difference> wie beim durchschnittlichen Benutzer, der <duration>{durationValue}</duration> geschaut hat.",
       "averageLess": "Das sind <difference>{percent, number, percent} weniger</difference> als beim durchschnittlichen Benutzer, der <duration>{durationValue}</duration> geschaut hat.",

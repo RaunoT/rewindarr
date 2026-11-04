@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getNonStopDays, getTopPercent } from './rewindTotal'
+import { getTopPercent } from './rewindTotal'
 
 // Ranked by their time, most first, like the source ranks them
 function rankedUsers(count: number) {
@@ -76,23 +76,5 @@ describe('getTopPercent', () => {
 
   it('is null for a user who is not ranked and has no time', () => {
     expect(getTopPercent(rankedUsers(20), 'excluded', 0)).toBeNull()
-  })
-})
-
-describe('getNonStopDays', () => {
-  it('is null under a day', () => {
-    expect(getNonStopDays(0)).toBeNull()
-    expect(getNonStopDays(86399)).toBeNull()
-  })
-
-  it('gives the days to one decimal below ten days', () => {
-    expect(getNonStopDays(86400)).toBe(1)
-    expect(getNonStopDays(3.4 * 86400 + 600)).toBe(3.4)
-    expect(getNonStopDays(9.96 * 86400)).toBe(10)
-  })
-
-  it('gives whole days from ten days up', () => {
-    expect(getNonStopDays(45.3 * 86400)).toBe(45)
-    expect(getNonStopDays(45.5 * 86400)).toBe(46)
   })
 })

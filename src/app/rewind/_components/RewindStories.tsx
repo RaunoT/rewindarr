@@ -52,6 +52,8 @@ export type RewindThemes = {
   // The top show's and top movie's theme songs, best first
   showThemes: string[]
   movieThemes: string[]
+  // The binged show's theme songs, best first
+  bingeThemes: string[]
   // The viewer's most played track, from the media server
   topTrack: string | null
 }
@@ -133,9 +135,11 @@ function getStories(
       ? music.showThemes
       : MOVIE_STORIES.includes(id)
         ? music.movieThemes
-        : AUDIO_STORIES.includes(id) && music.topTrack
-          ? [music.topTrack]
-          : []
+        : id === 'binge'
+          ? music.bingeThemes
+          : AUDIO_STORIES.includes(id) && music.topTrack
+            ? [music.topTrack]
+            : []
     const sources = [...themes, track]
 
     return {

@@ -59,5 +59,11 @@ export async function getUserLocale() {
 export async function setUserLocale(locale: Locale) {
   const cookieStore = await cookies()
 
-  cookieStore.set(LOCALE_COOKIE_NAME, locale)
+  // Kept for a year, so a chosen language outlives the browser session and
+  // wins over the browser language
+  cookieStore.set(LOCALE_COOKIE_NAME, locale, {
+    path: '/',
+    maxAge: 31536000,
+    sameSite: 'lax',
+  })
 }

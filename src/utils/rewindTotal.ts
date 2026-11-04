@@ -1,6 +1,5 @@
 import { TautulliItemRow } from '@/types/tautulli'
 
-const DAY_SECONDS = 86400
 // With fewer users, the users' top says more than a percent
 const MIN_RANKED_USERS = 10
 // Further down, being in the top part isn't much of a highlight
@@ -39,16 +38,4 @@ export function getTopPercent(
   }
 
   return percent < 10 ? Math.ceil(percent) : Math.ceil(percent / 5) * 5
-}
-
-// The user's time in days, as if it were watched in one go. Null under a day,
-// and to one decimal below ten days.
-export function getNonStopDays(seconds: number): number | null {
-  const days = seconds / DAY_SECONDS
-
-  if (days < 1) {
-    return null
-  }
-
-  return days < 10 ? Math.round(days * 10) / 10 : Math.round(days)
 }
