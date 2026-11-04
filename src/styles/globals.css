@@ -256,12 +256,14 @@
   }
 
   .rewind-cat {
-    @apply text-plex inline-flex items-center font-semibold;
+    @apply text-plex font-semibold;
 
-    /* Sized to the text, so icons shrink along with a statement */
+    /* Sized to the text, so icons shrink along with a statement. Inline, so
+       a name that wraps keeps its icon after the last word instead of
+       centring it beside the whole name. */
     > img,
     > svg {
-      @apply text-plex/80 ml-[0.15em] w-[0.9em];
+      @apply text-plex/80 ml-[0.15em] inline-block size-[0.9em] align-[-0.1em];
     }
   }
 

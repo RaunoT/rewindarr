@@ -401,10 +401,9 @@
       "noData": "No escuchaste <audio>música</audio> en <from>{serverName}</from>"
     },
     "ComfortWatch": {
-      "movie": "La película a la que más volviste fue <title>{titleValue}</title>",
-      "episode": "El episodio al que más volviste fue <title>{titleValue}</title> de <show>{showValue}</show>",
-      "moviePlays": "La viste <count>{countValue, plural, one {una vez} other {# veces}}</count>",
-      "episodePlays": "Lo viste <count>{countValue, plural, one {una vez} other {# veces}}</count>"
+      "movie": "Viste tu <comfort>película reconfortante</comfort> <count>{countValue, plural, one {una vez} other {# veces}}</count>",
+      "episode": "Viste tu <comfort>episodio reconfortante</comfort> <count>{countValue, plural, one {una vez} other {# veces}}</count>",
+      "episodeTitle": "Fue <title>{titleValue}</title> de <show>{showValue}</show>"
     },
     "TimeTravel": {
       "decade": "Pasaste el <share>{shareValue, number, percent}</share> de tu tiempo en <decade>la década de {decadeValue}</decade>",
@@ -492,10 +491,10 @@
       "month": "Tu mes más activo fue <month>{monthValue}</month>, con <duration>{durationValue}</duration> de reproducción",
       "hours": "Horas",
       "monthChart": "Gráfico de barras del tiempo de reproducción por mes. Mes con más actividad: {monthValue}, con {durationValue}.",
-      "binge": "Tu mayor maratón fue el <date>{dateValue}</date>",
+      "binge": "Tu <binge>mayor maratón</binge> fue el <date>{dateValue}</date>",
       "bingeEpisodes": "Viste <count>{countValue, plural, one {# episodio} other {# episodios}}</count> seguidos, <duration>{durationValue}</duration> en total",
       "bingeShow": "¿Y la serie? <show>{showValue}</show>",
-      "day": "Tu día más intenso fue el <date>{dateValue}</date>, con <duration>{durationValue}</duration> de reproducción",
+      "day": "Tu <day>día más intenso</day> fue el <date>{dateValue}</date>, con <duration>{durationValue}</duration> de reproducción",
       "dayTitles": "Así lo llenaste",
       "moreTitles": "{count, plural, one {# más} other {# más}}",
       "streak": "Tu récord: <days>{count, plural, one {# día} other {# días}} seguidos</days> con al menos una reproducción, del <start>{startValue}</start> al <end>{endValue}</end>"

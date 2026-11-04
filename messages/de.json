@@ -401,10 +401,9 @@
       "noData": "Du hast keine <audio>Musik</audio> auf {serverName} <from>gehört</from>"
     },
     "ComfortWatch": {
-      "movie": "Dein Wohlfühlfilm war <title>{titleValue}</title>",
-      "episode": "Deine Wohlfühlfolge war <title>{titleValue}</title> aus <show>{showValue}</show>",
-      "moviePlays": "Du hast ihn <count>{countValue, plural, one {einmal} other {#-mal}}</count> gesehen",
-      "episodePlays": "Du hast sie <count>{countValue, plural, one {einmal} other {#-mal}}</count> gesehen"
+      "movie": "Du hast deinen <comfort>Wohlfühlfilm</comfort> <count>{countValue, plural, one {einmal} other {#-mal}}</count> gesehen",
+      "episode": "Du hast deine <comfort>Wohlfühlfolge</comfort> <count>{countValue, plural, one {einmal} other {#-mal}}</count> gesehen",
+      "episodeTitle": "Es war <title>{titleValue}</title> aus <show>{showValue}</show>"
     },
     "TimeTravel": {
       "decade": "Du hast <share>{shareValue, number, percent}</share> deiner Zeit in den <decade>{decadeValue}ern</decade> verbracht",
@@ -492,10 +491,10 @@
       "month": "Dein aktivster Monat war <month>{monthValue}</month> mit <duration>{durationValue}</duration> Wiedergabezeit",
       "hours": "Stunden",
       "monthChart": "Balkendiagramm der Wiedergabezeit pro Monat. Aktivster Monat: {monthValue} mit {durationValue}.",
-      "binge": "Dein größter Serienmarathon war am <date>{dateValue}</date>",
+      "binge": "Dein <binge>größter Serienmarathon</binge> war am <date>{dateValue}</date>",
       "bingeEpisodes": "Du hast <count>{countValue, plural, one {# Episode} other {# Episoden}}</count> am Stück geschaut, insgesamt <duration>{durationValue}</duration>",
       "bingeShow": "Und die Serie? <show>{showValue}</show>",
-      "day": "Dein intensivster Tag war der <date>{dateValue}</date> mit <duration>{durationValue}</duration> Wiedergabezeit",
+      "day": "Dein <day>intensivster Tag</day> war der <date>{dateValue}</date> mit <duration>{durationValue}</duration> Wiedergabezeit",
       "dayTitles": "Das stand auf dem Programm",
       "moreTitles": "{count, plural, one {# weiterer} other {# weitere}}",
       "streak": "Dein Rekord: <days>{count, plural, one {# Tag} other {# Tage}} in Folge</days> mit mindestens einer Wiedergabe, vom <start>{startValue}</start> bis zum <end>{endValue}</end>"

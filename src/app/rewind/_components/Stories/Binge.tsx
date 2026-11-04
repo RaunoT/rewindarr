@@ -3,7 +3,7 @@ import MediaItems from '@/components/MediaItem/MediaItems'
 import { RewindStory } from '@/types/rewind'
 import { RATING_STATISTICS } from '@/utils/constants'
 import { secondsToTime } from '@/utils/formatting'
-import { CalendarIcon } from '@heroicons/react/24/outline'
+import { ForwardIcon } from '@heroicons/react/24/outline'
 import { useFormatter, useTranslations } from 'next-intl'
 import { DAY_FORMAT, formatMomentDate } from '../momentDate'
 import RewindStat from '../RewindStat'
@@ -23,13 +23,14 @@ export default function StoryBinge({ userRewind, settings }: RewindStory) {
       <RewindStat>
         <p>
           {t.rich('binge', {
-            dateValue: formatMomentDate(format, binge.date, DAY_FORMAT),
-            date: (chunks) => (
+            binge: (chunks) => (
               <span className='rewind-cat'>
                 {chunks}
-                <CalendarIcon />
+                <ForwardIcon />
               </span>
             ),
+            dateValue: formatMomentDate(format, binge.date, DAY_FORMAT),
+            date: (chunks) => <span className='rewind-cat'>{chunks}</span>,
           })}
         </p>
       </RewindStat>

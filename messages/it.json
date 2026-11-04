@@ -401,10 +401,9 @@
       "noData": "Non hai ascoltato <audio>musica</audio> su <from>{serverName}</from>"
     },
     "ComfortWatch": {
-      "movie": "Il film che hai rivisto più volte è stato <title>{titleValue}</title>",
-      "episode": "L'episodio che hai rivisto più volte è stato <title>{titleValue}</title> di <show>{showValue}</show>",
-      "moviePlays": "L'hai guardato <count>{countValue, plural, one {una volta} other {# volte}}</count>",
-      "episodePlays": "L'hai guardato <count>{countValue, plural, one {una volta} other {# volte}}</count>"
+      "movie": "Hai guardato il tuo <comfort>film del cuore</comfort> <count>{countValue, plural, one {una volta} other {# volte}}</count>",
+      "episode": "Hai guardato il tuo <comfort>episodio del cuore</comfort> <count>{countValue, plural, one {una volta} other {# volte}}</count>",
+      "episodeTitle": "Era <title>{titleValue}</title> di <show>{showValue}</show>"
     },
     "TimeTravel": {
       "decade": "Hai trascorso il <share>{shareValue, number, percent}</share> del tuo tempo negli <decade>anni {decadeValue}</decade>",
@@ -492,10 +491,10 @@
       "month": "Il tuo mese più intenso è stato <month>{monthValue}</month>, con <duration>{durationValue}</duration> di riproduzione",
       "hours": "Ore",
       "monthChart": "Grafico a barre del tempo di riproduzione per mese. Mese più attivo: {monthValue} con {durationValue}.",
-      "binge": "La tua maratona più lunga è stata <date>{dateValue}</date>",
+      "binge": "La tua <binge>maratona più lunga</binge> è stata <date>{dateValue}</date>",
       "bingeEpisodes": "Hai guardato <count>{countValue, plural, one {# episodio} other {# episodi}}</count> di fila, per <duration>{durationValue}</duration> in tutto",
       "bingeShow": "E la serie? <show>{showValue}</show>",
-      "day": "Il tuo giorno più intenso è stato <date>{dateValue}</date>, con <duration>{durationValue}</duration> di riproduzione",
+      "day": "Il tuo <day>giorno più intenso</day> è stato <date>{dateValue}</date>, con <duration>{durationValue}</duration> di riproduzione",
       "dayTitles": "Ecco cosa c'era in programma",
       "moreTitles": "{count, plural, one {altro #} other {altri #}}",
       "streak": "Il tuo record: <days>{count, plural, one {# giorno} other {# giorni}} di fila</days> con almeno una riproduzione, dal <start>{startValue}</start> al <end>{endValue}</end>"
