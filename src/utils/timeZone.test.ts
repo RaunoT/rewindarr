@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { createHourAndDayReader, toTimeZone } from './timeZone'
+import {
+  createHourAndDayReader,
+  toDateKey,
+  toDayNumber,
+  toTimeZone,
+} from './timeZone'
 
 describe('toTimeZone', () => {
   it('keeps a timezone Intl knows, as Intl names it', () => {
@@ -38,5 +43,18 @@ describe('createHourAndDayReader', () => {
 
     expect(read(new Date('2026-01-15T20:00:00Z').getTime()).hour).toBe(20)
     expect(read(new Date('2026-07-15T20:00:00Z').getTime()).hour).toBe(21)
+  })
+})
+
+describe('toDateKey', () => {
+  it('reads the date in the timezone', () => {
+    const time = Date.parse('2026-03-07T02:30:00Z')
+
+    expect(toDateKey(time, 'UTC')).toBe('2026-03-07')
+    expect(toDateKey(time, 'America/New_York')).toBe('2026-03-06')
+  })
+
+  it('counts days in a row 1 apart', () => {
+    expect(toDayNumber('2026-03-01') - toDayNumber('2026-02-28')).toBe(1)
   })
 })

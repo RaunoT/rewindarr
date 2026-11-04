@@ -443,6 +443,18 @@
       "score": "Vos genres correspondent à <score>{scoreValue}</score>",
       "genres": "Vous adorez tous les deux <genres>{genresValue}</genres>"
     },
+    "Moments": {
+      "month": "Votre mois le plus chargé a été <month>{monthValue}</month>, avec <duration>{durationValue}</duration> de lecture",
+      "hours": "Heures",
+      "monthChart": "Diagramme à barres du temps de lecture par mois. Mois le plus actif : {monthValue} avec {durationValue}.",
+      "binge": "Votre plus gros marathon a eu lieu le <date>{dateValue}</date>",
+      "bingeEpisodes": "Vous avez enchaîné <count>{countValue, plural, one {# épisode} other {# épisodes}}</count>, soit <duration>{durationValue}</duration> au total",
+      "bingeShow": "Et cette série, c'était <show>{showValue}</show>",
+      "day": "Votre plus grosse journée a été le <date>{dateValue}</date>, avec <duration>{durationValue}</duration> de lecture",
+      "dayTitles": "Voici ce qui était au programme",
+      "moreTitles": "{count, plural, one {# autre} other {# autres}}",
+      "streak": "Votre record : <days>{count, plural, one {# jour} other {# jours}} d'affilée</days> avec au moins une lecture, du <start>{startValue}</start> au <end>{endValue}</end>"
+    },
     "Habits": {
       "day": "Votre jour préféré pour regarder était le <day>{dayValue}</day>",
       "hour": "Et vous lanciez la lecture surtout vers <hour>{hourValue}</hour>",

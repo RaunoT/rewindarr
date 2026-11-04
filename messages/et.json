@@ -443,6 +443,18 @@
       "score": "Teie žanrid kattuvad <score>{scoreValue}</score> ulatuses",
       "genres": "Teie mõlema lemmikud on <genres>{genresValue}</genres>"
     },
+    "Moments": {
+      "month": "Sinu kõige aktiivsem kuu oli <month>{monthValue}</month>: <duration>{durationValue}</duration> esitusaega",
+      "hours": "Tunnid",
+      "monthChart": "Tulpdiagramm esitusajast kuude kaupa. Kõige aktiivsem kuu: {monthValue}, {durationValue}.",
+      "binge": "Sinu suurima seriaalimaratoni päev oli <date>{dateValue}</date>",
+      "bingeEpisodes": "Sa vaatasid järjest <count>{countValue, plural, one {# episoodi} other {# episoodi}}</count>, kokku <duration>{durationValue}</duration>",
+      "bingeShow": "Ja see seriaal oli <show>{showValue}</show>",
+      "day": "Sinu suurim päev oli <date>{dateValue}</date>, kui kogusid <duration>{durationValue}</duration> esitusaega",
+      "dayTitles": "Selle päeva täitsid need",
+      "moreTitles": "{count, plural, one {veel #} other {veel #}}",
+      "streak": "Sinu pikim seeria oli <days>{count, plural, one {# päev} other {# päeva}} järjest</days>, vahemikus <start>{startValue}</start> kuni <end>{endValue}</end>"
+    },
     "Habits": {
       "day": "Sinu lemmik vaatamispäev oli <day>{dayValue}</day>",
       "hour": "Ja kõige sagedamini panid mängima umbes kell <hour>{hourValue}</hour>",
