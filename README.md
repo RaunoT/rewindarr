@@ -40,9 +40,15 @@ Keep an eye on the [issues page](https://github.com/RaunoT/rewindarr/issues) to 
 
 ![Home](.github/screenshots/home.webp 'Home')
 
+_Home: Rewind, what's playing now, the latest plays and the most watched in each library at a glance._
+
 ![Dashboard](.github/screenshots/dashboard.webp 'Dashboard')
 
+_Dashboard: the most watched titles in each library for any period, with ratings, play counts and links to other sites._
+
 ![Rewind](.github/screenshots/rewind.webp 'Rewind')
+
+_Rewind: each user's year in review, told as stories, here in full screen._
 
 ## Getting started
 

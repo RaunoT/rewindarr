@@ -600,7 +600,8 @@ function tautulliUser(user) {
   }
 }
 
-const [owner, sam, maya] = USERS
+// Two streams, as in the README's home screenshot
+const [owner, sam] = USERS
 const SESSIONS = [
   {
     session_key: '41',
@@ -700,57 +701,6 @@ const SESSIONS = [
     location: 'lan',
     ip_address: '192.168.1.24',
   },
-  {
-    session_key: '43',
-    user_id: Number(maya.id),
-    friendly_name: maya.name,
-    user_thumb: maya.thumb,
-    media_type: 'episode',
-    rating_key: 7005,
-    parent_rating_key: 7004,
-    grandparent_rating_key: items.show[0].key,
-    title: '8:00 A.M.',
-    parent_title: 'Season 2',
-    grandparent_title: 'The Pitt',
-    year: '2026',
-    thumb: '/library/metadata/7004/thumb/1',
-    grandparent_thumb: '/library/metadata/7004/thumb/1',
-    player: 'Bedroom',
-    product: 'Plex for LG',
-    state: 'paused',
-    progress_percent: '71',
-    view_offset: String(36 * 60 * 1000),
-    duration: String(51 * 60 * 1000),
-    transcode_decision: 'direct play',
-    container: 'mkv',
-    stream_container: 'mkv',
-    stream_container_decision: 'direct play',
-    video_codec: 'hevc',
-    stream_video_codec: 'hevc',
-    stream_video_decision: 'direct play',
-    video_full_resolution: '4k',
-    stream_video_full_resolution: '4k',
-    video_dynamic_range: 'Dolby Vision',
-    stream_video_dynamic_range: 'Dolby Vision',
-    audio_codec: 'eac3',
-    audio_channel_layout: '5.1',
-    audio_atmos: 1,
-    stream_audio_codec: 'eac3',
-    stream_audio_channel_layout: '5.1',
-    stream_audio_decision: 'direct play',
-    stream_audio_language: 'English',
-    stream_audio_atmos: 1,
-    subtitle_codec: '',
-    stream_subtitle_codec: '',
-    stream_subtitle_decision: '',
-    stream_subtitle_language: '',
-    bitrate: '24800',
-    stream_bitrate: '24800',
-    quality_profile: 'Original',
-    bandwidth: '26100',
-    location: 'lan',
-    ip_address: '192.168.1.31',
-  },
 ]
 // Where each piece of artwork comes from, by rating key
 const ARTWORK = {
@@ -767,7 +717,6 @@ const ARTWORK = {
   ),
   7001: { tmdb: 'movie', title: 'Sinners', year: 2025 },
   7002: { album: 'Let It Bleed', artist: 'The Rolling Stones' },
-  7004: { tmdb: 'tv', title: 'The Pitt', year: 2025 },
 }
 const artworkCache = new Map()
 

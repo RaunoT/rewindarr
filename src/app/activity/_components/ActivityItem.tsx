@@ -21,7 +21,7 @@ import {
   formatResolution,
   millisecondsToTimeString,
 } from '@/utils/formatting'
-import { ArrowTurnDownRightIcon } from '@heroicons/react/16/solid'
+import { ArrowRightIcon } from '@heroicons/react/16/solid'
 import { ChevronDownIcon, DeviceTabletIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { capitalize, toUpper } from 'lodash'
@@ -135,9 +135,10 @@ export default function ActivityItem({
   const subtitleSource = formatCodec(subtitle_codec, 'subtitle')
   const subtitleStream = formatCodec(stream_subtitle_codec, 'subtitle')
   const isAnonymous = settings.general.isAnonymized && !isCurrentUser
-  // The show or artist leads, and an episode goes by its numbers, as in the
-  // history
-  const name = grandparent_title || title
+  // The show leads, and an episode goes by its numbers above it. A track
+  // leads with its artist above it. As in the history.
+  const isTrack = media_type === 'track'
+  const name = (!isTrack && grandparent_title) || title
   const episode =
     media_type === 'episode' &&
     isPresent(parent_media_index) &&
@@ -150,10 +151,12 @@ export default function ActivityItem({
   const detail =
     media_type === 'episode'
       ? (episode ?? title)
-      : name !== title
-        ? title
+      : isTrack && grandparent_title && grandparent_title !== title
+        ? grandparent_title
         : null
-  const fullTitle = [name, episode, name !== title && title]
+  const fullTitle = (
+    isTrack ? [detail, name] : [name, episode, name !== title && title]
+  )
     .filter(Boolean)
     .join(' · ')
   const position =
@@ -205,98 +208,107 @@ export default function ActivityItem({
     )
   }
 
-  // Stream info: what is playing first, then how it gets there
+  // Stream info: what is playing, then how it gets there, side by side where
+  // the card is wide enough. Each list puts its labels beside the values when
+  // it's wide enough itself, and above them otherwise.
   const streamDetails = isExpanded && (
-    <ul
+    <div
       id={detailsId}
-      className='flex flex-wrap gap-x-6 gap-y-3 rounded-2xl bg-black/25 p-4 text-sm ring-1 ring-white/10 ring-inset'
+      className='@container rounded-2xl bg-black/25 p-4 text-sm ring-1 ring-white/10 ring-inset'
     >
-      {media_type !== 'track' && (
-        <Detail
-          label={t('video')}
-          convertedTo={getConversion(
-            videoSource,
-            videoStream,
-            stream_video_decision,
-          )}
-        >
-          {formatValue(videoSource || videoStream)}
-        </Detail>
-      )}
-      <Detail
-        label={withLanguage(
-          t('audio'),
-          media_type !== 'track' && stream_audio_language,
-        )}
-        convertedTo={getConversion(
-          audioSource,
-          audioStream,
-          stream_audio_decision,
-        )}
-      >
-        {formatValue(audioSource || audioStream)}
-      </Detail>
-      {media_type !== 'track' && (subtitle_codec || stream_subtitle_codec) && (
-        <Detail
-          label={withLanguage(t('subtitles'), stream_subtitle_language)}
-          convertedTo={
-            stream_subtitle_decision === 'burn'
-              ? t('decision.burnedIn')
-              : getConversion(
-                  subtitleSource,
-                  subtitleStream,
-                  stream_subtitle_decision,
-                )
-          }
-        >
-          {formatValue(subtitleSource || subtitleStream)}
-        </Detail>
-      )}
-      {/* The profile names the bitrate it streams at, and bandwidth shows
-              the real one, so the stream bitrate is only for no profile */}
-      <Detail
-        label={t('quality')}
-        convertedTo={
-          qualityConversion && (quality_profile || qualityConversion)
-        }
-      >
-        {formatValue(
-          !qualityConversion && quality_profile,
-          bitrateSource || bitrateStream,
-        )}
-      </Detail>
-      {/* TODO: Tautulli doesn't return bandwidth for tracks sometimes */}
-      <Detail label={t('bandwidth')}>
-        {formatValue(formatBitrate(bandwidth, locale))}
-      </Detail>
-      <Detail
-        label={t('container')}
-        convertedTo={getConversion(
-          toUpper(container),
-          toUpper(stream_container),
-          stream_container_decision,
-        )}
-      >
-        {formatValue(toUpper(container) || toUpper(stream_container))}
-      </Detail>
-      {isAdmin && !settings.general.isAnonymized && location && (
-        <Detail label={t('location')}>
-          {`${toUpper(location)} · `}
-          {location === 'wan' ? (
-            <a
-              href={`https://ipinfo.io/${ip_address_public}`}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='underline decoration-white/30 underline-offset-2 transition-colors hover:decoration-white'
+      <div className='flex flex-col @2xl:flex-row @2xl:gap-8'>
+        <dl className='@container flex-1 divide-y divide-white/5'>
+          {media_type !== 'track' && (
+            <Detail
+              label={t('video')}
+              convertedTo={getConversion(
+                videoSource,
+                videoStream,
+                stream_video_decision,
+              )}
             >
-              {ip_address_public}
-            </a>
-          ) : (
-            ip_address
+              {formatValue(videoSource || videoStream)}
+            </Detail>
           )}
-        </Detail>
-      )}
-    </ul>
+          <Detail
+            label={t('audio')}
+            note={media_type !== 'track' ? stream_audio_language : undefined}
+            convertedTo={getConversion(
+              audioSource,
+              audioStream,
+              stream_audio_decision,
+            )}
+          >
+            {formatValue(audioSource || audioStream)}
+          </Detail>
+          {media_type !== 'track' &&
+            (subtitle_codec || stream_subtitle_codec) && (
+              <Detail
+                label={t('subtitles')}
+                note={stream_subtitle_language}
+                convertedTo={
+                  stream_subtitle_decision === 'burn'
+                    ? t('decision.burnedIn')
+                    : getConversion(
+                        subtitleSource,
+                        subtitleStream,
+                        stream_subtitle_decision,
+                      )
+                }
+              >
+                {formatValue(subtitleSource || subtitleStream)}
+              </Detail>
+            )}
+        </dl>
+        {/* One under the other, it carries on the first list's rows */}
+        <dl className='@container mt-2 flex-1 divide-y divide-white/5 border-t border-white/5 pt-2 @2xl:mt-0 @2xl:border-t-0 @2xl:pt-0'>
+          {/* The profile names the bitrate it streams at, and bandwidth shows
+              the real one, so the stream bitrate is only for no profile */}
+          <Detail
+            label={t('quality')}
+            convertedTo={
+              qualityConversion && (quality_profile || qualityConversion)
+            }
+          >
+            {formatValue(
+              !qualityConversion && quality_profile,
+              bitrateSource || bitrateStream,
+            )}
+          </Detail>
+          {/* TODO: Tautulli doesn't return bandwidth for tracks sometimes */}
+          <Detail label={t('bandwidth')}>
+            {formatValue(formatBitrate(bandwidth, locale))}
+          </Detail>
+          <Detail
+            label={t('container')}
+            convertedTo={getConversion(
+              toUpper(container),
+              toUpper(stream_container),
+              stream_container_decision,
+            )}
+          >
+            {formatValue(toUpper(container) || toUpper(stream_container))}
+          </Detail>
+          {isAdmin && !settings.general.isAnonymized && location && (
+            <Detail label={t('location')}>
+              {`${toUpper(location)} · `}
+              {location === 'wan' ? (
+                <a
+                  href={`https://ipinfo.io/${ip_address_public}`}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='underline decoration-white/30 underline-offset-2 transition-colors hover:decoration-white'
+                >
+                  {ip_address_public}
+                </a>
+              ) : (
+                ip_address
+              )}
+            </Detail>
+          )}
+        </dl>
+      </div>
+    </div>
   )
 
   return (
@@ -338,42 +350,30 @@ export default function ActivityItem({
           ? { mediaServer, ratingKey: deeplinkRatingKey }
           : null
       }
-      // Where the play is and when it ends, where a history card has its date
-      aside={
-        position && (
-          <>
-            <span className='block'>{position}</span>
-            {eta && (
-              <span className='block text-neutral-200'>
-                {t('endsAt', { time: eta })}
-              </span>
-            )}
-          </>
-        )
-      }
+      // When it ends, where a history card has its date. Phones have how it
+      // streams there instead, and when it ends under the bar.
+      aside={position && eta && t('endsAt', { time: eta })}
+      isAsideHiddenOnPhones
       phoneAside={decisionIcon && decisionToggle(true)}
       settings={settings}
       footer={streamDetails}
     >
       {position && (
         <div className='text-xs text-neutral-400 tabular-nums sm:text-sm'>
-          <div className='flex items-center gap-3'>
-            <ProgressBar
-              value={Number(session.progress_percent) / 100}
-              className='flex-1'
-            />
-            <span className='max-sm:hidden'>
+          {/* The bar spans the card, with how far it got under its start and
+              the time played under its end */}
+          <ProgressBar value={Number(session.progress_percent) / 100} />
+          <div className='mt-2 flex justify-between gap-3'>
+            <span>
               {formatPercent(Number(session.progress_percent), locale)}
+              {eta && (
+                <span className='sm:hidden'>
+                  {' · '}
+                  {t('endsAt', { time: eta })}
+                </span>
+              )}
             </span>
-          </div>
-          {/* Phones put the times under the bar, so the title gets its row */}
-          <div className='mt-1.5 flex justify-between gap-3 sm:hidden'>
             <span>{position}</span>
-            {eta && (
-              <span className='text-neutral-200'>
-                {t('endsAt', { time: eta })}
-              </span>
-            )}
           </div>
         </div>
       )}
@@ -408,40 +408,49 @@ function getConversion(source: string, stream: string, decision?: string) {
     : undefined
 }
 
-function withLanguage(label: string, language?: string | false) {
-  return language ? `${label} (${language})` : label
-}
-
 function formatValue(...parts: (string | false | undefined)[]) {
   return parts.filter(Boolean).join(' · ') || '–'
 }
 
 type DetailProps = {
   label: string
+  // Under the label, such as a track's language
+  note?: string
   convertedTo?: string
   children: ReactNode
 }
 
-// The original stays on top and the conversion goes below it in gold, as
-// converting is what costs the server
-function Detail({ label, convertedTo, children }: DetailProps) {
+// A row of the stream's details, its label beside the value in a wide list and
+// above it in a narrow one. The original comes first and the conversion
+// follows it in gold, as converting is what costs the server.
+function Detail({ label, note, convertedTo, children }: DetailProps) {
   const t = useTranslations('Activity')
 
   return (
-    <li>
-      <div className='mb-0.5 text-xs text-neutral-400'>{label}</div>
-      <div className='text-pretty'>{children}</div>
-      {convertedTo && (
-        <div className='text-plex flex gap-1'>
-          <span className='flex h-[1lh] shrink-0 items-center'>
-            <ArrowTurnDownRightIcon className='size-3.5' aria-hidden='true' />
+    <div className='py-2 first:pt-0 last:pb-0 @sm:flex @sm:gap-3'>
+      <dt className='mb-0.5 text-xs text-neutral-400 @sm:mb-0 @sm:w-28 @sm:shrink-0 @sm:text-sm'>
+        {label}
+        {note && (
+          <>
+            <span className='@sm:hidden'>{' · '}</span>
+            <span className='@sm:block @sm:text-xs'>{note}</span>
+          </>
+        )}
+      </dt>
+      <dd className='flex min-w-0 flex-1 flex-wrap gap-x-1.5 text-pretty'>
+        <span>{children}</span>
+        {convertedTo && (
+          <span className='text-plex flex gap-1'>
+            <span className='flex h-[1lh] shrink-0 items-center'>
+              <ArrowRightIcon className='size-3.5' aria-hidden='true' />
+            </span>
+            <span>
+              <span className='sr-only'>{t('convertedTo')} </span>
+              {convertedTo}
+            </span>
           </span>
-          <span>
-            <span className='sr-only'>{t('convertedTo')} </span>
-            {convertedTo}
-          </span>
-        </div>
-      )}
-    </li>
+        )}
+      </dd>
+    </div>
   )
 }
