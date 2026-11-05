@@ -364,9 +364,7 @@ export default function ActivityItem({
           <ProgressBar value={Number(session.progress_percent) / 100} />
           <div className='mt-2 flex justify-between gap-3'>
             <span>
-              <span className='text-neutral-200'>
-                {formatPercent(Number(session.progress_percent), locale)}
-              </span>
+              {formatPercent(Number(session.progress_percent), locale)}
               {eta && (
                 <span className='sm:hidden'>
                   {' · '}
