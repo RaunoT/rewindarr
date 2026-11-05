@@ -15,8 +15,8 @@ type Props = Omit<ComponentProps<typeof MediaCard>, 'footer' | 'phoneAside'> & {
 }
 
 // A binge's card, its button opening its plays the way an activity card's
-// opens the stream's details: among the stats, and on phones in the top right
-// with just the number
+// opens the stream's details: among the stats, and on phones at the end of the
+// name's line with just the number
 export default function HistoryBingeCard({
   count,
   countLabel,

@@ -57,17 +57,16 @@ export default function HistorySkeleton({
             <div className='@container min-w-0 flex-1'>
               <div className='flex flex-col gap-2 @md:flex-row @md:items-start @md:gap-4'>
                 <div className='min-w-0 flex-1'>
-                  {/* The episode's numbers small above the name. Phones start
-                      the line with the time, mid-width cards end it with it. */}
-                  <div className='flex items-center justify-between gap-3 text-xs leading-snug sm:text-sm'>
-                    <SkeletonLine width='w-28 sm:w-12' />
-                    <div className='flex shrink-0 max-sm:hidden @md:hidden'>
-                      <SkeletonTime />
-                    </div>
-                  </div>
+                  {/* The time small above the name, where there's no column
+                      for it, with the year and episode on phones. From sm up
+                      they follow the name. */}
+                  <SkeletonLine
+                    className='text-xs leading-snug sm:text-sm @md:hidden'
+                    width='w-32 sm:w-14'
+                  />
                   <SkeletonLine
                     className='leading-snug sm:text-lg'
-                    width='w-2/3 sm:w-1/2'
+                    width='w-5/6 sm:w-2/3'
                   />
                   {hasRatings && (
                     <SkeletonLine

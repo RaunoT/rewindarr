@@ -16,7 +16,7 @@ import {
 } from '@/utils/externalLinks'
 import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
-import { ReactNode } from 'react'
+import { Fragment, ReactNode } from 'react'
 import MediaCardPoster from './MediaCardPoster'
 
 // A stat like the dashboard's: a pill from sm up, plain text on phones
@@ -57,12 +57,12 @@ type Props = {
   action?: ReactNode
   // The item in the media server, which the title and poster open
   deeplink?: Deeplink | null
-  // On the right, such as a play's date or when a stream ends
+  // Such as a play's date or when a stream ends, on the right of wide cards
+  // and above the name on narrow ones
   aside?: ReactNode
-  // Phones start the line above the name with the aside, unless the card
-  // shows it elsewhere there
+  // For a card that shows the aside elsewhere on phones
   isAsideHiddenOnPhones?: boolean
-  // The top right on phones, such as a button that opens more
+  // At the end of the name's line on phones, such as a button that opens more
   phoneAside?: ReactNode
   settings: PublicSettings
   // Under the title and stats, such as a stream's progress
@@ -116,6 +116,17 @@ export default function MediaCard({
   const externalLinks = links.filter(({ site }) => !ratedSites.includes(site))
   const ratingLinks = Object.fromEntries(links.map((link) => [link.site, link]))
   const hasLinks = !!action || externalLinks.length > 0
+  // Above the name on phones, after the aside unless they show it elsewhere
+  const phoneNotes = [
+    !isAsideHiddenOnPhones && aside,
+    year && (
+      <>
+        <span className='sr-only'>{`${t('Common.year')} `}</span>
+        {year}
+      </>
+    ),
+    detail,
+  ].filter(Boolean)
   const linksBlock = (className: string) => (
     <div
       className={clsx(
@@ -160,17 +171,6 @@ export default function MediaCard({
       {posterOverlay}
     </MediaCardPoster>
   )
-  const asideBlock = (className: string) =>
-    aside && (
-      <div
-        className={clsx(
-          'shrink-0 text-right text-xs leading-snug text-neutral-400 tabular-nums sm:text-sm',
-          className,
-        )}
-      >
-        {aside}
-      </div>
-    )
 
   return (
     // With more under it, the poster stays level with the title, and always on
@@ -201,58 +201,72 @@ export default function MediaCard({
       <div className='@container min-w-0 flex-1 max-sm:contents'>
         <div className='flex flex-col gap-2 max-sm:contents @md:flex-row @md:items-start @md:gap-4'>
           <div className='min-w-0 flex-1'>
-            {/* The detail goes small above the name, as in the home tiles,
-                so the name gets the full width under it. Phones start the line
-                with the aside, like a timeline, and keep its end for
-                phoneAside. Mid-width cards end it with the aside, and wide
-                cards without a detail leave it out. */}
-            <div
-              className={clsx(
-                'flex items-center justify-between gap-3',
-                !detail && '@md:hidden',
-              )}
-            >
-              <span className='min-w-0 truncate text-xs leading-snug text-neutral-400 tabular-nums sm:text-sm'>
-                {aside && !isAsideHiddenOnPhones && (
-                  <span className='sm:hidden'>
-                    {aside}
-                    {detail && ' · '}
-                  </span>
+            {/* Narrow cards have the aside small above the name, where wide
+                ones have a column for it. Phones put the year and the detail
+                there too, after it, so the name gets the line to itself. */}
+            {(aside || phoneNotes.length > 0) && (
+              <div
+                className={clsx(
+                  'truncate text-xs leading-snug text-neutral-400 tabular-nums sm:text-sm @md:hidden',
+                  phoneNotes.length === 0 && 'max-sm:hidden',
                 )}
-                {/* The heading reads it after the name */}
-                <span aria-hidden='true'>{detail}</span>
-              </span>
-              {asideBlock('max-sm:hidden @md:hidden')}
+              >
+                {aside && <span className='max-sm:hidden'>{aside}</span>}
+                <span className='sm:hidden'>
+                  {phoneNotes.map((note, i) => (
+                    <Fragment key={i}>
+                      {i > 0 && ' · '}
+                      {note}
+                    </Fragment>
+                  ))}
+                </span>
+              </div>
+            )}
+            {/* The name, cut short when it's long, so the year and the detail
+                stay next to it from sm up. Phones end the line with
+                phoneAside. */}
+            <div className='flex items-center justify-between gap-3'>
+              <h3
+                className='min-w-0 flex-1 leading-snug font-medium sm:text-lg'
+                title={fullTitle}
+              >
+                {/* The gap and the notes' own spacing make the space a line
+                    of text would have */}
+                <span className='flex min-w-0 items-baseline gap-1'>
+                  <span className='min-w-0 truncate'>
+                    {deeplink ? (
+                      <MediaServerLink
+                        title={name}
+                        mediaServer={deeplink.mediaServer}
+                        ratingKey={deeplink.ratingKey}
+                        className='media-link-title'
+                      >
+                        {name}
+                      </MediaServerLink>
+                    ) : (
+                      name
+                    )}
+                  </span>
+                  {year && (
+                    <TitleNote
+                      label={t('Common.year')}
+                      className='max-sm:hidden'
+                    >
+                      {year}
+                    </TitleNote>
+                  )}
+                  {/* Cut short before the name is */}
+                  {detail && (
+                    <span className='min-w-0 shrink-[4] truncate text-sm font-normal text-neutral-400 max-sm:hidden sm:text-base'>
+                      {`· ${detail}`}
+                    </span>
+                  )}
+                </span>
+              </h3>
               {phoneAside && (
                 <div className='shrink-0 sm:hidden'>{phoneAside}</div>
               )}
             </div>
-            {/* A long name is cut short, so the year stays next to it */}
-            <h3
-              className='leading-snug font-medium sm:text-lg'
-              title={fullTitle}
-            >
-              {/* The gap and the note's own margin make the space a line of
-                  text would have */}
-              <span className='flex min-w-0 items-baseline gap-1'>
-                <span className='min-w-0 truncate'>
-                  {deeplink ? (
-                    <MediaServerLink
-                      title={name}
-                      mediaServer={deeplink.mediaServer}
-                      ratingKey={deeplink.ratingKey}
-                      className='media-link-title'
-                    >
-                      {name}
-                    </MediaServerLink>
-                  ) : (
-                    name
-                  )}
-                </span>
-                {year && <TitleNote label={t('Common.year')}>{year}</TitleNote>}
-              </span>
-              {detail && <span className='sr-only'>{` · ${detail}`}</span>}
-            </h3>
             {/* The ratings, or their place while they load when any are
                 chosen */}
             {isVideo &&
@@ -280,10 +294,9 @@ export default function MediaCard({
               {stats}
             </ul>
           </div>
-          {/* Wide cards have a column for the date with the links under it,
-              level with the detail line over the title. Phones put the links
-              in a row of their own at the bottom, split evenly, as on the
-              dashboard. */}
+          {/* Wide cards have a column for the aside with the links under it.
+              Phones put the links in a row of their own at the bottom, split
+              evenly, as on the dashboard. */}
           <div
             className={clsx(
               'flex shrink-0 flex-col gap-2 @md:items-end',
@@ -292,7 +305,11 @@ export default function MediaCard({
                 : 'max-sm:hidden',
             )}
           >
-            {asideBlock('hidden @md:block')}
+            {aside && (
+              <div className='hidden shrink-0 text-right text-xs leading-snug text-neutral-400 tabular-nums sm:text-sm @md:block'>
+                {aside}
+              </div>
+            )}
             {hasLinks &&
               linksBlock(
                 'max-sm:*:flex-1 max-sm:*:justify-center @md:max-w-56 @md:justify-end',

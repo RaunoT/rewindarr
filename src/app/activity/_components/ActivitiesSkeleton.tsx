@@ -52,18 +52,22 @@ export default function ActivitiesSkeleton({
         <div className='@container min-w-0 flex-1 max-sm:contents'>
           <div className='flex flex-col gap-2 max-sm:contents @md:flex-row @md:items-start @md:gap-4'>
             <div className='min-w-0 flex-1'>
-              {/* The episode's numbers small above the name, with when it
-                  ends beside them where there's no column for it, and how it
-                  streams on phones */}
-              <div className='flex items-center justify-between gap-3 text-xs leading-snug sm:text-sm'>
-                <SkeletonLine width='w-12' />
-                <SkeletonEnd className='max-sm:hidden @md:hidden' />
+              {/* When it ends small above the name, where there's no column
+                  for it and phones don't have it under the bar. Phones have
+                  the year and episode there instead, and how it streams at
+                  the end of the name's line. */}
+              <SkeletonLine
+                className='text-xs leading-snug sm:hidden'
+                width='w-20'
+              />
+              <SkeletonEnd className='hidden sm:flex @md:hidden' />
+              <div className='flex items-center justify-between gap-3'>
+                <SkeletonLine
+                  className='flex-1 leading-snug sm:text-lg'
+                  width='w-5/6 sm:w-2/3'
+                />
                 <div className='skeleton h-5 w-13 shrink-0 sm:hidden' />
               </div>
-              <SkeletonLine
-                className='leading-snug sm:text-lg'
-                width='w-2/3 sm:w-1/2'
-              />
               {hasRatings && (
                 <SkeletonLine
                   className='mt-1.5 text-xs sm:text-sm'
@@ -151,10 +155,7 @@ export default function ActivitiesSkeleton({
 function SkeletonEnd({ className }: { className: string }) {
   return (
     <div
-      className={clsx(
-        'shrink-0 justify-end text-xs leading-snug sm:text-sm',
-        className,
-      )}
+      className={clsx('shrink-0 text-xs leading-snug sm:text-sm', className)}
     >
       <SkeletonLine width='w-24' />
     </div>
