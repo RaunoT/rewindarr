@@ -116,9 +116,9 @@ export default function MediaCard({
   const externalLinks = links.filter(({ site }) => !ratedSites.includes(site))
   const ratingLinks = Object.fromEntries(links.map((link) => [link.site, link]))
   const hasLinks = !!action || externalLinks.length > 0
-  // Above the name on phones, after the aside unless they show it elsewhere
+  // Above the name on phones, ending with the aside unless they show it
+  // elsewhere
   const phoneNotes = [
-    !isAsideHiddenOnPhones && aside,
     year && (
       <>
         <span className='sr-only'>{`${t('Common.year')} `}</span>
@@ -126,6 +126,7 @@ export default function MediaCard({
       </>
     ),
     detail,
+    !isAsideHiddenOnPhones && aside,
   ].filter(Boolean)
   const linksBlock = (className: string) => (
     <div
@@ -203,7 +204,7 @@ export default function MediaCard({
           <div className='min-w-0 flex-1'>
             {/* Narrow cards have the aside small above the name, where wide
                 ones have a column for it. Phones put the year and the detail
-                there too, after it, so the name gets the line to itself. */}
+                there too, before it, so the name gets the line to itself. */}
             {(aside || phoneNotes.length > 0) && (
               <div
                 className={clsx(
