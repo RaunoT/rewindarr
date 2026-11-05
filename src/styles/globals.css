@@ -339,7 +339,7 @@
   }
 
   .poster {
-    @apply relative aspect-2/3 w-16 shrink-0 overflow-hidden rounded-md! shadow-lg ring-1 shadow-black/40 ring-white/10 sm:w-18;
+    @apply relative aspect-2/3 w-16 shrink-0 overflow-hidden rounded-md! shadow-lg shadow-black/40 sm:w-18;
   }
 
   /* A home tile opens its page from anywhere but the links in it. Its

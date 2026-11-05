@@ -539,8 +539,9 @@ export default function Stories({ stories }: Props) {
           tabIndex={-1}
           inert={!!isIntroShown}
           // A phone's screen can be shorter than a story, which then scrolls
-          // between the progress bar and the buttons
-          className='relative w-full flex-1 pt-8 outline-none select-none [-webkit-touch-callout:none] max-sm:min-h-0 max-sm:overflow-y-auto max-sm:overscroll-contain sm:flex sm:flex-col sm:justify-center'
+          // between the progress bar and the buttons. Its padding keeps the
+          // rings and shadows at the sides from being cut off.
+          className='relative w-full flex-1 pt-8 outline-none select-none [-webkit-touch-callout:none] max-sm:-mx-2 max-sm:min-h-0 max-sm:w-auto max-sm:overflow-y-auto max-sm:overscroll-contain max-sm:px-2 sm:flex sm:flex-col sm:justify-center'
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
           onPointerCancel={() => {
