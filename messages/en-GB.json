@@ -615,11 +615,9 @@
     },
     "Summary": {
       "title": {
-        "server": "{serverName} Rewind",
-        "year": "Rewind {year}",
-        "years": "Rewind {start}–{end}"
+        "server": "{serverName} Rewind {years}",
+        "default": "Rewind {years}"
       },
-      "period": "{start} – {end}",
       "top": {
         "show": "Top show",
         "movie": "Top movie",

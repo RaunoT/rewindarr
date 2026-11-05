@@ -7,7 +7,7 @@ import clsx from 'clsx'
 import { debounce } from 'lodash'
 import { motion, useAnimation } from 'motion/react'
 import { useTranslations } from 'next-intl'
-import { RefObject, useEffect, useRef } from 'react'
+import { ReactNode, RefObject, useEffect, useRef } from 'react'
 import MediaServerLink from './MediaServerLink'
 
 type Props = {
@@ -17,6 +17,8 @@ type Props = {
   loggedInUserId?: string
   // Makes the title open it in the media server
   serverLink?: Deeplink | null
+  // After the title, such as its year
+  note?: ReactNode
 }
 
 export default function MediaItemTitle({
@@ -25,6 +27,7 @@ export default function MediaItemTitle({
   parentRef,
   loggedInUserId,
   serverLink,
+  note,
 }: Props) {
   const t = useTranslations('MediaItem')
   const titleRef = useRef<HTMLSpanElement>(null)
@@ -125,6 +128,7 @@ export default function MediaItemTitle({
           ) : (
             title
           )}
+          {note}
         </motion.span>
       </span>
       {isCurrentUser && <span className='sr-only'>{` ${t('you')}`}</span>}

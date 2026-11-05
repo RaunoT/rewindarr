@@ -6,7 +6,7 @@ Contributor setup is in [CONTRIBUTING.md](CONTRIBUTING.md). Use pnpm (pinned in 
 
 ## Commands
 
-- `pnpm dev`: dev server with Turbopack at `http://localhost:3000`. Needs `.env.local`, copied from `.env.example`, with `NEXTAUTH_SECRET` set.
+- `pnpm dev`: dev server with Turbopack at `http://localhost:3000`. `.env.local` (from `.env.example`) is optional; without `NEXTAUTH_SECRET` a secret is created in `config/auth-secret`.
 - `pnpm lint:all`: ESLint, `tsc --noEmit`, Stylelint and a Prettier check. `pnpm lint:all:fix` fixes what it can.
 - `pnpm test`: Vitest unit tests, kept next to the code they test as `*.test.ts`.
 - `pnpm build`: `next build` followed by `serwist build`, which generates the service worker in `public/sw.js`.
@@ -18,7 +18,8 @@ Run `pnpm lint:all` and `pnpm test` before every PR. CI also runs `pnpm build`.
 
 - A git worktree starts without `.env.local` and the files in `config/`. Copy them from the main checkout, or the proxy redirects to the setup pages. Copying `config/play-history.json.gz` too saves reading the whole play history again.
 - Run `pnpm dev` and check the change in a browser at phone (about 390px) and desktop widths. When port 3000 is taken, Next uses the next free port.
-- Plex login returns to `NEXT_PUBLIC_SITE_URL` (`http://localhost:3000` by default). Cookies are not scoped by port, so with the same `.env.local` a login on 3000 also works on the other ports.
+- Plex login returns to `NEXT_PUBLIC_SITE_URL`, or without it to the address it was started from. Cookies are not scoped by port, so with the same secret (`NEXTAUTH_SECRET` or `config/auth-secret`) a login on 3000 also works on the other ports.
+- Loading skeletons copy the layout of what they stand in for, so nothing moves once the data arrives: `DashboardLoader.tsx`, `HistorySkeleton.tsx`, `ActivitiesSkeleton.tsx`, `OverviewSkeleton` in `Overview.tsx` and the `loading.tsx` files. When a change moves, adds or removes anything in a card, row or page that has a skeleton, update the skeleton in the same change and compare the two at phone and desktop widths. To see a skeleton, throttle the network in the browser, or open a page with nothing to show (such as `/history?q=` with a search that matches nothing), where `SkeletonSized` keeps an invisible copy you can unhide.
 - Take before and after screenshots of what changed, with the same URL, width and state, at phone and desktop widths where the layout differs. Take the before ones before you edit, or from a `develop` worktree on another port.
 - When the change moves or needs interaction (animations, transitions, gestures, multi-step flows), also record a short video, MP4 or WebM under 10 MB. Record the before too when the difference is in the motion.
 - Save the media outside the repository. Show it in your final message with the file paths, and point out any real names or watch history in it, as PR media is public.

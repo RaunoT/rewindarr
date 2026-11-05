@@ -62,14 +62,23 @@ describe('getSiteUrl', () => {
 
   it('reads the site URL when it is called', () => {
     vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://rewind.example.com')
+    vi.stubEnv('NEXTAUTH_URL', 'https://auth.example.com')
 
     expect(getSiteUrl()).toBe('https://rewind.example.com')
   })
 
-  it('falls back to the default port', () => {
+  it('falls back to the sign-in address', () => {
     vi.stubEnv('NEXT_PUBLIC_SITE_URL', '')
+    vi.stubEnv('NEXTAUTH_URL', 'https://auth.example.com')
 
-    expect(getSiteUrl()).toBe('http://localhost:8383')
+    expect(getSiteUrl()).toBe('https://auth.example.com')
+  })
+
+  it('has none without either', () => {
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', '')
+    vi.stubEnv('NEXTAUTH_URL', '')
+
+    expect(getSiteUrl()).toBeUndefined()
   })
 })
 

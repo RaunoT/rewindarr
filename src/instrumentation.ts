@@ -1,5 +1,6 @@
-// Runs once when the server starts. Tracearr's play history is read from then
-// on, so the first pages opened don't have to wait for it.
+// Runs once when the server starts, before any request. Tracearr's play
+// history is read from then on, so the first pages opened don't have to wait
+// for it.
 export async function register() {
   if (
     process.env.NEXT_RUNTIME !== 'nodejs' ||
@@ -7,6 +8,10 @@ export async function register() {
   ) {
     return
   }
+
+  const { prepareAuthEnv } = await import('./lib/authEnv')
+
+  prepareAuthEnv()
 
   try {
     const { startHistoryRead } = await import('./utils/statsSource')

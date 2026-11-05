@@ -52,22 +52,29 @@ describe('getSummaryTops', () => {
 describe('getSummaryTitle', () => {
   const now = new Date('2026-11-04T12:00:00Z')
 
-  it("uses the server's name when the admin set one", () => {
-    expect(getSummaryTitle('Home Cinema', '2025-11-04', now)).toEqual({
-      type: 'server',
-      serverName: 'Home Cinema',
+  it('names this year for the default past year', () => {
+    expect(getSummaryTitle('', '', now)).toEqual({
+      type: 'default',
+      years: '2026',
     })
   })
 
-  it('names the year, or the first and last of a period across two', () => {
+  it('adds the earlier year of a start date the admin set in one', () => {
     expect(getSummaryTitle('', '2026-01-01', now)).toEqual({
-      type: 'year',
-      year: 2026,
+      type: 'default',
+      years: '2026',
     })
-    expect(getSummaryTitle('', '2025-11-04', now)).toEqual({
-      type: 'years',
-      start: 2025,
-      end: 2026,
+    expect(getSummaryTitle('', '2024-11-04', now)).toEqual({
+      type: 'default',
+      years: '2024–2026',
+    })
+  })
+
+  it("uses the server's name when the admin set one", () => {
+    expect(getSummaryTitle('Home Cinema', '', now)).toEqual({
+      type: 'server',
+      serverName: 'Home Cinema',
+      years: '2026',
     })
   })
 })
@@ -91,7 +98,12 @@ function withHighlights(overrides: Partial<UserRewind> = {}) {
         ],
         peakIndex: 1,
       },
-      binge: { episodes: 9, title: 'Severance', date: '2026-03-01' },
+      binge: {
+        episodes: 9,
+        title: 'Severance',
+        date: '2026-03-01',
+        duration: 18240,
+      },
       streak: { days: 12, start: '2026-03-01', end: '2026-03-12' },
       biggestDay: null,
     },
@@ -106,7 +118,7 @@ describe('getSummaryHighlights', () => {
     expect(getSummaryHighlights(withHighlights())).toEqual([
       { type: 'topPercent', percent: 5 },
       { type: 'genre', name: 'Drama' },
-      { type: 'binge', episodes: 9, title: 'Severance' },
+      { type: 'binge', episodes: 9, title: 'Severance', duration: 18240 },
     ])
   })
 

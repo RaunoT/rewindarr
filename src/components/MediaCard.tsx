@@ -3,6 +3,7 @@ import SiteLogo from '@/components/MediaItem/SiteLogo'
 import TitleDetails, {
   TitleDetailsData,
 } from '@/components/MediaItem/TitleDetails'
+import TitleNote from '@/components/MediaItem/TitleNote'
 import SkeletonLine from '@/components/SkeletonLine'
 import UserBadge, { BadgeUser } from '@/components/UserBadge'
 import { PublicSettings } from '@/types/settings'
@@ -15,7 +16,7 @@ import {
 } from '@/utils/externalLinks'
 import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
-import { ReactNode } from 'react'
+import { Fragment, ReactNode } from 'react'
 import MediaCardPoster from './MediaCardPoster'
 
 // A stat like the dashboard's: a pill from sm up, plain text on phones
@@ -34,7 +35,8 @@ type Props = {
   item: MediaCardItem | null | undefined
   isItemLoading?: boolean
   name: string
-  // An episode's numbers, a track's title or a show's requested seasons
+  // Small above the name, such as an episode's numbers, a track's artist or a
+  // show's requested seasons
   detail: string | null
   // On hover, with whatever the card leaves out
   fullTitle: string
@@ -55,10 +57,12 @@ type Props = {
   action?: ReactNode
   // The item in the media server, which the title and poster open
   deeplink?: Deeplink | null
-  // Two lines on the right, such as a play's date over its time
-  aside: ReactNode
-  // On phones, in place of the aside next to the title, for a card that shows
-  // the aside in its children there
+  // Such as a play's date or when a stream ends, on the right of wide cards
+  // and above the name on narrow ones
+  aside?: ReactNode
+  // For a card that shows the aside elsewhere on phones
+  isAsideHiddenOnPhones?: boolean
+  // At the end of the name's line on phones, such as a button that opens more
   phoneAside?: ReactNode
   settings: PublicSettings
   // Under the title and stats, such as a stream's progress
@@ -88,6 +92,7 @@ export default function MediaCard({
   action,
   deeplink,
   aside,
+  isAsideHiddenOnPhones,
   phoneAside,
   settings,
   children,
@@ -95,12 +100,13 @@ export default function MediaCard({
 }: Props) {
   const t = useTranslations()
   const isVideo = type === 'movie' || type === 'show'
+  const { activeItemStatistics } = settings.general
   // Only the title's own details, as the counts are the dashboard's
-  const titleStats = settings.general.activeItemStatistics.filter(
-    (stat) =>
-      stat === 'year' ||
-      (RATING_STATISTICS as readonly string[]).includes(stat),
+  const titleStats = activeItemStatistics.filter((stat) =>
+    (RATING_STATISTICS as readonly string[]).includes(stat),
   )
+  const year =
+    isVideo && activeItemStatistics.includes('year') ? item?.year : null
   const links =
     item && isVideo
       ? getExternalLinks(item, type, settings.general.activeExternalLinks)
@@ -110,6 +116,18 @@ export default function MediaCard({
   const externalLinks = links.filter(({ site }) => !ratedSites.includes(site))
   const ratingLinks = Object.fromEntries(links.map((link) => [link.site, link]))
   const hasLinks = !!action || externalLinks.length > 0
+  // Above the name on phones, ending with the aside unless they show it
+  // elsewhere
+  const phoneNotes = [
+    year && (
+      <>
+        <span className='sr-only'>{`${t('Common.year')} `}</span>
+        {year}
+      </>
+    ),
+    detail,
+    !isAsideHiddenOnPhones && aside,
+  ].filter(Boolean)
   const linksBlock = (className: string) => (
     <div
       className={clsx(
@@ -154,16 +172,6 @@ export default function MediaCard({
       {posterOverlay}
     </MediaCardPoster>
   )
-  const asideBlock = (className: string) => (
-    <div
-      className={clsx(
-        'shrink-0 text-right text-xs leading-snug text-neutral-400 tabular-nums sm:text-sm',
-        className,
-      )}
-    >
-      {aside}
-    </div>
-  )
 
   return (
     // With more under it, the poster stays level with the title, and always on
@@ -194,55 +202,90 @@ export default function MediaCard({
       <div className='@container min-w-0 flex-1 max-sm:contents'>
         <div className='flex flex-col gap-2 max-sm:contents @md:flex-row @md:items-start @md:gap-4'>
           <div className='min-w-0 flex-1'>
-            <div className='flex items-start justify-between gap-3'>
-              <div className='min-w-0'>
-                {/* On phones the name can take two lines, and the detail goes
-                    small above it, as in the home tiles, so it never splits */}
-                <h3
-                  className='truncate leading-snug font-medium max-sm:flex max-sm:flex-col max-sm:whitespace-normal sm:text-lg'
-                  title={fullTitle}
-                >
-                  {deeplink ? (
-                    <MediaServerLink
-                      title={name}
-                      mediaServer={deeplink.mediaServer}
-                      ratingKey={deeplink.ratingKey}
-                      className='media-link-title max-sm:line-clamp-2'
+            {/* Narrow cards have the aside small above the name, where wide
+                ones have a column for it. Phones put the year and the detail
+                there too, before it, so the name gets the line to itself. */}
+            {(aside || phoneNotes.length > 0) && (
+              <div
+                className={clsx(
+                  'truncate text-xs leading-snug text-neutral-400 tabular-nums sm:text-sm @md:hidden',
+                  phoneNotes.length === 0 && 'max-sm:hidden',
+                )}
+              >
+                {aside && <span className='max-sm:hidden'>{aside}</span>}
+                <span className='sm:hidden'>
+                  {phoneNotes.map((note, i) => (
+                    <Fragment key={i}>
+                      {i > 0 && ' · '}
+                      {note}
+                    </Fragment>
+                  ))}
+                </span>
+              </div>
+            )}
+            {/* The name, cut short when it's long, so the year and the detail
+                stay next to it from sm up. Phones end the line with
+                phoneAside. */}
+            <div className='flex items-center justify-between gap-3'>
+              <h3
+                className='min-w-0 flex-1 leading-snug font-medium sm:text-lg'
+                title={fullTitle}
+              >
+                {/* The gap and the notes' own spacing make the space a line
+                    of text would have */}
+                <span className='flex min-w-0 items-baseline gap-1'>
+                  <span className='min-w-0 truncate'>
+                    {deeplink ? (
+                      <MediaServerLink
+                        title={name}
+                        mediaServer={deeplink.mediaServer}
+                        ratingKey={deeplink.ratingKey}
+                        className='media-link-title'
+                      >
+                        {name}
+                      </MediaServerLink>
+                    ) : (
+                      name
+                    )}
+                  </span>
+                  {year && (
+                    <TitleNote
+                      label={t('Common.year')}
+                      className='max-sm:hidden'
                     >
-                      {name}
-                    </MediaServerLink>
-                  ) : (
-                    <span className='max-sm:line-clamp-2'>{name}</span>
+                      {year}
+                    </TitleNote>
                   )}
+                  {/* Cut short before the name is */}
                   {detail && (
-                    <span className='font-normal text-neutral-400 max-sm:order-first max-sm:truncate max-sm:text-xs'>
-                      <span className='max-sm:hidden'>{' · '}</span>
-                      {detail}
+                    <span className='min-w-0 shrink-[4] truncate text-sm font-normal text-neutral-400 max-sm:hidden sm:text-base'>
+                      {`· ${detail}`}
                     </span>
                   )}
-                </h3>
-              </div>
-              {asideBlock('max-sm:hidden @md:hidden')}
-              <div className='shrink-0 sm:hidden'>
-                {phoneAside ?? asideBlock('')}
-              </div>
+                </span>
+              </h3>
+              {phoneAside && (
+                <div className='shrink-0 sm:hidden'>{phoneAside}</div>
+              )}
             </div>
+            {/* The ratings, or their place while they load when any are
+                chosen */}
             {isVideo &&
-              (isItemLoading ? (
-                <SkeletonLine
-                  className='mt-1.5 text-xs sm:text-sm'
-                  width='w-24'
-                />
-              ) : (
-                item && (
-                  <TitleDetails
-                    data={item}
-                    activeStats={titleStats}
-                    links={ratingLinks}
-                    className='mt-1.5'
-                  />
-                )
-              ))}
+              (isItemLoading
+                ? titleStats.length > 0 && (
+                    <SkeletonLine
+                      className='mt-1.5 text-xs sm:text-sm'
+                      width='w-24'
+                    />
+                  )
+                : item && (
+                    <TitleDetails
+                      data={item}
+                      activeStats={titleStats}
+                      links={ratingLinks}
+                      className='mt-1.5'
+                    />
+                  ))}
             <ul className='icon-stats-container mt-2 max-sm:gap-x-2.5'>
               {user && (
                 <li className={STAT_PILL}>
@@ -250,16 +293,28 @@ export default function MediaCard({
                 </li>
               )}
               {stats}
-              {/* Phones end the stats with the links, so nothing floats next
-                  to the title */}
-              {hasLinks && <li className='sm:hidden'>{linksBlock('')}</li>}
             </ul>
           </div>
-          {/* Wide cards have a column for the links with the date under
-              them. Phones have them among the stats. */}
-          <div className='flex shrink-0 flex-col gap-2 max-sm:hidden @md:items-end'>
-            {hasLinks && linksBlock('@md:mt-0.5 @md:max-w-56 @md:justify-end')}
-            {asideBlock('hidden @md:block')}
+          {/* Wide cards have a column for the aside with the links under it.
+              Phones put the links in a row of their own at the bottom, split
+              evenly, as on the dashboard. */}
+          <div
+            className={clsx(
+              'flex shrink-0 flex-col gap-2 @md:items-end',
+              hasLinks
+                ? 'max-sm:order-last max-sm:basis-full'
+                : 'max-sm:hidden',
+            )}
+          >
+            {aside && (
+              <div className='hidden shrink-0 text-right text-xs leading-snug text-neutral-400 tabular-nums sm:text-sm @md:block'>
+                {aside}
+              </div>
+            )}
+            {hasLinks &&
+              linksBlock(
+                'max-sm:*:flex-1 max-sm:*:justify-center @md:max-w-56 @md:justify-end',
+              )}
           </div>
         </div>
         {children && (

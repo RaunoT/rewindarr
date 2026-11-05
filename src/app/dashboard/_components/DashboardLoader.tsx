@@ -66,12 +66,11 @@ function ListItem({
 }) {
   const activeStats = settings.general.activeItemStatistics
   const isUsers = type === 'users'
-  // Users have the date of their first play there
-  const hasDetails =
-    isUsers ||
-    ((type === 'movie' || type === 'show') &&
-      (activeStats.includes('year') ||
-        RATING_STATISTICS.some((rating) => activeStats.includes(rating))))
+  // The ratings under the title. The year, or a user's first play, is on the
+  // title's line.
+  const hasRatings =
+    (type === 'movie' || type === 'show') &&
+    RATING_STATISTICS.some((rating) => activeStats.includes(rating))
   // Two at most, which fit on one line on the narrowest phones too
   const pills = [
     activeStats.includes('duration') && 'w-24',
@@ -107,7 +106,7 @@ function ListItem({
               className='mb-1.5 leading-snug sm:text-lg'
               width='w-2/3 sm:w-1/2'
             />
-            {hasDetails && (
+            {hasRatings && (
               <SkeletonLine className='mb-2 text-xs sm:text-sm' width='w-24' />
             )}
             {/* Pills from sm up, a line of text on phones */}

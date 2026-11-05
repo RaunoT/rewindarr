@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Starts a built Rewindarr image with an empty config directory and checks
-# that the server boots and answers requests.
+# Starts a built Rewindarr image with an empty config directory and no
+# environment, as a new install would, and checks that the server boots and
+# answers requests.
 #
 # Usage: smoke-test.sh <image>
 set -euo pipefail
@@ -26,9 +27,6 @@ cleanup() {
 trap cleanup EXIT
 
 docker run --detach --name "$name" --publish "$port:$port" \
-  --env NEXTAUTH_SECRET=smoke-test-secret \
-  --env NEXTAUTH_URL="http://localhost:$port" \
-  --env NEXT_PUBLIC_SITE_URL="http://localhost:$port" \
   --volume "$config_dir:/app/config" \
   "$image" > /dev/null
 
@@ -45,5 +43,9 @@ for path in /api/status /manifest.json; do
     --output /dev/null --write-out "$path -> %{http_code}\n" \
     "http://localhost:$port$path"
 done
+
+# Without NEXTAUTH_SECRET the app creates one in the config volume. The
+# directory belongs to the container's user by now, so it's checked inside.
+docker exec "$name" test -s /app/config/auth-secret
 
 echo 'Smoke test passed'

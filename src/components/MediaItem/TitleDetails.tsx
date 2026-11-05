@@ -26,26 +26,23 @@ export type TitleDetailsData = Pick<
 
 type Props = {
   data: TitleDetailsData
-  // The item statistics chosen in the settings
+  // The item statistics chosen in the settings. The year follows the title,
+  // so it's not among these.
   activeStats: string[]
   // The title's pages on the rating sites, which their ratings open
   links?: Partial<Record<ExternalLink, ExternalLinkHref>>
   className?: string
-  // Anything else about the title, after its ratings
-  children?: ReactNode
 }
 
-// A title's year and ratings, the same on the dashboard and the activity
+// A title's ratings, the same on the dashboard and the activity
 export default function TitleDetails({
   data,
   activeStats,
   links = {},
   className,
-  children,
 }: Props) {
   const t = useTranslations('Common')
   const locale = useLocale()
-  const year = activeStats.includes('year') ? data.year : null
   const tmdbRating = activeStats.includes('tmdbRating') ? data.rating : null
   const imdbRating = activeStats.includes('imdbRating')
     ? data.imdb_rating
@@ -64,13 +61,12 @@ export default function TitleDetails({
     activeStats.includes('rottenTomatoesRating') ||
     activeStats.includes('rottenTomatoesAudienceRating')
   const hasRatings =
-    year ||
     tmdbRating ||
     imdbRating ||
     rottenTomatoesRating !== null ||
     rottenTomatoesAudienceRating !== null
 
-  if (!hasRatings && !children) {
+  if (!hasRatings) {
     return null
   }
 
@@ -81,12 +77,6 @@ export default function TitleDetails({
         className,
       )}
     >
-      {year && (
-        <li className='icon-stat-wrapper icon-stat-wrapper--clean'>
-          <STAT_ICONS.year />
-          <span className='sr-only'>{t('year')}</span> {year}
-        </li>
-      )}
       {tmdbRating && (
         <Rating link={links.tmdb}>
           {/* Next to other sites' ratings, its source needs showing too */}
@@ -133,7 +123,6 @@ export default function TitleDetails({
           {formatPercent(rottenTomatoesAudienceRating, locale)}
         </Rating>
       )}
-      {children}
     </ul>
   )
 }

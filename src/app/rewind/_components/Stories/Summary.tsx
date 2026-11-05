@@ -23,11 +23,14 @@ import {
   canShareImages,
   downloadImage,
   renderImage,
+  savesWithShareSheet,
   toImageFile,
 } from '../saveImage'
 import SummaryImage from '../SummaryImage'
-import useRewindSummary, { SummaryStat } from '../useRewindSummary'
+import SummaryStatList from '../SummaryStatList'
+import useRewindSummary from '../useRewindSummary'
 
+type Action = 'save' | 'share'
 type Status = 'idle' | 'saving' | 'sharing' | 'failed'
 
 // After the story's own animations, which drawing the image would slow down
@@ -42,6 +45,10 @@ function getServerCanShare() {
   return false
 }
 
+function getCanSaveWithShare() {
+  return canShareImages() && savesWithShareSheet()
+}
+
 export default function StorySummary({ userRewind, settings }: RewindStory) {
   const t = useTranslations('Rewind.Summary')
   const summary = useRewindSummary(userRewind, settings)
@@ -50,16 +57,26 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
   const imageRef = useRef<Promise<Blob> | null>(null)
   const [status, setStatus] = useState<Status>('idle')
   // Browsers only open the share sheet for a moment after the press, which
-  // drawing the image can outlast, so it's drawn beforehand
+  // drawing the image can outlast, so it's drawn beforehand. The buttons don't
+  // wait for it, as most presses come after it's done.
   const [sharedImage, setSharedImage] = useState<Blob | 'failed' | null>(null)
+  // So a press that waited for the image doesn't open the share sheet over
+  // the story the viewer moved on to
+  const isMountedRef = useRef(true)
   const canShare = useSyncExternalStore(
     subscribeToNothing,
     canShareImages,
     getServerCanShare,
   )
+  // On iPhones and iPads saving goes through the share sheet too, as a
+  // download wouldn't reach Photos
+  const canSaveWithShare = useSyncExternalStore(
+    subscribeToNothing,
+    getCanSaveWithShare,
+    getServerCanShare,
+  )
   const isBusy = status === 'saving' || status === 'sharing'
   const { tops, personality } = summary
-  const [total, ...highlights] = summary.stats
   const getImage = useCallback(() => {
     if (!imageNodeRef.current) {
       return Promise.reject(new Error('The image is not shown'))
@@ -78,6 +95,14 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
     }
 
     return imageRef.current
+  }, [])
+
+  useEffect(() => {
+    isMountedRef.current = true
+
+    return () => {
+      isMountedRef.current = false
+    }
   }, [])
 
   useEffect(() => {
@@ -101,6 +126,10 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
   }, [canShare, getImage])
 
   async function save() {
+    if (canSaveWithShare) {
+      return share('save')
+    }
+
     if (isBusy) {
       return
     }
@@ -117,23 +146,36 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
     }
   }
 
-  async function share() {
-    if (isBusy || !sharedImage) {
+  async function share(action: Action) {
+    if (isBusy) {
       return
     }
 
-    setStatus('sharing')
+    setStatus(action === 'save' ? 'saving' : 'sharing')
 
     try {
-      // Drawn again only when drawing it beforehand failed
-      const image = sharedImage === 'failed' ? await getImage() : sharedImage
+      let image = sharedImage
+
+      // Waited for when it isn't drawn yet, and drawn again when drawing it
+      // beforehand failed, then kept for the next press. Drawing can outlast
+      // the moment after this press in which the share sheet may open, and
+      // then that press asks to try again.
+      if (!(image instanceof Blob)) {
+        image = await getImage()
+
+        if (!isMountedRef.current) {
+          return
+        }
+
+        setSharedImage(image)
+      }
 
       await navigator.share({
         files: [toImageFile(image, summary.fileName)],
         title: summary.title,
       })
       setStatus('idle')
-      trackEvent('rewind_summary_image', { action: 'share' })
+      trackEvent('rewind_summary_image', { action })
     } catch (error) {
       // Closing the share sheet isn't a failure
       if (error instanceof DOMException && error.name === 'AbortError') {
@@ -149,25 +191,37 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
 
   return (
     <RewindStat noScale>
-      <div className='text-base leading-normal font-normal tracking-normal sm:grid sm:grid-cols-2 sm:gap-8'>
-        <div>
-          <div className='flex items-center gap-4'>
-            <div className='relative size-12 shrink-0 overflow-hidden rounded-full ring-2 ring-white/15 sm:size-16'>
-              <Avatar src={summary.image} name={summary.name} sizes='4rem' />
-            </div>
-            <div className='min-w-0'>
-              <p className='text-plex truncate text-xs font-semibold tracking-[0.2em] uppercase'>
-                {summary.title}
-              </p>
-              <p className='truncate text-2xl font-semibold tracking-tight text-white sm:text-3xl'>
-                {summary.name}
-              </p>
-              <p className='text-sm text-neutral-400'>{summary.period}</p>
-            </div>
+      <div className='text-base leading-normal font-normal tracking-normal'>
+        <div className='flex items-center gap-4'>
+          {/* As tall as the lines beside it */}
+          <div
+            className={clsx(
+              'relative shrink-0 overflow-hidden rounded-full border-2 border-white/15',
+              personality ? 'size-18.5 sm:size-20.5' : 'size-12.5 sm:size-14.5',
+            )}
+          >
+            <Avatar src={summary.image} name={summary.name} sizes='6rem' />
           </div>
+          <div className='min-w-0'>
+            <p className='truncate text-sm font-medium text-neutral-400'>
+              {summary.title}
+            </p>
+            <p className='truncate text-2xl leading-tight font-semibold tracking-tight text-white sm:text-3xl'>
+              {summary.name}
+            </p>
+            {personality && (
+              <p className='text-plex mt-1 flex items-center gap-1.5 text-sm font-semibold'>
+                <personality.Icon className='size-4 shrink-0' aria-hidden />
+                <span className='sr-only'>{`${personality.label}: `}</span>
+                <span className='truncate'>{personality.name}</span>
+              </p>
+            )}
+          </div>
+        </div>
 
+        <div className='mt-5 grid items-start gap-5 sm:mt-6 sm:grid-cols-2 sm:gap-8'>
           {tops.length > 0 && (
-            <ul className='mt-4 grid max-w-60 grid-cols-3 gap-3 sm:mt-6 sm:max-w-none'>
+            <ul className='grid grid-cols-3 gap-3'>
               {tops.map(({ type, label, item, srcs }) => {
                 const deeplink = getRowDeeplink(
                   item,
@@ -179,7 +233,7 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
                     <PosterImage
                       srcs={srcs}
                       type={type}
-                      sizes='(min-width: 640px) 10rem, 6rem'
+                      sizes='(min-width: 640px) 8rem, 30vw'
                     />
                   </div>
                 )
@@ -202,10 +256,10 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
                     ) : (
                       poster
                     )}
-                    <p className='text-plex mt-2 text-[0.625rem] font-semibold tracking-[0.14em] uppercase sm:text-xs'>
+                    <p className='mt-2 truncate text-xs text-neutral-400'>
                       {label}
                     </p>
-                    <p className='truncate text-sm leading-snug font-medium text-neutral-100 sm:line-clamp-2 sm:[overflow-wrap:anywhere] sm:whitespace-normal'>
+                    <p className='truncate text-sm font-medium text-white'>
                       {deeplink ? (
                         <MediaServerLink
                           title={item.title}
@@ -224,40 +278,18 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
               })}
             </ul>
           )}
+
+          <SummaryStatList
+            stats={summary.stats}
+            className='glass-sheet rounded-2xl'
+          />
         </div>
 
-        <div className='mt-4 sm:mt-0'>
-          <div className='grid grid-cols-2 gap-2 sm:gap-3'>
-            <StatTile stat={total} isWide />
-            {highlights.map((stat, index) => (
-              <StatTile
-                key={stat.key}
-                stat={stat}
-                // An odd one out at the end fills its row
-                isWide={index === highlights.length - 1 && index % 2 === 0}
-              />
-            ))}
-            {personality && (
-              <div className='col-span-2 flex items-center gap-3 rounded-2xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10 ring-inset'>
-                <span className='bg-plex/15 text-plex ring-plex/30 flex size-9 shrink-0 items-center justify-center rounded-full ring-1 sm:size-10'>
-                  <personality.Icon className='size-5' />
-                </span>
-                <dl className='min-w-0'>
-                  <dt className='text-[0.6875rem] leading-tight font-semibold tracking-[0.12em] text-neutral-400 uppercase'>
-                    {personality.label}
-                  </dt>
-                  <dd className='text-plex text-lg leading-tight font-semibold sm:text-xl'>
-                    {personality.name}
-                  </dd>
-                </dl>
-              </div>
-            )}
-          </div>
-
-          {/* Not disabled while busy, which would drop the focus, so the arrow
-              keys would step the story. Smaller on phones, so both fit on a
-              row in every language. */}
-          <div className='mt-4 flex gap-2 sm:mt-6 sm:gap-3'>
+        <div className='mt-5 sm:mt-6'>
+          {/* Not disabled while busy, which would drop the focus, so the
+              arrow keys would step the story. Smaller on phones, so both fit
+              on a row in every language. */}
+          <div className='flex gap-2 sm:gap-3'>
             <button
               type='button'
               className='button aria-disabled:cursor-wait max-sm:px-4 max-sm:text-sm'
@@ -275,10 +307,10 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
               <button
                 type='button'
                 className='button button--glass aria-disabled:cursor-wait max-sm:px-4 max-sm:text-sm'
-                onClick={share}
-                aria-disabled={isBusy || !sharedImage}
+                onClick={() => share('share')}
+                aria-disabled={isBusy}
               >
-                {status === 'sharing' || !sharedImage ? (
+                {status === 'sharing' ? (
                   <ArrowPathIcon className='size-5 motion-safe:animate-spin' />
                 ) : (
                   <ShareIcon className='size-5' />
@@ -306,31 +338,5 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
         <SummaryImage ref={imageNodeRef} summary={summary} />
       </div>
     </RewindStat>
-  )
-}
-
-type StatTileProps = {
-  stat: SummaryStat
-  isWide?: boolean
-}
-
-function StatTile({ stat, isWide }: StatTileProps) {
-  return (
-    <dl
-      className={clsx(
-        'min-w-0 rounded-2xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10 ring-inset',
-        isWide && 'col-span-2',
-      )}
-    >
-      <dt className='text-[0.6875rem] leading-tight font-semibold tracking-[0.12em] text-neutral-400 uppercase'>
-        {stat.label}
-      </dt>
-      <dd className='truncate text-lg leading-tight font-semibold text-white sm:text-xl'>
-        {stat.value}
-      </dd>
-      {stat.detail && (
-        <dd className='truncate text-sm text-neutral-400'>{stat.detail}</dd>
-      )}
-    </dl>
   )
 }

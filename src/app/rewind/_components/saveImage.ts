@@ -34,6 +34,13 @@ export function toImageFile(image: Blob, fileName: string): File {
   return new File([image], fileName, { type: 'image/png' })
 }
 
+// iPhones and iPads keep a downloaded image in Files, and a Home Screen app
+// only opens it, so only their share sheet's Save Image adds it to Photos.
+// Only their browsers know the property.
+export function savesWithShareSheet(): boolean {
+  return CSS.supports('-webkit-touch-callout', 'none')
+}
+
 // Only some browsers, mostly on phones, can share a file
 export function canShareImages(): boolean {
   return (

@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { DE, EE, ES, FR, GB, IT, US } from 'country-flag-icons/react/1x1'
-import { signOut, useSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { startTransition } from 'react'
 import {
@@ -23,6 +23,7 @@ import {
   Popover,
   Separator,
 } from 'react-aria-components'
+import signOutInPlace from './signOutInPlace'
 
 type Props = {
   // An avatar-only button, for the header on small screens
@@ -138,7 +139,7 @@ export default function AccountMenu({ isCompact }: Props) {
           {user && (
             <>
               <Separator className='mx-2 my-1 h-px border-0 bg-white/10' />
-              <MenuItem onAction={() => signOut()} className='menu-item'>
+              <MenuItem onAction={signOutInPlace} className='menu-item'>
                 <ArrowRightStartOnRectangleIcon />
                 {t('Home.signOut')}
               </MenuItem>
