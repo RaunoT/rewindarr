@@ -142,8 +142,15 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
     setStatus(action === 'save' ? 'saving' : 'sharing')
 
     try {
-      // Drawn again only when drawing it beforehand failed
-      const image = sharedImage === 'failed' ? await getImage() : sharedImage
+      let image = sharedImage
+
+      // Drawn again only when drawing it beforehand failed, and kept for the
+      // next press. Drawing can outlast the moment after this press in which
+      // the share sheet may open, and then that press asks to try again.
+      if (image === 'failed') {
+        image = await getImage()
+        setSharedImage(image)
+      }
 
       await navigator.share({
         files: [toImageFile(image, summary.fileName)],
