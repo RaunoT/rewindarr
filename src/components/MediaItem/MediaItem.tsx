@@ -10,13 +10,13 @@ import { TautulliItemRow } from '@/types/tautulli'
 import { DASHBOARD_PAGE_SIZE, EXTERNAL_LINK_NAMES } from '@/utils/constants'
 import { getRowDeeplink } from '@/utils/deeplink'
 import { getExternalLinks, getRatedSites } from '@/utils/externalLinks'
-import { formatMonthYear, secondsToTime } from '@/utils/formatting'
+import { secondsToTime } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import { countdownRow, slideDown } from '@/utils/motion'
 import { TrashIcon, UserIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { motion } from 'motion/react'
-import { useLocale, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { useRef } from 'react'
 import MediaItemTitle from './MediaItemTitle'
 import MediaServerLink from './MediaServerLink'
@@ -24,6 +24,7 @@ import Rank from './Rank'
 import SeerrLogo from './SeerrLogo'
 import SiteLogo from './SiteLogo'
 import TitleDetails from './TitleDetails'
+import TitleNote from './TitleNote'
 
 // A viewing stat: a pill from sm up, plain text on phones
 const STAT_PILL =
@@ -58,7 +59,6 @@ export default function MediaItem({
 }: Props) {
   const translations = useTranslations()
   const t = useTranslations('MediaItem')
-  const locale = useLocale()
   const isUsers = type === 'users'
   const posterSrc = !data.thumb
     ? null
@@ -72,6 +72,19 @@ export default function MediaItem({
   const rank = data.rank || i
   const isVideo = type === 'movie' || type === 'show'
   const firstPlayedAt = isUsers ? data.first_played_at : null
+  const year = isVideo && activeStats.includes('year') ? data.year : null
+  // Next to the title, apart from the ratings and stats
+  const note = year ? (
+    <TitleNote label={translations('Common.year')}>{year}</TitleNote>
+  ) : firstPlayedAt ? (
+    <TitleNote>
+      {/* The year is enough next to the name. As text, so it isn't
+          formatted like a count, with a thousands separator. */}
+      {t('statSince', {
+        date: String(new Date(firstPlayedAt).getUTCFullYear()),
+      })}
+    </TitleNote>
+  ) : null
   const links = isVideo
     ? getExternalLinks(data, type, settings.general.activeExternalLinks)
     : []
@@ -166,6 +179,7 @@ export default function MediaItem({
               parentRef={titleContainerRef}
               loggedInUserId={loggedInUserId}
               serverLink={serverLink}
+              note={note}
             />
             {/* Details about the title, kept apart from the viewing stats */}
             <TitleDetails
@@ -173,16 +187,7 @@ export default function MediaItem({
               activeStats={isVideo ? activeStats : []}
               links={ratingLinks}
               className='mb-2'
-            >
-              {firstPlayedAt && (
-                <li className='icon-stat-wrapper icon-stat-wrapper--clean'>
-                  <STAT_ICONS.firstPlay />
-                  {t('statSince', {
-                    date: formatMonthYear(firstPlayedAt, locale),
-                  })}
-                </li>
-              )}
-            </TitleDetails>
+            />
             {/* Pills from sm up. Phones show them as plain text like the
                 details above, which reads lighter in the narrow column. */}
             <ul className='icon-stats-container max-sm:gap-x-2.5'>

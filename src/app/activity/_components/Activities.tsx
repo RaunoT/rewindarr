@@ -40,12 +40,14 @@ export default function Activities({ settings, mediaServer }: Props) {
   }, [data?.stream_count, settings.general.serverName, t])
 
   if (isLoading) {
-    return <ActivitiesSkeleton />
+    return <ActivitiesSkeleton general={settings.general} />
   }
 
   if (error || !data?.sessions.length) {
     return (
-      <SkeletonSized skeleton={<ActivitiesSkeleton />}>
+      <SkeletonSized
+        skeleton={<ActivitiesSkeleton general={settings.general} />}
+      >
         {error ? (
           <StatusMessage
             icon={ExclamationTriangleIcon}

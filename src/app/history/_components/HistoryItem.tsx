@@ -130,9 +130,10 @@ function getDecision(plays: HistoryPlay[]) {
   )
 }
 
-// The show or artist leads, and an episode goes by its numbers, which say
-// more at a glance than its title. Episodes or tracks played in a row are one
-// card, which opens a list of them.
+// The show leads, and an episode goes by its numbers above it, which say more
+// at a glance than its title. A track leads with its artist above it.
+// Episodes or tracks played in a row are one card, under the show or artist,
+// which opens a list of them.
 export default function HistoryItem({
   play,
   binge,
@@ -150,7 +151,10 @@ export default function HistoryItem({
   // One episode played in two sittings is just that episode
   const isBinge = entries.length > 1
   const ratingKey = getRatingKey(play, item)
-  const name = play.showTitle || play.artistName || play.title
+  const isTrack = mediaType === 'track' && !isBinge
+  const name = isTrack
+    ? play.title
+    : play.showTitle || play.artistName || play.title
   const episode =
     seasonNumber !== null && episodeNumber !== null
       ? t('History.episodeNumber', {
@@ -159,22 +163,24 @@ export default function HistoryItem({
         })
       : null
   // An episode's title only stands in for numbers the source doesn't have.
-  // A movie's year is among its details. A binge's tracks are in its list.
+  // A binge's tracks are in its list.
   const detail = isBinge
     ? mediaType === 'episode'
       ? getEpisodeRange(plays, t)
       : null
     : mediaType === 'episode'
       ? (episode ?? play.title)
-      : name !== play.title
-        ? play.title
+      : isTrack && play.artistName !== play.title
+        ? play.artistName
         : null
   // The full title, the episode's included, on hover
   const fullTitle = isBinge
     ? [name, detail].filter(Boolean).join(' · ')
-    : [name, episode, name !== play.title && play.title]
-        .filter(Boolean)
-        .join(' · ')
+    : isTrack
+      ? [detail, name].filter(Boolean).join(' · ')
+      : [name, episode, name !== play.title && play.title]
+          .filter(Boolean)
+          .join(' · ')
   const progress = isBinge ? null : play.percentComplete
   const decisionKind = getDecision(plays)
   const decision = decisionKind && DECISION_ICONS[decisionKind]

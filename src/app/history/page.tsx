@@ -49,7 +49,7 @@ import {
 } from 'next-intl/server'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
+import { ComponentProps, Suspense } from 'react'
 import CardWrapper from '../_components/CardWrapper'
 import HistoryFilters, { FilterOption } from './_components/HistoryFilters'
 import HistoryItem from './_components/HistoryItem'
@@ -215,15 +215,17 @@ async function HistoryTotalsRow({ totals, filter, hasRequests }: TotalsProps) {
 function HistoryLoader({
   rows,
   totalsCount,
+  general,
 }: {
   rows: number
   totalsCount: number
+  general: ComponentProps<typeof HistorySkeleton>['general']
 }) {
   return (
     <>
       <TotalsSkeleton count={totalsCount} />
       <CardWrapper>
-        <HistorySkeleton rows={rows} />
+        <HistorySkeleton rows={rows} general={general} />
       </CardWrapper>
     </>
   )
@@ -283,7 +285,11 @@ async function HistoryContent({
         {totalsList}
         <CardWrapper>
           {requestsNotice}
-          <SkeletonSized skeleton={<HistorySkeleton rows={pageSize} />}>
+          <SkeletonSized
+            skeleton={
+              <HistorySkeleton rows={pageSize} general={settings.general} />
+            }
+          >
             {progress ? (
               <HistoryReading progress={progress} isInCard />
             ) : (
@@ -431,7 +437,11 @@ export default async function HistoryPage({ searchParams }: Props) {
       <>
         {filters()}
         <CardWrapper>
-          <SkeletonSized skeleton={<HistorySkeleton rows={pageSize} />}>
+          <SkeletonSized
+            skeleton={
+              <HistorySkeleton rows={pageSize} general={settings.general} />
+            }
+          >
             <SourceUnreachable
               source={settings.connection.statisticsSource}
               isAdmin={!!session?.user.isAdmin}
@@ -491,6 +501,7 @@ export default async function HistoryPage({ searchParams }: Props) {
         fallback={
           <HistoryLoader
             rows={pageSize}
+            general={settings.general}
             totalsCount={getTotalKeys(filter, hasRequests).length}
           />
         }
