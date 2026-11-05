@@ -27,6 +27,24 @@ import AppProvider from './_components/AppProvider'
 import GoogleAnalytics from './_components/GoogleAnalytics'
 import SessionProviderWrapper from './_components/SessionProvider'
 
+// Link previews need the full address of the image. Without a set one, it's
+// the address the page was asked for.
+async function getMetadataBase(): Promise<URL | null> {
+  const siteUrl = getSiteUrl()
+
+  if (siteUrl) {
+    return new URL(siteUrl)
+  }
+
+  const requestHeaders = await headers()
+  const host =
+    requestHeaders.get('x-forwarded-host') ?? requestHeaders.get('host')
+  const protocol =
+    requestHeaders.get('x-forwarded-proto') === 'https' ? 'https' : 'http'
+
+  return host ? URL.parse(`${protocol}://${host}`) : null
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const settings = getSettings()
   const serverName = settings.general.serverName
@@ -34,7 +52,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const titleTemplate = serverName ? `%s | ${serverName}` : `%s | ${APP_NAME}`
 
   return {
-    metadataBase: new URL(getSiteUrl()),
+    metadataBase: await getMetadataBase(),
     applicationName: baseTitle,
     title: {
       default: baseTitle,

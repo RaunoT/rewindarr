@@ -321,7 +321,8 @@ export const authOptions: AuthOptions = {
       },
     }),
   ],
-  secret: process.env.NEXTAUTH_SECRET,
+  // No `secret`, as next-auth reads NEXTAUTH_SECRET per request, after
+  // prepareAuthEnv has generated one that wasn't set
   pages: {
     signIn: '/',
   },

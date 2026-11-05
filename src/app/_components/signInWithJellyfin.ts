@@ -22,7 +22,9 @@ export default async function signInWithJellyfin(
       return toLoginErrorCode(res?.error)
     }
 
-    window.location.replace(res.url ?? '/')
+    // Not `res.url`, as that's on next-auth's own idea of the address, which
+    // a proxy can change
+    window.location.replace('/')
 
     // The page is on its way out, so the form stays as it is meanwhile
     return new Promise(() => {})

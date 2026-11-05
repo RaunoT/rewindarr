@@ -21,7 +21,7 @@ Contributions are welcome and greatly appreciated! Please follow the guidelines 
    cd rewindarr
    ```
 
-2. Create `.env.local` from `.env.example`, and set `NEXTAUTH_SECRET` in it to a random string, for example from `openssl rand -base64 32`. Without it, every page redirects to an error page.
+2. Create `.env.local` from `.env.example`. Everything in it is optional: the app creates a secret in `config/auth-secret` on first start and uses the address it's opened at.
 
    ```bash
    cp .env.example .env.local
@@ -63,7 +63,7 @@ Contributions are welcome and greatly appreciated! Please follow the guidelines 
 
 ### Running with Docker
 
-To try your changes in the production image, run `docker compose up --build`. The `docker-compose.yml` in the repository builds the image from the `Dockerfile`, reads its environment from `.env.local` and mounts `./config` for the settings. It maps port `3000` on your machine to the container's `8383`, so the app is available at `http://localhost:3000`, which matches the URLs in `.env.example`.
+To try your changes in the production image, run `docker compose up --build`. The `docker-compose.yml` in the repository builds the image from the `Dockerfile`, reads its environment from `.env.local` and mounts `./config` for the settings. It maps port `3000` on your machine to the container's `8383`, so the app is available at `http://localhost:3000`.
 
 ### Mock data
 
@@ -83,7 +83,7 @@ To try your changes in the production image, run `docker compose up --build`. Th
    cd ../rewindarr-mock && pnpm install
    ```
 
-   Save this as `config/settings.json` there, then start it with `NEXTAUTH_URL=http://localhost:3001 pnpm dev -p 3001` and sign in:
+   Save this as `config/settings.json` there, then start it with `pnpm dev -p 3001` and sign in. If your `.env.local` sets `NEXTAUTH_URL` or `NEXT_PUBLIC_SITE_URL`, remove them from the copy:
 
    ```json
    {

@@ -4,7 +4,7 @@ import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-export default function usePlexAuth(siteUrl: string) {
+export default function usePlexAuth(siteUrl?: string) {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<LoginErrorCode | null>(null)
   const router = useRouter()
@@ -46,8 +46,9 @@ export default function usePlexAuth(siteUrl: string) {
         }
 
         // A full load, as the layout also renders from the session. Replacing
-        // keeps the used PIN out of the history.
-        window.location.replace(res.url ?? '/')
+        // keeps the used PIN out of the history. Not `res.url`, as that's on
+        // next-auth's own idea of the address, which a proxy can change.
+        window.location.replace('/')
       } catch (error) {
         console.error('[AUTH] - Error during sign-in!', error)
         setError('unknown')
@@ -64,7 +65,7 @@ export default function usePlexAuth(siteUrl: string) {
     setError(null)
 
     try {
-      const plexUrl = await createPlexAuthUrl(siteUrl)
+      const plexUrl = await createPlexAuthUrl(siteUrl ?? window.location.origin)
 
       router.push(plexUrl)
     } catch {

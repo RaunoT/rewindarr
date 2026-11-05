@@ -62,8 +62,9 @@ body:
     id: site-url
     attributes:
       label: NEXTAUTH_URL and NEXT_PUBLIC_SITE_URL
-      description: Pick the form that matches your two URL variables. There is no need to share your real domain or IP.
+      description: Pick the form that matches your URL variables, if you set them. There is no need to share your real domain or IP.
       options:
+        - Not set
         - 'http://localhost:8383'
         - 'http://<LAN IP>:8383'
         - 'https://<your domain>'

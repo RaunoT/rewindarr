@@ -6,15 +6,16 @@ import Loader from '@/components/Loader'
 import usePlexAuth from '@/hooks/usePlexAuth'
 import { PublicSettings } from '@/types/settings'
 import { APP_NAME } from '@/utils/constants'
-import { signOut, useSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import JellyfinLoginForm from './JellyfinLoginForm'
 import LoginWithPlexLabel from './LoginWithPlexLabel'
+import signOutInPlace from './signOutInPlace'
 
 type Props = {
   settings: PublicSettings
   missingSetting: string | null
-  siteUrl: string
+  siteUrl?: string
 }
 
 // Shown until there's something to browse: before logging in, or while an
@@ -83,7 +84,7 @@ export default function Home({ settings, missingSetting, siteUrl }: Props) {
         )}
         {isLoggedIn && (
           <button
-            onClick={() => signOut()}
+            onClick={signOutInPlace}
             className='link mx-auto w-fit text-sm'
           >
             {t('signOut')}
