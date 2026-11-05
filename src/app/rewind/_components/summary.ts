@@ -7,19 +7,20 @@ export type SummaryTop = {
   item: TautulliItemRow
 }
 
-// What the summary is called. The media server's name would read as if it
-// made the image, so only a name the admin gave the server is used.
+// What the summary is called, with the years it covers, like "2026" or
+// "2025–2026". The media server's name would read as if it made the image, so
+// only a name the admin gave the server is used.
 export type SummaryTitle =
-  | { type: 'server'; serverName: string }
-  | { type: 'year'; year: number }
-  | { type: 'years'; start: number; end: number }
+  | { type: 'server'; serverName: string; years: string }
+  | { type: 'default'; years: string }
 
 // An overall stat beside the total time
 export type SummaryHighlight =
   // The top percent of viewers by time, such as 5
   | { type: 'topPercent'; percent: number }
   | { type: 'genre'; name: string }
-  | { type: 'binge'; episodes: number; title: string }
+  // The duration in seconds
+  | { type: 'binge'; episodes: number; title: string; duration: number }
   | { type: 'streak'; days: number }
   // YYYY-MM
   | { type: 'month'; month: string }
@@ -52,23 +53,23 @@ export function getSummaryTops({
   return tops.filter((top): top is SummaryTop => !!top.item)
 }
 
-// The period's year, or its first and last, after the server's name when the
-// admin set one. The period runs from a YYYY-MM-DD date to now.
+// The period runs to now, so it's named after this year, like other years in
+// review, even when the default past year began in the last one. A YYYY-MM-DD
+// start date the admin set in an earlier year adds that year.
 export function getSummaryTitle(
   serverName: string,
-  startDate: string,
+  customStartDate: string | undefined,
   now = new Date(),
 ): SummaryTitle {
-  if (serverName) {
-    return { type: 'server', serverName }
-  }
-
-  const start = new Date(startDate).getUTCFullYear()
   const end = now.getUTCFullYear()
+  const start = customStartDate
+    ? new Date(customStartDate).getUTCFullYear()
+    : end
+  const years = start < end ? `${start}–${end}` : `${end}`
 
-  return start === end
-    ? { type: 'year', year: end }
-    : { type: 'years', start, end }
+  return serverName
+    ? { type: 'server', serverName, years }
+    : { type: 'default', years }
 }
 
 // The viewer's most telling overall stats, leaving out those they don't have:
@@ -103,6 +104,7 @@ export function getSummaryHighlights(
       type: 'binge',
       episodes: moments.binge.episodes,
       title: moments.binge.title,
+      duration: moments.binge.duration,
     },
     moments.streak && { type: 'streak', days: moments.streak.days },
     peakMonth ? { type: 'month', month: peakMonth.month } : null,
