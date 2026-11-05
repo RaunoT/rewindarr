@@ -601,7 +601,7 @@ function tautulliUser(user) {
 }
 
 // Two streams, as in the README's home screenshot
-const [, sam, maya] = USERS
+const [owner, sam] = USERS
 const SESSIONS = [
   {
     session_key: '41',
@@ -653,55 +653,53 @@ const SESSIONS = [
     ip_address_public: '203.0.113.42',
   },
   {
-    session_key: '43',
-    user_id: Number(maya.id),
-    friendly_name: maya.name,
-    user_thumb: maya.thumb,
-    media_type: 'episode',
-    rating_key: 7005,
-    parent_rating_key: 7004,
-    grandparent_rating_key: items.show[0].key,
-    title: '8:00 A.M.',
-    parent_title: 'Season 2',
-    grandparent_title: 'The Pitt',
-    year: '2026',
-    thumb: '/library/metadata/7004/thumb/1',
-    grandparent_thumb: '/library/metadata/7004/thumb/1',
-    player: 'Bedroom',
-    product: 'Plex for LG',
-    state: 'paused',
-    progress_percent: '71',
-    view_offset: String(36 * 60 * 1000),
-    duration: String(51 * 60 * 1000),
+    session_key: '42',
+    user_id: Number(owner.id),
+    friendly_name: owner.name,
+    user_thumb: owner.thumb,
+    media_type: 'track',
+    rating_key: 7003,
+    parent_rating_key: 7002,
+    grandparent_rating_key: items.artist[0].key,
+    title: 'Gimme Shelter',
+    parent_title: 'Let It Bleed',
+    grandparent_title: 'The Rolling Stones',
+    year: '1969',
+    thumb: '/library/metadata/7002/thumb/1',
+    grandparent_thumb: `/library/metadata/${items.artist[0].key}/thumb/1`,
+    player: 'Study',
+    product: 'Plexamp',
+    state: 'playing',
+    progress_percent: '38',
+    view_offset: String(104 * 1000),
+    duration: String(271 * 1000),
     transcode_decision: 'direct play',
-    container: 'mkv',
-    stream_container: 'mkv',
+    container: 'flac',
+    stream_container: 'flac',
     stream_container_decision: 'direct play',
-    video_codec: 'hevc',
-    stream_video_codec: 'hevc',
-    stream_video_decision: 'direct play',
-    video_full_resolution: '4k',
-    stream_video_full_resolution: '4k',
-    video_dynamic_range: 'Dolby Vision',
-    stream_video_dynamic_range: 'Dolby Vision',
-    audio_codec: 'eac3',
-    audio_channel_layout: '5.1',
-    audio_atmos: 1,
-    stream_audio_codec: 'eac3',
-    stream_audio_channel_layout: '5.1',
+    video_codec: '',
+    stream_video_codec: '',
+    stream_video_decision: '',
+    video_full_resolution: '',
+    stream_video_full_resolution: '',
+    video_dynamic_range: '',
+    stream_video_dynamic_range: '',
+    audio_codec: 'flac',
+    audio_channel_layout: 'stereo',
+    stream_audio_codec: 'flac',
+    stream_audio_channel_layout: 'stereo',
     stream_audio_decision: 'direct play',
-    stream_audio_language: 'English',
-    stream_audio_atmos: 1,
+    stream_audio_language: '',
     subtitle_codec: '',
     stream_subtitle_codec: '',
     stream_subtitle_decision: '',
     stream_subtitle_language: '',
-    bitrate: '24800',
-    stream_bitrate: '24800',
+    bitrate: '1411',
+    stream_bitrate: '1411',
     quality_profile: 'Original',
-    bandwidth: '26100',
+    bandwidth: '1600',
     location: 'lan',
-    ip_address: '192.168.1.31',
+    ip_address: '192.168.1.24',
   },
 ]
 // Where each piece of artwork comes from, by rating key
@@ -718,7 +716,7 @@ const ARTWORK = {
     ]),
   ),
   7001: { tmdb: 'movie', title: 'Sinners', year: 2025 },
-  7004: { tmdb: 'tv', title: 'The Pitt', year: 2025 },
+  7002: { album: 'Let It Bleed', artist: 'The Rolling Stones' },
 }
 const artworkCache = new Map()
 
@@ -736,6 +734,14 @@ async function findArtworkUrl(source) {
 
   if (source.portrait) {
     return `https://randomuser.me/api/portraits/${source.portrait}.jpg`
+  }
+
+  if (source.album) {
+    const search = await fetch(
+      `https://api.deezer.com/search/album?q=${encodeURIComponent(`${source.artist} ${source.album}`)}`,
+    ).then((res) => res.json())
+
+    return search.data?.[0]?.cover_xl
   }
 
   const search = await fetch(
