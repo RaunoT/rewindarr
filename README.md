@@ -54,9 +54,6 @@ services:
     image: ghcr.io/raunot/rewindarr:latest # :develop for the latest development version
     container_name: rewindarr
     environment:
-      - NEXTAUTH_SECRET= # (required) used to encrypt auth JWT token, generate one with `openssl rand -base64 32`
-      - NEXTAUTH_URL=http://localhost:8383 # (required) change to your domain if you are exposing the app to the internet
-      - NEXT_PUBLIC_SITE_URL=http://localhost:8383 # (required) change to your domain if you are exposing the app to the internet
       - TZ=Europe/London # (optional) your timezone, used for finish times. Rewind's viewing habits use each viewer's own.
       - PUID=1000 # (optional) user ID the app runs as, defaults to 1000
       - PGID=1000 # (optional) group ID the app runs as, defaults to 1000
@@ -69,7 +66,9 @@ services:
 
 > _NOTE: Coming from Plex Rewind? The images are also published under their old names, `ghcr.io/raunot/plex-rewind` and `raunoot/plex-rewind`, for now. Switch to `ghcr.io/raunot/rewindarr` or `raunoot/rewindarr` and keep the same `config` volume; the settings carry over._
 
-> _NOTE: If you run into authentication issues, try setting `NEXTAUTH_URL` and `NEXT_PUBLIC_SITE_URL` to your external Docker IP, instead of localhost. For example `http://192.168.1.1:8383`._
+> _NOTE: Rewindarr uses the address you open it at, so the same container works at `localhost`, a LAN IP and a domain. If signing in sends you to the wrong address, for example behind a reverse proxy that doesn't pass on the original `Host` header, set `NEXT_PUBLIC_SITE_URL` to the address you open it at, such as `https://rewind.example.com`._
+
+> _NOTE: Logins are signed with a secret that Rewindarr creates on first start and keeps in `config/auth-secret`. Keep the file private, and delete it to sign everyone out. To use your own secret instead, set `NEXTAUTH_SECRET`._
 
 > _NOTE: Rewindarr builds its statistics from the play history, which it reads once and saves to `config/play-history.json.gz`. After that, only the newest plays are read again, even across restarts. The read starts when Rewindarr starts, and its progress is shown in the connection settings. Tautulli is read 5,000 plays at a time, which usually takes seconds. Tracearr is read 100 plays at a time, one request after another, and allows 240 requests a minute by default, so the first read of 100,000 plays takes about 5 minutes. For Tracearr histories over 50,000 plays, set its API rate limit (Settings → Data → API, restart required) to 1,200. A higher value doesn't make it faster, as each request waits for the previous one, and on modest hardware 600 puts less load on Tracearr._
 
@@ -78,6 +77,8 @@ For those that need it, a simple status page is also available at `/api/status`.
 ### Updating
 
 Run `docker compose pull` and then `docker compose up -d`. Older versions ran as root, so `./config` may be owned by root. The container fixes that on start and then runs as `PUID` and `PGID`; set `PUID=0` to keep running as root.
+
+Older versions required `NEXTAUTH_SECRET`, `NEXTAUTH_URL` and `NEXT_PUBLIC_SITE_URL`. They still work and take precedence, so there's nothing to change. You can remove them from your `docker-compose.yml`; everyone may have to sign in again once.
 
 ## Translations
 

@@ -50,8 +50,13 @@ export function getRuntimeEnv(name: string): string | undefined {
   return process.env[name]
 }
 
-export function getSiteUrl(): string {
-  return getRuntimeEnv('NEXT_PUBLIC_SITE_URL') || 'http://localhost:8383'
+// The address set for the app, if any. Without one, the browser's is used.
+export function getSiteUrl(): string | undefined {
+  return (
+    getRuntimeEnv('NEXT_PUBLIC_SITE_URL') ||
+    getRuntimeEnv('NEXTAUTH_URL') ||
+    undefined
+  )
 }
 
 export const DEFAULT_SETTINGS: Settings = {

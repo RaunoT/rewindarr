@@ -1,8 +1,7 @@
 import { Settings } from '@/types/settings'
 import { cloneDeep } from 'lodash'
 import { encode } from 'next-auth/jwt'
-import { NextRequestWithAuth } from 'next-auth/middleware'
-import { NextFetchEvent, NextRequest } from 'next/server'
+import { NextRequest } from 'next/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import proxy from './proxy'
 import { DEFAULT_SETTINGS } from './utils/constants'
@@ -30,12 +29,16 @@ function staleAdminCookie() {
   })
 }
 
-function request(cookie: string, pathname: string) {
+function request(
+  cookie: string,
+  pathname: string,
+  { cookieName = 'next-auth.session-token', headers = {} } = {},
+) {
   const req = new NextRequest(`http://localhost:3000${pathname}`, {
-    headers: { cookie: `next-auth.session-token=${cookie}` },
+    headers: { ...headers, cookie: `${cookieName}=${cookie}` },
   })
 
-  return proxy(req as NextRequestWithAuth, {} as NextFetchEvent)
+  return proxy(req)
 }
 
 async function requestAsAdmin(pathname: string) {
@@ -49,6 +52,7 @@ beforeEach(() => {
   settings.setupComplete = true
   vi.mocked(getSettings).mockReturnValue(settings)
   vi.stubEnv('NEXTAUTH_SECRET', SECRET)
+  vi.stubEnv('NEXTAUTH_URL', undefined)
   vi.spyOn(console, 'error').mockImplementation(() => {})
   vi.spyOn(console, 'warn').mockImplementation(() => {})
 })
@@ -121,6 +125,50 @@ describe('proxy', () => {
     }
 
     expect(getServerUser).toHaveBeenCalledTimes(1)
+  })
+
+  // next-auth names the cookie after the protocol of its address, which
+  // without NEXTAUTH_URL is the one the request came in on
+  describe('session cookie', () => {
+    const https = { 'x-forwarded-proto': 'https' }
+
+    beforeEach(() => {
+      vi.mocked(getServerUser).mockResolvedValue({
+        status: 'member',
+        isAdmin: true,
+      })
+    })
+
+    it('reads the secure cookie of a request over HTTPS', async () => {
+      const res = await request(await staleAdminCookie(), '/dashboard', {
+        cookieName: '__Secure-next-auth.session-token',
+        headers: https,
+      })
+
+      expect(res?.headers.get('location')).toBe(
+        'http://localhost:3000/settings/connection',
+      )
+    })
+
+    it('ignores the plain cookie of a request over HTTPS', async () => {
+      const res = await request(await staleAdminCookie(), '/dashboard', {
+        headers: https,
+      })
+
+      expect(res?.headers.get('location')).toBe('http://localhost:3000/')
+    })
+
+    it('goes by NEXTAUTH_URL when it is set', async () => {
+      vi.stubEnv('NEXTAUTH_URL', 'https://rewind.example.com')
+
+      const res = await request(await staleAdminCookie(), '/dashboard', {
+        cookieName: '__Secure-next-auth.session-token',
+      })
+
+      expect(res?.headers.get('location')).toBe(
+        'http://localhost:3000/settings/connection',
+      )
+    })
   })
 
   it('sends old links to the Tracearr shows library to its new name', async () => {

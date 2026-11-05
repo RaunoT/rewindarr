@@ -9,7 +9,7 @@ import LoginWithJellyfinLabel from './LoginWithJellyfinLabel'
 import LoginWithPlexLabel from './LoginWithPlexLabel'
 
 type Props = {
-  siteUrl: string
+  siteUrl?: string
   mediaServerType: MediaServerType
 }
 
