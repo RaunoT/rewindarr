@@ -59,8 +59,10 @@ type Props = {
   deeplink?: Deeplink | null
   // On the right, such as a play's date or when a stream ends
   aside?: ReactNode
-  // On phones, in place of the aside next to the title. False leaves the place
-  // empty, for a card that shows the aside elsewhere on phones.
+  // Phones start the line above the name with the aside, unless the card
+  // shows it elsewhere there
+  isAsideHiddenOnPhones?: boolean
+  // The top right on phones, such as a button that opens more
   phoneAside?: ReactNode
   settings: PublicSettings
   // Under the title and stats, such as a stream's progress
@@ -90,6 +92,7 @@ export default function MediaCard({
   action,
   deeplink,
   aside,
+  isAsideHiddenOnPhones,
   phoneAside,
   settings,
   children,
@@ -199,26 +202,30 @@ export default function MediaCard({
         <div className='flex flex-col gap-2 max-sm:contents @md:flex-row @md:items-start @md:gap-4'>
           <div className='min-w-0 flex-1'>
             {/* The detail goes small above the name, as in the home tiles,
-                with the aside beside it where there's no column for it, so
-                the name gets the full width under them. A movie's line has
-                just the aside. Wide cards without a detail leave it out. */}
+                so the name gets the full width under it. Phones start the line
+                with the aside, like a timeline, and keep its end for
+                phoneAside. Mid-width cards end it with the aside, and wide
+                cards without a detail leave it out. */}
             <div
               className={clsx(
                 'flex items-center justify-between gap-3',
                 !detail && '@md:hidden',
               )}
             >
-              {/* The heading reads it after the name */}
-              <span
-                className='min-w-0 truncate text-xs leading-snug text-neutral-400 sm:text-sm'
-                aria-hidden='true'
-              >
-                {detail}
+              <span className='min-w-0 truncate text-xs leading-snug text-neutral-400 tabular-nums sm:text-sm'>
+                {aside && !isAsideHiddenOnPhones && (
+                  <span className='sm:hidden'>
+                    {aside}
+                    {detail && ' · '}
+                  </span>
+                )}
+                {/* The heading reads it after the name */}
+                <span aria-hidden='true'>{detail}</span>
               </span>
               {asideBlock('max-sm:hidden @md:hidden')}
-              <div className='shrink-0 sm:hidden'>
-                {phoneAside ?? asideBlock('')}
-              </div>
+              {phoneAside && (
+                <div className='shrink-0 sm:hidden'>{phoneAside}</div>
+              )}
             </div>
             {/* A long name is cut short, so the year stays next to it */}
             <h3

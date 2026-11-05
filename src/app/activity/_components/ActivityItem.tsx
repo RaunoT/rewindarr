@@ -353,7 +353,8 @@ export default function ActivityItem({
       // When it ends, where a history card has its date. Phones have how it
       // streams there instead, and when it ends under the bar.
       aside={position && eta && t('endsAt', { time: eta })}
-      phoneAside={decisionIcon ? decisionToggle(true) : false}
+      isAsideHiddenOnPhones
+      phoneAside={decisionIcon && decisionToggle(true)}
       settings={settings}
       footer={streamDetails}
     >

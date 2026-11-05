@@ -1,21 +1,25 @@
 'use client'
 
+import { MediaIcon } from '@/components/icons'
 import MediaCard from '@/components/MediaCard'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { ComponentProps, ReactNode, useId, useState } from 'react'
 
-type Props = Omit<ComponentProps<typeof MediaCard>, 'footer'> & {
-  // What the button says, such as how many episodes, with an icon before it
-  count: ReactNode
+type Props = Omit<ComponentProps<typeof MediaCard>, 'footer' | 'phoneAside'> & {
+  // How many plays it has, such as "2 episodes"
+  count: number
+  countLabel: string
   // Each of the binge's plays, under the card once it's opened
   plays: ReactNode
 }
 
-// A binge's card, its button among the stats opening its plays, the way an
-// activity card's opens the stream's details
+// A binge's card, its button opening its plays the way an activity card's
+// opens the stream's details: among the stats, and on phones in the top right
+// with just the number
 export default function HistoryBingeCard({
   count,
+  countLabel,
   plays,
   stats,
   ...card
@@ -23,32 +27,48 @@ export default function HistoryBingeCard({
   const [isExpanded, setIsExpanded] = useState(false)
   const playsId = useId()
 
+  // Taps 10px above and below count too, for a 40px tap area. The narrow
+  // button gets 10px more on the sides too.
+  function toggle(isCompact: boolean) {
+    return (
+      <button
+        type='button'
+        className={clsx(
+          'icon-stat-wrapper focus-visible:focus-ring relative cursor-pointer pr-2 transition-colors after:absolute after:-inset-y-2.5 hover:bg-white/10',
+          // Out of the stats, the compact one takes their text size itself
+          isCompact ? 'text-xs after:-inset-x-2.5' : 'after:inset-x-0',
+        )}
+        aria-expanded={isExpanded}
+        aria-controls={playsId}
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <MediaIcon type={card.mediaType} aria-hidden='true' />
+        {isCompact ? (
+          <>
+            <span aria-hidden='true'>{count}</span>
+            <span className='sr-only'>{countLabel}</span>
+          </>
+        ) : (
+          countLabel
+        )}
+        <ChevronDownIcon
+          className={clsx('transition-transform', isExpanded && 'rotate-180')}
+          aria-hidden='true'
+        />
+      </button>
+    )
+  }
+
   return (
     <MediaCard
       {...card}
       stats={
         <>
           {stats}
-          {/* Taps 10px above and below count too, for a 40px tap area */}
-          <li>
-            <button
-              type='button'
-              className='icon-stat-wrapper focus-visible:focus-ring relative cursor-pointer pr-2 transition-colors after:absolute after:inset-x-0 after:-inset-y-2.5 hover:bg-white/10'
-              aria-expanded={isExpanded}
-              aria-controls={playsId}
-              onClick={() => setIsExpanded(!isExpanded)}
-            >
-              {count}
-              <ChevronDownIcon
-                className={clsx(
-                  'transition-transform',
-                  isExpanded && 'rotate-180',
-                )}
-              />
-            </button>
-          </li>
+          <li className='max-sm:hidden'>{toggle(false)}</li>
         </>
       }
+      phoneAside={toggle(true)}
       footer={
         isExpanded && (
           <div

@@ -1,4 +1,4 @@
-import { MEDIA_ICONS, STAT_ICONS } from '@/components/icons'
+import { STAT_ICONS } from '@/components/icons'
 import MediaCard, { STAT_PILL } from '@/components/MediaCard'
 import ProgressBar from '@/components/ProgressBar'
 import { DECISION_ICONS, getDecisionKind } from '@/components/StreamDecision'
@@ -234,25 +234,17 @@ export default function HistoryItem({
     return <MediaCard {...card} />
   }
 
-  const CountIcon =
-    mediaType === 'episode' ? MEDIA_ICONS.show : MEDIA_ICONS.artist
   // The card's range has the season, so the rows only need it when it changes
   const isOneSeason = new Set(plays.map((item) => item.seasonNumber)).size === 1
 
   return (
     <HistoryBingeCard
       {...card}
-      count={
-        <>
-          <CountIcon />
-          {t(
-            mediaType === 'episode'
-              ? 'History.episodeCount'
-              : 'History.trackCount',
-            { count: entries.length },
-          )}
-        </>
-      }
+      count={entries.length}
+      countLabel={t(
+        mediaType === 'episode' ? 'History.episodeCount' : 'History.trackCount',
+        { count: entries.length },
+      )}
       plays={
         // In the order they were played, like a season's, each with when it
         // started where the card has its time. Phones leave out how long.
