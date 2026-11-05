@@ -57,8 +57,12 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
   const imageRef = useRef<Promise<Blob> | null>(null)
   const [status, setStatus] = useState<Status>('idle')
   // Browsers only open the share sheet for a moment after the press, which
-  // drawing the image can outlast, so it's drawn beforehand
+  // drawing the image can outlast, so it's drawn beforehand. The buttons don't
+  // wait for it, as most presses come after it's done.
   const [sharedImage, setSharedImage] = useState<Blob | 'failed' | null>(null)
+  // So a press that waited for the image doesn't open the share sheet over
+  // the story the viewer moved on to
+  const isMountedRef = useRef(true)
   const canShare = useSyncExternalStore(
     subscribeToNothing,
     canShareImages,
@@ -91,6 +95,14 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
     }
 
     return imageRef.current
+  }, [])
+
+  useEffect(() => {
+    isMountedRef.current = true
+
+    return () => {
+      isMountedRef.current = false
+    }
   }, [])
 
   useEffect(() => {
@@ -135,7 +147,7 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
   }
 
   async function share(action: Action) {
-    if (isBusy || !sharedImage) {
+    if (isBusy) {
       return
     }
 
@@ -144,11 +156,17 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
     try {
       let image = sharedImage
 
-      // Drawn again only when drawing it beforehand failed, and kept for the
-      // next press. Drawing can outlast the moment after this press in which
-      // the share sheet may open, and then that press asks to try again.
-      if (image === 'failed') {
+      // Waited for when it isn't drawn yet, and drawn again when drawing it
+      // beforehand failed, then kept for the next press. Drawing can outlast
+      // the moment after this press in which the share sheet may open, and
+      // then that press asks to try again.
+      if (!(image instanceof Blob)) {
         image = await getImage()
+
+        if (!isMountedRef.current) {
+          return
+        }
+
         setSharedImage(image)
       }
 
@@ -175,10 +193,14 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
     <RewindStat noScale>
       <div className='text-base leading-normal font-normal tracking-normal'>
         <div className='flex items-center gap-4'>
-          {/* A border rather than a ring, which the story's scrolling would
-              cut off at its edge on phones */}
-          <div className='relative size-14 shrink-0 overflow-hidden rounded-full border-2 border-white/15 sm:size-16'>
-            <Avatar src={summary.image} name={summary.name} sizes='4rem' />
+          {/* As tall as the lines beside it */}
+          <div
+            className={clsx(
+              'relative shrink-0 overflow-hidden rounded-full border-2 border-white/15',
+              personality ? 'size-18.5 sm:size-20.5' : 'size-12.5 sm:size-14.5',
+            )}
+          >
+            <Avatar src={summary.image} name={summary.name} sizes='6rem' />
           </div>
           <div className='min-w-0'>
             <p className='truncate text-sm font-medium text-neutral-400'>
@@ -272,9 +294,9 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
               type='button'
               className='button aria-disabled:cursor-wait max-sm:px-4 max-sm:text-sm'
               onClick={save}
-              aria-disabled={isBusy || (canSaveWithShare && !sharedImage)}
+              aria-disabled={isBusy}
             >
-              {status === 'saving' || (canSaveWithShare && !sharedImage) ? (
+              {status === 'saving' ? (
                 <ArrowPathIcon className='size-5 motion-safe:animate-spin' />
               ) : (
                 <ArrowDownTrayIcon className='size-5' />
@@ -286,9 +308,9 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
                 type='button'
                 className='button button--glass aria-disabled:cursor-wait max-sm:px-4 max-sm:text-sm'
                 onClick={() => share('share')}
-                aria-disabled={isBusy || !sharedImage}
+                aria-disabled={isBusy}
               >
-                {status === 'sharing' || !sharedImage ? (
+                {status === 'sharing' ? (
                   <ArrowPathIcon className='size-5 motion-safe:animate-spin' />
                 ) : (
                   <ShareIcon className='size-5' />

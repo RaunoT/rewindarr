@@ -2,6 +2,7 @@ import AppIcon from '@/components/AppIcon'
 import Avatar from '@/components/Avatar'
 import PosterImage from '@/components/PosterImage'
 import { APP_NAME } from '@/utils/constants'
+import clsx from 'clsx'
 import { Ref } from 'react'
 import SummaryStatList from './SummaryStatList'
 import { RewindSummary } from './useRewindSummary'
@@ -20,7 +21,8 @@ const BACKGROUND = [
 
 // The summary as a phone-shaped image: 360 × 640 here, three times that once
 // saved. Its pictures load right away, so one that's missing has fallen back
-// before it's drawn.
+// before it's drawn. Edges are borders and there are no shadows, as Safari
+// draws no rings and breaks shadows in the saved image.
 export default function SummaryImage({ summary, ref }: Props) {
   const { tops, personality } = summary
 
@@ -31,7 +33,13 @@ export default function SummaryImage({ summary, ref }: Props) {
       style={{ backgroundImage: BACKGROUND }}
     >
       <div className='flex items-center gap-3.5'>
-        <div className='relative size-14 shrink-0 overflow-hidden rounded-full border-2 border-white/20'>
+        {/* As tall as the lines beside it, as in the story */}
+        <div
+          className={clsx(
+            'relative shrink-0 overflow-hidden rounded-full border-2 border-white/20',
+            personality ? 'size-18.5' : 'size-12.5',
+          )}
+        >
           <Avatar
             src={summary.image}
             name={summary.name}
@@ -61,7 +69,7 @@ export default function SummaryImage({ summary, ref }: Props) {
         <ul className='flex justify-center gap-3'>
           {tops.map(({ type, label, item, srcs }) => (
             <li key={type} className={tops.length > 2 ? 'w-24' : 'w-28'}>
-              <div className='relative aspect-2/3 overflow-hidden rounded-md shadow-lg ring-1 shadow-black/50 ring-white/15'>
+              <div className='relative aspect-2/3 overflow-hidden rounded-md'>
                 <PosterImage srcs={srcs} type={type} sizes='18rem' priority />
               </div>
               <p className='mt-2 truncate text-xs text-neutral-400'>{label}</p>
@@ -73,7 +81,7 @@ export default function SummaryImage({ summary, ref }: Props) {
 
       <SummaryStatList
         stats={summary.stats}
-        className='rounded-2xl bg-white/6 ring-1 ring-white/10 ring-inset'
+        className='rounded-2xl border border-white/10 bg-white/6'
       />
 
       <p className='flex items-center justify-center gap-1.5 text-xs font-semibold text-neutral-400'>
