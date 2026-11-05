@@ -42,6 +42,7 @@ beforeEach(() => {
   }
 
   vi.spyOn(console, 'log').mockImplementation(() => {})
+  vi.spyOn(console, 'warn').mockImplementation(() => {})
   vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
@@ -93,9 +94,9 @@ describe('prepareAuthEnv', () => {
     expect(process.env.NEXTAUTH_SECRET).toBe(first)
   })
 
-  it('replaces an empty secret file', async () => {
+  it('replaces an empty secret file, readable by its owner only', async () => {
     fs.mkdirSync(path.dirname(secretPath))
-    fs.writeFileSync(secretPath, '\n')
+    fs.writeFileSync(secretPath, '\n', { mode: 0o644 })
 
     await prepare()
 
@@ -103,6 +104,30 @@ describe('prepareAuthEnv', () => {
     expect(fs.readFileSync(secretPath, 'utf-8')).toBe(
       process.env.NEXTAUTH_SECRET,
     )
+    expect(fs.statSync(secretPath).mode & 0o777).toBe(0o600)
+  })
+
+  it('makes a saved secret readable by its owner only', async () => {
+    fs.mkdirSync(path.dirname(secretPath))
+    fs.writeFileSync(secretPath, 'saved-secret\n', { mode: 0o644 })
+
+    await prepare()
+
+    expect(process.env.NEXTAUTH_SECRET).toBe('saved-secret')
+    expect(fs.statSync(secretPath).mode & 0o777).toBe(0o600)
+  })
+
+  it('still uses a saved secret it cannot make private', async () => {
+    fs.mkdirSync(path.dirname(secretPath))
+    fs.writeFileSync(secretPath, 'saved-secret', { mode: 0o644 })
+    vi.spyOn(fs, 'chmodSync').mockImplementation(() => {
+      throw Object.assign(new Error('EPERM: not permitted'), { code: 'EPERM' })
+    })
+
+    await prepare()
+
+    expect(process.env.NEXTAUTH_SECRET).toBe('saved-secret')
+    expect(console.warn).toHaveBeenCalledTimes(1)
   })
 
   it('still has a secret when it cannot be saved', async () => {

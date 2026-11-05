@@ -14,11 +14,28 @@ function getErrorCode(error: unknown): string | undefined {
     : undefined
 }
 
+// The secret signs every session, so only the app's user may read it. A file
+// that was already there keeps its mode, so it's tightened every start.
+function makeSecretPrivate() {
+  try {
+    if ((fs.statSync(SECRET_PATH).mode & 0o077) !== 0) {
+      fs.chmodSync(SECRET_PATH, 0o600)
+    }
+  } catch (error) {
+    console.warn(
+      `[AUTH] - Unable to make ${SECRET_PATH} readable by Rewindarr only.`,
+      error,
+    )
+  }
+}
+
 function readOrCreateSecret(): string {
   try {
     const saved = fs.readFileSync(SECRET_PATH, 'utf-8').trim()
 
     if (saved) {
+      makeSecretPrivate()
+
       return saved
     }
   } catch (error) {
@@ -31,6 +48,7 @@ function readOrCreateSecret(): string {
 
   fs.mkdirSync(path.dirname(SECRET_PATH), { recursive: true })
   fs.writeFileSync(SECRET_PATH, secret, { mode: 0o600 })
+  makeSecretPrivate()
   console.log(`[AUTH] - Saved a new secret to ${SECRET_PATH}.`)
 
   return secret
