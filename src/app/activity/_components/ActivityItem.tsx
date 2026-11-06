@@ -7,8 +7,7 @@ import ProgressBar from '@/components/ProgressBar'
 import { DECISION_ICONS, getDecisionKind } from '@/components/StreamDecision'
 import { useMediaDetails } from '@/hooks/useMediaDetails'
 import { PublicSettings } from '@/types/settings'
-import { MediaServer } from '@/types/statsSource'
-import { TautulliSession } from '@/types/tautulli'
+import { ActivitySession, MediaServer } from '@/types/statsSource'
 import { getDeeplinkRatingKeyFromSession } from '@/utils/deeplink'
 import {
   calculateETA,
@@ -30,7 +29,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { ReactNode, useContext, useId, useState } from 'react'
 
 type ActivityItemProps = {
-  session: TautulliSession
+  session: ActivitySession
   index: number
   settings: PublicSettings
   mediaServer: MediaServer | null

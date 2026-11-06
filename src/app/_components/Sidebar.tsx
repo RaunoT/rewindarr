@@ -4,7 +4,7 @@ import AppIcon from '@/components/AppIcon'
 import { MediaIcon } from '@/components/icons'
 import SkeletonLine from '@/components/SkeletonLine'
 import { PublicSettings } from '@/types/settings'
-import { TautulliLibrary } from '@/types/tautulli'
+import { Library } from '@/types/statsSource'
 import { APP_NAME, SETTINGS_HREF, STATS_SOURCE_NAMES } from '@/utils/constants'
 import { canViewFeature, Viewer } from '@/utils/helpers'
 import {
@@ -27,7 +27,7 @@ import { GlobalContext } from './GlobalContextProvider'
 import { AppInfoContext } from './HeaderControls'
 
 type Props = {
-  libraries: Promise<TautulliLibrary[] | null>
+  libraries: Promise<Library[] | null>
   settings: PublicSettings
 }
 
@@ -161,7 +161,7 @@ export default function Sidebar({ libraries, settings }: Props) {
 }
 
 type DashboardLinksProps = {
-  libraries: Promise<TautulliLibrary[] | null>
+  libraries: Promise<Library[] | null>
   settings: PublicSettings
   pathname: string
   query: string

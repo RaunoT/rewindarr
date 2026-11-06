@@ -1,5 +1,5 @@
 import { UserRewind } from '@/types/rewind'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
 import { describe, expect, it } from 'vitest'
 import {
   getSummaryFileName,
@@ -8,15 +8,11 @@ import {
   getSummaryTops,
 } from './summary'
 
-function row(title: string): TautulliItemRow {
-  return { title } as TautulliItemRow
+function row(title: string): ItemRow {
+  return { title } as ItemRow
 }
 
-function rewind(
-  shows: TautulliItemRow[],
-  movies: TautulliItemRow[],
-  audio: TautulliItemRow[],
-) {
+function rewind(shows: ItemRow[], movies: ItemRow[], audio: ItemRow[]) {
   return {
     shows: { top: shows },
     movies: { top: movies },

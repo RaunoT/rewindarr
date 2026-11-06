@@ -1,17 +1,16 @@
-import { MediaServer } from '@/types/statsSource'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow, MediaServer } from '@/types/statsSource'
 import { describe, expect, it } from 'vitest'
 import { generateDeeplinkUrl, getRowDeeplink } from './deeplink'
 
 const PLEX: MediaServer = { type: 'plex', id: 'abc123', url: '' }
 
-function row(fields: Partial<TautulliItemRow>): TautulliItemRow {
+function row(fields: Partial<ItemRow>): ItemRow {
   return {
     rating_key: 10,
     grandparent_rating_key: 20,
     is_deleted: false,
     ...fields,
-  } as TautulliItemRow
+  } as ItemRow
 }
 
 describe('getRowDeeplink', () => {

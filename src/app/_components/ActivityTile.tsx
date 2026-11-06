@@ -6,7 +6,7 @@ import SkeletonLine from '@/components/SkeletonLine'
 import { UserAvatar } from '@/components/UserBadge'
 import { useMediaDetails } from '@/hooks/useMediaDetails'
 import { PublicSettings } from '@/types/settings'
-import { TautulliSession } from '@/types/tautulli'
+import { ActivitySession } from '@/types/statsSource'
 import { STATS_SOURCE_NAMES } from '@/utils/constants'
 import { toIndex } from '@/utils/formatting'
 import {
@@ -105,7 +105,7 @@ export default function ActivityTile({ settings }: Props) {
 }
 
 type ItemProps = {
-  session: TautulliSession
+  session: ActivitySession
   index: number
   settings: PublicSettings
   // The signed-in user's

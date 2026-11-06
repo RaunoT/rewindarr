@@ -1,7 +1,7 @@
 import { DashboardSearchParams } from '@/types/dashboard'
 import { RewindTotals, UserRewind } from '@/types/rewind'
 import { Settings, StatisticsSource } from '@/types/settings'
-import { TautulliLibrary } from '@/types/tautulli'
+import { Library } from '@/types/statsSource'
 import { kebabCase } from 'lodash'
 import { Session } from 'next-auth'
 import { getPeriods, SETTINGS_PAGES } from './constants'
@@ -26,14 +26,14 @@ export function isTracearrSource(settings: Settings): boolean {
 
 // In the order the admin sorted them in the settings
 export function sortByActiveLibraries(
-  libraries: TautulliLibrary[],
+  libraries: Library[],
   settings: Settings,
-): TautulliLibrary[] {
+): Library[] {
   return settings.general.activeLibraries
     .map((libSlug) =>
       libraries.find((lib) => kebabCase(lib.section_name) === libSlug),
     )
-    .filter((lib): lib is TautulliLibrary => lib !== undefined)
+    .filter((lib): lib is Library => lib !== undefined)
 }
 
 export type Feature = 'rewind' | 'dashboard' | 'activity' | 'history'

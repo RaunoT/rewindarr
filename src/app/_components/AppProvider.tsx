@@ -3,7 +3,7 @@
 import Toasts from '@/components/Toasts'
 import { Version } from '@/types'
 import { PublicSettings } from '@/types/settings'
-import { TautulliLibrary } from '@/types/tautulli'
+import { Library } from '@/types/statsSource'
 import { TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import clsx from 'clsx'
@@ -24,7 +24,7 @@ type Props = {
   missingSetting: string | null
   version: Version
   // Streamed in, and null when the source can't be reached
-  libraries: Promise<TautulliLibrary[] | null>
+  libraries: Promise<Library[] | null>
   settings: PublicSettings
   canBrowse: boolean
   // From its cookie, missing until the choice was first saved there

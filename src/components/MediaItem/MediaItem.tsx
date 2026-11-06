@@ -5,8 +5,7 @@ import { MEDIA_ICONS, MediaIcon, STAT_ICONS } from '@/components/icons'
 import ImageFallback from '@/components/ImageFallback'
 import PosterImage from '@/components/PosterImage'
 import { PublicSettings } from '@/types/settings'
-import { MediaServer } from '@/types/statsSource'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow, MediaServer } from '@/types/statsSource'
 import { DASHBOARD_PAGE_SIZE, EXTERNAL_LINK_NAMES } from '@/utils/constants'
 import {
   getRequestUrl,
@@ -37,7 +36,7 @@ const STAT_PILL =
   'icon-stat-wrapper max-sm:bg-transparent max-sm:p-0 max-sm:ring-0'
 
 type Props = {
-  data: TautulliItemRow
+  data: ItemRow
   i: number
   type: 'movie' | 'show' | 'artist' | 'users'
   mediaServer: MediaServer | null

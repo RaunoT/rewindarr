@@ -6,7 +6,7 @@ import SourceUnreachable from '@/components/SourceUnreachable'
 import StatusMessage from '@/components/StatusMessage'
 import { DashboardSearchParams } from '@/types/dashboard'
 import { Settings } from '@/types/settings'
-import { TautulliItemRow, TautulliLibrary } from '@/types/tautulli'
+import { ItemRow, Library } from '@/types/statsSource'
 import {
   DASHBOARD_PERIOD_COOKIE_NAME,
   getSiteUrl,
@@ -40,7 +40,7 @@ type Props = {
   settings: Settings
   session: Session | null
   // Null when the source can't be reached
-  libraries: TautulliLibrary[] | null
+  libraries: Library[] | null
 }
 
 export default async function Overview({
@@ -222,7 +222,7 @@ async function RewindTile() {
 }
 
 type LibraryTileProps = {
-  library: TautulliLibrary
+  library: Library
   settings: Settings
   period: DashboardSearchParams['period']
   periodLabel: string
@@ -324,7 +324,7 @@ async function LibraryTile({
 
 // Built like a loaded tile, so nothing moves once the data arrives. Without
 // the library, its name is a skeleton too.
-function LibraryTileSkeleton({ library }: { library?: TautulliLibrary }) {
+function LibraryTileSkeleton({ library }: { library?: Library }) {
   return (
     <div className='glass-sheet flex flex-col gap-4'>
       <TileHeading name={library?.section_name} type={library?.section_type} />
@@ -350,7 +350,7 @@ function LibraryTileSkeleton({ library }: { library?: TautulliLibrary }) {
   )
 }
 
-function getPoster(item: TautulliItemRow) {
+function getPoster(item: ItemRow) {
   if (!item.thumb) {
     return undefined
   }

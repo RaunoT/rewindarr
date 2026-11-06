@@ -4,8 +4,7 @@ import SeerrButton from '@/components/MediaItem/SeerrButton'
 import ProgressBar from '@/components/ProgressBar'
 import { DECISION_ICONS, getDecisionKind } from '@/components/StreamDecision'
 import { PublicSettings } from '@/types/settings'
-import { HistoryPlay, MediaServer } from '@/types/statsSource'
-import { TautulliItemRow } from '@/types/tautulli'
+import { HistoryPlay, ItemRow, MediaServer } from '@/types/statsSource'
 import { getRequestUrl, getSeerrUrl } from '@/utils/deeplink'
 import { formatPercent, secondsToTime } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
@@ -20,7 +19,7 @@ type Props = {
   // The episodes or tracks played in a row with it, newest first
   binge?: HistoryPlay[]
   // The title's year, ratings and IDs
-  item: TautulliItemRow | null | undefined
+  item: ItemRow | null | undefined
   mediaServer: MediaServer | null
   settings: PublicSettings
   // Who played it stays hidden, as on the activity page
@@ -35,7 +34,7 @@ const TYPES = { movie: 'movie', episode: 'show', track: 'artist' } as const
 // has a new rating key, and so do its episodes, which the show's stands in for.
 function getRatingKey(
   play: HistoryPlay,
-  item: TautulliItemRow | null | undefined,
+  item: ItemRow | null | undefined,
 ): number | string | null {
   if (item?.is_deleted) {
     return null

@@ -1,7 +1,7 @@
 import MediaLink, { MediaLinkIcon } from '@/components/MediaItem/MediaLink'
 import PosterImage from '@/components/PosterImage'
 import { RewindStory } from '@/types/rewind'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
 import { getRowDeeplink, getSeerrUrl } from '@/utils/deeplink'
 import { secondsToTime } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
@@ -18,7 +18,7 @@ const ITEM_TYPES = {
   track: 'artist',
 } as const
 
-function getPoster(item: TautulliItemRow) {
+function getPoster(item: ItemRow) {
   if (!item.thumb) {
     return undefined
   }

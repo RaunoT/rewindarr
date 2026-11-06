@@ -1,6 +1,5 @@
 import { PublicSettings } from '@/types/settings'
-import { MediaServer } from '@/types/statsSource'
-import { TautulliItemRow, TautulliSession } from '@/types/tautulli'
+import { ActivitySession, ItemRow, MediaServer } from '@/types/statsSource'
 
 export function isIosDevice(): boolean {
   return (
@@ -27,7 +26,7 @@ export function generateDeeplinkUrl(
 }
 
 export function getDeeplinkRatingKeyFromSession(
-  session: TautulliSession,
+  session: ActivitySession,
 ): number | string {
   if (session.media_type === 'track') {
     return session.parent_rating_key ?? session.rating_key
@@ -43,7 +42,7 @@ export type Deeplink =
   | { requestUrl: string }
 
 export function getDeeplinkRatingKeyFromRow(
-  item: TautulliItemRow,
+  item: ItemRow,
   type?: string,
 ): number | string {
   if (type === 'artist') {
@@ -60,7 +59,7 @@ export function getSeerrUrl({ connection }: PublicSettings): string | null {
 
 // A movie's or show's page in Seerr, which finds it by its TMDB ID
 export function getSeerrPageUrl(
-  item: Pick<TautulliItemRow, 'tmdb_id'> | null | undefined,
+  item: Pick<ItemRow, 'tmdb_id'> | null | undefined,
   type: string,
   seerrUrl: string | null | undefined,
 ): string | null {
@@ -73,7 +72,7 @@ export function getSeerrPageUrl(
 
 // A movie or show that's gone from the media server can be requested again
 export function getRequestUrl(
-  item: TautulliItemRow,
+  item: ItemRow,
   type: string,
   seerrUrl: string | null | undefined,
 ): string | null {
@@ -83,7 +82,7 @@ export function getRequestUrl(
 // A movie, show or artist row's link, or once it's gone from the media server,
 // its request
 export function getRowDeeplink(
-  item: TautulliItemRow | null | undefined,
+  item: ItemRow | null | undefined,
   type: string,
   mediaServer: MediaServer | null | undefined,
   seerrUrl?: string | null,

@@ -1,5 +1,5 @@
+import { ItemRow } from '@/types/statsSource'
 import { HistoryPlay } from './statsSource'
-import { TautulliItemRow } from './tautulli'
 
 // Where a request is at, from Seerr's request and the media's status
 export type RequestStatus =
@@ -39,7 +39,7 @@ export type HistoryRequest = {
 export type HistoryEntry = (
   | { kind: 'play'; time: number; play: HistoryPlay; binge?: HistoryPlay[] }
   | { kind: 'request'; time: number; request: HistoryRequest }
-) & { item?: TautulliItemRow | null }
+) & { item?: ItemRow | null }
 
 export type HistoryKind = HistoryEntry['kind']
 

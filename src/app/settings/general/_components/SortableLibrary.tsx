@@ -1,7 +1,7 @@
 'use client'
 
 import { MediaIcon } from '@/components/icons'
-import { TautulliLibrary } from '@/types/tautulli'
+import { Library } from '@/types/statsSource'
 import {
   Bars2Icon,
   ChevronDownIcon,
@@ -13,7 +13,7 @@ import { useTranslations } from 'next-intl'
 import { Checkbox } from 'react-aria-components'
 
 type Props = {
-  library: TautulliLibrary
+  library: Library
   isFirst: boolean
   isLast: boolean
   onMove: (offset: -1 | 1) => void

@@ -1,4 +1,4 @@
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
 import {
   getMovieRatings,
   getShowRatings,
@@ -39,7 +39,7 @@ export type SourceMediaData = {
 }
 
 export type GetSourceData = (
-  item: TautulliItemRow,
+  item: ItemRow,
   type: TmdbMediaType,
 ) => Promise<SourceMediaData>
 
@@ -101,7 +101,7 @@ export function getTmdbSearchParams(
 }
 
 export async function searchTmdbId(
-  item: TautulliItemRow,
+  item: ItemRow,
   type: TmdbMediaType,
 ): Promise<number | undefined> {
   const search = await fetchTmdb<TmdbSearch>(
@@ -124,10 +124,7 @@ export async function searchTmdbId(
 }
 
 // The item's own IDs and year come first, then the source's.
-function withSourceData(
-  item: TautulliItemRow,
-  source: SourceMediaData,
-): TautulliItemRow {
+function withSourceData(item: ItemRow, source: SourceMediaData): ItemRow {
   return {
     ...item,
     year: item.year || source.year || null,
@@ -137,7 +134,7 @@ function withSourceData(
   }
 }
 
-async function getTmdbData(item: TautulliItemRow, type: TmdbMediaType) {
+async function getTmdbData(item: ItemRow, type: TmdbMediaType) {
   const tmdbId = item.tmdb_id || (await searchTmdbId(item, type))
 
   if (!tmdbId) {
@@ -151,10 +148,10 @@ async function getTmdbData(item: TautulliItemRow, type: TmdbMediaType) {
 }
 
 export default async function getMediaAdditionalData(
-  media: TautulliItemRow[],
+  media: ItemRow[],
   type: TmdbMediaType,
   getSourceData: GetSourceData,
-): Promise<TautulliItemRow[]> {
+): Promise<ItemRow[]> {
   const settings = getSettings()
   const isPostersTmdbOnly = settings.general.isPostersTmdbOnly
   const statistics = settings.general.activeItemStatistics

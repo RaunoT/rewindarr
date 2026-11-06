@@ -2,7 +2,7 @@
 
 import getMediaDetails from '@/app/activity/_actions/getMediaDetails'
 import { PublicSettings } from '@/types/settings'
-import { TautulliSession } from '@/types/tautulli'
+import { ActivitySession } from '@/types/statsSource'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import { useQuery } from '@tanstack/react-query'
 
@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query'
 // items. The poster comes from TMDB only when there's no other or the
 // settings ask for it.
 export function useMediaDetails(
-  session: TautulliSession,
+  session: ActivitySession,
   settings: PublicSettings,
 ) {
   const {
@@ -24,9 +24,7 @@ export function useMediaDetails(
     grandparent_guids,
   } = session
   const originalPoster = grandparent_thumb || thumb
-  const tautulliPoster = originalPoster
-    ? getImageProxyUrl(originalPoster)
-    : null
+  const sourcePoster = originalPoster ? getImageProxyUrl(originalPoster) : null
   const isVideo = media_type === 'episode' || media_type === 'movie'
   const isTmdbPoster =
     isVideo && (settings.general.isPostersTmdbOnly || !originalPoster)
@@ -59,7 +57,7 @@ export function useMediaDetails(
   })
 
   return {
-    posterUrl: (isTmdbPoster && details?.poster) || tautulliPoster,
+    posterUrl: (isTmdbPoster && details?.poster) || sourcePoster,
     isPosterLoading: isTmdbPoster && isLoading,
     details: details ?? null,
     isDetailsLoading: isVideo && isLoading,

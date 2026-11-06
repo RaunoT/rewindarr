@@ -3,6 +3,9 @@ import {
   DurationQuery,
   Genres,
   HistoryPlay,
+  ItemRow,
+  Library,
+  LibraryType,
   MediaStats,
   PlaysByTime,
   StatsSource,
@@ -13,11 +16,6 @@ import {
   TopPeople,
   TopUsersQuery,
 } from '@/types/statsSource'
-import {
-  TautulliItemRow,
-  TautulliLibrary,
-  TautulliMediaType,
-} from '@/types/tautulli'
 import { countBy, groupBy, mapValues, orderBy, sumBy, uniqBy } from 'lodash'
 import getMediaAdditionalData, {
   GetSourceData,
@@ -31,13 +29,13 @@ import { getTopPeople as findTopPeople } from './topPeople'
 export const PLAY_MEDIA_TYPES: PlayMediaType[] = ['movie', 'episode', 'track']
 
 // The plays a library of each type has
-export const LIBRARY_PLAY_TYPES: Record<TautulliMediaType, PlayMediaType> = {
+export const LIBRARY_PLAY_TYPES: Record<LibraryType, PlayMediaType> = {
   movie: 'movie',
   show: 'episode',
   artist: 'track',
 }
 
-export const EMPTY_ROW: TautulliItemRow = {
+export const EMPTY_ROW: ItemRow = {
   title: '',
   year: null,
   total_plays: 0,
@@ -60,7 +58,7 @@ export const EMPTY_ROW: TautulliItemRow = {
   rank: 0,
 }
 
-// Plex's IDs are numbers in the Tautulli types, and Jellyfin's are hex strings,
+// Plex's IDs are numbers in the source types, and Jellyfin's are hex strings,
 // which are kept as they are. 0 stands for none, as in Tautulli's rows.
 export function toSourceId(id: string | null | undefined): number | string {
   if (!id) {
@@ -82,10 +80,7 @@ export type StatsUser = {
 // What a statistics source gives the stats built from its plays
 export type PlaysProvider = {
   // Every user's plays since `since` in the libraries, or in all of them
-  getPlays: (
-    since: string | Date,
-    libraries?: TautulliLibrary[],
-  ) => Promise<Play[]>
+  getPlays: (since: string | Date, libraries?: Library[]) => Promise<Play[]>
   // The users a ranking can list
   getUsers: () => Promise<StatsUser[]>
   getMediaData: GetSourceData
@@ -225,7 +220,7 @@ export function groupPlays<T extends Play>(plays: T[]): T[][] {
 // title, the way the plays are grouped
 export function isPlayOfItem(
   play: Play,
-  item: Pick<TautulliItemRow, 'media_id' | 'title' | 'year'>,
+  item: Pick<ItemRow, 'media_id' | 'title' | 'year'>,
 ): boolean {
   const mediaId = getMediaId(play)
 
@@ -245,7 +240,7 @@ export function isPlayOfItem(
 export function getItemTotals(
   plays: Play[],
   minPercent: number,
-): Pick<TautulliItemRow, 'total_plays' | 'total_duration'> {
+): Pick<ItemRow, 'total_plays' | 'total_duration'> {
   return {
     total_plays: plays.filter((play) => isCountedPlay(play, minPercent)).length,
     total_duration: getDuration(plays),
@@ -256,7 +251,7 @@ export function getItemTotals(
 // play with a rating key and a poster points at the current library item.
 // Without one, the rating key matters more than the poster, as it's what the
 // Plex link needs, and the poster can come from any play.
-function toItemRow(plays: Play[], minPercent: number): TautulliItemRow {
+function toItemRow(plays: Play[], minPercent: number): ItemRow {
   const newestFirst = orderBy(plays, 'startedAt', 'desc')
   const play =
     newestFirst.find((play) => getRatingKey(play) && play.thumb) ??
@@ -286,17 +281,15 @@ function toItemRow(plays: Play[], minPercent: number): TautulliItemRow {
   }
 }
 
-const COMPARE_ITEMS: Record<
-  TopItemsSort,
-  (a: TautulliItemRow, b: TautulliItemRow) => number
-> = {
-  duration: (a, b) => b.total_duration - a.total_duration,
-  plays: (a, b) =>
-    b.total_plays - a.total_plays || COMPARE_ITEMS.duration(a, b),
-  users: (a, b) =>
-    (b.users_watched ?? 0) - (a.users_watched ?? 0) ||
-    COMPARE_ITEMS.plays(a, b),
-}
+const COMPARE_ITEMS: Record<TopItemsSort, (a: ItemRow, b: ItemRow) => number> =
+  {
+    duration: (a, b) => b.total_duration - a.total_duration,
+    plays: (a, b) =>
+      b.total_plays - a.total_plays || COMPARE_ITEMS.duration(a, b),
+    users: (a, b) =>
+      (b.users_watched ?? 0) - (a.users_watched ?? 0) ||
+      COMPARE_ITEMS.plays(a, b),
+  }
 
 // Only the watch time ranks an item none of whose plays count
 function rankItems(
@@ -304,7 +297,7 @@ function rankItems(
   count: number,
   minPercent: number,
   sortBy: TopItemsSort = 'duration',
-): TautulliItemRow[] {
+): ItemRow[] {
   return groupPlays(plays)
     .map((group) => toItemRow(group, minPercent))
     .filter((item) => sortBy === 'duration' || item.total_plays > 0)
@@ -347,9 +340,9 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
   }
 
   async function addAdditionalData(
-    items: TautulliItemRow[],
+    items: ItemRow[],
     mediaType: PlayMediaType,
-  ): Promise<TautulliItemRow[]> {
+  ): Promise<ItemRow[]> {
     if (mediaType === 'track' || !items.length) {
       return items
     }
@@ -362,7 +355,7 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
   }
 
   async function getTopItems(
-    library: TautulliLibrary,
+    library: Library,
     { period, userId, sortBy, count }: TopItemsQuery,
   ): Promise<TopItems> {
     const mediaType = LIBRARY_PLAY_TYPES[library.section_type]
@@ -391,7 +384,7 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
 
   async function getMediaStats(
     userId: string,
-    libraries: TautulliLibrary[],
+    libraries: Library[],
     since: string,
   ): Promise<MediaStats> {
     const plays = await getPlays({ since, userId, libraries })
@@ -421,7 +414,7 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
 
   async function getTopMediaItems(
     userId: string,
-    libraries: TautulliLibrary[],
+    libraries: Library[],
     since: string,
   ): Promise<TopMediaItems> {
     const plays = await getPlays({ since, userId, libraries })
@@ -448,7 +441,7 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
 
   async function getTopPeople(
     userId: string,
-    libraries: TautulliLibrary[],
+    libraries: Library[],
     since: string,
   ): Promise<TopPeople> {
     const plays = await getPlays({ since, userId, libraries })
@@ -468,7 +461,7 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
 
   async function getGenres(
     userId: string,
-    libraries: TautulliLibrary[],
+    libraries: Library[],
     since: string,
     withMatch: boolean,
   ): Promise<Genres> {
@@ -525,7 +518,7 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
 
   async function getPlaysByTime(
     userId: string,
-    libraries: TautulliLibrary[],
+    libraries: Library[],
     since: string,
     timeZone?: string,
   ): Promise<PlaysByTime> {
@@ -550,7 +543,7 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
   async function getTopUsers({
     since,
     libraries,
-  }: TopUsersQuery): Promise<TautulliItemRow[]> {
+  }: TopUsersQuery): Promise<ItemRow[]> {
     const [plays, users] = await Promise.all([
       getPlays({ since, libraries }),
       provider.getUsers(),
@@ -591,10 +584,7 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
       .sort((a, b) => b.total_duration - a.total_duration)
   }
 
-  async function getPlayItem(
-    play: Play,
-    userId?: string,
-  ): Promise<TautulliItemRow> {
+  async function getPlayItem(play: Play, userId?: string): Promise<ItemRow> {
     const userPlays = userId
       ? (await getPlays({ since: new Date(0), userId })).filter(
           (other) => other.mediaType === play.mediaType,

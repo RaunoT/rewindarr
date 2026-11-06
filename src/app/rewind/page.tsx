@@ -1,7 +1,7 @@
 import HistoryReading from '@/components/HistoryReading'
 import { authOptions } from '@/lib/auth'
 import { RewindTotals, RewindUser, UserRewind } from '@/types/rewind'
-import { TautulliItemRow, TautulliLibrary } from '@/types/tautulli'
+import { ItemRow, Library } from '@/types/statsSource'
 import { TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
 import {
   formatMonthYear,
@@ -143,8 +143,8 @@ async function RewindContent({ userId }: { userId?: string }) {
 // rest
 async function getTotals(
   userId: string,
-  libraries: TautulliLibrary[],
-  viewersRequest: Promise<TautulliItemRow[] | null>,
+  libraries: Library[],
+  viewersRequest: Promise<ItemRow[] | null>,
 ): Promise<RewindTotals> {
   const settings = getSettings()
   const [t, userTotalDuration, topMediaStats, usersDurationByType, viewers] =
@@ -223,14 +223,14 @@ async function getTotals(
 }
 
 type SharedRequests = {
-  viewersRequest: Promise<TautulliItemRow[] | null>
+  viewersRequest: Promise<ItemRow[] | null>
   totals: Promise<RewindTotals>
 }
 
 // What the stories after the total show, with the totals
 async function getRewind(
   user: RewindUser,
-  libraries: TautulliLibrary[],
+  libraries: Library[],
   timeZone: string | undefined,
   { viewersRequest, totals: totalsRequest }: SharedRequests,
 ): Promise<RewindData> {
@@ -358,7 +358,7 @@ async function getRewind(
   const topShow = topMediaItems.shows[0]
   const topMovie = topMediaItems.movies[0]
   // From the library first, then Plex's own theme songs
-  const getShowThemes = (show: TautulliItemRow | null | undefined) =>
+  const getShowThemes = (show: ItemRow | null | undefined) =>
     isThemeMusicActive
       ? [
           getPlexThemeUrl(settings, show?.rating_key),

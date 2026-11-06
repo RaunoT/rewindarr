@@ -1,5 +1,9 @@
-import { MediaServer, ServerMembership, StatsSource } from '@/types/statsSource'
-import { TautulliItemRow } from '@/types/tautulli'
+import {
+  ItemRow,
+  MediaServer,
+  ServerMembership,
+  StatsSource,
+} from '@/types/statsSource'
 import {
   getTracearrActivity,
   getTracearrFirstPlay,
@@ -62,7 +66,7 @@ async function getServerUser(userId: string): Promise<ServerMembership> {
 
 // Tracearr's plays already carry the poster.
 export async function getTracearrMediaData(
-  item: TautulliItemRow,
+  item: ItemRow,
 ): Promise<SourceMediaData> {
   return {
     thumb: item.thumb,
@@ -72,7 +76,7 @@ export async function getTracearrMediaData(
 
 async function getTracearrInactiveUser(
   userId: string,
-): Promise<TautulliItemRow | null> {
+): Promise<ItemRow | null> {
   const users = await getTracearrUsers()
   const user = users.find((user) => user.user_id === userId)
 

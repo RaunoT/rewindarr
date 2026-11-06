@@ -3,15 +3,14 @@ import MediaCard from '@/components/MediaCard'
 import SeerrButton from '@/components/MediaItem/SeerrButton'
 import { HistoryRequest } from '@/types/history'
 import { PublicSettings } from '@/types/settings'
-import { MediaServer } from '@/types/statsSource'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow, MediaServer } from '@/types/statsSource'
 import { useTranslations } from 'next-intl'
 import HistoryTime from './HistoryTime'
 
 type Props = {
   request: HistoryRequest
   // The title's year, ratings and IDs
-  item: TautulliItemRow | null | undefined
+  item: ItemRow | null | undefined
   mediaServer: MediaServer | null
   settings: PublicSettings
   isAnonymous: boolean

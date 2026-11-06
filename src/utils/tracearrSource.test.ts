@@ -1,5 +1,5 @@
 import { Play } from '@/types/playHistory'
-import { TautulliItemRow, TautulliLibrary } from '@/types/tautulli'
+import { ItemRow, Library } from '@/types/statsSource'
 import { cloneDeep } from 'lodash'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
@@ -30,7 +30,7 @@ vi.mock('./sourceSnapshot', async (importOriginal) => ({
   saveSnapshot: vi.fn(),
 }))
 
-function library(type: TautulliLibrary['section_type']): TautulliLibrary {
+function library(type: Library['section_type']): Library {
   return {
     section_id: type,
     section_name: type,
@@ -100,7 +100,7 @@ describe('getTracearrMediaData', () => {
     const data = await getTracearrMediaData({
       thumb: 'http://tracearr/poster',
       media_id: 'm1',
-    } as TautulliItemRow)
+    } as ItemRow)
 
     expect(getTracearrMedia).toHaveBeenCalledWith('m1')
     expect(data).toEqual({

@@ -1,6 +1,6 @@
 import { UserRewind } from '@/types/rewind'
 import { PublicSettings } from '@/types/settings'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
 import { formatMonthYear, secondsToTime } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import {
@@ -64,7 +64,7 @@ export type RewindSummary = {
 
 // TMDB's posters go through the image proxy too, so the saved image has
 // nothing cross-origin in it
-function getPosterSrcs(item: TautulliItemRow) {
+function getPosterSrcs(item: ItemRow) {
   return [item.thumb, item.tmdb_poster].map((src) =>
     src ? getImageProxyUrl(src) : null,
   )

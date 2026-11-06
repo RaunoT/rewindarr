@@ -1,11 +1,13 @@
 import { HistoryStatus } from '@/types/playHistory'
 import { Settings, StatisticsSource } from '@/types/settings'
-import { MediaServer, ServerMembership, StatsSource } from '@/types/statsSource'
 import {
-  TautulliActivity,
-  TautulliLibrary,
-  TautulliUser,
-} from '@/types/tautulli'
+  Activity,
+  Library,
+  MediaServer,
+  ServerMembership,
+  SourceUser,
+  StatsSource,
+} from '@/types/statsSource'
 import { kebabCase } from 'lodash'
 import { isTracearrReachable } from './fetchTracearr'
 import getSettings from './getSettings'
@@ -43,7 +45,7 @@ export async function isStatsSourceReachable(
 // waits a few seconds for the read, unless `timeout` says otherwise.
 export async function getHistoryProgress(
   since: string | Date,
-  libraries?: TautulliLibrary[],
+  libraries?: Library[],
   timeout?: number,
 ): Promise<HistoryStatus | null> {
   const sinceTime = new Date(since).getTime()
@@ -98,9 +100,7 @@ export async function getMediaServer(): Promise<MediaServer | null> {
   return getStatsSource().getMediaServer()
 }
 
-export async function getLibraries(
-  excludeInactive = true,
-): Promise<TautulliLibrary[]> {
+export async function getLibraries(excludeInactive = true): Promise<Library[]> {
   const settings = getSettings()
   const libraries = await getStatsSource(settings).getLibraries()
   const activeLibraries = settings.general.activeLibraries
@@ -116,7 +116,7 @@ export async function getLibraries(
 // it, which an empty list can't show
 export async function getReachableLibraries(
   excludeInactive = true,
-): Promise<TautulliLibrary[] | null> {
+): Promise<Library[] | null> {
   const [libraries, isReachable, hasSaved] = await Promise.all([
     getLibraries(excludeInactive),
     isStatsSourceReachable(),
@@ -156,13 +156,13 @@ export async function getSourceOutage(
 // Includes excluded users, so that the settings can list them.
 export async function getUsers(
   settings: Settings = getSettings(),
-): Promise<TautulliUser[]> {
+): Promise<SourceUser[]> {
   return getStatsSource(settings).getUsers()
 }
 
 export async function getActiveUsers(
   settings: Settings = getSettings(),
-): Promise<TautulliUser[]> {
+): Promise<SourceUser[]> {
   const users = await getUsers(settings)
   const excludedUsers = settings.general.excludedUsers
 
@@ -186,6 +186,6 @@ export async function getUsersCount(settings: Settings) {
   return undefined
 }
 
-export async function getActivity(): Promise<TautulliActivity | null> {
+export async function getActivity(): Promise<Activity | null> {
   return getStatsSource().getActivity()
 }

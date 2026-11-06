@@ -1,9 +1,9 @@
 import { ExternalLink, TitleLink } from '@/types/settings'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
 import { EXTERNAL_LINKS } from './constants'
 
 export type LinkedItem = Pick<
-  TautulliItemRow,
+  ItemRow,
   'title' | 'tmdb_id' | 'imdb_id' | 'tvdb_id' | 'rotten_tomatoes_url'
 >
 

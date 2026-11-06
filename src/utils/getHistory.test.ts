@@ -1,7 +1,6 @@
 import { HistoryRequest } from '@/types/history'
 import { HistoryStatus } from '@/types/playHistory'
-import { HistoryPlay, StatsSource } from '@/types/statsSource'
-import { TautulliLibrary } from '@/types/tautulli'
+import { HistoryPlay, Library, StatsSource } from '@/types/statsSource'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   getHistoryPage,
@@ -232,8 +231,8 @@ describe('getHistoryPage', () => {
   const getPlayItem = vi.fn(async (play: HistoryPlay) => ({
     title: play.showTitle || play.title,
   }))
-  const movies = { section_type: 'movie' } as TautulliLibrary
-  const music = { section_type: 'artist' } as TautulliLibrary
+  const movies = { section_type: 'movie' } as Library
+  const music = { section_type: 'artist' } as Library
 
   function ids(page: HistoryPage) {
     return page.entries.map((entry) =>
