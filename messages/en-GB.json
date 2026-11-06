@@ -264,7 +264,7 @@
       "itemStatistics": "Item statistics",
       "itemStatisticsDescription": "Ratings always link to their site",
       "minPlayPercent": "Count as a play from %",
-      "minPlayPercentDescription": "Shorter plays only add watch time. Plays whose length isn't known also need 30 seconds",
+      "minPlayPercentDescription": "Shorter plays only add watch time",
       "minPlayPercentError": "The play threshold must be a whole number from 0 to 100.",
       "privacy": "Privacy",
       "excludedUsers": "Excluded users",
