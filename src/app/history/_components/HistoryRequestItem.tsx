@@ -1,6 +1,6 @@
 import { STAT_ICONS } from '@/components/icons'
 import MediaCard from '@/components/MediaCard'
-import SeerrLogo from '@/components/MediaItem/SeerrLogo'
+import SeerrButton from '@/components/MediaItem/SeerrButton'
 import { HistoryRequest } from '@/types/history'
 import { PublicSettings } from '@/types/settings'
 import { MediaServer } from '@/types/statsSource'
@@ -20,7 +20,7 @@ type Props = {
 }
 
 // Built like a play's card, with the request's status in Seerr among its
-// links when Seerr's are chosen. The poster opens the request, or once some of
+// links when Seerr's statuses are chosen. The poster opens the request, or once some of
 // it is there, the item in the media server.
 export default function HistoryRequestItem({
   request,
@@ -51,7 +51,7 @@ export default function HistoryRequestItem({
       ? { mediaServer, ratingKey: request.ratingKey }
       : null
   const isStatusShown =
-    settings.general.activeExternalLinks.includes('seerr') &&
+    settings.general.activeExternalLinks.includes('seerrStatus') &&
     (request.status !== 'available' || !serverLink)
 
   return (
@@ -84,18 +84,14 @@ export default function HistoryRequestItem({
             }
           : null
       }
-      action={
+      seerrAction={
         isStatusShown && (
-          <a
+          <SeerrButton
             href={requestUrl}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='button-card'
-            aria-label={t('History.requestStatusLabel', { status, title })}
+            label={t('History.requestStatusLabel', { status, title })}
           >
-            <SeerrLogo />
             {status}
-          </a>
+          </SeerrButton>
         )
       }
       deeplink={serverLink ?? { requestUrl }}

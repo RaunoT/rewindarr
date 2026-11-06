@@ -58,23 +58,26 @@ export function getSeerrUrl({ connection }: PublicSettings): string | null {
   return connection.isSeerrActive ? connection.seerrUrl : null
 }
 
-// A movie or show that's gone from the media server can be requested again in
-// Seerr, which finds it by its TMDB ID
+// A movie's or show's page in Seerr, which finds it by its TMDB ID
+export function getSeerrPageUrl(
+  item: Pick<TautulliItemRow, 'tmdb_id'> | null | undefined,
+  type: string,
+  seerrUrl: string | null | undefined,
+): string | null {
+  if (!item?.tmdb_id || !seerrUrl || (type !== 'movie' && type !== 'show')) {
+    return null
+  }
+
+  return `${seerrUrl}/${type === 'movie' ? 'movie' : 'tv'}/${item.tmdb_id}`
+}
+
+// A movie or show that's gone from the media server can be requested again
 export function getRequestUrl(
   item: TautulliItemRow,
   type: string,
   seerrUrl: string | null | undefined,
 ): string | null {
-  if (
-    !item.is_deleted ||
-    !seerrUrl ||
-    !item.tmdb_id ||
-    (type !== 'movie' && type !== 'show')
-  ) {
-    return null
-  }
-
-  return `${seerrUrl}/${type === 'movie' ? 'movie' : 'tv'}/${item.tmdb_id}`
+  return item.is_deleted ? getSeerrPageUrl(item, type, seerrUrl) : null
 }
 
 // A movie, show or artist row's link, or once it's gone from the media server,

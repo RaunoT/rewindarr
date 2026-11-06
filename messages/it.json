@@ -260,6 +260,7 @@
       "links": "Link",
       "linksDescription": "Le locandine rimandano sempre a {server}",
       "linksDescriptionSeerr": "Le locandine rimandano sempre a {server}, o a Seerr se il titolo è eliminato",
+      "seerrStatus": "Stato Seerr",
       "itemStatistics": "Statistiche per titolo",
       "minPlayPercent": "Conta come riproduzione da %",
       "minPlayPercentDescription": "Le riproduzioni più brevi aggiungono solo tempo di visualizzazione. Quelle di durata sconosciuta devono anche raggiungere 30 secondi",

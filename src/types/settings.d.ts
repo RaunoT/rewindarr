@@ -34,8 +34,9 @@ export type ExternalLink =
   'imdb' | 'tmdb' | 'tvdb' | 'rottenTomatoes' | 'letterboxd' | 'trakt'
 
 // The title in the media server and in Seerr, which its poster opens either
-// way
-export type ServerLink = 'mediaServer' | 'seerr'
+// way, and Seerr's link only where it has something to say, such as a
+// request's status
+export type ServerLink = 'mediaServer' | 'seerr' | 'seerrStatus'
 
 export type TitleLink = ServerLink | ExternalLink
 

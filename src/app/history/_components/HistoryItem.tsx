@@ -1,6 +1,6 @@
 import { STAT_ICONS } from '@/components/icons'
 import MediaCard, { STAT_PILL } from '@/components/MediaCard'
-import RequestButton from '@/components/MediaItem/RequestButton'
+import SeerrButton from '@/components/MediaItem/SeerrButton'
 import ProgressBar from '@/components/ProgressBar'
 import { DECISION_ICONS, getDecisionKind } from '@/components/StreamDecision'
 import { PublicSettings } from '@/types/settings'
@@ -229,9 +229,14 @@ export default function HistoryItem({
         )}
       </>
     ),
-    action: requestUrl &&
-      settings.general.activeExternalLinks.includes('seerr') && (
-        <RequestButton title={name} href={requestUrl} />
+    seerrAction: requestUrl &&
+      settings.general.activeExternalLinks.includes('seerrStatus') && (
+        <SeerrButton
+          href={requestUrl}
+          label={t('MediaItem.requestLabel', { title: name })}
+        >
+          {t('MediaItem.request')}
+        </SeerrButton>
       ),
     deeplink:
       mediaServer && ratingKey

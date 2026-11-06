@@ -260,6 +260,7 @@
       "links": "Liens",
       "linksDescription": "Les affiches mènent toujours à {server}",
       "linksDescriptionSeerr": "Les affiches mènent toujours à {server}, ou à Seerr si le titre est supprimé",
+      "seerrStatus": "Statut Seerr",
       "itemStatistics": "Statistiques des éléments",
       "minPlayPercent": "Compter comme lecture à partir de %",
       "minPlayPercentDescription": "Les lectures plus courtes n'ajoutent que de la durée de visionnage. Celles dont la durée totale est inconnue doivent aussi atteindre 30 secondes",

@@ -16,6 +16,8 @@ type Props = {
     PublicSettings['general'],
     'activeExternalLinks' | 'activeItemStatistics'
   >
+  // For Seerr's link, which only shows while it's set up
+  isSeerrActive?: boolean
 }
 
 // The rows of the stream's details: what is playing, with a second line for
@@ -30,6 +32,7 @@ const DETAIL_ROWS = [
 // wrappers, so nothing moves once it loads
 export default function ActivitiesSkeleton({
   general = DEFAULT_SETTINGS.general,
+  isSeerrActive = false,
 }: Props) {
   const {
     activity: { isDetailsHidden },
@@ -38,7 +41,11 @@ export default function ActivitiesSkeleton({
   const hasRatings = RATING_STATISTICS.some((rating) =>
     activeItemStatistics.includes(rating),
   )
-  const linkCount = getLinkButtonCount('show', activeExternalLinks)
+  const linkCount = getLinkButtonCount(
+    'show',
+    activeExternalLinks,
+    isSeerrActive,
+  )
 
   return (
     <ul className='flex w-full flex-col'>

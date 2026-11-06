@@ -17,6 +17,8 @@ type Props = {
     PublicSettings['general'],
     'activeExternalLinks' | 'activeItemStatistics'
   >
+  // For Seerr's link, which only shows while it's set up
+  isSeerrActive?: boolean
 }
 
 // Built like the cards, a play of an episode with ratings, so little moves
@@ -24,12 +26,17 @@ type Props = {
 export default function HistorySkeleton({
   rows = HISTORY_PAGE_SIZES[0],
   general = DEFAULT_SETTINGS.general,
+  isSeerrActive = false,
 }: Props) {
   const { activeExternalLinks, activeItemStatistics } = general
   const hasRatings = RATING_STATISTICS.some((rating) =>
     activeItemStatistics.includes(rating),
   )
-  const linkCount = getLinkButtonCount('show', activeExternalLinks)
+  const linkCount = getLinkButtonCount(
+    'show',
+    activeExternalLinks,
+    isSeerrActive,
+  )
 
   return (
     <div className='w-full'>

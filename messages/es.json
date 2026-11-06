@@ -260,6 +260,7 @@
       "links": "Enlaces",
       "linksDescription": "Los pósteres siempre enlazan a {server}",
       "linksDescriptionSeerr": "Los pósteres siempre enlazan a {server}, o a Seerr si el título se eliminó",
+      "seerrStatus": "Estado de Seerr",
       "itemStatistics": "Estadísticas por elemento",
       "minPlayPercent": "Contar como reproducción desde %",
       "minPlayPercentDescription": "Las reproducciones más cortas solo suman tiempo de visualización. Las de duración desconocida también necesitan 30 segundos",

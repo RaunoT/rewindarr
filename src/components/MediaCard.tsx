@@ -1,5 +1,6 @@
 import MediaLink, { MediaLinkIcon } from '@/components/MediaItem/MediaLink'
 import MediaServerLogo from '@/components/MediaItem/MediaServerLogo'
+import SeerrButton from '@/components/MediaItem/SeerrButton'
 import SiteLogo from '@/components/MediaItem/SiteLogo'
 import TitleDetails, {
   TitleDetailsData,
@@ -9,7 +10,7 @@ import SkeletonLine from '@/components/SkeletonLine'
 import UserBadge, { BadgeUser } from '@/components/UserBadge'
 import { PublicSettings } from '@/types/settings'
 import { EXTERNAL_LINK_NAMES, RATING_STATISTICS } from '@/utils/constants'
-import { Deeplink } from '@/utils/deeplink'
+import { Deeplink, getSeerrPageUrl, getSeerrUrl } from '@/utils/deeplink'
 import { getExternalLinks, LinkedItem } from '@/utils/externalLinks'
 import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
@@ -50,9 +51,9 @@ type Props = {
   user?: BadgeUser | null
   // After the user's, such as the watch time and how it played
   stats?: ReactNode
-  // Among the links after the media server's, such as a request's status in
-  // Seerr
-  action?: ReactNode
+  // Seerr's link with what it says about the title, such as a request's
+  // status, in place of the plain one
+  seerrAction?: ReactNode
   // The item in the media server or its request, which the poster opens
   deeplink?: Deeplink | null
   // Such as a play's date or when a stream ends, on the right of wide cards
@@ -87,7 +88,7 @@ export default function MediaCard({
   progress,
   user,
   stats,
-  action,
+  seerrAction,
   deeplink,
   aside,
   isAsideHiddenOnPhones,
@@ -115,7 +116,19 @@ export default function MediaCard({
     activeExternalLinks.includes('mediaServer')
       ? deeplink
       : null
-  const hasLinks = !!serverLink || !!action || links.length > 0
+  const seerrPageUrl =
+    !seerrAction && activeExternalLinks.includes('seerr')
+      ? getSeerrPageUrl(item, type, getSeerrUrl(settings))
+      : null
+  const seerrLink =
+    seerrAction ||
+    (seerrPageUrl && (
+      <SeerrButton
+        href={seerrPageUrl}
+        label={t('MediaItem.externalLinkLabel', { title: name, site: 'Seerr' })}
+      />
+    ))
+  const hasLinks = !!serverLink || !!seerrLink || links.length > 0
   // Above the name on phones, ending with the aside unless they show it
   // elsewhere
   const phoneNotes = [
@@ -141,7 +154,7 @@ export default function MediaCard({
           <MediaServerLogo type={serverLink.mediaServer.type} />
         </MediaLink>
       )}
-      {action}
+      {seerrLink}
       {links.map(({ site, href, isSearch }) => (
         <a
           key={site}

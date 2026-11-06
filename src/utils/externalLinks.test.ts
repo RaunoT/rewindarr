@@ -132,12 +132,21 @@ describe('getExternalLinks', () => {
 
 describe('getLinkButtonCount', () => {
   it("counts the chosen sites a title can have and the media server's", () => {
-    expect(getLinkButtonCount('movie', ['imdb', 'tvdb', 'mediaServer'])).toBe(2)
-    expect(getLinkButtonCount('show', ['imdb', 'tvdb', 'seerr'])).toBe(2)
+    expect(
+      getLinkButtonCount('movie', ['imdb', 'tvdb', 'mediaServer'], false),
+    ).toBe(2)
+    expect(getLinkButtonCount('show', ['imdb', 'tvdb'], false)).toBe(2)
+  })
+
+  it("counts Seerr's plain link only while Seerr is set up", () => {
+    expect(getLinkButtonCount('movie', ['seerr', 'seerrStatus'], true)).toBe(1)
+    expect(getLinkButtonCount('movie', ['seerr'], false)).toBe(0)
   })
 
   it("gives music only the media server's", () => {
-    expect(getLinkButtonCount('artist', ['imdb', 'mediaServer'])).toBe(1)
-    expect(getLinkButtonCount('artist', ['imdb'])).toBe(0)
+    expect(
+      getLinkButtonCount('artist', ['imdb', 'mediaServer', 'seerr'], true),
+    ).toBe(1)
+    expect(getLinkButtonCount('artist', ['imdb'], true)).toBe(0)
   })
 })

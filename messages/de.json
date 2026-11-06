@@ -260,6 +260,7 @@
       "links": "Links",
       "linksDescription": "Poster verlinken immer zu {server}",
       "linksDescriptionSeerr": "Poster verlinken immer zu {server}, gelöschte Titel zu Seerr",
+      "seerrStatus": "Seerr-Status",
       "itemStatistics": "Artikelstatistiken",
       "minPlayPercent": "Als Wiedergabe zählen ab %",
       "minPlayPercentDescription": "Kürzere Wiedergaben zählen nur zur Wiedergabezeit. Wiedergaben ohne bekannte Länge brauchen außerdem 30 Sekunden",

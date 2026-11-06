@@ -85,7 +85,14 @@ export default function GeneralSettingsForm({
         icon: <MediaServerLogo type={mediaServerType} />,
       },
       ...(isSeerrActive
-        ? [{ value: 'seerr', label: 'Seerr', icon: <SeerrLogo /> }]
+        ? [
+            { value: 'seerr', label: 'Seerr', icon: <SeerrLogo /> },
+            {
+              value: 'seerrStatus',
+              label: t('seerrStatus'),
+              icon: <SeerrLogo />,
+            },
+          ]
         : []),
       ...EXTERNAL_LINKS.map((site) => ({
         value: site,

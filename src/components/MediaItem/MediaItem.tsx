@@ -8,7 +8,12 @@ import { PublicSettings } from '@/types/settings'
 import { MediaServer } from '@/types/statsSource'
 import { TautulliItemRow } from '@/types/tautulli'
 import { DASHBOARD_PAGE_SIZE, EXTERNAL_LINK_NAMES } from '@/utils/constants'
-import { getRequestUrl, getRowDeeplink, getSeerrUrl } from '@/utils/deeplink'
+import {
+  getRequestUrl,
+  getRowDeeplink,
+  getSeerrPageUrl,
+  getSeerrUrl,
+} from '@/utils/deeplink'
 import { getExternalLinks } from '@/utils/externalLinks'
 import { secondsToTime } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
@@ -22,7 +27,7 @@ import MediaItemTitle from './MediaItemTitle'
 import MediaLink, { MediaLinkIcon } from './MediaLink'
 import MediaServerLogo from './MediaServerLogo'
 import Rank from './Rank'
-import RequestButton from './RequestButton'
+import SeerrButton from './SeerrButton'
 import SiteLogo from './SiteLogo'
 import TitleDetails from './TitleDetails'
 import TitleNote from './TitleNote'
@@ -100,9 +105,14 @@ export default function MediaItem({
     activeExternalLinks.includes('mediaServer')
       ? posterLink
       : null
-  const requestUrl = activeExternalLinks.includes('seerr')
+  const requestUrl = activeExternalLinks.includes('seerrStatus')
     ? getRequestUrl(data, type, seerrUrl)
     : null
+  // Its page in Seerr, unless the request already opens it
+  const seerrPageUrl =
+    !requestUrl && activeExternalLinks.includes('seerr')
+      ? getSeerrPageUrl(data, type, seerrUrl)
+      : null
   const poster = (
     <div className='poster max-sm:w-12'>
       {!isUsers ? (
@@ -271,7 +281,12 @@ export default function MediaItem({
               )}
               {data.is_deleted ? (
                 requestUrl ? (
-                  <RequestButton title={data.title} href={requestUrl} />
+                  <SeerrButton
+                    href={requestUrl}
+                    label={t('requestLabel', { title: data.title })}
+                  >
+                    {t('request')}
+                  </SeerrButton>
                 ) : (
                   <div className='button-card text-neutral-300'>
                     <TrashIcon className='text-danger' />
@@ -279,6 +294,15 @@ export default function MediaItem({
                   </div>
                 )
               ) : null}
+              {seerrPageUrl && (
+                <SeerrButton
+                  href={seerrPageUrl}
+                  label={t('externalLinkLabel', {
+                    title: data.title,
+                    site: 'Seerr',
+                  })}
+                />
+              )}
               {links.map(({ site, href, isSearch }) => (
                 <a
                   key={site}

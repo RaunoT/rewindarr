@@ -81,7 +81,7 @@ export const DEFAULT_SETTINGS: Settings = {
     activeLibraries: [],
     excludedUsers: [],
     isPostersTmdbOnly: false,
-    activeExternalLinks: ['tmdb', 'seerr'],
+    activeExternalLinks: ['tmdb', 'seerrStatus'],
     activeItemStatistics: [
       'year',
       'imdbRating',
@@ -155,6 +155,7 @@ export const STATS_SOURCE_NAMES: Record<StatisticsSource, string> = {
 export const SERVER_LINKS = [
   'mediaServer',
   'seerr',
+  'seerrStatus',
 ] as const satisfies readonly ServerLink[]
 
 // In the order the links are shown

@@ -83,7 +83,11 @@ function ListItem({
   // Users have no links
   const linkCount =
     type === 'movie' || type === 'show' || type === 'artist'
-      ? getLinkButtonCount(type, settings.general.activeExternalLinks)
+      ? getLinkButtonCount(
+          type,
+          settings.general.activeExternalLinks,
+          settings.connection.isSeerrActive,
+        )
       : 0
 
   return (

@@ -260,6 +260,7 @@
       "links": "Lingid",
       "linksDescription": "Plakatid viivad alati {server}i",
       "linksDescriptionSeerr": "Plakatid viivad alati {server}i, kustutatud pealkirjad Seerri",
+      "seerrStatus": "Seerri olek",
       "itemStatistics": "Kirje statistika",
       "minPlayPercent": "Loe mängimiseks alates %",
       "minPlayPercentDescription": "Lühemad mängimised lisavad ainult vaatamisaega. Teadmata pikkusega mängimised vajavad ka vähemalt 30 sekundit",

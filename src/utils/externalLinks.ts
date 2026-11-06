@@ -74,11 +74,12 @@ export function getExternalLinks(
 }
 
 // How many buttons a title with every ID gets, which is what skeletons hold
-// room for: one per chosen site, and the media server's, which most titles are
-// in. Music only gets the media server's.
+// room for: one per chosen site, the media server's, which most titles are in,
+// and Seerr's while it's set up. Music only gets the media server's.
 export function getLinkButtonCount(
   type: 'movie' | 'show' | 'artist',
   activeLinks: readonly TitleLink[],
+  isSeerrActive: boolean,
 ): number {
   const sites =
     type === 'artist'
@@ -88,6 +89,12 @@ export function getLinkButtonCount(
           type,
           activeLinks,
         )
+  const isSeerrShown =
+    isSeerrActive && type !== 'artist' && activeLinks.includes('seerr')
 
-  return sites.length + (activeLinks.includes('mediaServer') ? 1 : 0)
+  return (
+    sites.length +
+    (activeLinks.includes('mediaServer') ? 1 : 0) +
+    (isSeerrShown ? 1 : 0)
+  )
 }
