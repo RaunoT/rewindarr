@@ -1,10 +1,10 @@
 import { Play } from '@/types/playHistory'
-import { randomBytes } from 'crypto'
 import fs from 'fs/promises'
 import { isPlainObject } from 'lodash'
 import path from 'path'
 import { promisify } from 'util'
 import zlib from 'zlib'
+import { getErrorCode, replaceFile } from './files'
 
 const gzip = promisify(zlib.gzip)
 const gunzip = promisify(zlib.gunzip)
@@ -108,12 +108,6 @@ function isHistoryFile(file: unknown): file is HistoryFile {
   )
 }
 
-function getErrorCode(error: unknown): string | undefined {
-  return error instanceof Error && 'code' in error
-    ? String(error.code)
-    : undefined
-}
-
 // A history from the previous version answers until it's read again, which
 // starts right away.
 function toSnapshot(history: SavedHistory, version: number): PlaysSnapshot {
@@ -209,16 +203,6 @@ export async function writeHistoryFile(
       toSavedHistory(key, snapshot),
     ),
   }
-  const content = await gzip(JSON.stringify(file))
-  const filePath = getHistoryFilePath()
-  const tempPath = `${filePath}.${randomBytes(4).toString('hex')}.tmp`
 
-  try {
-    await fs.writeFile(tempPath, content)
-    await fs.rename(tempPath, filePath)
-  } catch (error) {
-    await fs.rm(tempPath, { force: true }).catch(() => undefined)
-
-    throw error
-  }
+  await replaceFile(getHistoryFilePath(), await gzip(JSON.stringify(file)))
 }

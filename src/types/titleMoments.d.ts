@@ -1,8 +1,8 @@
-import { TautulliItemRow } from './tautulli'
+import { ItemRow } from '@/types/statsSource'
 
 // A movie, show or artist a story shows as a card
 export type TitleCard = {
-  item: TautulliItemRow
+  item: ItemRow
   type: 'movie' | 'show' | 'artist'
 }
 

@@ -3,7 +3,7 @@ import SkeletonLine from '@/components/SkeletonLine'
 import { UserAvatar } from '@/components/UserBadge'
 import { DashboardSearchParams } from '@/types/dashboard'
 import { Settings } from '@/types/settings'
-import { TautulliLibrary } from '@/types/tautulli'
+import { Library } from '@/types/statsSource'
 import { getRecentPlays } from '@/utils/getHistory'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import { ChevronRightIcon, ClockIcon } from '@heroicons/react/24/outline'
@@ -16,7 +16,7 @@ import TileItem, { TILE_ITEM_COUNT, TileItemsSkeleton } from './TileItem'
 type Props = {
   settings: Settings
   session: Session | null
-  libraries: TautulliLibrary[]
+  libraries: Library[]
   // The dashboard's, which the history shares
   period: DashboardSearchParams['period']
 }

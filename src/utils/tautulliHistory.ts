@@ -1,5 +1,6 @@
 import { Play, PlayMediaType } from '@/types/playHistory'
-import { TautulliHistoryRow, TautulliLibrary } from '@/types/tautulli'
+import { Library } from '@/types/statsSource'
+import { TautulliHistoryRow } from '@/types/tautulli'
 import fetchTautulli from './fetchTautulli'
 import { toIndex } from './formatting'
 import getSettings from './getSettings'
@@ -168,7 +169,7 @@ export function getTautulliKey(): string {
 // One history per library, as Tautulli's rows don't say which library they're
 // from. Libraries of other types, such as photos, have no plays to read.
 export function getTautulliHistoryReaders(
-  libraries: TautulliLibrary[],
+  libraries: Library[],
 ): HistoryReader[] {
   const keyPrefix = `${getTautulliKey()}|`
 
@@ -185,7 +186,7 @@ export function getTautulliHistoryReaders(
 
 export async function getTautulliPlays(
   since: string | Date,
-  libraries: TautulliLibrary[],
+  libraries: Library[],
 ): Promise<Play[]> {
   const sinceTime = new Date(since).getTime()
 

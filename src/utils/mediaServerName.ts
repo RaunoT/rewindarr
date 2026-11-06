@@ -1,4 +1,8 @@
-import { ConnectionSettings, MediaServerType } from '@/types/settings'
+import {
+  ConnectionSettings,
+  GeneralSettings,
+  MediaServerType,
+} from '@/types/settings'
 
 const SERVER_NAMES: Record<MediaServerType, string> = {
   plex: 'Plex',
@@ -7,6 +11,17 @@ const SERVER_NAMES: Record<MediaServerType, string> = {
 
 export function getMediaServerName(type: MediaServerType): string {
   return SERVER_NAMES[type]
+}
+
+// The name the settings give the server, else its media server's
+export function getServerName(settings: {
+  general: Pick<GeneralSettings, 'serverName'>
+  connection: Pick<ConnectionSettings, 'mediaServerType'>
+}): string {
+  return (
+    settings.general.serverName ||
+    getMediaServerName(settings.connection.mediaServerType)
+  )
 }
 
 export function getMediaServerUrl(

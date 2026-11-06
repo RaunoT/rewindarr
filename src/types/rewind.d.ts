@@ -1,9 +1,9 @@
+import { ItemRow, Library } from '@/types/statsSource'
 import { RewindMoments } from '@/utils/rewindMoments'
 import { RewindPersonality } from './rewindPersonality'
 import { RewindSocial } from './rewindSocial'
 import { PublicSettings } from './settings'
 import { Genres, MediaServer, TopPeople } from './statsSource'
-import { TautulliItemRow, TautulliLibrary } from './tautulli'
 import { TitleMoments } from './titleMoments'
 import { YearOverYear } from './yearOverYear'
 
@@ -44,12 +44,12 @@ type LibraryTotals = {
 }
 
 type LibraryRewind = LibraryTotals & {
-  top: TautulliItemRow[]
+  top: ItemRow[]
 }
 
 export type UserRewind = {
-  usersTop: TautulliItemRow[] | null
-  libraries: TautulliLibrary[]
+  usersTop: ItemRow[] | null
+  libraries: Library[]
   libraries_total_size: number
   libraries_size_is_partial: boolean
   // Null when Seerr couldn't be read
@@ -106,7 +106,7 @@ export type UserRewind = {
     title: string
     // Shown as a card, like the favorites
     item: {
-      data: TautulliItemRow
+      data: ItemRow
       type: 'movie' | 'show' | 'artist'
       // Whether its watch time and plays are the user's all-time ones
       hasTotals: boolean

@@ -2,6 +2,7 @@ import { PersonalityStat } from '@/types/rewindPersonality'
 import { secondsToTime } from '@/utils/formatting'
 import { useLocale, useTranslations } from 'next-intl'
 import { ReactNode, useMemo } from 'react'
+import { getHourDate, getWeekdayDate } from './habitsDate'
 
 type Props = {
   stat: PersonalityStat
@@ -32,7 +33,7 @@ export default function PersonalityStatText({ stat }: Props) {
   )
 
   function formatHour(hour: number) {
-    return hourFormatter.format(new Date(Date.UTC(2024, 0, 1, hour)))
+    return hourFormatter.format(getHourDate(hour))
   }
 
   switch (stat.type) {
@@ -50,10 +51,7 @@ export default function PersonalityStatText({ stat }: Props) {
     case 'peakDay':
       return t.rich('peakDay', {
         ...TAGS,
-        // 2024-01-07 is a Sunday, as in the habits story
-        dayValue: dayFormatter.format(
-          new Date(Date.UTC(2024, 0, 7 + stat.day)),
-        ),
+        dayValue: dayFormatter.format(getWeekdayDate(stat.day)),
       })
     case 'binge':
       return t.rich('binge', {

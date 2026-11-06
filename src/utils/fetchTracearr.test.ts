@@ -97,9 +97,8 @@ async function load(savedServerId = '') {
 
 beforeEach(async () => {
   // The module keeps its state on globalThis, which outlives resetModules
-  delete (globalThis as { plexRewindTracearr?: unknown }).plexRewindTracearr
-  delete (globalThis as { plexRewindPlayHistory?: unknown })
-    .plexRewindPlayHistory
+  delete (globalThis as { rewindarrTracearr?: unknown }).rewindarrTracearr
+  delete (globalThis as { rewindarrPlayHistory?: unknown }).rewindarrPlayHistory
   vi.resetModules()
 
   // Mocked modules outlive resetModules too, so a test's answers would leak

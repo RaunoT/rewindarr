@@ -1,4 +1,4 @@
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import fetchTmdb from './fetchTmdb'
 import { SourceMediaData, TmdbMediaType } from './getMediaAdditionalData'
@@ -16,13 +16,9 @@ import {
 vi.mock('./fetchTmdb', () => ({ default: vi.fn() }))
 vi.mock('./getSettings', () => ({ default: vi.fn() }))
 
-const getSourceData =
-  vi.fn<(item: TautulliItemRow) => Promise<SourceMediaData>>()
+const getSourceData = vi.fn<(item: ItemRow) => Promise<SourceMediaData>>()
 
-function title(
-  name: string,
-  overrides: Partial<TautulliItemRow> = {},
-): TautulliItemRow {
+function title(name: string, overrides: Partial<ItemRow> = {}): ItemRow {
   return { ...EMPTY_ROW, title: name, ...overrides }
 }
 

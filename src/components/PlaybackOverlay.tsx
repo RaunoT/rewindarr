@@ -1,10 +1,10 @@
-import { TautulliSession } from '@/types/tautulli'
+import { ActivitySession } from '@/types/statsSource'
 import { ArrowPathIcon, PauseIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
 
 type Props = {
-  state: TautulliSession['state']
+  state: ActivitySession['state']
   // Sets the icon's size
   className: string
 }

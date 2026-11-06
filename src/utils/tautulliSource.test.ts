@@ -1,6 +1,6 @@
 import { Play } from '@/types/playHistory'
 import { Settings } from '@/types/settings'
-import { TautulliItemRow, TautulliLibrary } from '@/types/tautulli'
+import { ItemRow, Library } from '@/types/statsSource'
 import { cloneDeep } from 'lodash'
 import { getServerSession } from 'next-auth'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -34,7 +34,7 @@ vi.mock('./getMediaAdditionalData', async (importOriginal) => ({
 
 const fetchMock = vi.mocked(fetchTautulli)
 
-function library(id: string, type: TautulliLibrary['section_type']) {
+function library(id: string, type: Library['section_type']) {
   return {
     section_id: id,
     section_name: id,
@@ -59,7 +59,7 @@ beforeEach(() => {
 })
 
 describe('getTautulliMediaData', () => {
-  const item = { rating_key: 10 } as TautulliItemRow
+  const item = { rating_key: 10 } as ItemRow
 
   it('reads the poster from the cached metadata', async () => {
     fetchMock.mockResolvedValue(tautulliData({ thumb: '/plex/thumb' }))
@@ -134,7 +134,7 @@ describe('getTautulliMediaData', () => {
       rating_key: 10,
       title: 'The Dark Knight',
       year: 2008,
-    } as TautulliItemRow
+    } as ItemRow
 
     // Only rating key 20 is still on the server
     function route(results: Record<string, unknown[]>) {
@@ -190,7 +190,7 @@ describe('getTautulliMediaData', () => {
     })
 
     it('takes a show without a year only when its title is the only one', async () => {
-      const show = { rating_key: 10, title: 'Shrinking' } as TautulliItemRow
+      const show = { rating_key: 10, title: 'Shrinking' } as ItemRow
 
       route({ show: [{ rating_key: '20', title: 'Shrinking' }] })
       await expect(getTautulliMediaData(show, 'tv')).resolves.toMatchObject({
@@ -527,7 +527,7 @@ describe('while Tautulli is down', () => {
   })
 
   describe('item lookups', () => {
-    const item = { rating_key: 10 } as TautulliItemRow
+    const item = { rating_key: 10 } as ItemRow
     const media = {
       ids: { imdb: 'tt5753856', tmdb: 70523, tvdb: 334824 },
       year: 2017,

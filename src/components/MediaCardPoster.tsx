@@ -11,7 +11,7 @@ type Props = {
   type: string
   alt: string
   isLoading?: boolean
-  priority?: boolean
+  preload?: boolean
   // How far a play got, from 0 to 100. Phones show it under the poster, where
   // wider cards have it among the stats.
   progress?: number | null
@@ -26,7 +26,7 @@ export default function MediaCardPoster({
   type,
   alt,
   isLoading,
-  priority,
+  preload,
   progress,
   children,
 }: Props) {
@@ -40,7 +40,7 @@ export default function MediaCardPoster({
             type={type}
             alt={alt}
             sizes='10rem'
-            priority={priority}
+            preload={preload}
           />
           {children}
         </>

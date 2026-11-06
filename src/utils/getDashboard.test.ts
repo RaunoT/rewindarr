@@ -1,5 +1,5 @@
 import { Settings } from '@/types/settings'
-import { TautulliLibrary } from '@/types/tautulli'
+import { Library } from '@/types/statsSource'
 import { cloneDeep } from 'lodash'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
@@ -20,7 +20,7 @@ vi.mock('./fetchSeerr', () => ({
 const statsMock = vi.mocked(fetchSeerrStats)
 const userIdMock = vi.mocked(fetchSeerrUserId)
 
-function library(type: TautulliLibrary['section_type']): TautulliLibrary {
+function library(type: Library['section_type']): Library {
   return {
     section_id: '1',
     section_name: type,

@@ -1,4 +1,5 @@
 import { Version } from '@/types'
+import { isTimeoutError } from './connectionErrors'
 
 type GitHubRelease = {
   tag_name: string
@@ -101,7 +102,7 @@ export default async function getVersion(): Promise<Version> {
     } catch (error) {
       lastFailedAt = Date.now()
 
-      if (error instanceof Error && error.name === 'TimeoutError') {
+      if (isTimeoutError(error)) {
         console.error(
           `[GITHUB] - API request timed out after ${GITHUB_TIMEOUT_MS / 1000}s!`,
         )

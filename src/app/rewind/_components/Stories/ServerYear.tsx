@@ -3,7 +3,7 @@ import MediaItems from '@/components/MediaItem/MediaItems'
 import { RewindStory } from '@/types/rewind'
 import { SocialItem } from '@/types/rewindSocial'
 import { hasRewindPlays } from '@/utils/helpers'
-import { getMediaServerName } from '@/utils/mediaServerName'
+import { getServerName } from '@/utils/mediaServerName'
 import { UsersIcon } from '@heroicons/react/24/outline'
 import { useFormatter, useTranslations } from 'next-intl'
 import RewindCat from '../RewindCat'
@@ -46,10 +46,7 @@ export default function StoryServerYear({ userRewind, settings }: RewindStory) {
           {t.rich(hasPlays ? 'duration' : 'durationAway', {
             usersValue: serverYear.users,
             durationValue: serverYear.duration,
-            serverName:
-              settings.general.serverName ||
-              getMediaServerName(settings.connection.mediaServerType),
-            plex: (chunks) => chunks,
+            serverName: getServerName(settings),
             users: (chunks) => (
               <RewindCat icon={<UsersIcon />}>{chunks}</RewindCat>
             ),

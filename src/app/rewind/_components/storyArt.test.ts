@@ -1,5 +1,5 @@
 import { UserRewind } from '@/types/rewind'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
 import { describe, expect, it } from 'vitest'
 import {
   getArtDimming,
@@ -12,14 +12,14 @@ import {
 const BACKDROP = 'https://image.tmdb.org/t/p/w300/backdrop.jpg'
 const TMDB_POSTER = 'https://image.tmdb.org/t/p/w300//poster.jpg'
 
-function item(overrides: Partial<TautulliItemRow> = {}): TautulliItemRow {
+function item(overrides: Partial<ItemRow> = {}): ItemRow {
   return {
     title: 'Dark',
     thumb: '',
     tmdb_poster: null,
     tmdb_backdrop: null,
     ...overrides,
-  } as TautulliItemRow
+  } as ItemRow
 }
 
 // Only what the art is picked from

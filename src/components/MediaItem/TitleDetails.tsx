@@ -6,7 +6,7 @@ import freshSvg from '@/assets/rotten-tomatoes/fresh.svg'
 import rottenSvg from '@/assets/rotten-tomatoes/rotten.svg'
 import { STAT_ICONS } from '@/components/icons'
 import { ExternalLink } from '@/types/settings'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
 import { ExternalLinkHref } from '@/utils/externalLinks'
 import { formatPercent, formatRating } from '@/utils/formatting'
 import clsx from 'clsx'
@@ -16,7 +16,7 @@ import { ReactNode } from 'react'
 import SiteLogo from './SiteLogo'
 
 export type TitleDetailsData = Pick<
-  TautulliItemRow,
+  ItemRow,
   | 'year'
   | 'rating'
   | 'imdb_rating'

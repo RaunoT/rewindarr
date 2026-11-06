@@ -1,5 +1,4 @@
-import { TopPeople, TopPerson } from '@/types/statsSource'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow, TopPeople, TopPerson } from '@/types/statsSource'
 import { omit, orderBy, sumBy } from 'lodash'
 import fetchTmdb from './fetchTmdb'
 import {
@@ -41,7 +40,7 @@ type TmdbCredits = {
 }
 
 export type CreditedTitle = {
-  item: TautulliItemRow
+  item: ItemRow
   type: TmdbMediaType
   // Where the portraits are looked up, null when TMDB doesn't know the title
   tmdbId: number | null
@@ -69,7 +68,7 @@ function getTmdbPeople(credits: TmdbCredits, role: Role): TmdbPerson[] {
 }
 
 async function getTmdbCredits(
-  item: TautulliItemRow,
+  item: ItemRow,
   type: TmdbMediaType,
   tmdbId: number,
 ): Promise<CreditedTitle | null> {
@@ -94,7 +93,7 @@ async function getTmdbCredits(
 // Otherwise the source's own credits come first, then TMDB's for the source's
 // ID or for a search, like for a title no longer on the server.
 export async function getCredits(
-  item: TautulliItemRow,
+  item: ItemRow,
   type: TmdbMediaType,
   getSourceData: GetSourceData,
 ): Promise<CreditedTitle | null> {
@@ -279,7 +278,7 @@ async function getRanking(
 
 // Movies and shows share one queue of lookups, which keeps to TMDB's limit.
 export async function getTopPeople(
-  { movies, shows }: { movies: TautulliItemRow[]; shows: TautulliItemRow[] },
+  { movies, shows }: { movies: ItemRow[]; shows: ItemRow[] },
   getSourceData: GetSourceData,
 ): Promise<TopPeople> {
   const lookups = [

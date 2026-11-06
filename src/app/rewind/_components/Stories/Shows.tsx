@@ -1,7 +1,7 @@
 import { MEDIA_ICONS } from '@/components/icons'
 import MediaItems from '@/components/MediaItem/MediaItems'
 import { RewindStory } from '@/types/rewind'
-import { getMediaServerName } from '@/utils/mediaServerName'
+import { getServerName } from '@/utils/mediaServerName'
 import { useTranslations } from 'next-intl'
 import CountUp from '../CountUp'
 import { isFavorite } from '../favorite'
@@ -31,10 +31,7 @@ export default function StoryShows({ userRewind, settings }: RewindStory) {
                   <span className='rewind-stat'>{chunks}</span>
                 ),
                 durationValue: userRewind.shows.duration,
-                serverName:
-                  settings.general.serverName ||
-                  getMediaServerName(settings.connection.mediaServerType),
-                plex: (chunks) => chunks,
+                serverName: getServerName(settings),
               })}
             </p>
           </RewindStat>
@@ -93,10 +90,7 @@ export default function StoryShows({ userRewind, settings }: RewindStory) {
               shows: (chunks) => (
                 <RewindCat icon={<MEDIA_ICONS.show />}>{chunks}</RewindCat>
               ),
-              serverName:
-                settings.general.serverName ||
-                getMediaServerName(settings.connection.mediaServerType),
-              plex: (chunks) => chunks,
+              serverName: getServerName(settings),
               emoji: (chunks) => <span className='not-italic'>{chunks}</span>,
             })}
           </p>

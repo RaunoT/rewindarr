@@ -1,6 +1,5 @@
 import { Play, PlayMediaType } from '@/types/playHistory'
-import { HistoryPlay } from '@/types/statsSource'
-import { TautulliItemRow } from '@/types/tautulli'
+import { HistoryPlay, ItemRow } from '@/types/statsSource'
 import { groupBy, max, maxBy, min, orderBy, sumBy, uniq } from 'lodash'
 import { isSameBinge } from './binges'
 import { getItemTotals, groupPlays, isCountedPlay } from './playStats'
@@ -68,8 +67,8 @@ export type Streak = {
 // Each null when it's too small to show
 export type RewindMoments = {
   monthly: MonthlyDurations | null
-  binge: (Binge & { item: TautulliItemRow | null }) | null
-  biggestDay: BiggestDay<DayTitle & { item: TautulliItemRow | null }> | null
+  binge: (Binge & { item: ItemRow | null }) | null
+  biggestDay: BiggestDay<DayTitle & { item: ItemRow | null }> | null
   streak: Streak | null
 }
 
@@ -260,7 +259,7 @@ type MomentsOptions = {
   // The server's without one
   timeZone?: string
   // For the binged show's card and the biggest day's posters
-  getPlayItem: (play: Play) => Promise<TautulliItemRow>
+  getPlayItem: (play: Play) => Promise<ItemRow>
 }
 
 // The moments in the user's plays in the period
@@ -269,7 +268,7 @@ export async function getRewindMoments(
   { since, until, minPlayPercent, timeZone, getPlayItem }: MomentsOptions,
 ): Promise<RewindMoments> {
   // Without its card or poster, a title still shows
-  async function getItem(play: Play): Promise<TautulliItemRow | null> {
+  async function getItem(play: Play): Promise<ItemRow | null> {
     try {
       return await getPlayItem(play)
     } catch (error) {

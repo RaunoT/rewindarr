@@ -1,5 +1,4 @@
-import { HistoryPlay } from '@/types/statsSource'
-import { TautulliItemRow } from '@/types/tautulli'
+import { HistoryPlay, ItemRow } from '@/types/statsSource'
 import { describe, expect, it, vi } from 'vitest'
 import {
   getBiggestBinge,
@@ -430,7 +429,7 @@ describe('getRewindMoments', () => {
       title: 'Severance',
       total_plays: 1,
       total_duration: 3600,
-    } as TautulliItemRow
+    } as ItemRow
     const getPlayItem = vi.fn().mockResolvedValue(item)
     const moments = await getRewindMoments(
       [
@@ -465,7 +464,7 @@ describe('getRewindMoments', () => {
 
   it("looks up the biggest day's posters, leaving out any that fail", async () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {})
-    const item = { title: 'Arrival' } as TautulliItemRow
+    const item = { title: 'Arrival' } as ItemRow
     const moments = await getRewindMoments(
       [
         play('2026-03-01T20:00:00Z'),

@@ -1,7 +1,7 @@
-import { randomBytes } from 'crypto'
 import fs from 'fs/promises'
 import { isEqual, isPlainObject } from 'lodash'
 import path from 'path'
+import { getErrorCode, replaceFile } from './files'
 
 // The statistics source's answers besides the plays, such as its libraries and
 // users. They stand in for the source while it can't be reached, so the stats
@@ -26,9 +26,9 @@ const SAVE_DELAY = 1000
 // Next.js can bundle this file into more than one chunk, and each copy would
 // otherwise save its own answers.
 const globalForSnapshot = globalThis as unknown as {
-  plexRewindSourceSnapshot?: SnapshotState
+  rewindarrSourceSnapshot?: SnapshotState
 }
-const state = (globalForSnapshot.plexRewindSourceSnapshot ??= {
+const state = (globalForSnapshot.rewindarrSourceSnapshot ??= {
   answers: null,
   saveTimer: null,
   saving: Promise.resolve(),
@@ -37,12 +37,6 @@ const state = (globalForSnapshot.plexRewindSourceSnapshot ??= {
 
 export function getSnapshotFilePath(): string {
   return path.join(process.cwd(), 'config/source-snapshot.json')
-}
-
-function getErrorCode(error: unknown): string | undefined {
-  return error instanceof Error && 'code' in error
-    ? String(error.code)
-    : undefined
 }
 
 function isSnapshotFile(file: unknown): file is SnapshotFile {
@@ -89,8 +83,6 @@ function getAnswers(): Promise<Map<string, unknown>> {
   return state.answers
 }
 
-// Replaces the file in one step, so a restart halfway through a write still
-// finds the previous answers
 async function writeSnapshotFile(): Promise<void> {
   const answers = await getAnswers()
   const file: SnapshotFile = {
@@ -98,15 +90,11 @@ async function writeSnapshotFile(): Promise<void> {
     answers: Object.fromEntries(answers),
   }
   const filePath = getSnapshotFilePath()
-  const tempPath = `${filePath}.${randomBytes(4).toString('hex')}.tmp`
 
   try {
-    await fs.writeFile(tempPath, JSON.stringify(file))
-    await fs.rename(tempPath, filePath)
+    await replaceFile(filePath, JSON.stringify(file))
     state.hasLoggedSaveError = false
   } catch (error) {
-    await fs.rm(tempPath, { force: true }).catch(() => undefined)
-
     if (!state.hasLoggedSaveError) {
       state.hasLoggedSaveError = true
       console.error(

@@ -1,13 +1,13 @@
 import { Play, PlayMediaType } from '@/types/playHistory'
 import { MediaServerType, Settings } from '@/types/settings'
-import { FirstPlay } from '@/types/statsSource'
 import {
-  TautulliActivity,
-  TautulliLibrary,
-  TautulliMediaType,
-  TautulliSession,
-  TautulliUser,
-} from '@/types/tautulli'
+  Activity,
+  ActivitySession,
+  FirstPlay,
+  Library,
+  LibraryType,
+  SourceUser,
+} from '@/types/statsSource'
 import {
   TracearrCursorPage,
   TracearrDecision,
@@ -106,7 +106,7 @@ const FIRST_PLAY_CACHE_TTL = DAY
 const EARLIEST_PLAY = Date.UTC(2008, 0, 1)
 // Plex numbers the server owner's local account 1.
 const PLEX_OWNER_ACCOUNT_ID = '1'
-const LIBRARY_NAMES: Record<TautulliMediaType, string> = {
+const LIBRARY_NAMES: Record<LibraryType, string> = {
   movie: 'Movies',
   show: 'Shows',
   artist: 'Music',
@@ -126,9 +126,9 @@ const ROLLUP_FIELDS = [
 // Next.js can bundle this file into more than one chunk, and each copy would
 // otherwise read the history and spend the rate limit on its own.
 const globalForTracearr = globalThis as unknown as {
-  plexRewindTracearr?: TracearrState
+  rewindarrTracearr?: TracearrState
 }
-const state = (globalForTracearr.plexRewindTracearr ??= {
+const state = (globalForTracearr.rewindarrTracearr ??= {
   cachedValues: new Map(),
   firstPlays: new Map(),
   media: new Map(),
@@ -661,7 +661,7 @@ function getCachedAvatars(): Map<string, string> {
   return avatars
 }
 
-export async function getTracearrUsers(): Promise<TautulliUser[]> {
+export async function getTracearrUsers(): Promise<SourceUser[]> {
   const users = await getTracearrServerUsers()
   const avatars = getCachedAvatars()
 
@@ -981,7 +981,7 @@ export async function isTracearrReachable(): Promise<boolean> {
   return libraries !== null && servers !== null
 }
 
-function getLibraryType(library: TracearrLibrary): TautulliMediaType | null {
+function getLibraryType(library: TracearrLibrary): LibraryType | null {
   if (library.track_count) {
     return 'artist'
   }
@@ -999,9 +999,9 @@ function getLibraryType(library: TracearrLibrary): TautulliMediaType | null {
 
 // Tracearr doesn't expose library names, so each media type becomes one
 // library that spans every library of that type on the server.
-export async function getTracearrLibraries(): Promise<TautulliLibrary[]> {
+export async function getTracearrLibraries(): Promise<Library[]> {
   const rollups = (await getLibraryRollups()) ?? []
-  const allTypes = Object.keys(LIBRARY_NAMES) as TautulliMediaType[]
+  const allTypes = Object.keys(LIBRARY_NAMES) as LibraryType[]
   const rollupTypes = rollups.map(getLibraryType)
   // Tracearr reports no libraries until it has synced them.
   const types = rollups.length
@@ -1039,7 +1039,7 @@ export async function getTracearrLibraries(): Promise<TautulliLibrary[]> {
 }
 
 export async function getTracearrLibrariesSize(
-  libraries: TautulliLibrary[],
+  libraries: Library[],
 ): Promise<LibrariesSize> {
   const rollups = (await getLibraryRollups()) ?? []
   const types = libraries.map((library) => library.section_type)
@@ -1203,7 +1203,7 @@ function toSession(
   stream: TracearrStream,
   users: TracearrServerUser[],
   baseUrl: string,
-): TautulliSession {
+): ActivitySession {
   // Streams only carry a display name, which two users can share.
   const matchingUsers = users.filter(
     (user) =>
@@ -1308,7 +1308,7 @@ function toSession(
   }
 }
 
-const getStreams = cached<TautulliActivity>(
+const getStreams = cached<Activity>(
   'streams',
   async () => {
     const [serverId, users] = await Promise.all([
@@ -1341,6 +1341,6 @@ const getStreams = cached<TautulliActivity>(
   ACTIVITY_CACHE_TTL,
 )
 
-export async function getTracearrActivity(): Promise<TautulliActivity | null> {
+export async function getTracearrActivity(): Promise<Activity | null> {
   return getStreams()
 }

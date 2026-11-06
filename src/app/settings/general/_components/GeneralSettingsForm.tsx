@@ -15,16 +15,15 @@ import {
   PublicSettings,
   SettingsFormInitialState,
 } from '@/types/settings'
-import { TautulliLibrary } from '@/types/tautulli'
+import { Library } from '@/types/statsSource'
 import {
   APP_NAME,
   EXTERNAL_LINK_NAMES,
   EXTERNAL_LINKS,
 } from '@/utils/constants'
-import { sortByLabel } from '@/utils/helpers'
+import { getLibrarySlug, sortByLabel } from '@/utils/helpers'
 import { getMediaServerName } from '@/utils/mediaServerName'
 import { PlayIcon, RectangleStackIcon } from '@heroicons/react/24/outline'
-import { kebabCase } from 'lodash'
 import { Reorder } from 'motion/react'
 import { useLocale, useTranslations } from 'next-intl'
 import Image from 'next/image'
@@ -37,7 +36,7 @@ import SortableLibrary from './SortableLibrary'
 type Props = {
   settings: PublicSettings
   // Null when the source can't be reached
-  libraries: TautulliLibrary[] | null
+  libraries: Library[] | null
   users: { user_id: string; friendly_name: string; avatar: string }[]
 }
 
@@ -52,23 +51,18 @@ export default function GeneralSettingsForm({
   const libraries = sourceLibraries ?? []
   // Saving without the library list would clear the chosen libraries
   const hasLibraries = libraries.length > 0
-  const [librariesState, setLibrariesState] = useState<TautulliLibrary[]>(
-    () => {
-      const activeLibraries = settings.general.activeLibraries
-        .map((libName) =>
-          libraries.find((lib) => kebabCase(lib.section_name) === libName),
-        )
-        .filter((lib): lib is TautulliLibrary => !!lib)
-      const inactiveLibraries = libraries.filter(
-        (lib) =>
-          !settings.general.activeLibraries.includes(
-            kebabCase(lib.section_name),
-          ),
+  const [librariesState, setLibrariesState] = useState<Library[]>(() => {
+    const activeLibraries = settings.general.activeLibraries
+      .map((libName) =>
+        libraries.find((lib) => getLibrarySlug(lib) === libName),
       )
+      .filter((lib): lib is Library => !!lib)
+    const inactiveLibraries = libraries.filter(
+      (lib) => !settings.general.activeLibraries.includes(getLibrarySlug(lib)),
+    )
 
-      return [...activeLibraries, ...inactiveLibraries]
-    },
-  )
+    return [...activeLibraries, ...inactiveLibraries]
+  })
   const [moveAnnouncement, setMoveAnnouncement] = useState<string>('')
   const librariesRef = useRef<HTMLDivElement>(null)
   const focusAfterMoveRef = useRef<string | null>(null)

@@ -16,9 +16,9 @@ const GATEWAY_ERRORS = [502, 503, 504]
 // Next.js can bundle this file into more than one chunk, and each copy would
 // otherwise wait out the timeout on its own.
 const globalForServices = globalThis as unknown as {
-  plexRewindDownServices?: Map<string, DownService>
+  rewindarrDownServices?: Map<string, DownService>
 }
-const downServices = (globalForServices.plexRewindDownServices ??= new Map())
+const downServices = (globalForServices.rewindarrDownServices ??= new Map())
 
 function toKey(baseUrl: string): string {
   return baseUrl.replace(/\/+$/, '')

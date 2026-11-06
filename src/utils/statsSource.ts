@@ -1,15 +1,15 @@
 import { HistoryStatus } from '@/types/playHistory'
 import { Settings, StatisticsSource } from '@/types/settings'
-import { MediaServer, ServerMembership, StatsSource } from '@/types/statsSource'
 import {
-  TautulliActivity,
-  TautulliLibrary,
-  TautulliUser,
-} from '@/types/tautulli'
-import { kebabCase } from 'lodash'
-import { isTracearrReachable } from './fetchTracearr'
+  Activity,
+  Library,
+  MediaServer,
+  ServerMembership,
+  SourceUser,
+  StatsSource,
+} from '@/types/statsSource'
 import getSettings from './getSettings'
-import { isTracearrSource } from './helpers'
+import { getLibrarySlug } from './helpers'
 import {
   getReadProgress,
   getReadStatus,
@@ -18,23 +18,31 @@ import {
   startReading,
 } from './playHistory'
 import { hasSnapshot } from './sourceSnapshot'
-import tautulliSource, { isTautulliReachable } from './tautulliSource'
+import tautulliSource from './tautulliSource'
 import tracearrSource from './tracearrSource'
+
+const SOURCES: Record<StatisticsSource, StatsSource> = {
+  tautulli: tautulliSource,
+  tracearr: tracearrSource,
+}
+
+// Tautulli is the default, so any other value falls back to it
+function getSourceByName(source: string | undefined): StatsSource {
+  return source && Object.hasOwn(SOURCES, source)
+    ? SOURCES[source as StatisticsSource]
+    : SOURCES.tautulli
+}
 
 export function getStatsSource(
   settings: Settings = getSettings(),
 ): StatsSource {
-  return isTracearrSource(settings) ? tracearrSource : tautulliSource
+  return getSourceByName(settings.connection.statisticsSource)
 }
 
-// A source that can't be reached returns the same empty lists as one with
-// nothing in it, so pages that need to tell the two apart ask this too.
 export async function isStatsSourceReachable(
   settings: Settings = getSettings(),
 ): Promise<boolean> {
-  return isTracearrSource(settings)
-    ? isTracearrReachable()
-    : isTautulliReachable()
+  return getStatsSource(settings).isReachable()
 }
 
 // The stats come from the source's play history, which is read once before a
@@ -43,7 +51,7 @@ export async function isStatsSourceReachable(
 // waits a few seconds for the read, unless `timeout` says otherwise.
 export async function getHistoryProgress(
   since: string | Date,
-  libraries?: TautulliLibrary[],
+  libraries?: Library[],
   timeout?: number,
 ): Promise<HistoryStatus | null> {
   const sinceTime = new Date(since).getTime()
@@ -74,11 +82,7 @@ export function startHistoryRead(settings: Settings = getSettings()): void {
 // Each source keeps its history, so the one asked for can be another than
 // the saved one, as long as its connection is saved too.
 function getHistorySource(source?: StatisticsSource): StatsSource {
-  if (!source) {
-    return getStatsSource()
-  }
-
-  return source === 'tracearr' ? tracearrSource : tautulliSource
+  return source ? getSourceByName(source) : getStatsSource()
 }
 
 export async function getHistoryStatus(
@@ -98,16 +102,14 @@ export async function getMediaServer(): Promise<MediaServer | null> {
   return getStatsSource().getMediaServer()
 }
 
-export async function getLibraries(
-  excludeInactive = true,
-): Promise<TautulliLibrary[]> {
+export async function getLibraries(excludeInactive = true): Promise<Library[]> {
   const settings = getSettings()
   const libraries = await getStatsSource(settings).getLibraries()
   const activeLibraries = settings.general.activeLibraries
 
   return excludeInactive
     ? libraries.filter((library) =>
-        activeLibraries.includes(kebabCase(library.section_name)),
+        activeLibraries.includes(getLibrarySlug(library)),
       )
     : libraries
 }
@@ -116,7 +118,7 @@ export async function getLibraries(
 // it, which an empty list can't show
 export async function getReachableLibraries(
   excludeInactive = true,
-): Promise<TautulliLibrary[] | null> {
+): Promise<Library[] | null> {
   const [libraries, isReachable, hasSaved] = await Promise.all([
     getLibraries(excludeInactive),
     isStatsSourceReachable(),
@@ -156,13 +158,13 @@ export async function getSourceOutage(
 // Includes excluded users, so that the settings can list them.
 export async function getUsers(
   settings: Settings = getSettings(),
-): Promise<TautulliUser[]> {
+): Promise<SourceUser[]> {
   return getStatsSource(settings).getUsers()
 }
 
 export async function getActiveUsers(
   settings: Settings = getSettings(),
-): Promise<TautulliUser[]> {
+): Promise<SourceUser[]> {
   const users = await getUsers(settings)
   const excludedUsers = settings.general.excludedUsers
 
@@ -186,6 +188,6 @@ export async function getUsersCount(settings: Settings) {
   return undefined
 }
 
-export async function getActivity(): Promise<TautulliActivity | null> {
+export async function getActivity(): Promise<Activity | null> {
   return getStatsSource().getActivity()
 }

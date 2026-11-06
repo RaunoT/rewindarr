@@ -1,5 +1,5 @@
 import { TopTrack } from '@/types/rewind'
-import { TautulliLibrary, TautulliMediaReturnType } from '@/types/tautulli'
+import { Library, MediaStatsType } from '@/types/statsSource'
 import { groupBy, maxBy } from 'lodash'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { cache } from 'react'
@@ -16,10 +16,7 @@ import { LibrariesSize } from './librariesSize'
 import { isCountedPlay } from './playStats'
 import { getStatsSource } from './statsSource'
 
-export async function getTopMediaStats(
-  userId: string,
-  libraries: TautulliLibrary[],
-) {
+export async function getTopMediaStats(userId: string, libraries: Library[]) {
   const t = await getTranslations()
   const locale = await getLocale()
   const settings = getSettings()
@@ -34,7 +31,7 @@ export async function getTopMediaStats(
     0,
   )
 
-  function formatStats(type: TautulliMediaReturnType) {
+  function formatStats(type: MediaStatsType) {
     const { count, duration } = stats[type]
     const percentage =
       duration && totalDuration
@@ -58,12 +55,12 @@ export async function getTopMediaStats(
 }
 
 export async function getlibrariesTotalSize(
-  libraries: TautulliLibrary[],
+  libraries: Library[],
 ): Promise<LibrariesSize> {
   return getStatsSource().getLibrariesSize(libraries)
 }
 
-type MediaDurations = Partial<Record<TautulliMediaReturnType, number>>
+type MediaDurations = Partial<Record<MediaStatsType, number>>
 
 const MEDIA_SECTION_TYPES = {
   shows: 'show',
@@ -74,7 +71,7 @@ const MEDIA_SECTION_TYPES = {
 // Each user's time on each media type in seconds, by their ID, without
 // excluded users. Null when the users can't be ranked.
 export async function getUsersDurationByType(
-  libraries: TautulliLibrary[],
+  libraries: Library[],
 ): Promise<Map<string, MediaDurations> | null> {
   const settings = getSettings()
   const source = getStatsSource(settings)
@@ -86,7 +83,7 @@ export async function getUsersDurationByType(
       )
 
       return {
-        type: type as TautulliMediaReturnType,
+        type: type as MediaStatsType,
         users: typeLibraries.length
           ? await source.getTopUsers({ since, libraries: typeLibraries })
           : [],
@@ -113,7 +110,7 @@ export async function getUsersDurationByType(
 
 export async function getUserTotalDuration(
   userId: string,
-  libraries: TautulliLibrary[],
+  libraries: Library[],
 ) {
   const settings = getSettings()
 
@@ -124,10 +121,7 @@ export async function getUserTotalDuration(
   })
 }
 
-export async function getTopMediaItems(
-  userId: string,
-  libraries: TautulliLibrary[],
-) {
+export async function getTopMediaItems(userId: string, libraries: Library[]) {
   const settings = getSettings()
 
   return getStatsSource(settings).getTopMediaItems(
@@ -137,10 +131,7 @@ export async function getTopMediaItems(
   )
 }
 
-export async function getTopPeople(
-  userId: string,
-  libraries: TautulliLibrary[],
-) {
+export async function getTopPeople(userId: string, libraries: Library[]) {
   const settings = getSettings()
 
   return getStatsSource(settings).getTopPeople(
@@ -156,7 +147,7 @@ export async function getTopPeople(
 // listening time, also from plays that don't count.
 export async function getTopTrack(
   userId: string,
-  libraries: TautulliLibrary[],
+  libraries: Library[],
 ): Promise<TopTrack | null> {
   const settings = getSettings()
   const audioLibraries = libraries.filter(
@@ -232,7 +223,7 @@ export async function getTopTrack(
 }
 
 // Anonymizing hides who the match would name, so it isn't looked for
-export async function getGenres(userId: string, libraries: TautulliLibrary[]) {
+export async function getGenres(userId: string, libraries: Library[]) {
   const settings = getSettings()
 
   return getStatsSource(settings).getGenres(
@@ -261,7 +252,7 @@ function peakIndex(totals: number[]): number | null {
 
 export async function getPlaybackHabits(
   userId: string,
-  libraries: TautulliLibrary[],
+  libraries: Library[],
   timeZone?: string,
 ) {
   const settings = getSettings()

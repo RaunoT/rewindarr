@@ -1,4 +1,4 @@
-import { TautulliLibrary } from '@/types/tautulli'
+import { Library } from '@/types/statsSource'
 import { cloneDeep } from 'lodash'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -210,7 +210,7 @@ describe('getTopMediaStats', () => {
 
 describe('getTopTrack', () => {
   const MINUTE = 60 * 1000
-  const LIBRARIES = [{ section_type: 'artist' }] as TautulliLibrary[]
+  const LIBRARIES = [{ section_type: 'artist' }] as Library[]
 
   // A track played to the end unless the percent says otherwise
   function track(title: string, minutes: number, percentComplete = 100) {

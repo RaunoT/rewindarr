@@ -1,19 +1,16 @@
 import { authOptions } from '@/lib/auth'
 import { Settings } from '@/types/settings'
 import {
+  Activity,
   FirstPlay,
+  ItemRow,
+  Library,
   MediaServer,
   ServerMembership,
+  SourceUser,
   StatsSource,
 } from '@/types/statsSource'
-import {
-  TautulliActivity,
-  TautulliHistoryRow,
-  TautulliItemRow,
-  TautulliLibrary,
-  TautulliMetadata,
-  TautulliUser,
-} from '@/types/tautulli'
+import { TautulliHistoryRow, TautulliMetadata } from '@/types/tautulli'
 import { pick } from 'lodash'
 import { getServerSession } from 'next-auth'
 import { cache } from 'react'
@@ -27,7 +24,12 @@ import {
 } from './getMediaAdditionalData'
 import getSettings from './getSettings'
 import { LibrariesSize, sumLibrariesSize } from './librariesSize'
-import { createPlayStats, EMPTY_ROW, StatsUser, toSourceId } from './playStats'
+import {
+  createPlayStats,
+  StatsUser,
+  toInactiveUserRow,
+  toSourceId,
+} from './playStats'
 import {
   getSnapshot,
   isListOf,
@@ -45,12 +47,10 @@ import {
 
 // The timeout signal opts requests out of fetch's per-render deduplication, so
 // lookups repeated by a page's layout, metadata and content share one call.
-const fetchLibraries = cache(() =>
-  fetchTautulli<TautulliLibrary[]>('get_libraries'),
-)
-const fetchUsers = cache(() => fetchTautulli<TautulliUser[]>('get_users'))
+const fetchLibraries = cache(() => fetchTautulli<Library[]>('get_libraries'))
+const fetchUsers = cache(() => fetchTautulli<SourceUser[]>('get_users'))
 const fetchUser = cache((userId: string) =>
-  fetchTautulli<TautulliUser>('get_user', { user_id: userId }),
+  fetchTautulli<SourceUser>('get_user', { user_id: userId }),
 )
 // What the stats need, saved for while Tautulli is down. get_users also
 // returns each user's email and Plex token, which stay out.
@@ -62,7 +62,7 @@ const LIBRARY_FIELDS = [
   'child_count',
   'section_type',
   'is_active',
-] as const satisfies readonly (keyof TautulliLibrary)[]
+] as const satisfies readonly (keyof Library)[]
 const USER_FIELDS = [
   'is_admin',
   'is_restricted',
@@ -72,7 +72,7 @@ const USER_FIELDS = [
   'thumb',
   'user_thumb',
   'username',
-] as const satisfies readonly (keyof TautulliUser)[]
+] as const satisfies readonly (keyof SourceUser)[]
 
 // The saved ID stands in while Tautulli is down
 async function getMediaServer(): Promise<MediaServer | null> {
@@ -110,12 +110,12 @@ async function fetchServerId(): Promise<string | null> {
 // background and shared between users. Not only the active ones, so the read
 // starts before the libraries are picked, and picking one doesn't start another.
 // The saved ones stand in while Tautulli is down.
-async function getAllLibraries(): Promise<TautulliLibrary[] | null> {
+async function getAllLibraries(): Promise<Library[] | null> {
   const key = `${getTautulliKey()}|libraries`
   const libraries = (await fetchLibraries())?.response?.data
 
   if (!Array.isArray(libraries)) {
-    return getSnapshot(key, isListOf<TautulliLibrary>)
+    return getSnapshot(key, isListOf<Library>)
   }
 
   void saveSnapshot(
@@ -126,7 +126,7 @@ async function getAllLibraries(): Promise<TautulliLibrary[] | null> {
   return libraries
 }
 
-async function getLibraries(): Promise<TautulliLibrary[]> {
+async function getLibraries(): Promise<Library[]> {
   const libraries = await getAllLibraries()
 
   if (!libraries) {
@@ -139,14 +139,14 @@ async function getLibraries(): Promise<TautulliLibrary[]> {
 }
 
 // Shares the libraries request, so asking costs no extra call
-export async function isTautulliReachable(): Promise<boolean> {
+async function isTautulliReachable(): Promise<boolean> {
   return (await fetchLibraries()) !== null
 }
 
 async function filterBySharedLibraries(
   settings: Settings,
-  libraries: TautulliLibrary[],
-): Promise<TautulliLibrary[]> {
+  libraries: Library[],
+): Promise<Library[]> {
   if (settings.general.isOutsideAccess || !settings.setupComplete) {
     return libraries
   }
@@ -189,9 +189,7 @@ async function getSharedLibraries(userId: string): Promise<string[] | null> {
   return sharedLibraries
 }
 
-async function getLibrariesSize(
-  libraries: TautulliLibrary[],
-): Promise<LibrariesSize> {
+async function getLibrariesSize(libraries: Library[]): Promise<LibrariesSize> {
   const res = await Promise.all(
     libraries.map((library) =>
       fetchTautulli<{ total_file_size?: number }>(
@@ -217,12 +215,12 @@ async function getLibrariesSize(
 
 // Includes inactive users. The saved ones stand in while Tautulli is down,
 // without their emails.
-async function getAllUsers(): Promise<TautulliUser[] | null> {
+async function getAllUsers(): Promise<SourceUser[] | null> {
   const key = `${getTautulliKey()}|users`
   const users = (await fetchUsers())?.response?.data
 
   if (!Array.isArray(users)) {
-    return getSnapshot(key, isListOf<TautulliUser>)
+    return getSnapshot(key, isListOf<SourceUser>)
   }
 
   void saveSnapshot(
@@ -237,7 +235,7 @@ async function getAllUsers(): Promise<TautulliUser[] | null> {
   return users
 }
 
-async function getUsers(): Promise<TautulliUser[]> {
+async function getUsers(): Promise<SourceUser[]> {
   const users = (await getAllUsers()) ?? []
 
   return users.filter((user) => user.is_active && user.username !== 'Local')
@@ -263,8 +261,8 @@ async function getServerUser(
   return { status: 'member', isAdmin: user.is_admin === 1 }
 }
 
-async function getActivity(): Promise<TautulliActivity | null> {
-  const res = await fetchTautulli<TautulliActivity>('get_activity')
+async function getActivity(): Promise<Activity | null> {
+  const res = await fetchTautulli<Activity>('get_activity')
   const data = res?.response?.data
 
   if (!data) {
@@ -315,7 +313,7 @@ function isMatchingIds(result: TautulliSearchResult, ids: MediaIds): boolean {
 // old one. The title finds it, and its IDs or year tell it apart from others
 // of the same name. Without either, only a title that's the only one counts.
 async function findReaddedRatingKey(
-  item: TautulliItemRow,
+  item: ItemRow,
   type: TmdbMediaType,
   saved?: SavedMediaData | null,
 ): Promise<number | string | null> {
@@ -357,7 +355,7 @@ async function findReaddedRatingKey(
 // The saved IDs and year stand in while Tautulli is down, so a show isn't
 // looked up by its title alone
 export async function getTautulliMediaData(
-  item: TautulliItemRow,
+  item: ItemRow,
   type: TmdbMediaType,
 ): Promise<SourceMediaData> {
   const key = `${getTautulliKey()}|media|${item.rating_key}`
@@ -415,7 +413,7 @@ function toNames(names: unknown): string[] {
 }
 
 // While Tautulli is down, the user comes from the saved list
-async function getInactiveUser(id: string): Promise<TautulliItemRow | null> {
+async function getInactiveUser(id: string): Promise<ItemRow | null> {
   const user =
     (await fetchUser(id))?.response?.data ??
     (await getAllUsers())?.find((user) => String(user.user_id) === id)
@@ -425,15 +423,7 @@ async function getInactiveUser(id: string): Promise<TautulliItemRow | null> {
     return null
   }
 
-  // Only what a ranking row shows. The row reaches the browser, and get_user
-  // also returns the user's email and shared libraries.
-  return {
-    ...EMPTY_ROW,
-    user_id: Number(user.user_id),
-    user: user.username,
-    friendly_name: user.friendly_name,
-    user_thumb: user.user_thumb,
-  }
+  return toInactiveUserRow(user)
 }
 
 async function getFirstPlay(userId: string): Promise<FirstPlay | null> {
@@ -490,6 +480,7 @@ const tautulliSource: StatsSource = {
   getFirstPlay,
   getHistoryReaders: async (libraries) =>
     getTautulliHistoryReaders(libraries ?? (await getAllLibraries()) ?? []),
+  isReachable: isTautulliReachable,
   getSnapshotKey: getTautulliKey,
 }
 

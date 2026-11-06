@@ -1,8 +1,8 @@
 import { DashboardSearchParams } from '@/types/dashboard'
 import { RewindTotals, UserRewind } from '@/types/rewind'
 import { Settings, StatisticsSource } from '@/types/settings'
-import { TautulliLibrary } from '@/types/tautulli'
-import { kebabCase } from 'lodash'
+import { Library } from '@/types/statsSource'
+import { get, kebabCase } from 'lodash'
 import { Session } from 'next-auth'
 import { getPeriods, SETTINGS_PAGES } from './constants'
 
@@ -24,16 +24,19 @@ export function isTracearrSource(settings: Settings): boolean {
   return settings.connection.statisticsSource === 'tracearr'
 }
 
+// What a library goes by in URLs and in the saved active libraries
+export function getLibrarySlug(library: Library): string {
+  return kebabCase(library.section_name)
+}
+
 // In the order the admin sorted them in the settings
 export function sortByActiveLibraries(
-  libraries: TautulliLibrary[],
+  libraries: Library[],
   settings: Settings,
-): TautulliLibrary[] {
+): Library[] {
   return settings.general.activeLibraries
-    .map((libSlug) =>
-      libraries.find((lib) => kebabCase(lib.section_name) === libSlug),
-    )
-    .filter((lib): lib is TautulliLibrary => lib !== undefined)
+    .map((libSlug) => libraries.find((lib) => getLibrarySlug(lib) === libSlug))
+    .filter((lib): lib is Library => lib !== undefined)
 }
 
 export type Feature = 'rewind' | 'dashboard' | 'activity' | 'history'
@@ -121,11 +124,7 @@ export function checkRequiredSettings(settings: Settings): string | null {
     ...serverRequiredSettings,
     ...REQUIRED_SETTINGS,
   ]) {
-    const keys = key.split('.')
-    // @ts-expect-error - TODO: we know this is safe, but should still look to resolve without exception
-    const settingValue = keys.reduce((acc, curr) => acc && acc[curr], settings)
-
-    if (!settingValue) {
+    if (!get(settings, key)) {
       return key
     }
   }

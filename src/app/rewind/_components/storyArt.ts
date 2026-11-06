@@ -1,5 +1,5 @@
 import { UserRewind } from '@/types/rewind'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import { uniq } from 'lodash'
 
@@ -92,7 +92,7 @@ export function getVisibleArea(
   }
 }
 
-function getPoster(item: TautulliItemRow) {
+function getPoster(item: ItemRow) {
   if (!item.thumb) {
     return undefined
   }
@@ -113,7 +113,7 @@ function getMusicTitle({ audio }: UserRewind) {
 function getStoryTitle(
   id: string,
   userRewind: UserRewind,
-): TautulliItemRow | null | undefined {
+): ItemRow | null | undefined {
   const { titleMoments, moments, social, firstPlay } = userRewind
 
   switch (id) {

@@ -1,4 +1,4 @@
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
 
 // With fewer users, the users' top says more than a percent
 const MIN_RANKED_USERS = 10
@@ -11,7 +11,7 @@ const MAX_TOP_PERCENT = 25
 // users, so they're placed by their own time. Users with the same time share
 // the best place they tie for.
 export function getTopPercent(
-  users: Pick<TautulliItemRow, 'user_id' | 'total_duration'>[],
+  users: Pick<ItemRow, 'user_id' | 'total_duration'>[],
   userId: string,
   duration: number,
 ): number | null {

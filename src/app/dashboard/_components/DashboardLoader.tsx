@@ -2,13 +2,13 @@ import CardWrapper from '@/app/_components/CardWrapper'
 import SkeletonLine from '@/components/SkeletonLine'
 import { TotalsSkeleton } from '@/components/Totals'
 import { PublicSettings } from '@/types/settings'
-import { TautulliMediaType } from '@/types/tautulli'
+import { LibraryType } from '@/types/statsSource'
 import { DASHBOARD_PAGE_SIZE, RATING_STATISTICS } from '@/utils/constants'
 import { getLinkButtonCount } from '@/utils/externalLinks'
 import clsx from 'clsx'
 
 type Props = {
-  type: TautulliMediaType | 'users'
+  type: LibraryType | 'users'
   settings: PublicSettings
   rows?: number
 }

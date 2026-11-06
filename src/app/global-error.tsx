@@ -3,6 +3,7 @@
 import StatusMessage from '@/components/StatusMessage'
 import '@/styles/globals.css'
 import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, LOCALES } from '@/utils/constants'
+import { getCookie } from '@/utils/cookies'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import {
   AbstractIntlMessages,
@@ -31,10 +32,7 @@ function subscribe() {
 // The root layout, and with it the locale provider, is gone, so the locale
 // cookie is read directly.
 function getLocale() {
-  const locale = document.cookie
-    .split('; ')
-    .find((cookie) => cookie.startsWith(`${LOCALE_COOKIE_NAME}=`))
-    ?.split('=')[1]
+  const locale = getCookie(LOCALE_COOKIE_NAME)
 
   return locale && LOCALES.includes(locale) ? locale : DEFAULT_LOCALE
 }

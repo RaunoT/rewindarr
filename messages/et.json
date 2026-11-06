@@ -37,7 +37,6 @@
   },
   "Activity": {
     "title": "Tegevus",
-    "poster": "„{title}“ plakat",
     "anonymousAvatar": "Anonüümne avatar",
     "anonymous": "Anonüümne #{number}",
     "container": "Konteiner",
@@ -380,13 +379,13 @@
       "dateRange": "vahemikus <startDate>{startDateValue}</startDate> kuni <endDate>{endDateValue}</endDate>."
     },
     "Total": {
-      "duration": "<total>Kokku</total> kulutasid sa <duration>{durationValue}</duration> <plex>{serverName}'is!</plex>",
+      "duration": "<total>Kokku</total> kulutasid sa <duration>{durationValue}</duration> {serverName}'is!",
       "averageMore": "See on <difference>{percent, number, percent} rohkem</difference> kui keskmisel kasutajal, kes vaatas <duration>{durationValue}</duration>.",
       "averageTimes": "See on <difference>{times, number}× rohkem</difference> kui keskmisel kasutajal, kes vaatas <duration>{durationValue}</duration>.",
       "averageLess": "See on <difference>{percent, number, percent} vähem</difference> kui keskmisel kasutajal, kes vaatas <duration>{durationValue}</duration>.",
       "averageSame": "See on <difference>umbes sama palju</difference> kui keskmisel kasutajal, kes vaatas <duration>{durationValue}</duration>.",
-      "topPercent": "Sa kuulud <plex>{serverName}'i</plex> vaatajate <top>{percent, number, percent} tippu</top>!",
-      "noData": "Sa ei mänginud midagi <plex>{serverName}'ist</plex> <emoji>😫</emoji>",
+      "topPercent": "Sa kuulud {serverName}'i vaatajate <top>{percent, number, percent} tippu</top>!",
+      "noData": "Sa ei mänginud midagi {serverName}'ist <emoji>😫</emoji>",
       "breakdown": "Nii jagunes sinu aeg:"
     },
     "Users": {
@@ -425,7 +424,7 @@
       "gaveUp": "Üks jäi pooleli: <title>{titleValue}</title> sai vaadatud <percent>{percentValue, number, percent}</percent> ulatuses. Ehk järgmisel korral?"
     },
     "Libraries": {
-      "filesize": "Kas teadsid, et kogu sisu <plex>{serverName}'is</plex> võtab <size>{sizeValue}</size> <filesize>kettaruumi</filesize>?",
+      "filesize": "Kas teadsid, et kogu sisu {serverName}'is võtab <size>{sizeValue}</size> <filesize>kettaruumi</filesize>?",
       "sizePartial": "Mõne kogumiku suurus on teadmata. Lülita Tautullis sisse „Calculate Total File Sizes“.",
       "sizePartialTracearr": "Tracearr'is puuduvad mõne kogumiku suuruse andmed.",
       "libraries": "Hetkel on saadaval:",
@@ -434,14 +433,14 @@
       "tracks": "{count, plural, one {lugu} other {lugu}}"
     },
     "Shows": {
-      "duration": "<library>Seriaalid</library> võtsid <duration>{durationValue}</duration> sinu ajast <plex>{serverName}'is.</plex>",
+      "duration": "<library>Seriaalid</library> võtsid <duration>{durationValue}</duration> sinu ajast {serverName}'is.",
       "count": "Sa vaatasid kokku <count>{countValue, number}</count> <episodes>{countValue, plural, one {episoodi} other {episoodi}}</episodes>",
       "favorite": "Sinu lemmik oli",
       "only": "Ainus sari, mida vaatasid, oli",
       "mostTime": "Sari, mida vaatasid kõige kauem, oli",
       "previousFavorite": "{period, select, year {Aasta varem} other {Eelmisel korral}} oli selleks <title>{titleValue}</title>",
       "sameFavorite": "See oli sinu lemmik ka <before>{period, select, year {aasta varem} other {eelmisel korral}}</before>!",
-      "noData": "Sa ei vaadanud ühtegi <shows>seriaali</shows> <plex>{serverName}'ist</plex> <emoji>😥</emoji>"
+      "noData": "Sa ei vaadanud ühtegi <shows>seriaali</shows> {serverName}'ist <emoji>😥</emoji>"
     },
     "Requests": {
       "noData": "Ühtegi <requests>tellimust</requests> pole tehtud <emoji>😲</emoji>",
@@ -463,7 +462,7 @@
       "mostTime": "Film, mida vaatasid kõige kauem, oli",
       "previousFavorite": "{period, select, year {Aasta varem} other {Eelmisel korral}} oli selleks <title>{titleValue}</title>",
       "sameFavorite": "See oli sinu lemmik ka <before>{period, select, year {aasta varem} other {eelmisel korral}}</before>!",
-      "noData": "Sa ei vaadanud ühtegi <movies>filmi</movies> <plex>{serverName}'ist</plex> <emoji>😵‍💫</emoji>"
+      "noData": "Sa ei vaadanud ühtegi <movies>filmi</movies> {serverName}'ist <emoji>😵‍💫</emoji>"
     },
     "People": {
       "movies": "{count, plural, one {# film} other {# filmi}}",
@@ -474,14 +473,14 @@
       "seeLess": "Näita vähem"
     },
     "TasteMatch": {
-      "closest": "<plex>{serverName}'i</plex> kasutajatest on sinu maitsele kõige lähemal <user>{userValue}</user>",
+      "closest": "{serverName}'i kasutajatest on sinu maitsele kõige lähemal <user>{userValue}</user>",
       "score": "Teie žanrid kattuvad <score>{scoreValue}</score> ulatuses",
       "genres": "Teie mõlema lemmikud on <genres>{genresValue}</genres>"
     },
     "OnlyYou": {
       "count": "{countValue, plural, one {<count># film või sari</count>, mida vaatasid, oli} other {<count># filmi või sarja</count>, mida vaatasid, olid}} <only>ainult sinu</only>",
-      "nobodyElse": "Keegi teine <plex>{serverName}'is</plex> {countValue, plural, one {seda} other {neid}} ei vaadanud",
-      "nobodyElseShare": "Keegi teine <plex>{serverName}'is</plex> {countValue, plural, one {seda} other {neid}} ei vaadanud. See on <share>{shareValue}</share> kõigist filmidest ja sarjadest, mida vaatasid.",
+      "nobodyElse": "Keegi teine {serverName}'is {countValue, plural, one {seda} other {neid}} ei vaadanud",
+      "nobodyElseShare": "Keegi teine {serverName}'is {countValue, plural, one {seda} other {neid}} ei vaadanud. See on <share>{shareValue}</share> kõigist filmidest ja sarjadest, mida vaatasid.",
       "top": "{countValue, plural, one {See oli <title>{titleValue}</title>} other {Neist sinu lemmik oli <title>{titleValue}</title>}}",
       "topMostTime": "Neist vaatasid kõige kauem <title>{titleValue}</title>"
     },
@@ -492,8 +491,8 @@
       "unwatched": "Naljakas on see, et sa <still>pole seda ise veel vaadanud</still> <emoji>🙈</emoji>"
     },
     "ServerYear": {
-      "duration": "{usersValue, plural, one {<users># inimene</users> kulutas} other {Kokku kulutasid <users># inimest</users>}} <plex>{serverName}'is</plex> <duration>{durationValue}</duration>",
-      "durationAway": "Sel ajal, kui sa eemal olid, {usersValue, plural, one {kulutas <users># inimene</users>} other {kulutasid <users># inimest</users>}} <plex>{serverName}'is</plex> <duration>{durationValue}</duration>",
+      "duration": "{usersValue, plural, one {<users># inimene</users> kulutas} other {Kokku kulutasid <users># inimest</users>}} {serverName}'is <duration>{durationValue}</duration>",
+      "durationAway": "Sel ajal, kui sa eemal olid, {usersValue, plural, one {kulutas <users># inimene</users>} other {kulutasid <users># inimest</users>}} {serverName}'is <duration>{durationValue}</duration>",
       "share": "Sellest <share>{shareValue}</share> oli sinu",
       "movie": "Kõige vaadatum <movies>film</movies> oli <title>{titleValue}</title>",
       "show": "Kõige vaadatum <shows>sari</shows> oli <title>{titleValue}</title>"
@@ -511,9 +510,9 @@
       "streak": "Sinu pikim seeria oli <days>{count, plural, one {# päev} other {# päeva}} järjest</days>, vahemikus <start>{startValue}</start> kuni <end>{endValue}</end>"
     },
     "YearOverYear": {
-      "yearBefore": "<before>Aasta varem</before> kulutasid sa <duration>{durationValue}</duration> <plex>{serverName}'is</plex>",
-      "rangeBefore": "<before>Vahemikus {startValue} kuni {endValue}</before> kulutasid sa <duration>{durationValue}</duration> <plex>{serverName}'is</plex>",
-      "monthBefore": "<before>{startValue} jooksul</before> kulutasid sa <duration>{durationValue}</duration> <plex>{serverName}'is</plex>",
+      "yearBefore": "<before>Aasta varem</before> kulutasid sa <duration>{durationValue}</duration> {serverName}'is",
+      "rangeBefore": "<before>Vahemikus {startValue} kuni {endValue}</before> kulutasid sa <duration>{durationValue}</duration> {serverName}'is",
+      "monthBefore": "<before>{startValue} jooksul</before> kulutasid sa <duration>{durationValue}</duration> {serverName}'is",
       "averageMore": "Seekord kulutasid sa <difference>{percent, number, percent} rohkem</difference>",
       "averageTimes": "Seekord kulutasid sa <difference>{times, number}× rohkem</difference>",
       "averageLess": "Seekord kulutasid sa <difference>{percent, number, percent} vähem</difference>",
@@ -526,7 +525,7 @@
       "hourChart": "Tulpdiagramm mängimistest kellaaegade kaupa. Kõige aktiivsem tund: {hourValue}, {count, plural, one {# mängimine} other {# mängimist}}."
     },
     "FirstPlay": {
-      "since": "Sa oled <plex>{serverName}'is</plex> vaadanud alates <date>{dateValue}</date>",
+      "since": "Sa oled {serverName}'is vaadanud alates <date>{dateValue}</date>",
       "timeSince": "See on juba <timeSince>{timeSinceValue}</timeSince>!",
       "title": "Kõik algas sellest: <title>{titleValue}</title>"
     },
@@ -657,12 +656,12 @@
       "failed": "Pilti ei õnnestunud luua. Proovi uuesti."
     },
     "Goodbye": {
-      "thanks": "Tänan, et vaatasid oma <plex>{serverName} Rewind'i</plex>, <user>{userValue}!</user>",
+      "thanks": "Tänan, et vaatasid oma {serverName} Rewind'i, <user>{userValue}!</user>",
       "sorry": "Kahju, et sa ei leidnud seekord sisu mida vaadata või kuulata. Loodame, et järgmisel korral läheb paremini!",
       "weWillBeBack": "Oleme tagasi järgmisel korral",
       "weWillBeHere": "Igal juhul oleme olemas ka järgmine kord",
       "insightsAndStats": "veelgi huvitavama <insightsAndStats>statistikaga.</insightsAndStats>",
-      "untilThen": "Seniks, naudi kogu sisu, mis <plex>{serverName}'il</plex> on pakkuda.",
+      "untilThen": "Seniks, naudi kogu sisu, mis {serverName}'il on pakkuda.",
       "watchAgain": "Vaata uuesti",
       "backToHome": "Tagasi avalehele",
       "journey": {

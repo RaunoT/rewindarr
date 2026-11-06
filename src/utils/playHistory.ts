@@ -87,9 +87,9 @@ const RETRY_DELAY = 60 * 1000
 // Next.js can bundle this file into more than one chunk, and each copy would
 // otherwise read the history on its own.
 const globalForHistory = globalThis as unknown as {
-  plexRewindPlayHistory?: HistoryState
+  rewindarrPlayHistory?: HistoryState
 }
-const state = (globalForHistory.plexRewindPlayHistory ??= {
+const state = (globalForHistory.rewindarrPlayHistory ??= {
   stores: new Map(),
   loading: new Map(),
   saved: null,

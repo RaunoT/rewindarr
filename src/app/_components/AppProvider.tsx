@@ -3,8 +3,9 @@
 import Toasts from '@/components/Toasts'
 import { Version } from '@/types'
 import { PublicSettings } from '@/types/settings'
-import { TautulliLibrary } from '@/types/tautulli'
+import { Library } from '@/types/statsSource'
 import { TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
+import { getCookie, setCookie } from '@/utils/cookies'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import clsx from 'clsx'
 import Image from 'next/image'
@@ -24,7 +25,7 @@ type Props = {
   missingSetting: string | null
   version: Version
   // Streamed in, and null when the source can't be reached
-  libraries: Promise<TautulliLibrary[] | null>
+  libraries: Promise<Library[] | null>
   settings: PublicSettings
   canBrowse: boolean
   // From its cookie, missing until the choice was first saved there
@@ -39,13 +40,6 @@ const SIDEBAR_ROUTES = [
   '/settings',
 ]
 const queryClient = new QueryClient()
-
-function readTimeZoneCookie() {
-  return document.cookie
-    .split('; ')
-    .find((cookie) => cookie.startsWith(`${TIME_ZONE_COOKIE_NAME}=`))
-    ?.split('=')[1]
-}
 
 export default function AppProvider({
   children,
@@ -70,14 +64,17 @@ export default function AppProvider({
   useEffect(() => {
     const { timeZone } = Intl.DateTimeFormat().resolvedOptions()
 
-    if (readTimeZoneCookie() === timeZone) {
+    if (getCookie(TIME_ZONE_COOKIE_NAME) === timeZone) {
       return
     }
 
-    document.cookie = `${TIME_ZONE_COOKIE_NAME}=${timeZone}; path=/; max-age=31536000; samesite=lax`
+    setCookie(TIME_ZONE_COOKIE_NAME, timeZone)
 
     // With cookies blocked, rendering again would change nothing
-    if (pathname.startsWith('/rewind') && readTimeZoneCookie() === timeZone) {
+    if (
+      pathname.startsWith('/rewind') &&
+      getCookie(TIME_ZONE_COOKIE_NAME) === timeZone
+    ) {
       router.refresh()
     }
   }, [pathname, router])
@@ -122,7 +119,7 @@ export default function AppProvider({
                     alt=''
                     className='object-cover'
                     fill
-                    priority
+                    preload
                   />
                 </div>
                 <div className='bg-twinkling' />

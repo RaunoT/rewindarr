@@ -1,7 +1,8 @@
 import MediaLink, { MediaLinkIcon } from '@/components/MediaItem/MediaLink'
 import PosterImage from '@/components/PosterImage'
 import { RewindStory } from '@/types/rewind'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
+import { PLAY_LIBRARY_TYPES } from '@/utils/constants'
 import { getRowDeeplink, getSeerrUrl } from '@/utils/deeplink'
 import { secondsToTime } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
@@ -11,14 +12,7 @@ import { DAY_FORMAT, formatMomentDate, SHORT_DAY_FORMAT } from '../momentDate'
 import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
-// The kind of item each kind of play rolls up into
-const ITEM_TYPES = {
-  movie: 'movie',
-  episode: 'show',
-  track: 'artist',
-} as const
-
-function getPoster(item: TautulliItemRow) {
+function getPoster(item: ItemRow) {
   if (!item.thumb) {
     return undefined
   }
@@ -63,7 +57,7 @@ export default function StoryBiggestDay({ userRewind, settings }: RewindStory) {
           {biggestDay.titles.map(({ title, mediaType, item }) => {
             const deeplink = getRowDeeplink(
               item,
-              ITEM_TYPES[mediaType],
+              PLAY_LIBRARY_TYPES[mediaType],
               userRewind.media_server,
               getSeerrUrl(settings),
             )

@@ -1,7 +1,7 @@
 'use client'
 
 import TitleMenu from '@/components/TitleMenu'
-import { kebabCase } from 'lodash'
+import { getLibrarySlug } from '@/utils/helpers'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
@@ -28,10 +28,9 @@ export default function DashboardNavContent({
         label={t('label')}
         items={[
           ...libraries.map((library) => ({
-            href: `/dashboard/${kebabCase(library.section_name)}${query}`,
+            href: `/dashboard/${getLibrarySlug(library)}${query}`,
             label: library.section_name,
-            isCurrent:
-              pathname === `/dashboard/${kebabCase(library.section_name)}`,
+            isCurrent: pathname === `/dashboard/${getLibrarySlug(library)}`,
           })),
           ...(isUsersPageActive
             ? [
@@ -53,11 +52,10 @@ export default function DashboardNavContent({
         {libraries.map((library) => (
           <li key={library.section_id}>
             <Link
-              href={`/dashboard/${kebabCase(library.section_name)}${query}`}
+              href={`/dashboard/${getLibrarySlug(library)}${query}`}
               className='nav-link'
               aria-current={
-                pathname === `/dashboard/${kebabCase(library.section_name)}` &&
-                'page'
+                pathname === `/dashboard/${getLibrarySlug(library)}` && 'page'
               }
             >
               {library.section_name}

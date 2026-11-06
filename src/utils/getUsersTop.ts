@@ -1,5 +1,4 @@
-import { TopItems } from '@/types/statsSource'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow, TopItems } from '@/types/statsSource'
 import { DASHBOARD_PAGE_SIZE } from './constants'
 import { fetchSeerrStats, fetchSeerrUserId } from './fetchSeerr'
 import getSettings from './getSettings'
@@ -15,7 +14,7 @@ type Options = {
   numberOfUsers?: number
   withFirstPlay?: boolean
   // The ranked users, when the caller has already read them
-  users?: TautulliItemRow[] | null
+  users?: ItemRow[] | null
 }
 
 export default async function getUsersTop(
@@ -81,7 +80,7 @@ export default async function getUsersTop(
   }
 
   // Anonymizing hides the first plays of other users, so they aren't looked up
-  const isFirstPlayShown = (user: TautulliItemRow) =>
+  const isFirstPlayShown = (user: ItemRow) =>
     !settings.general.isAnonymized || String(user.user_id) === loggedInUserId
   const firstPlays = withFirstPlay
     ? await Promise.all(
@@ -108,11 +107,11 @@ export default async function getUsersTop(
 
 async function getStatsWithLoggedInUser(
   userId: string,
-  users: TautulliItemRow[],
+  users: ItemRow[],
   numberOfUsers: number,
 ) {
   const loggedInUserRank = users.findIndex(
-    (user) => String(user.user_id) == userId,
+    (user) => String(user.user_id) === userId,
   )
   const loggedInUser =
     users[loggedInUserRank] || (await getStatsSource().getInactiveUser(userId))
@@ -134,10 +133,7 @@ async function getStatsWithLoggedInUser(
   return slicedUsers
 }
 
-function anonymizeUsers(
-  users: TautulliItemRow[],
-  loggedInUserId: string,
-): TautulliItemRow[] {
+function anonymizeUsers(users: ItemRow[], loggedInUserId: string): ItemRow[] {
   return users.map((user) => {
     const isLoggedIn = String(user.user_id) === loggedInUserId
 

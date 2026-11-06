@@ -6,7 +6,7 @@ import SourceUnreachable from '@/components/SourceUnreachable'
 import StatusMessage from '@/components/StatusMessage'
 import { DashboardSearchParams } from '@/types/dashboard'
 import { Settings } from '@/types/settings'
-import { TautulliItemRow, TautulliLibrary } from '@/types/tautulli'
+import { ItemRow, Library } from '@/types/statsSource'
 import {
   DASHBOARD_PERIOD_COOKIE_NAME,
   getSiteUrl,
@@ -14,7 +14,7 @@ import {
 } from '@/utils/constants'
 import { getItems } from '@/utils/getDashboard'
 import getPeriod, { parseCustomPeriod } from '@/utils/getPeriod'
-import { getHomeTiles, getViewer } from '@/utils/helpers'
+import { getHomeTiles, getLibrarySlug, getViewer } from '@/utils/helpers'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import { toPublicSettings } from '@/utils/publicSettings'
 import { getHistoryProgress } from '@/utils/statsSource'
@@ -23,7 +23,6 @@ import {
   ChevronRightIcon,
   InboxIcon,
 } from '@heroicons/react/24/outline'
-import { kebabCase } from 'lodash'
 import { Session } from 'next-auth'
 import { getTranslations } from 'next-intl/server'
 import { cookies } from 'next/headers'
@@ -40,7 +39,7 @@ type Props = {
   settings: Settings
   session: Session | null
   // Null when the source can't be reached
-  libraries: TautulliLibrary[] | null
+  libraries: Library[] | null
 }
 
 export default async function Overview({
@@ -222,7 +221,7 @@ async function RewindTile() {
 }
 
 type LibraryTileProps = {
-  library: TautulliLibrary
+  library: Library
   settings: Settings
   period: DashboardSearchParams['period']
   periodLabel: string
@@ -266,7 +265,7 @@ async function LibraryTile({
       <TileHeading
         name={library.section_name}
         type={library.section_type}
-        href={`/dashboard/${kebabCase(library.section_name)}${period ? `?period=${period}` : ''}`}
+        href={`/dashboard/${getLibrarySlug(library)}${period ? `?period=${period}` : ''}`}
       />
       {top ? (
         <div className='flex flex-col gap-3'>
@@ -324,7 +323,7 @@ async function LibraryTile({
 
 // Built like a loaded tile, so nothing moves once the data arrives. Without
 // the library, its name is a skeleton too.
-function LibraryTileSkeleton({ library }: { library?: TautulliLibrary }) {
+function LibraryTileSkeleton({ library }: { library?: Library }) {
   return (
     <div className='glass-sheet flex flex-col gap-4'>
       <TileHeading name={library?.section_name} type={library?.section_type} />
@@ -350,7 +349,7 @@ function LibraryTileSkeleton({ library }: { library?: TautulliLibrary }) {
   )
 }
 
-function getPoster(item: TautulliItemRow) {
+function getPoster(item: ItemRow) {
   if (!item.thumb) {
     return undefined
   }

@@ -37,7 +37,6 @@
   },
   "Activity": {
     "title": "Activity",
-    "poster": "Poster for {title}",
     "anonymousAvatar": "Anonymous avatar",
     "anonymous": "Anonymous #{number}",
     "container": "Container",
@@ -380,13 +379,13 @@
       "dateRange": "from <startDate>{startDateValue}</startDate> to <endDate>{endDateValue}</endDate>."
     },
     "Total": {
-      "duration": "You spent a <total>total</total> of <duration>{durationValue}</duration> on <plex>{serverName}!</plex>",
+      "duration": "You spent a <total>total</total> of <duration>{durationValue}</duration> on {serverName}!",
       "averageMore": "That's <difference>{percent, number, percent} more</difference> than the average user, who watched <duration>{durationValue}</duration>.",
       "averageTimes": "That's <difference>{times, number}× as much</difference> as the average user, who watched <duration>{durationValue}</duration>.",
       "averageLess": "That's <difference>{percent, number, percent} less</difference> than the average user, who watched <duration>{durationValue}</duration>.",
       "averageSame": "That's <difference>about the same</difference> as the average user, who watched <duration>{durationValue}</duration>.",
-      "topPercent": "You're in the <top>top {percent, number, percent}</top> of viewers on <plex>{serverName}!</plex>",
-      "noData": "You haven't played anything on <plex>{serverName}</plex> <emoji>😫</emoji>",
+      "topPercent": "You're in the <top>top {percent, number, percent}</top> of viewers on {serverName}!",
+      "noData": "You haven't played anything on {serverName} <emoji>😫</emoji>",
       "breakdown": "Here's where all that time went:"
     },
     "Users": {
@@ -425,7 +424,7 @@
       "gaveUp": "One that got away: you made it <percent>{percentValue, number, percent}</percent> into <title>{titleValue}</title>. Maybe next time?"
     },
     "Libraries": {
-      "filesize": "Did you know that everything on <plex>{serverName}</plex> takes up <size>{sizeValue}</size> of <filesize>storage</filesize>?",
+      "filesize": "Did you know that everything on {serverName} takes up <size>{sizeValue}</size> of <filesize>storage</filesize>?",
       "sizePartial": "Some libraries have no size data. Enable “Calculate Total File Sizes” in Tautulli.",
       "sizePartialTracearr": "Some libraries have no size data in Tracearr.",
       "libraries": "The libraries currently contain:",
@@ -434,14 +433,14 @@
       "tracks": "{count, plural, one {track} other {tracks}}"
     },
     "Shows": {
-      "duration": "<library>Shows</library> took up <duration>{durationValue}</duration> of your time on <plex>{serverName}.</plex>",
+      "duration": "<library>Shows</library> took up <duration>{durationValue}</duration> of your time on {serverName}.",
       "count": "You watched <count>{countValue, number}</count> <episodes>{countValue, plural, one {episode} other {episodes}}</episodes> in total!",
       "favorite": "Your favorite was",
       "only": "The only show you watched was",
       "mostTime": "The show you spent the most time watching was",
       "previousFavorite": "{period, select, year {The year before} other {Last time}}, it was <title>{titleValue}</title>",
       "sameFavorite": "It was your favorite <before>{period, select, year {the year before} other {last time}}</before> too!",
-      "noData": "You didn't watch any <shows>shows</shows> on <plex>{serverName}</plex> <emoji>😥</emoji>"
+      "noData": "You didn't watch any <shows>shows</shows> on {serverName} <emoji>😥</emoji>"
     },
     "Requests": {
       "noData": "There weren't any <requests>requests</requests> <emoji>😲</emoji>",
@@ -463,7 +462,7 @@
       "mostTime": "The movie you spent the most time watching was",
       "previousFavorite": "{period, select, year {The year before} other {Last time}}, it was <title>{titleValue}</title>",
       "sameFavorite": "It was your favorite <before>{period, select, year {the year before} other {last time}}</before> too!",
-      "noData": "You didn't watch any <movies>movies</movies> on <plex>{serverName}</plex> <emoji>😵‍💫</emoji>"
+      "noData": "You didn't watch any <movies>movies</movies> on {serverName} <emoji>😵‍💫</emoji>"
     },
     "People": {
       "movies": "{count, plural, one {# movie} other {# movies}}",
@@ -474,14 +473,14 @@
       "seeLess": "See less"
     },
     "TasteMatch": {
-      "closest": "Of everyone on <plex>{serverName}</plex>, <user>{userValue}</user> shares your taste the most",
+      "closest": "Of everyone on {serverName}, <user>{userValue}</user> shares your taste the most",
       "score": "Your genres are a <score>{scoreValue}</score> match",
       "genres": "You both love <genres>{genresValue}</genres>"
     },
     "OnlyYou": {
       "count": "{countValue, plural, one {<count># title</count> you watched was} other {<count># titles</count> you watched were}} <only>yours alone</only>",
-      "nobodyElse": "Nobody else on <plex>{serverName}</plex> watched {countValue, plural, one {it} other {them}}",
-      "nobodyElseShare": "Nobody else on <plex>{serverName}</plex> watched {countValue, plural, one {it} other {them}}. That's <share>{shareValue}</share> of the titles you watched.",
+      "nobodyElse": "Nobody else on {serverName} watched {countValue, plural, one {it} other {them}}",
+      "nobodyElseShare": "Nobody else on {serverName} watched {countValue, plural, one {it} other {them}}. That's <share>{shareValue}</share> of the titles you watched.",
       "top": "{countValue, plural, one {It was <title>{titleValue}</title>} other {Your favorite of them was <title>{titleValue}</title>}}",
       "topMostTime": "The one you spent the most time watching was <title>{titleValue}</title>"
     },
@@ -492,8 +491,8 @@
       "unwatched": "Funny thing is, you <still>still haven't watched it</still> yourself <emoji>🙈</emoji>"
     },
     "ServerYear": {
-      "duration": "{usersValue, plural, one {<users># person</users> spent} other {Together, <users># people</users> spent}} <duration>{durationValue}</duration> on <plex>{serverName}</plex>",
-      "durationAway": "While you were away, {usersValue, plural, one {<users># person</users>} other {<users># people</users>}} spent <duration>{durationValue}</duration> on <plex>{serverName}</plex>",
+      "duration": "{usersValue, plural, one {<users># person</users> spent} other {Together, <users># people</users> spent}} <duration>{durationValue}</duration> on {serverName}",
+      "durationAway": "While you were away, {usersValue, plural, one {<users># person</users>} other {<users># people</users>}} spent <duration>{durationValue}</duration> on {serverName}",
       "share": "<share>{shareValue}</share> of that was you",
       "movie": "The most watched <movies>movie</movies> was <title>{titleValue}</title>",
       "show": "The most watched <shows>show</shows> was <title>{titleValue}</title>"
@@ -511,9 +510,9 @@
       "streak": "Your longest streak was <days>{count, plural, one {# day} other {# days}} in a row</days>, from <start>{startValue}</start> to <end>{endValue}</end>"
     },
     "YearOverYear": {
-      "yearBefore": "<before>The year before</before>, you spent <duration>{durationValue}</duration> on <plex>{serverName}</plex>",
-      "rangeBefore": "<before>From {startValue} to {endValue}</before>, you spent <duration>{durationValue}</duration> on <plex>{serverName}</plex>",
-      "monthBefore": "<before>In {startValue}</before>, you spent <duration>{durationValue}</duration> on <plex>{serverName}</plex>",
+      "yearBefore": "<before>The year before</before>, you spent <duration>{durationValue}</duration> on {serverName}",
+      "rangeBefore": "<before>From {startValue} to {endValue}</before>, you spent <duration>{durationValue}</duration> on {serverName}",
+      "monthBefore": "<before>In {startValue}</before>, you spent <duration>{durationValue}</duration> on {serverName}",
       "averageMore": "This time, you spent <difference>{percent, number, percent} more</difference>",
       "averageTimes": "This time, you spent <difference>{times, number}× as much</difference>",
       "averageLess": "This time, you spent <difference>{percent, number, percent} less</difference>",
@@ -526,7 +525,7 @@
       "hourChart": "Bar chart of plays per hour of the day. Busiest hour: {hourValue} with {count, plural, one {# play} other {# plays}}."
     },
     "FirstPlay": {
-      "since": "You've been watching on <plex>{serverName}</plex> since <date>{dateValue}</date>",
+      "since": "You've been watching on {serverName} since <date>{dateValue}</date>",
       "timeSince": "That's <timeSince>{timeSinceValue}</timeSince> and counting!",
       "title": "It all started with <title>{titleValue}</title>"
     },
@@ -657,12 +656,12 @@
       "failed": "The image couldn't be made. Please try again."
     },
     "Goodbye": {
-      "thanks": "Thanks for tuning in to your <plex>{serverName} Rewind</plex>, <user>{userValue}!</user>",
+      "thanks": "Thanks for tuning in to your {serverName} Rewind, <user>{userValue}!</user>",
       "sorry": "Sorry you couldn't find any content to watch or listen to this time around. Better luck next time!",
       "weWillBeBack": "We'll be back next time",
       "weWillBeHere": "Either way, we'll be here",
       "insightsAndStats": "with even more <insightsAndStats>insights and stats.</insightsAndStats>",
-      "untilThen": "Until then, keep exploring and enjoying all that <plex>{serverName}</plex> has to offer.",
+      "untilThen": "Until then, keep exploring and enjoying all that {serverName} has to offer.",
       "watchAgain": "Watch again",
       "backToHome": "Back to home",
       "journey": {

@@ -5,6 +5,7 @@ import {
   ACTIVITY_DETAILS_COOKIE_NAME,
   DASHBOARD_PERIOD_COOKIE_NAME,
 } from '@/utils/constants'
+import { setCookie } from '@/utils/cookies'
 import { getDashboardSort } from '@/utils/helpers'
 import { createContext, ReactNode, useEffect, useState } from 'react'
 
@@ -108,7 +109,7 @@ export default function GlobalContextProvider({
   useEffect(() => {
     if (isHydrated) {
       writeStorage('dashboardPeriod', period)
-      document.cookie = `${DASHBOARD_PERIOD_COOKIE_NAME}=${period ?? ''}; path=/; max-age=${period ? 31536000 : 0}; samesite=lax`
+      setCookie(DASHBOARD_PERIOD_COOKIE_NAME, period)
     }
   }, [isHydrated, period])
 
@@ -120,12 +121,15 @@ export default function GlobalContextProvider({
 
   useEffect(() => {
     if (isHydrated) {
-      document.cookie = `${ACTIVITY_DETAILS_COOKIE_NAME}=${isDetailsHidden ? 'hidden' : 'shown'}; path=/; max-age=31536000; samesite=lax`
+      setCookie(
+        ACTIVITY_DETAILS_COOKIE_NAME,
+        isDetailsHidden ? 'hidden' : 'shown',
+      )
     }
   }, [isHydrated, isDetailsHidden])
 
   return (
-    <GlobalContext.Provider
+    <GlobalContext
       value={{
         dashboard: {
           isPersonal,
@@ -142,6 +146,6 @@ export default function GlobalContextProvider({
       }}
     >
       {children}
-    </GlobalContext.Provider>
+    </GlobalContext>
   )
 }

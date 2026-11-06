@@ -4,8 +4,8 @@ import SeerrButton from '@/components/MediaItem/SeerrButton'
 import ProgressBar from '@/components/ProgressBar'
 import { DECISION_ICONS, getDecisionKind } from '@/components/StreamDecision'
 import { PublicSettings } from '@/types/settings'
-import { HistoryPlay, MediaServer } from '@/types/statsSource'
-import { TautulliItemRow } from '@/types/tautulli'
+import { HistoryPlay, ItemRow, MediaServer } from '@/types/statsSource'
+import { PLAY_LIBRARY_TYPES } from '@/utils/constants'
 import { getRequestUrl, getSeerrUrl } from '@/utils/deeplink'
 import { formatPercent, secondsToTime } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
@@ -20,7 +20,7 @@ type Props = {
   // The episodes or tracks played in a row with it, newest first
   binge?: HistoryPlay[]
   // The title's year, ratings and IDs
-  item: TautulliItemRow | null | undefined
+  item: ItemRow | null | undefined
   mediaServer: MediaServer | null
   settings: PublicSettings
   // Who played it stays hidden, as on the activity page
@@ -29,13 +29,11 @@ type Props = {
   isUserShown: boolean
 }
 
-const TYPES = { movie: 'movie', episode: 'show', track: 'artist' } as const
-
 // A deleted item has nothing left to open in the media server. A re-added one
 // has a new rating key, and so do its episodes, which the show's stands in for.
 function getRatingKey(
   play: HistoryPlay,
-  item: TautulliItemRow | null | undefined,
+  item: ItemRow | null | undefined,
 ): number | string | null {
   if (item?.is_deleted) {
     return null
@@ -155,7 +153,8 @@ export default function HistoryItem({
   const ratingKey = getRatingKey(play, item)
   // A deleted title opens its request instead
   const requestUrl =
-    item && getRequestUrl(item, TYPES[mediaType], getSeerrUrl(settings))
+    item &&
+    getRequestUrl(item, PLAY_LIBRARY_TYPES[mediaType], getSeerrUrl(settings))
   const isTrack = mediaType === 'track' && !isBinge
   const name = isTrack
     ? play.title
@@ -190,7 +189,7 @@ export default function HistoryItem({
   const decisionKind = getDecision(plays)
   const decision = decisionKind && DECISION_ICONS[decisionKind]
   const card = {
-    type: TYPES[mediaType],
+    type: PLAY_LIBRARY_TYPES[mediaType],
     mediaType,
     item,
     name,

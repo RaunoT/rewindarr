@@ -1,7 +1,7 @@
 'use client'
 
 import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
 import clsx from 'clsx'
 import { debounce } from 'lodash'
 import { motion, useAnimation } from 'motion/react'
@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl'
 import { ReactNode, RefObject, useEffect, useRef } from 'react'
 
 type Props = {
-  data: TautulliItemRow
+  data: ItemRow
   type: string
   parentRef: RefObject<HTMLDivElement | null>
   loggedInUserId?: string

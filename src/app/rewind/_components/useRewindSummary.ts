@@ -1,6 +1,6 @@
 import { UserRewind } from '@/types/rewind'
 import { PublicSettings } from '@/types/settings'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
 import { formatMonthYear, secondsToTime } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import {
@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useLocale, useTranslations } from 'next-intl'
 import { ComponentType, SVGProps } from 'react'
+import { getWeekdayDate } from './habitsDate'
 import { PERSONALITY_ICONS } from './personalityIcons'
 import {
   getSummaryFileName,
@@ -64,7 +65,7 @@ export type RewindSummary = {
 
 // TMDB's posters go through the image proxy too, so the saved image has
 // nothing cross-origin in it
-function getPosterSrcs(item: TautulliItemRow) {
+function getPosterSrcs(item: ItemRow) {
   return [item.thumb, item.tmdb_poster].map((src) =>
     src ? getImageProxyUrl(src) : null,
   )
@@ -131,11 +132,10 @@ export default function useRewindSummary(
           key: highlight.type,
           label,
           Icon,
-          // 2024-01-07 is a Sunday, as in the habits story
           value: new Intl.DateTimeFormat(locale, {
             weekday: 'long',
             timeZone: 'UTC',
-          }).format(new Date(Date.UTC(2024, 0, 7 + highlight.day))),
+          }).format(getWeekdayDate(highlight.day)),
         }
     }
   }
