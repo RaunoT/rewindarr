@@ -2,12 +2,14 @@ import { Settings } from '@/types/settings'
 import { decode, getToken } from 'next-auth/jwt'
 import { NextRequest, NextResponse } from 'next/server'
 import { recheckServerUser } from './lib/auth'
+import { CALLBACK_URL_PARAM } from './utils/callbackUrl'
 import { createNonce, getContentSecurityPolicy } from './utils/csp'
 import getSettings from './utils/getSettings'
 import {
   checkRequiredSettings,
   getSettingsPage,
   isInitialSetup,
+  isLoginRequired,
   isPostUpdateMissingSettings,
 } from './utils/helpers'
 
@@ -41,6 +43,21 @@ function nextWithCsp(req: NextRequest): NextResponse {
   response.headers.set('Content-Security-Policy', policy)
 
   return response
+}
+
+// The home page has the login, which returns to the page asked for. Without
+// the `_rsc` of a client-side navigation, which is Next.js' own.
+function redirectToLogin(req: NextRequest): NextResponse {
+  const url = new URL('/', req.nextUrl)
+  const callbackUrl = req.nextUrl.clone()
+
+  callbackUrl.searchParams.delete('_rsc')
+  url.searchParams.set(
+    CALLBACK_URL_PARAM,
+    callbackUrl.pathname + callbackUrl.search,
+  )
+
+  return NextResponse.redirect(url)
 }
 
 // next-auth names its session cookie after the protocol of its address, which
@@ -127,6 +144,15 @@ export default async function proxy(req: NextRequest) {
     ) {
       return NextResponse.redirect(new URL(redirectPage, req.nextUrl))
     }
+  }
+
+  if (
+    !token &&
+    req.method === 'GET' &&
+    settings &&
+    isLoginRequired(settings, pathname)
+  ) {
+    return redirectToLogin(req)
   }
 
   return nextWithCsp(req)
