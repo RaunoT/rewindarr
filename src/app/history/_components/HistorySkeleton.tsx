@@ -6,7 +6,7 @@ import {
   HISTORY_PAGE_SIZES,
   RATING_STATISTICS,
 } from '@/utils/constants'
-import { getLinkButtonSites } from '@/utils/externalLinks'
+import { getLinkButtonCount } from '@/utils/externalLinks'
 
 type Props = {
   // A page's worth, so the card is as tall as the plays it waits for
@@ -17,6 +17,8 @@ type Props = {
     PublicSettings['general'],
     'activeExternalLinks' | 'activeItemStatistics'
   >
+  // For Seerr's link, which only shows while it's set up
+  isSeerrActive?: boolean
 }
 
 // Built like the cards, a play of an episode with ratings, so little moves
@@ -24,17 +26,17 @@ type Props = {
 export default function HistorySkeleton({
   rows = HISTORY_PAGE_SIZES[0],
   general = DEFAULT_SETTINGS.general,
+  isSeerrActive = false,
 }: Props) {
   const { activeExternalLinks, activeItemStatistics } = general
   const hasRatings = RATING_STATISTICS.some((rating) =>
     activeItemStatistics.includes(rating),
   )
-  // A site whose rating is shown opens from it
-  const linkCount = getLinkButtonSites(
+  const linkCount = getLinkButtonCount(
     'show',
     activeExternalLinks,
-    activeItemStatistics,
-  ).length
+    isSeerrActive,
+  )
 
   return (
     <div className='w-full'>

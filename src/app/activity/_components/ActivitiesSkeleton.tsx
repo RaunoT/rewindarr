@@ -5,7 +5,7 @@ import SkeletonLine from '@/components/SkeletonLine'
 import SkeletonLinks from '@/components/SkeletonLinks'
 import { PublicSettings } from '@/types/settings'
 import { DEFAULT_SETTINGS, RATING_STATISTICS } from '@/utils/constants'
-import { getLinkButtonSites } from '@/utils/externalLinks'
+import { getLinkButtonCount } from '@/utils/externalLinks'
 import clsx from 'clsx'
 import { useContext } from 'react'
 
@@ -16,6 +16,8 @@ type Props = {
     PublicSettings['general'],
     'activeExternalLinks' | 'activeItemStatistics'
   >
+  // For Seerr's link, which only shows while it's set up
+  isSeerrActive?: boolean
 }
 
 // The rows of the stream's details: what is playing, with a second line for
@@ -30,6 +32,7 @@ const DETAIL_ROWS = [
 // wrappers, so nothing moves once it loads
 export default function ActivitiesSkeleton({
   general = DEFAULT_SETTINGS.general,
+  isSeerrActive = false,
 }: Props) {
   const {
     activity: { isDetailsHidden },
@@ -38,12 +41,11 @@ export default function ActivitiesSkeleton({
   const hasRatings = RATING_STATISTICS.some((rating) =>
     activeItemStatistics.includes(rating),
   )
-  // A site whose rating is shown opens from it
-  const linkCount = getLinkButtonSites(
+  const linkCount = getLinkButtonCount(
     'show',
     activeExternalLinks,
-    activeItemStatistics,
-  ).length
+    isSeerrActive,
+  )
 
   return (
     <ul className='flex w-full flex-col'>

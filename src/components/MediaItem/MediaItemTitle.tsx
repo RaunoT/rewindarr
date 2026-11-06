@@ -2,21 +2,17 @@
 
 import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion'
 import { TautulliItemRow } from '@/types/tautulli'
-import { Deeplink } from '@/utils/deeplink'
 import clsx from 'clsx'
 import { debounce } from 'lodash'
 import { motion, useAnimation } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { ReactNode, RefObject, useEffect, useRef } from 'react'
-import MediaServerLink from './MediaServerLink'
 
 type Props = {
   data: TautulliItemRow
   type: string
   parentRef: RefObject<HTMLDivElement | null>
   loggedInUserId?: string
-  // Makes the title open it in the media server
-  serverLink?: Deeplink | null
   // After the title, such as its year
   note?: ReactNode
 }
@@ -26,7 +22,6 @@ export default function MediaItemTitle({
   type,
   parentRef,
   loggedInUserId,
-  serverLink,
   note,
 }: Props) {
   const t = useTranslations('MediaItem')
@@ -117,17 +112,7 @@ export default function MediaItemTitle({
           ref={titleRef}
           title={shouldReduceMotion ? title : undefined}
         >
-          {serverLink ? (
-            <MediaServerLink
-              title={title}
-              {...serverLink}
-              className='media-link-title'
-            >
-              {title}
-            </MediaServerLink>
-          ) : (
-            title
-          )}
+          {title}
           {note}
         </motion.span>
       </span>

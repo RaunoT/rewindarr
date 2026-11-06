@@ -216,16 +216,22 @@ function HistoryLoader({
   rows,
   totalsCount,
   general,
+  isSeerrActive,
 }: {
   rows: number
   totalsCount: number
   general: ComponentProps<typeof HistorySkeleton>['general']
+  isSeerrActive: boolean
 }) {
   return (
     <>
       <TotalsSkeleton count={totalsCount} />
       <CardWrapper>
-        <HistorySkeleton rows={rows} general={general} />
+        <HistorySkeleton
+          rows={rows}
+          general={general}
+          isSeerrActive={isSeerrActive}
+        />
       </CardWrapper>
     </>
   )
@@ -287,7 +293,11 @@ async function HistoryContent({
           {requestsNotice}
           <SkeletonSized
             skeleton={
-              <HistorySkeleton rows={pageSize} general={settings.general} />
+              <HistorySkeleton
+                rows={pageSize}
+                general={settings.general}
+                isSeerrActive={isSeerrActive(settings)}
+              />
             }
           >
             {progress ? (
@@ -439,7 +449,11 @@ export default async function HistoryPage({ searchParams }: Props) {
         <CardWrapper>
           <SkeletonSized
             skeleton={
-              <HistorySkeleton rows={pageSize} general={settings.general} />
+              <HistorySkeleton
+                rows={pageSize}
+                general={settings.general}
+                isSeerrActive={isSeerrActive(settings)}
+              />
             }
           >
             <SourceUnreachable
@@ -502,6 +516,7 @@ export default async function HistoryPage({ searchParams }: Props) {
           <HistoryLoader
             rows={pageSize}
             general={settings.general}
+            isSeerrActive={hasRequests}
             totalsCount={getTotalKeys(filter, hasRequests).length}
           />
         }

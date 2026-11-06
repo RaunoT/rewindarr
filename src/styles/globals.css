@@ -342,9 +342,8 @@
     @apply relative aspect-2/3 w-16 shrink-0 overflow-hidden rounded-md! shadow-lg shadow-black/40 sm:w-18;
   }
 
-  /* A home tile opens its page from anywhere but the links in it. Its
-     heading's link stretches over it, under the titles' and posters' links to
-     the media server. Used with glass-sheet. */
+  /* A home tile opens its page from anywhere in it: its heading's link
+     stretches over it. Used with glass-sheet. */
   .tile {
     @apply flex flex-col gap-4 transition-colors;
 
@@ -354,10 +353,6 @@
       .tile-chevron {
         @apply translate-x-0.5;
       }
-    }
-
-    [data-media-link] {
-      @apply relative z-20;
     }
   }
 
@@ -369,21 +364,31 @@
     @apply size-4 shrink-0 text-neutral-500 transition-transform;
   }
 
-  /* A title and its poster open the same item, so hovering either lights up
-     both */
-  .media-link-group {
-    .poster {
-      @apply transition-[filter];
+  /* Dims a poster under an icon, such as a paused stream's */
+  .poster-overlay {
+    @apply absolute inset-0 flex items-center justify-center bg-black/60;
+  }
+
+  /* A poster that opens the item shows its MediaLinkIcon while hovered or
+     focused, in place of any other overlay. Over a bare poster it fades in.
+     Another overlay swaps for it at once, as fading both would dim them
+     halfway, which flickers when they're the same, like a request's plus. */
+  .media-link-icon {
+    @apply opacity-0;
+  }
+
+  .poster:not(:has(> .poster-overlay:not(.media-link-icon)))
+    > .media-link-icon {
+    @apply transition-opacity;
+  }
+
+  [data-media-link]:is(:hover, :focus-visible) {
+    .poster-overlay {
+      @apply opacity-0;
     }
 
-    &:has([data-media-link]:hover) {
-      .poster {
-        @apply brightness-115;
-      }
-
-      .media-link-title {
-        @apply underline decoration-white/40 underline-offset-4;
-      }
+    .media-link-icon {
+      @apply opacity-100;
     }
   }
 

@@ -8,8 +8,13 @@ import { PublicSettings } from '@/types/settings'
 import { MediaServer } from '@/types/statsSource'
 import { TautulliItemRow } from '@/types/tautulli'
 import { DASHBOARD_PAGE_SIZE, EXTERNAL_LINK_NAMES } from '@/utils/constants'
-import { getRowDeeplink } from '@/utils/deeplink'
-import { getExternalLinks, getRatedSites } from '@/utils/externalLinks'
+import {
+  getRequestUrl,
+  getRowDeeplink,
+  getSeerrPageUrl,
+  getSeerrUrl,
+} from '@/utils/deeplink'
+import { getExternalLinks, getRatingLinks } from '@/utils/externalLinks'
 import { secondsToTime } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import { countdownRow, slideDown } from '@/utils/motion'
@@ -19,9 +24,10 @@ import { motion } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { useRef } from 'react'
 import MediaItemTitle from './MediaItemTitle'
-import MediaServerLink from './MediaServerLink'
+import MediaLink, { MediaLinkIcon } from './MediaLink'
+import MediaServerLogo from './MediaServerLogo'
 import Rank from './Rank'
-import SeerrLogo from './SeerrLogo'
+import SeerrButton from './SeerrButton'
 import SiteLogo from './SiteLogo'
 import TitleDetails from './TitleDetails'
 import TitleNote from './TitleNote'
@@ -67,7 +73,6 @@ export default function MediaItem({
       : getImageProxyUrl(data.thumb)
   const isAnonymized = !!data.is_anonymous
   const titleContainerRef = useRef<HTMLDivElement>(null)
-  const isSeerrActive = settings.connection.isSeerrActive
   const dataKey = `${data.rating_key || data.user_id || i}-${type}`
   const rank = data.rank || i
   const isVideo = type === 'movie' || type === 'show'
@@ -85,15 +90,29 @@ export default function MediaItem({
       })}
     </TitleNote>
   ) : null
-  const links = isVideo
-    ? getExternalLinks(data, type, settings.general.activeExternalLinks)
-    : []
-  // A site whose rating is shown opens from the rating, so it gets no button
-  const ratedSites = getRatedSites(data, activeStats)
-  const externalLinks = links.filter(({ site }) => !ratedSites.includes(site))
-  const ratingLinks = Object.fromEntries(links.map((link) => [link.site, link]))
-  // The title and poster open it in the media server, unless it's gone
-  const serverLink = isUsers ? null : getRowDeeplink(data, type, mediaServer)
+  const { activeExternalLinks } = settings.general
+  const links = isVideo ? getExternalLinks(data, type, activeExternalLinks) : []
+  const ratingLinks = isVideo ? getRatingLinks(data, type) : {}
+  const seerrUrl = getSeerrUrl(settings)
+  // The poster opens it in the media server, or once it's gone, its request
+  const posterLink = isUsers
+    ? null
+    : getRowDeeplink(data, type, mediaServer, seerrUrl)
+  // The same as buttons, when they're chosen
+  const serverLink =
+    posterLink &&
+    'mediaServer' in posterLink &&
+    activeExternalLinks.includes('mediaServer')
+      ? posterLink
+      : null
+  const requestUrl = activeExternalLinks.includes('seerrStatus')
+    ? getRequestUrl(data, type, seerrUrl)
+    : null
+  // Its page in Seerr, unless the request already opens it
+  const seerrPageUrl =
+    !requestUrl && activeExternalLinks.includes('seerr')
+      ? getSeerrPageUrl(data, type, seerrUrl)
+      : null
   const poster = (
     <div className='poster max-sm:w-12'>
       {!isUsers ? (
@@ -115,6 +134,7 @@ export default function MediaItem({
           priority
         />
       )}
+      {posterLink && <MediaLinkIcon link={posterLink} />}
     </div>
   )
 
@@ -125,7 +145,6 @@ export default function MediaItem({
       // for visitors who prefer reduced motion, including during hydration.
       className={clsx(
         'flex items-center gap-3 py-2.5 not-first:border-t not-first:border-white/10 first:pt-0 last:pb-0 motion-reduce:transform-none! motion-reduce:opacity-100! max-sm:flex-wrap sm:gap-4',
-        serverLink && 'media-link-group',
         countdown === 'placeholder' && 'invisible',
       )}
       variants={countdown === 'reached' ? countdownRow : slideDown}
@@ -151,15 +170,10 @@ export default function MediaItem({
         )}
       >
         {isRanked && <Rank rank={rank} />}
-        {serverLink ? (
-          <MediaServerLink
-            title={data.title}
-            {...serverLink}
-            isDuplicate
-            className='shrink-0'
-          >
+        {posterLink ? (
+          <MediaLink title={data.title} link={posterLink} className='shrink-0'>
             {poster}
-          </MediaServerLink>
+          </MediaLink>
         ) : (
           poster
         )}
@@ -178,7 +192,6 @@ export default function MediaItem({
               type={type}
               parentRef={titleContainerRef}
               loggedInUserId={loggedInUserId}
-              serverLink={serverLink}
               note={note}
             />
             {/* Details about the title, kept apart from the viewing stats */}
@@ -250,26 +263,30 @@ export default function MediaItem({
                 )}
             </ul>
           </div>
-          {/* A deleted title's request or label and the links share a row,
-              split evenly on phones.
+          {/* The media server's link, a deleted title's request or label and
+              the sites' links share a row, split evenly on phones.
               Wrapped rows are far enough apart that a tag's tap area never
               covers the tag above it. */}
           {(type === 'movie' || type === 'show' || type === 'artist') && (
             <div className='relative z-10 flex shrink-0 flex-wrap items-center gap-x-1.5 gap-y-2.5 empty:hidden max-sm:basis-full max-sm:*:flex-1 max-sm:*:justify-center @md:mt-0.5 @md:max-w-56 @md:justify-end'>
+              {serverLink && (
+                <MediaLink
+                  title={data.title}
+                  link={serverLink}
+                  className='button-card'
+                >
+                  {/* Just the logo, the label carries the name */}
+                  <MediaServerLogo type={serverLink.mediaServer.type} />
+                </MediaLink>
+              )}
               {data.is_deleted ? (
-                isSeerrActive && (type === 'movie' || type === 'show') ? (
-                  <a
-                    href={`${settings.connection.seerrUrl}/${
-                      type === 'movie' ? 'movie' : 'tv'
-                    }/${data.tmdb_id}`}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='button-card'
-                    aria-label={t('requestLabel', { title: data.title })}
+                requestUrl ? (
+                  <SeerrButton
+                    href={requestUrl}
+                    label={t('requestLabel', { title: data.title })}
                   >
-                    <SeerrLogo />
                     {t('request')}
-                  </a>
+                  </SeerrButton>
                 ) : (
                   <div className='button-card text-neutral-300'>
                     <TrashIcon className='text-danger' />
@@ -277,7 +294,16 @@ export default function MediaItem({
                   </div>
                 )
               ) : null}
-              {externalLinks.map(({ site, href, isSearch }) => (
+              {seerrPageUrl && (
+                <SeerrButton
+                  href={seerrPageUrl}
+                  label={t('externalLinkLabel', {
+                    title: data.title,
+                    site: 'Seerr',
+                  })}
+                />
+              )}
+              {links.map(({ site, href, isSearch }) => (
                 <a
                   key={site}
                   href={href}

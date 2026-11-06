@@ -1,12 +1,11 @@
-import MediaServerLink from '@/components/MediaItem/MediaServerLink'
+import MediaLink, { MediaLinkIcon } from '@/components/MediaItem/MediaLink'
 import PosterImage from '@/components/PosterImage'
 import { RewindStory } from '@/types/rewind'
 import { TautulliItemRow } from '@/types/tautulli'
-import { getRowDeeplink } from '@/utils/deeplink'
+import { getRowDeeplink, getSeerrUrl } from '@/utils/deeplink'
 import { secondsToTime } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import { CalendarIcon, FireIcon } from '@heroicons/react/24/outline'
-import clsx from 'clsx'
 import { useFormatter, useTranslations } from 'next-intl'
 import { DAY_FORMAT, formatMomentDate, SHORT_DAY_FORMAT } from '../momentDate'
 import RewindCat from '../RewindCat'
@@ -29,7 +28,7 @@ function getPoster(item: TautulliItemRow) {
     : getImageProxyUrl(item.thumb)
 }
 
-export default function StoryBiggestDay({ userRewind }: RewindStory) {
+export default function StoryBiggestDay({ userRewind, settings }: RewindStory) {
   const t = useTranslations('Rewind.Moments')
   const tRoot = useTranslations()
   const format = useFormatter()
@@ -58,14 +57,15 @@ export default function StoryBiggestDay({ userRewind }: RewindStory) {
       <RewindStat step={1}>
         <p className='mb-4'>{t('dayTitles')}</p>
 
-        {/* The posters name the titles, open them in the media server and
-            wrap to fit the width */}
+        {/* The posters name the titles, open them in the media server, or
+            their request once they're gone, and wrap to fit the width */}
         <ul className='grid grid-cols-4 gap-2 sm:grid-cols-6 sm:gap-3'>
           {biggestDay.titles.map(({ title, mediaType, item }) => {
             const deeplink = getRowDeeplink(
               item,
               ITEM_TYPES[mediaType],
               userRewind.media_server,
+              getSeerrUrl(settings),
             )
             const poster = (
               <div className='poster w-full sm:w-full'>
@@ -75,23 +75,16 @@ export default function StoryBiggestDay({ userRewind }: RewindStory) {
                   alt={title}
                   sizes='(min-width: 640px) 7rem, 25vw'
                 />
+                {deeplink && <MediaLinkIcon link={deeplink} />}
               </div>
             )
 
             return (
-              <li
-                key={`${mediaType}|${title}`}
-                className={clsx(deeplink && 'media-link-group')}
-              >
+              <li key={`${mediaType}|${title}`}>
                 {deeplink ? (
-                  <MediaServerLink
-                    title={title}
-                    mediaServer={deeplink.mediaServer}
-                    ratingKey={deeplink.ratingKey}
-                    className='block'
-                  >
+                  <MediaLink title={title} link={deeplink} className='block'>
                     {poster}
-                  </MediaServerLink>
+                  </MediaLink>
                 ) : (
                   poster
                 )}

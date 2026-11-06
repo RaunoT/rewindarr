@@ -19,8 +19,8 @@ type Props = {
   children?: ReactNode
 }
 
-// As big as the dashboard's. The card makes it a link when the media server
-// has the item.
+// As big as the dashboard's. The card makes it a link to the item in the media
+// server or its request.
 export default function MediaCardPoster({
   srcs,
   type,

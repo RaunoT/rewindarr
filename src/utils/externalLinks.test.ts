@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { EXTERNAL_LINKS } from './constants'
-import { getExternalLinks, getRatedSites } from './externalLinks'
+import {
+  getExternalLinks,
+  getLinkButtonCount,
+  getRatingLinks,
+} from './externalLinks'
 
 const movie = {
   title: 'Dune: Part Two',
@@ -130,32 +134,33 @@ describe('getExternalLinks', () => {
   })
 })
 
-describe('getRatedSites', () => {
-  const ratings = {
-    rating: '8.1',
-    imdb_rating: '8.4',
-    rotten_tomatoes_rating: 92,
-    rotten_tomatoes_audience_rating: 95,
-  }
+describe('getRatingLinks', () => {
+  it('links every rated site, whichever links are chosen', () => {
+    const links = getRatingLinks(movie, 'movie')
 
-  it('lists the sites whose rating is shown', () => {
+    expect(links.imdb?.href).toBe('https://www.imdb.com/title/tt15239678')
+    expect(links.tmdb?.href).toBe('https://www.themoviedb.org/movie/693134')
+    expect(links.rottenTomatoes?.isSearch).toBe(true)
+  })
+})
+
+describe('getLinkButtonCount', () => {
+  it("counts the chosen sites a title can have and the media server's", () => {
     expect(
-      getRatedSites(ratings, ['tmdbRating', 'imdbRating', 'year']),
-    ).toEqual(['tmdb', 'imdb'])
+      getLinkButtonCount('movie', ['imdb', 'tvdb', 'mediaServer'], false),
+    ).toBe(2)
+    expect(getLinkButtonCount('show', ['imdb', 'tvdb'], false)).toBe(2)
   })
 
-  it('counts either Rotten Tomatoes score', () => {
-    expect(getRatedSites(ratings, ['rottenTomatoesAudienceRating'])).toEqual([
-      'rottenTomatoes',
-    ])
+  it("counts Seerr's plain link only while Seerr is set up", () => {
+    expect(getLinkButtonCount('movie', ['seerr', 'seerrStatus'], true)).toBe(1)
+    expect(getLinkButtonCount('movie', ['seerr'], false)).toBe(0)
   })
 
-  it('leaves out sites without a rating for the item', () => {
+  it("gives music only the media server's", () => {
     expect(
-      getRatedSites(
-        { ...ratings, imdb_rating: null, rotten_tomatoes_rating: null },
-        ['imdbRating', 'rottenTomatoesRating'],
-      ),
-    ).toEqual([])
+      getLinkButtonCount('artist', ['imdb', 'mediaServer', 'seerr'], true),
+    ).toBe(1)
+    expect(getLinkButtonCount('artist', ['imdb'], true)).toBe(0)
   })
 })

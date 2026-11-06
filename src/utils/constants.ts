@@ -1,6 +1,7 @@
 import {
   ExternalLink,
   ItemStatistics,
+  ServerLink,
   Settings,
   StatisticsSource,
 } from '@/types/settings'
@@ -80,7 +81,7 @@ export const DEFAULT_SETTINGS: Settings = {
     activeLibraries: [],
     excludedUsers: [],
     isPostersTmdbOnly: false,
-    activeExternalLinks: ['imdb', 'rottenTomatoes', 'letterboxd'],
+    activeExternalLinks: ['seerr', 'seerrStatus'],
     activeItemStatistics: [
       'year',
       'imdbRating',
@@ -149,6 +150,13 @@ export const STATS_SOURCE_NAMES: Record<StatisticsSource, string> = {
   tautulli: 'Tautulli',
   tracearr: 'Tracearr',
 }
+
+// First among the links, in this order
+export const SERVER_LINKS = [
+  'mediaServer',
+  'seerr',
+  'seerrStatus',
+] as const satisfies readonly ServerLink[]
 
 // In the order the links are shown
 export const EXTERNAL_LINKS = [
