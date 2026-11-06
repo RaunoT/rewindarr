@@ -81,7 +81,7 @@ export const DEFAULT_SETTINGS: Settings = {
     activeLibraries: [],
     excludedUsers: [],
     isPostersTmdbOnly: false,
-    activeExternalLinks: ['mediaServer', 'seerr', 'seerrStatus'],
+    activeExternalLinks: ['seerr', 'seerrStatus'],
     activeItemStatistics: [
       'year',
       'imdbRating',
