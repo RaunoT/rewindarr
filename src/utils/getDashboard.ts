@@ -1,17 +1,15 @@
 import { Settings } from '@/types/settings'
-import { Library, LibraryType, TopItemsQuery } from '@/types/statsSource'
+import { Library, TopItemsQuery } from '@/types/statsSource'
 import { clamp } from 'lodash'
 import { getTranslations } from 'next-intl/server'
-import { DASHBOARD_MAX_ITEMS, DASHBOARD_PAGE_SIZE } from './constants'
+import {
+  DASHBOARD_MAX_ITEMS,
+  DASHBOARD_PAGE_SIZE,
+  SEERR_MEDIA_TYPES,
+} from './constants'
 import { fetchSeerrStats, fetchSeerrUserId } from './fetchSeerr'
 import { bytesToSize, secondsToTime } from './formatting'
 import { getStatsSource } from './statsSource'
-
-// Seerr has no music
-const SEERR_MEDIA_TYPES: Partial<Record<LibraryType, string>> = {
-  movie: 'movie',
-  show: 'tv',
-}
 
 export async function getItems(library: Library, query: TopItemsQuery) {
   return getStatsSource().getTopItems(library, query)
@@ -110,8 +108,8 @@ export async function getTotalSize(library: Library, settings: Settings) {
     )
     const formattedSize = bytesToSize(size, 2, t)
 
-    // A Tracearr library spans every Plex library of its type, so only some
-    // of them can be missing a size.
+    // A Tracearr library spans every media server library of its type, so
+    // only some of them can be missing a size.
     return formattedSize && isPartial
       ? t('Dashboard.sizePartial', { size: formattedSize })
       : formattedSize

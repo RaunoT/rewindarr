@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useLocale, useTranslations } from 'next-intl'
 import { ComponentType, SVGProps } from 'react'
+import { getWeekdayDate } from './habitsDate'
 import { PERSONALITY_ICONS } from './personalityIcons'
 import {
   getSummaryFileName,
@@ -131,11 +132,10 @@ export default function useRewindSummary(
           key: highlight.type,
           label,
           Icon,
-          // 2024-01-07 is a Sunday, as in the habits story
           value: new Intl.DateTimeFormat(locale, {
             weekday: 'long',
             timeZone: 'UTC',
-          }).format(new Date(Date.UTC(2024, 0, 7 + highlight.day))),
+          }).format(getWeekdayDate(highlight.day)),
         }
     }
   }

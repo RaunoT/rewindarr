@@ -14,7 +14,7 @@ import {
 } from '@/utils/constants'
 import { getItems } from '@/utils/getDashboard'
 import getPeriod, { parseCustomPeriod } from '@/utils/getPeriod'
-import { getHomeTiles, getViewer } from '@/utils/helpers'
+import { getHomeTiles, getLibrarySlug, getViewer } from '@/utils/helpers'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import { toPublicSettings } from '@/utils/publicSettings'
 import { getHistoryProgress } from '@/utils/statsSource'
@@ -23,7 +23,6 @@ import {
   ChevronRightIcon,
   InboxIcon,
 } from '@heroicons/react/24/outline'
-import { kebabCase } from 'lodash'
 import { Session } from 'next-auth'
 import { getTranslations } from 'next-intl/server'
 import { cookies } from 'next/headers'
@@ -266,7 +265,7 @@ async function LibraryTile({
       <TileHeading
         name={library.section_name}
         type={library.section_type}
-        href={`/dashboard/${kebabCase(library.section_name)}${period ? `?period=${period}` : ''}`}
+        href={`/dashboard/${getLibrarySlug(library)}${period ? `?period=${period}` : ''}`}
       />
       {top ? (
         <div className='flex flex-col gap-3'>

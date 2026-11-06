@@ -37,12 +37,12 @@ beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation(() => {})
   vi.spyOn(console, 'log').mockImplementation(() => {})
 
-  const { plexRewindDownServices } = globalThis as {
-    plexRewindDownServices?: Map<string, unknown>
+  const { rewindarrDownServices } = globalThis as {
+    rewindarrDownServices?: Map<string, unknown>
   }
 
   // A host a test left down would skip the next test's images
-  plexRewindDownServices?.clear()
+  rewindarrDownServices?.clear()
 })
 
 afterEach(() => {

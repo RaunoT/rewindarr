@@ -17,12 +17,12 @@ import {
 import { maskApiKeys, restoreApiKeys } from '@/utils/connectionSecrets'
 import { selectServer, toServerOptions } from '@/utils/fetchTracearr'
 import getSettings from '@/utils/getSettings'
+import { getLibrarySlug } from '@/utils/helpers'
 import { isGatewayError, markHostUp } from '@/utils/hostBackoff'
 import { getIdentityPath, readServerId } from '@/utils/mediaServer'
 import { getMediaServerName, getMediaServerUrl } from '@/utils/mediaServerName'
 import { getReachableLibraries, startHistoryRead } from '@/utils/statsSource'
 import { normalizeUrl } from '@/utils/url'
-import { kebabCase } from 'lodash'
 import { getTranslations } from 'next-intl/server'
 import { z } from 'zod'
 import updateSettings from '../../_actions/updateSettings'
@@ -413,9 +413,7 @@ async function activateAllLibraries(
     generalSchema,
     {
       ...getSettings().general,
-      activeLibraries: libraries.map((library) =>
-        kebabCase(library.section_name),
-      ),
+      activeLibraries: libraries.map((library) => getLibrarySlug(library)),
       complete: true,
     },
     'general',

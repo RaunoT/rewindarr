@@ -24,7 +24,12 @@ import {
 } from './getMediaAdditionalData'
 import getSettings from './getSettings'
 import { LibrariesSize, sumLibrariesSize } from './librariesSize'
-import { createPlayStats, EMPTY_ROW, StatsUser, toSourceId } from './playStats'
+import {
+  createPlayStats,
+  StatsUser,
+  toInactiveUserRow,
+  toSourceId,
+} from './playStats'
 import {
   getSnapshot,
   isListOf,
@@ -134,7 +139,7 @@ async function getLibraries(): Promise<Library[]> {
 }
 
 // Shares the libraries request, so asking costs no extra call
-export async function isTautulliReachable(): Promise<boolean> {
+async function isTautulliReachable(): Promise<boolean> {
   return (await fetchLibraries()) !== null
 }
 
@@ -418,15 +423,7 @@ async function getInactiveUser(id: string): Promise<ItemRow | null> {
     return null
   }
 
-  // Only what a ranking row shows. The row reaches the browser, and get_user
-  // also returns the user's email and shared libraries.
-  return {
-    ...EMPTY_ROW,
-    user_id: Number(user.user_id),
-    user: user.username,
-    friendly_name: user.friendly_name,
-    user_thumb: user.user_thumb,
-  }
+  return toInactiveUserRow(user)
 }
 
 async function getFirstPlay(userId: string): Promise<FirstPlay | null> {
@@ -483,6 +480,7 @@ const tautulliSource: StatsSource = {
   getFirstPlay,
   getHistoryReaders: async (libraries) =>
     getTautulliHistoryReaders(libraries ?? (await getAllLibraries()) ?? []),
+  isReachable: isTautulliReachable,
   getSnapshotKey: getTautulliKey,
 }
 

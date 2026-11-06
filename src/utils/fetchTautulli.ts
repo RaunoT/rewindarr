@@ -1,4 +1,5 @@
 import qs from 'qs'
+import { isTimeoutError } from './connectionErrors'
 import getSettings from './getSettings'
 import { isGatewayError, isHostDown, markHostDown } from './hostBackoff'
 
@@ -99,7 +100,7 @@ export default async function fetchTautulli<T>(
       markHostDown(tautulliUrl)
     }
 
-    if (error instanceof Error && error.name === 'TimeoutError') {
+    if (isTimeoutError(error)) {
       console.error(
         `[TAUTULLI] - API request timed out after ${REQUEST_TIMEOUT_MS / 1000}s! The query was '${query}'.`,
       )

@@ -21,6 +21,7 @@ import getPeriod from '@/utils/getPeriod'
 import getSettings from '@/utils/getSettings'
 import {
   canViewFeature,
+  getLibrarySlug,
   getViewer,
   sortByActiveLibraries,
 } from '@/utils/helpers'
@@ -38,7 +39,7 @@ import {
   MoonIcon,
   PlayIcon,
 } from '@heroicons/react/24/outline'
-import { kebabCase, sortBy, upperFirst } from 'lodash'
+import { sortBy, upperFirst } from 'lodash'
 import { Metadata } from 'next'
 import { getServerSession, Session } from 'next-auth'
 import {
@@ -473,7 +474,7 @@ export default async function HistoryPage({ searchParams }: Props) {
   )
   const libraryParams = [libraryParam ?? []].flat()
   const pickedLibraries = libraries.filter((library) =>
-    libraryParams.includes(kebabCase(library.section_name)),
+    libraryParams.includes(getLibrarySlug(library)),
   )
   // Only the users the filter offers, so the URL can't pick an excluded one
   const userIds = [user ?? []]
@@ -492,10 +493,7 @@ export default async function HistoryPage({ searchParams }: Props) {
   }
   const params = new URLSearchParams([
     ...(periodParam ? [['period', periodParam]] : []),
-    ...pickedLibraries.map((library) => [
-      'library',
-      kebabCase(library.section_name),
-    ]),
+    ...pickedLibraries.map((library) => ['library', getLibrarySlug(library)]),
     ...userIds.map((userId) => ['user', userId]),
     ...(hasRequests && kind ? [['kind', kind]] : []),
     ...(search ? [['q', search]] : []),
@@ -506,7 +504,7 @@ export default async function HistoryPage({ searchParams }: Props) {
     <>
       {filters(
         libraries.map((library) => ({
-          value: kebabCase(library.section_name),
+          value: getLibrarySlug(library),
           label: library.section_name,
           type: library.section_type,
         })),

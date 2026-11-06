@@ -126,9 +126,9 @@ const ROLLUP_FIELDS = [
 // Next.js can bundle this file into more than one chunk, and each copy would
 // otherwise read the history and spend the rate limit on its own.
 const globalForTracearr = globalThis as unknown as {
-  plexRewindTracearr?: TracearrState
+  rewindarrTracearr?: TracearrState
 }
-const state = (globalForTracearr.plexRewindTracearr ??= {
+const state = (globalForTracearr.rewindarrTracearr ??= {
   cachedValues: new Map(),
   firstPlays: new Map(),
   media: new Map(),

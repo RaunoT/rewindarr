@@ -111,7 +111,7 @@ async function getStatsWithLoggedInUser(
   numberOfUsers: number,
 ) {
   const loggedInUserRank = users.findIndex(
-    (user) => String(user.user_id) == userId,
+    (user) => String(user.user_id) === userId,
   )
   const loggedInUser =
     users[loggedInUserRank] || (await getStatsSource().getInactiveUser(userId))

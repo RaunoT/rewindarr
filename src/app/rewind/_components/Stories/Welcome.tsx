@@ -2,7 +2,7 @@ import Avatar from '@/components/Avatar'
 import { RewindStory, UserRewind } from '@/types/rewind'
 import { formatMonthYear } from '@/utils/formatting'
 import { getRewindStartDate } from '@/utils/helpers'
-import { getMediaServerName } from '@/utils/mediaServerName'
+import { getServerName } from '@/utils/mediaServerName'
 import { useLocale, useTranslations } from 'next-intl'
 import RewindStat from '../RewindStat'
 
@@ -31,14 +31,12 @@ export default function StoryWelcome({
             name={userRewind.user.name}
             alt={tCommon('profilePictureAlt', { name: userRewind.user.name })}
             sizes='10rem'
-            priority
+            preload
           />
         </div>
         <p>
           {t.rich('welcome', {
-            serverName:
-              settings.general.serverName ||
-              getMediaServerName(settings.connection.mediaServerType),
+            serverName: getServerName(settings),
             userValue: userRewind.user.name,
             rewind: (chunks) => chunks,
             user: (chunks) => <span className='rewind-cat'>{chunks}</span>,

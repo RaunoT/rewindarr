@@ -189,7 +189,7 @@ export default function MediaCard({
       type={mediaType}
       alt={t('History.poster', { title: name })}
       isLoading={isPosterLoading}
-      priority={isPriority}
+      preload={isPriority}
       progress={progress}
     >
       {posterOverlay}

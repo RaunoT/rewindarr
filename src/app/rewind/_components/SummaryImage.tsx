@@ -44,7 +44,7 @@ export default function SummaryImage({ summary, ref }: Props) {
             src={summary.image}
             name={summary.name}
             sizes='12rem'
-            priority
+            preload
           />
         </div>
         {/* As wide as it can be, as the image keeps each box's width, and a
@@ -70,7 +70,7 @@ export default function SummaryImage({ summary, ref }: Props) {
           {tops.map(({ type, label, item, srcs }) => (
             <li key={type} className={tops.length > 2 ? 'w-24' : 'w-28'}>
               <div className='relative aspect-2/3 overflow-hidden rounded-md'>
-                <PosterImage srcs={srcs} type={type} sizes='18rem' priority />
+                <PosterImage srcs={srcs} type={type} sizes='18rem' preload />
               </div>
               <p className='mt-2 truncate text-xs text-neutral-400'>{label}</p>
               <p className='truncate text-sm font-medium'>{item.title}</p>
@@ -85,7 +85,7 @@ export default function SummaryImage({ summary, ref }: Props) {
       />
 
       <p className='flex items-center justify-center gap-1.5 text-xs font-semibold text-neutral-400'>
-        <AppIcon className='size-4' priority />
+        <AppIcon className='size-4' preload />
         {APP_NAME}
       </p>
     </div>

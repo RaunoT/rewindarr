@@ -21,10 +21,9 @@ import {
   EXTERNAL_LINK_NAMES,
   EXTERNAL_LINKS,
 } from '@/utils/constants'
-import { sortByLabel } from '@/utils/helpers'
+import { getLibrarySlug, sortByLabel } from '@/utils/helpers'
 import { getMediaServerName } from '@/utils/mediaServerName'
 import { PlayIcon, RectangleStackIcon } from '@heroicons/react/24/outline'
-import { kebabCase } from 'lodash'
 import { Reorder } from 'motion/react'
 import { useLocale, useTranslations } from 'next-intl'
 import Image from 'next/image'
@@ -55,12 +54,11 @@ export default function GeneralSettingsForm({
   const [librariesState, setLibrariesState] = useState<Library[]>(() => {
     const activeLibraries = settings.general.activeLibraries
       .map((libName) =>
-        libraries.find((lib) => kebabCase(lib.section_name) === libName),
+        libraries.find((lib) => getLibrarySlug(lib) === libName),
       )
       .filter((lib): lib is Library => !!lib)
     const inactiveLibraries = libraries.filter(
-      (lib) =>
-        !settings.general.activeLibraries.includes(kebabCase(lib.section_name)),
+      (lib) => !settings.general.activeLibraries.includes(getLibrarySlug(lib)),
     )
 
     return [...activeLibraries, ...inactiveLibraries]

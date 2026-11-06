@@ -1,6 +1,6 @@
 import Avatar from '@/components/Avatar'
 import { RewindStory } from '@/types/rewind'
-import { getMediaServerName } from '@/utils/mediaServerName'
+import { getServerName } from '@/utils/mediaServerName'
 import { UserIcon } from '@heroicons/react/24/outline'
 import { useFormatter, useTranslations } from 'next-intl'
 import RewindCat from '../RewindCat'
@@ -21,14 +21,11 @@ export default function StoryTasteMatch({ userRewind, settings }: RewindStory) {
     <>
       <RewindStat>
         <div className='relative mb-4 size-16 overflow-hidden rounded-full shadow-lg ring-1 shadow-black/40 ring-white/10 sm:size-20'>
-          <Avatar src={match.image} name={match.name} sizes='5rem' priority />
+          <Avatar src={match.image} name={match.name} sizes='5rem' preload />
         </div>
         <p>
           {t.rich('closest', {
-            serverName:
-              settings.general.serverName ||
-              getMediaServerName(settings.connection.mediaServerType),
-            plex: (chunks) => chunks,
+            serverName: getServerName(settings),
             userValue: match.name,
             user: (chunks) => (
               <RewindCat icon={<UserIcon />}>{chunks}</RewindCat>

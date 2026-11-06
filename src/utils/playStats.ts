@@ -8,6 +8,7 @@ import {
   LibraryType,
   MediaStats,
   PlaysByTime,
+  SourceUser,
   StatsSource,
   TopItems,
   TopItemsQuery,
@@ -66,6 +67,18 @@ export function toSourceId(id: string | null | undefined): number | string {
   }
 
   return /^\d+$/.test(id) ? Number(id) : id
+}
+
+// A user with no plays in the period. Only what a ranking row shows, as the row
+// reaches the browser and the source's user also has their email.
+export function toInactiveUserRow(user: SourceUser): ItemRow {
+  return {
+    ...EMPTY_ROW,
+    user_id: toSourceId(String(user.user_id)),
+    user: user.username,
+    friendly_name: user.friendly_name,
+    user_thumb: user.user_thumb,
+  }
 }
 
 // A user the rankings can list

@@ -8,10 +8,8 @@ import {
   SourceUser,
   StatsSource,
 } from '@/types/statsSource'
-import { kebabCase } from 'lodash'
-import { isTracearrReachable } from './fetchTracearr'
 import getSettings from './getSettings'
-import { isTracearrSource } from './helpers'
+import { getLibrarySlug } from './helpers'
 import {
   getReadProgress,
   getReadStatus,
@@ -20,23 +18,31 @@ import {
   startReading,
 } from './playHistory'
 import { hasSnapshot } from './sourceSnapshot'
-import tautulliSource, { isTautulliReachable } from './tautulliSource'
+import tautulliSource from './tautulliSource'
 import tracearrSource from './tracearrSource'
+
+const SOURCES: Record<StatisticsSource, StatsSource> = {
+  tautulli: tautulliSource,
+  tracearr: tracearrSource,
+}
+
+// Tautulli is the default, so any other value falls back to it
+function getSourceByName(source: string | undefined): StatsSource {
+  return source && Object.hasOwn(SOURCES, source)
+    ? SOURCES[source as StatisticsSource]
+    : SOURCES.tautulli
+}
 
 export function getStatsSource(
   settings: Settings = getSettings(),
 ): StatsSource {
-  return isTracearrSource(settings) ? tracearrSource : tautulliSource
+  return getSourceByName(settings.connection.statisticsSource)
 }
 
-// A source that can't be reached returns the same empty lists as one with
-// nothing in it, so pages that need to tell the two apart ask this too.
 export async function isStatsSourceReachable(
   settings: Settings = getSettings(),
 ): Promise<boolean> {
-  return isTracearrSource(settings)
-    ? isTracearrReachable()
-    : isTautulliReachable()
+  return getStatsSource(settings).isReachable()
 }
 
 // The stats come from the source's play history, which is read once before a
@@ -76,11 +82,7 @@ export function startHistoryRead(settings: Settings = getSettings()): void {
 // Each source keeps its history, so the one asked for can be another than
 // the saved one, as long as its connection is saved too.
 function getHistorySource(source?: StatisticsSource): StatsSource {
-  if (!source) {
-    return getStatsSource()
-  }
-
-  return source === 'tracearr' ? tracearrSource : tautulliSource
+  return source ? getSourceByName(source) : getStatsSource()
 }
 
 export async function getHistoryStatus(
@@ -107,7 +109,7 @@ export async function getLibraries(excludeInactive = true): Promise<Library[]> {
 
   return excludeInactive
     ? libraries.filter((library) =>
-        activeLibraries.includes(kebabCase(library.section_name)),
+        activeLibraries.includes(getLibrarySlug(library)),
       )
     : libraries
 }

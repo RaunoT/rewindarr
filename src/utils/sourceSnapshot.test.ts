@@ -31,8 +31,8 @@ beforeEach(() => {
   fs.mkdirSync(path.join(directory, 'config'))
   vi.spyOn(process, 'cwd').mockReturnValue(directory)
   // The module keeps its state on globalThis, which outlives resetModules
-  delete (globalThis as { plexRewindSourceSnapshot?: unknown })
-    .plexRewindSourceSnapshot
+  delete (globalThis as { rewindarrSourceSnapshot?: unknown })
+    .rewindarrSourceSnapshot
   vi.resetModules()
   vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
   vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -62,8 +62,8 @@ describe('sourceSnapshot', () => {
     })
 
     // After a restart, the saved answer stands in
-    delete (globalThis as { plexRewindSourceSnapshot?: unknown })
-      .plexRewindSourceSnapshot
+    delete (globalThis as { rewindarrSourceSnapshot?: unknown })
+      .rewindarrSourceSnapshot
     vi.resetModules()
 
     const { getSnapshot } = await load()

@@ -1,4 +1,5 @@
 import { MediaServerType } from '@/types/settings'
+import { isTimeoutError } from './connectionErrors'
 import { isGatewayError, isHostDown, markHostDown } from './hostBackoff'
 
 const IDENTITY_TIMEOUT_MS = 10_000
@@ -66,7 +67,7 @@ export async function fetchMediaServerId(
       markHostDown(url)
     }
 
-    if (error instanceof Error && error.name === 'TimeoutError') {
+    if (isTimeoutError(error)) {
       console.error(
         `${tag} - Getting server ID from ${url} timed out after ${IDENTITY_TIMEOUT_MS / 1000}s!`,
       )

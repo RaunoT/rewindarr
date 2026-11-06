@@ -13,15 +13,15 @@ export type BadgeUser = {
 
 type Props = {
   user: BadgeUser
-  priority?: boolean
+  preload?: boolean
 }
 
 // A user's avatar and name, for inside a stat pill, the same in the history
 // and the activity
-export default function UserBadge({ user, priority }: Props) {
+export default function UserBadge({ user, preload }: Props) {
   return (
     <>
-      <UserAvatar user={user} priority={priority} className='size-4' />
+      <UserAvatar user={user} preload={preload} className='size-4' />
       <span className='max-w-40 truncate'>{user.name}</span>
     </>
   )
@@ -32,7 +32,7 @@ type UserAvatarProps = Props & {
   className: string
 }
 
-export function UserAvatar({ user, priority, className }: UserAvatarProps) {
+export function UserAvatar({ user, preload, className }: UserAvatarProps) {
   const t = useTranslations()
 
   return (
@@ -52,7 +52,7 @@ export function UserAvatar({ user, priority, className }: UserAvatarProps) {
           name={user.name}
           alt={t('Common.profilePictureAlt', { name: user.name })}
           sizes='2rem'
-          priority={priority}
+          preload={preload}
         />
       )}
     </span>

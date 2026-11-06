@@ -5,6 +5,7 @@ import {
   HISTORY_PAGE_SIZE_COOKIE_NAME,
   HISTORY_PAGE_SIZES,
 } from '@/utils/constants'
+import { setCookie } from '@/utils/cookies'
 import { useTranslations } from 'next-intl'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
@@ -25,7 +26,7 @@ export default function PageSizeSelect({ value }: Props) {
 
     params.delete('page')
     params.set('rows', size)
-    document.cookie = `${HISTORY_PAGE_SIZE_COOKIE_NAME}=${size}; path=/; max-age=31536000; samesite=lax`
+    setCookie(HISTORY_PAGE_SIZE_COOKIE_NAME, size)
     router.push(`${pathname}?${params.toString()}`)
   }
 

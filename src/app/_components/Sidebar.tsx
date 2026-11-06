@@ -6,7 +6,7 @@ import SkeletonLine from '@/components/SkeletonLine'
 import { PublicSettings } from '@/types/settings'
 import { Library } from '@/types/statsSource'
 import { APP_NAME, SETTINGS_HREF, STATS_SOURCE_NAMES } from '@/utils/constants'
-import { canViewFeature, Viewer } from '@/utils/helpers'
+import { canViewFeature, getLibrarySlug, Viewer } from '@/utils/helpers'
 import {
   ArrowPathIcon,
   BackwardIcon,
@@ -16,7 +16,6 @@ import {
   SignalIcon,
   UsersIcon,
 } from '@heroicons/react/24/outline'
-import { kebabCase } from 'lodash'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
@@ -63,7 +62,7 @@ export default function Sidebar({ libraries, settings }: Props) {
         href='/'
         className='focus-visible:focus-ring mb-2 flex h-10 shrink-0 items-center gap-2.5 rounded-xl px-3 text-xl leading-none font-bold tracking-tight'
       >
-        <AppIcon className='size-6' priority />
+        <AppIcon className='size-6' preload />
         {settings.general.serverName ? (
           <span className='truncate'>{settings.general.serverName}</span>
         ) : (
@@ -192,7 +191,7 @@ function DashboardLinks({
       ) : (
         <>
           {libraries.map((library) => {
-            const href = `/dashboard/${kebabCase(library.section_name)}`
+            const href = `/dashboard/${getLibrarySlug(library)}`
 
             return (
               <SidebarLink

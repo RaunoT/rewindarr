@@ -6,8 +6,10 @@ import PlaybackOverlay from '@/components/PlaybackOverlay'
 import ProgressBar from '@/components/ProgressBar'
 import { DECISION_ICONS, getDecisionKind } from '@/components/StreamDecision'
 import { useMediaDetails } from '@/hooks/useMediaDetails'
+import { PlayMediaType } from '@/types/playHistory'
 import { PublicSettings } from '@/types/settings'
 import { ActivitySession, MediaServer } from '@/types/statsSource'
+import { PLAY_LIBRARY_TYPES } from '@/utils/constants'
 import { getDeeplinkRatingKeyFromSession } from '@/utils/deeplink'
 import {
   calculateETA,
@@ -274,7 +276,6 @@ export default function ActivityItem({
               bitrateSource || bitrateStream,
             )}
           </Detail>
-          {/* TODO: Tautulli doesn't return bandwidth for tracks sometimes */}
           <Detail label={t('bandwidth')}>
             {formatValue(formatBitrate(bandwidth, locale))}
           </Detail>
@@ -312,7 +313,7 @@ export default function ActivityItem({
 
   return (
     <MediaCard
-      type={TYPES[media_type as keyof typeof TYPES] ?? 'movie'}
+      type={PLAY_LIBRARY_TYPES[media_type as PlayMediaType] ?? 'movie'}
       mediaType={media_type}
       item={details}
       isItemLoading={isDetailsLoading}
@@ -379,8 +380,6 @@ export default function ActivityItem({
     </MediaCard>
   )
 }
-
-const TYPES = { movie: 'movie', episode: 'show', track: 'artist' } as const
 
 function isPresent(value?: number | string | null): value is number | string {
   return value != null && value !== ''

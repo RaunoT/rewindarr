@@ -1,6 +1,6 @@
 import MediaItems from '@/components/MediaItem/MediaItems'
 import { RewindStory } from '@/types/rewind'
-import { getMediaServerName } from '@/utils/mediaServerName'
+import { getServerName } from '@/utils/mediaServerName'
 import { MusicalNoteIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import CountUp from '../CountUp'
@@ -134,9 +134,7 @@ export default function StoryAudio({ userRewind, settings }: RewindStory) {
               audio: (chunks) => (
                 <RewindCat icon={<MusicalNoteIcon />}>{chunks}</RewindCat>
               ),
-              serverName:
-                settings.general.serverName ||
-                getMediaServerName(settings.connection.mediaServerType),
+              serverName: getServerName(settings),
               from: (chunks) => (
                 <span className='whitespace-nowrap'>
                   {chunks}

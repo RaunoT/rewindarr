@@ -1,3 +1,5 @@
+import { isTimeoutError } from './connectionErrors'
+
 // Rotten Tomatoes has no public API, so this asks the search its own site uses,
 // with the search-only key from that site, the way Seerr does. It's
 // unofficial and can stop working, and titles are matched by name and year,
@@ -101,7 +103,7 @@ export default async function fetchRottenTomatoes(
       audience: getScore(match.rottenTomatoes?.audienceScore),
     }
   } catch (error) {
-    if (error instanceof Error && error.name === 'TimeoutError') {
+    if (isTimeoutError(error)) {
       console.error(
         `[ROTTEN TOMATOES] - Search timed out after ${REQUEST_TIMEOUT_MS / 1000}s for '${title}'.`,
       )

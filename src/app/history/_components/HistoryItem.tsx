@@ -5,6 +5,7 @@ import ProgressBar from '@/components/ProgressBar'
 import { DECISION_ICONS, getDecisionKind } from '@/components/StreamDecision'
 import { PublicSettings } from '@/types/settings'
 import { HistoryPlay, ItemRow, MediaServer } from '@/types/statsSource'
+import { PLAY_LIBRARY_TYPES } from '@/utils/constants'
 import { getRequestUrl, getSeerrUrl } from '@/utils/deeplink'
 import { formatPercent, secondsToTime } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
@@ -27,8 +28,6 @@ type Props = {
   // Left out of one user's history, where it's the same on every card
   isUserShown: boolean
 }
-
-const TYPES = { movie: 'movie', episode: 'show', track: 'artist' } as const
 
 // A deleted item has nothing left to open in the media server. A re-added one
 // has a new rating key, and so do its episodes, which the show's stands in for.
@@ -154,7 +153,8 @@ export default function HistoryItem({
   const ratingKey = getRatingKey(play, item)
   // A deleted title opens its request instead
   const requestUrl =
-    item && getRequestUrl(item, TYPES[mediaType], getSeerrUrl(settings))
+    item &&
+    getRequestUrl(item, PLAY_LIBRARY_TYPES[mediaType], getSeerrUrl(settings))
   const isTrack = mediaType === 'track' && !isBinge
   const name = isTrack
     ? play.title
@@ -189,7 +189,7 @@ export default function HistoryItem({
   const decisionKind = getDecision(plays)
   const decision = decisionKind && DECISION_ICONS[decisionKind]
   const card = {
-    type: TYPES[mediaType],
+    type: PLAY_LIBRARY_TYPES[mediaType],
     mediaType,
     item,
     name,

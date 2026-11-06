@@ -2,12 +2,12 @@
 
 import { MediaIcon } from '@/components/icons'
 import { Library } from '@/types/statsSource'
+import { getLibrarySlug } from '@/utils/helpers'
 import {
   Bars2Icon,
   ChevronDownIcon,
   ChevronUpIcon,
 } from '@heroicons/react/24/outline'
-import { kebabCase } from 'lodash'
 import { Reorder, useDragControls } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { Checkbox } from 'react-aria-components'
@@ -71,7 +71,7 @@ export default function SortableLibrary({
         <Bars2Icon className='size-5' />
       </div>
       <Checkbox
-        value={kebabCase(library.section_name)}
+        value={getLibrarySlug(library)}
         className='checkbox-wrapper flex-1'
       >
         <div className='checkbox' aria-hidden='true'></div>

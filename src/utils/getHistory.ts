@@ -8,7 +8,7 @@ import { HistoryStatus } from '@/types/playHistory'
 import { HistoryPlay, ItemRow, Library } from '@/types/statsSource'
 import { clamp, orderBy, range, sumBy } from 'lodash'
 import { isSameBinge } from './binges'
-import { HISTORY_PAGE_SIZES } from './constants'
+import { HISTORY_PAGE_SIZES, SEERR_MEDIA_TYPES } from './constants'
 import getMediaAdditionalData from './getMediaAdditionalData'
 import {
   addRequestDetails,
@@ -80,14 +80,6 @@ export async function getRecentPlays(
     hasMore: plays.length > count,
     progress: null,
   }
-}
-
-// The libraries' types a request can be for. Music has none.
-const REQUEST_TYPES: Partial<
-  Record<Library['section_type'], HistoryRequest['mediaType']>
-> = {
-  movie: 'movie',
-  show: 'tv',
 }
 
 export type HistoryFilter = {
@@ -170,7 +162,9 @@ async function getMatchingRequests({
   userIds,
 }: HistoryFilter): Promise<HistoryRequest[] | null> {
   const requests = await getHistoryRequests(since)
-  const types = libraries?.map((library) => REQUEST_TYPES[library.section_type])
+  const types = libraries?.map(
+    (library) => SEERR_MEDIA_TYPES[library.section_type],
+  )
 
   if (!requests) {
     return null

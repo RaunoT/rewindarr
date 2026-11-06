@@ -119,7 +119,7 @@ export default function MediaItem({
           srcs={[posterSrc, data.tmdb_poster]}
           type={type}
           sizes='10rem'
-          priority
+          preload
         />
       ) : isAnonymized ? (
         <ImageFallback>
@@ -130,7 +130,7 @@ export default function MediaItem({
           src={data.user_thumb}
           name={data.friendly_name}
           sizes='10rem'
-          priority
+          preload
         />
       )}
       {posterLink && <MediaLinkIcon link={posterLink} />}

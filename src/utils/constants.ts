@@ -1,3 +1,5 @@
+import { HistoryRequest } from '@/types/history'
+import { PlayMediaType } from '@/types/playHistory'
 import {
   ExternalLink,
   ItemStatistics,
@@ -5,6 +7,7 @@ import {
   Settings,
   StatisticsSource,
 } from '@/types/settings'
+import { LibraryType } from '@/types/statsSource'
 
 export type Period = {
   date: string
@@ -197,6 +200,21 @@ export const RATING_STATISTICS = [
   'rottenTomatoesRating',
   'rottenTomatoesAudienceRating',
 ] as const
+
+// The type of library a played movie, episode or track belongs to
+export const PLAY_LIBRARY_TYPES: Record<PlayMediaType, LibraryType> = {
+  movie: 'movie',
+  episode: 'show',
+  track: 'artist',
+}
+
+// The Seerr media type a library's requests are for. Music has none.
+export const SEERR_MEDIA_TYPES: Partial<
+  Record<LibraryType, HistoryRequest['mediaType']>
+> = {
+  movie: 'movie',
+  show: 'tv',
+}
 
 export const REWIND_MUSIC_MAX_BYTES = 50 * 1024 * 1024
 // What a Rewind track may be, by file extension, and the type it's served as

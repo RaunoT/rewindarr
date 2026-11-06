@@ -335,6 +335,9 @@ export type StatsSource = {
   // The play histories the stats are read from. Without libraries, those of
   // every library, whoever is signed in.
   getHistoryReaders: (libraries?: Library[]) => Promise<HistoryReader[]>
+  // A source that can't be reached returns the same empty lists as one with
+  // nothing in it, so this tells the two apart.
+  isReachable: () => Promise<boolean>
   // What the source's answers are saved under, to stand in while it's down
   getSnapshotKey: () => string
 }

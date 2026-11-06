@@ -114,7 +114,7 @@ export async function searchTmdbId(
     return id
   }
 
-  // The year in Plex doesn't always match TMDB's.
+  // The media server's year doesn't always match TMDB's.
   const retry = await fetchTmdb<TmdbSearch>(
     `search/${type}`,
     getTmdbSearchParams(item.title, type),
@@ -141,7 +141,6 @@ async function getTmdbData(item: ItemRow, type: TmdbMediaType) {
     return { tmdbId: null, details: null }
   }
 
-  // Tautulli doesn't return rating for removed items, so we're using TMDB
   const details = await fetchTmdbDetails(type, tmdbId)
 
   return { tmdbId, details }

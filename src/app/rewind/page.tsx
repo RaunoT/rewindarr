@@ -2,7 +2,7 @@ import HistoryReading from '@/components/HistoryReading'
 import { authOptions } from '@/lib/auth'
 import { RewindTotals, RewindUser, UserRewind } from '@/types/rewind'
 import { ItemRow, Library } from '@/types/statsSource'
-import { TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
+import { PLAY_LIBRARY_TYPES, TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
 import {
   formatMonthYear,
   formatTimeSince,
@@ -88,7 +88,7 @@ async function RewindContent({ userId }: { userId?: string }) {
   // Only admins can open another user's rewind.
   if (session?.user.isAdmin && userId) {
     const users = await getActiveUsers(settings)
-    const queriedUser = users.find((u) => u.user_id == userId)
+    const queriedUser = users.find((u) => String(u.user_id) === userId)
 
     if (queriedUser) {
       user = {
@@ -323,7 +323,7 @@ async function getRewind(
         firstPlay.play && firstPlayItem
           ? {
               data: firstPlayItem,
-              type: ITEM_TYPES[firstPlay.play.mediaType],
+              type: PLAY_LIBRARY_TYPES[firstPlay.play.mediaType],
               hasTotals: hasFirstPlayTotals,
             }
           : null,
@@ -388,13 +388,6 @@ type Props = {
     userId?: string
   }>
 }
-
-// What a play rolls up into, as in the dashboard's lists
-const ITEM_TYPES = {
-  movie: 'movie',
-  episode: 'show',
-  track: 'artist',
-} as const
 
 export default async function RewindPage({ searchParams }: Props) {
   const { userId } = await searchParams

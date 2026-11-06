@@ -1,6 +1,6 @@
 import { RewindStory } from '@/types/rewind'
 import { formatMonthYear } from '@/utils/formatting'
-import { getMediaServerName } from '@/utils/mediaServerName'
+import { getServerName } from '@/utils/mediaServerName'
 import { BackwardIcon } from '@heroicons/react/24/outline'
 import { useLocale, useTranslations } from 'next-intl'
 import { getAverageMessage } from '../averageMessage'
@@ -37,14 +37,11 @@ export default function StoryYearOverYear({
             startValue,
             endValue,
             durationValue: yearOverYear.duration,
-            serverName:
-              settings.general.serverName ||
-              getMediaServerName(settings.connection.mediaServerType),
+            serverName: getServerName(settings),
             before: (chunks) => (
               <RewindCat icon={<BackwardIcon />}>{chunks}</RewindCat>
             ),
             duration: (chunks) => <span className='rewind-stat'>{chunks}</span>,
-            plex: (chunks) => chunks,
           })}
         </p>
       </RewindStat>

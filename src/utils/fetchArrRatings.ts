@@ -1,3 +1,5 @@
+import { isTimeoutError } from './connectionErrors'
+
 // Radarr's and Sonarr's own metadata services, which need no API key. Neither
 // is an official API, so a failed lookup just leaves the ratings out.
 export const RADARR_API_URL = 'https://api.radarr.video/v1'
@@ -52,7 +54,7 @@ async function fetchJson<T>(url: string, service: string): Promise<T | null> {
 
     return await res.json()
   } catch (error) {
-    if (error instanceof Error && error.name === 'TimeoutError') {
+    if (isTimeoutError(error)) {
       console.error(
         `[${service}] - Ratings request timed out after ${REQUEST_TIMEOUT_MS / 1000}s! The URL was '${url}'.`,
       )

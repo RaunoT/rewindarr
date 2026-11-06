@@ -62,6 +62,11 @@ export function isCertificateError(error: unknown): boolean {
   return false
 }
 
+// What fetch throws when a request's AbortSignal.timeout runs out
+export function isTimeoutError(error: unknown): error is Error {
+  return error instanceof Error && error.name === 'TimeoutError'
+}
+
 export function getFetchError(error: unknown): ConnectionError {
   return {
     key: isCertificateError(error) ? 'certificateError' : 'unableToConnect',

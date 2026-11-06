@@ -505,8 +505,8 @@ describe('getTopPeople', () => {
       vi.restoreAllMocks()
       // The backoff keeps its state on globalThis
       ;(
-        globalThis as { plexRewindDownServices?: Map<string, unknown> }
-      ).plexRewindDownServices?.clear()
+        globalThis as { rewindarrDownServices?: Map<string, unknown> }
+      ).rewindarrDownServices?.clear()
     }
   })
 })
