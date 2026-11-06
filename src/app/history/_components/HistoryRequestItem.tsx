@@ -20,8 +20,8 @@ type Props = {
 }
 
 // Built like a play's card, with the request's status in Seerr among its
-// links. Once some of it is there, the title and poster open it in the media
-// server.
+// links when Seerr's are chosen. The poster opens the request, or once some of
+// it is there, the item in the media server.
 export default function HistoryRequestItem({
   request,
   item,
@@ -40,16 +40,19 @@ export default function HistoryRequestItem({
         ? t('History.season', { season: seasons[0] })
         : t('History.seasonCount', { count: seasons.length })
       : null
+  const requestUrl = `${settings.connection.seerrUrl}/${mediaType}/${request.tmdbId}`
   // What's there opens in the media server. Only a partly available one still
   // needs its status, as the rest is yet to come.
-  const deeplink =
+  const serverLink =
     (request.status === 'available' ||
       request.status === 'partiallyAvailable') &&
     mediaServer &&
     request.ratingKey
       ? { mediaServer, ratingKey: request.ratingKey }
       : null
-  const isStatusShown = request.status !== 'available' || !deeplink
+  const isStatusShown =
+    settings.general.activeExternalLinks.includes('seerr') &&
+    (request.status !== 'available' || !serverLink)
 
   return (
     <MediaCard
@@ -65,7 +68,7 @@ export default function HistoryRequestItem({
         <span
           role='img'
           aria-label={t('History.request')}
-          className='absolute inset-0 flex items-center justify-center bg-black/60'
+          className='poster-overlay'
         >
           <STAT_ICONS.requests className='size-7 drop-shadow' />
         </span>
@@ -84,7 +87,7 @@ export default function HistoryRequestItem({
       action={
         isStatusShown && (
           <a
-            href={`${settings.connection.seerrUrl}/${mediaType}/${request.tmdbId}`}
+            href={requestUrl}
             target='_blank'
             rel='noopener noreferrer'
             className='button-card'
@@ -95,7 +98,7 @@ export default function HistoryRequestItem({
           </a>
         )
       }
-      deeplink={deeplink}
+      deeplink={serverLink ?? { requestUrl }}
       aside={<HistoryTime time={new Date(request.createdAt)} />}
       settings={settings}
     />

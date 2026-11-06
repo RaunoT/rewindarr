@@ -20,7 +20,10 @@ describe('getRowDeeplink', () => {
       mediaServer: PLEX,
       ratingKey: 10,
     })
-    expect(getRowDeeplink(row({}), 'artist', PLEX)?.ratingKey).toBe(20)
+    expect(getRowDeeplink(row({}), 'artist', PLEX)).toEqual({
+      mediaServer: PLEX,
+      ratingKey: 20,
+    })
   })
 
   it('leaves out an item without a server, a rating key or one deleted', () => {
@@ -28,6 +31,21 @@ describe('getRowDeeplink', () => {
     expect(getRowDeeplink(null, 'movie', PLEX)).toBeNull()
     expect(getRowDeeplink(row({ is_deleted: true }), 'show', PLEX)).toBeNull()
     expect(getRowDeeplink(row({ rating_key: 0 }), 'show', PLEX)).toBeNull()
+  })
+
+  it('links a deleted movie or show to its request in Seerr', () => {
+    const deleted = row({ is_deleted: true, tmdb_id: 603 })
+
+    expect(getRowDeeplink(deleted, 'movie', PLEX, 'http://seerr')).toEqual({
+      requestUrl: 'http://seerr/movie/603',
+    })
+    expect(getRowDeeplink(deleted, 'show', null, 'http://seerr')).toEqual({
+      requestUrl: 'http://seerr/tv/603',
+    })
+    expect(getRowDeeplink(deleted, 'artist', PLEX, 'http://seerr')).toBeNull()
+    expect(
+      getRowDeeplink(row({ is_deleted: true }), 'movie', PLEX, 'http://seerr'),
+    ).toBeNull()
   })
 })
 

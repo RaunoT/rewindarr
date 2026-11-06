@@ -1,10 +1,12 @@
 import { STAT_ICONS } from '@/components/icons'
 import MediaCard, { STAT_PILL } from '@/components/MediaCard'
+import RequestButton from '@/components/MediaItem/RequestButton'
 import ProgressBar from '@/components/ProgressBar'
 import { DECISION_ICONS, getDecisionKind } from '@/components/StreamDecision'
 import { PublicSettings } from '@/types/settings'
 import { HistoryPlay, MediaServer } from '@/types/statsSource'
 import { TautulliItemRow } from '@/types/tautulli'
+import { getRequestUrl, getSeerrUrl } from '@/utils/deeplink'
 import { formatPercent, secondsToTime } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import clsx from 'clsx'
@@ -151,6 +153,9 @@ export default function HistoryItem({
   // One episode played in two sittings is just that episode
   const isBinge = entries.length > 1
   const ratingKey = getRatingKey(play, item)
+  // A deleted title opens its request instead
+  const requestUrl =
+    item && getRequestUrl(item, TYPES[mediaType], getSeerrUrl(settings))
   const isTrack = mediaType === 'track' && !isBinge
   const name = isTrack
     ? play.title
@@ -224,7 +229,16 @@ export default function HistoryItem({
         )}
       </>
     ),
-    deeplink: mediaServer && ratingKey ? { mediaServer, ratingKey } : null,
+    action: requestUrl &&
+      settings.general.activeExternalLinks.includes('seerr') && (
+        <RequestButton title={name} href={requestUrl} />
+      ),
+    deeplink:
+      mediaServer && ratingKey
+        ? { mediaServer, ratingKey }
+        : requestUrl
+          ? { requestUrl }
+          : null,
     // A binge's newest play, which is where it's in the history
     aside: <HistoryTime time={new Date(play.startedAt)} />,
     settings,

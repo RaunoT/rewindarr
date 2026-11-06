@@ -5,7 +5,7 @@ import SkeletonLine from '@/components/SkeletonLine'
 import SkeletonLinks from '@/components/SkeletonLinks'
 import { PublicSettings } from '@/types/settings'
 import { DEFAULT_SETTINGS, RATING_STATISTICS } from '@/utils/constants'
-import { getLinkButtonSites } from '@/utils/externalLinks'
+import { getLinkButtonCount } from '@/utils/externalLinks'
 import clsx from 'clsx'
 import { useContext } from 'react'
 
@@ -38,12 +38,7 @@ export default function ActivitiesSkeleton({
   const hasRatings = RATING_STATISTICS.some((rating) =>
     activeItemStatistics.includes(rating),
   )
-  // A site whose rating is shown opens from it
-  const linkCount = getLinkButtonSites(
-    'show',
-    activeExternalLinks,
-    activeItemStatistics,
-  ).length
+  const linkCount = getLinkButtonCount('show', activeExternalLinks)
 
   return (
     <ul className='flex w-full flex-col'>

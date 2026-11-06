@@ -4,6 +4,8 @@ import audienceFreshSvg from '@/assets/rotten-tomatoes/audience-fresh.svg'
 import freshSvg from '@/assets/rotten-tomatoes/fresh.svg'
 import Avatar from '@/components/Avatar'
 import { STAT_ICONS } from '@/components/icons'
+import MediaServerLogo from '@/components/MediaItem/MediaServerLogo'
+import SeerrLogo from '@/components/MediaItem/SeerrLogo'
 import SiteLogo from '@/components/MediaItem/SiteLogo'
 import MultiSelect from '@/components/MultiSelect'
 import SourceUnreachable from '@/components/SourceUnreachable'
@@ -20,6 +22,7 @@ import {
   EXTERNAL_LINKS,
 } from '@/utils/constants'
 import { sortByLabel } from '@/utils/helpers'
+import { getMediaServerName } from '@/utils/mediaServerName'
 import { PlayIcon, RectangleStackIcon } from '@heroicons/react/24/outline'
 import { kebabCase } from 'lodash'
 import { Reorder } from 'motion/react'
@@ -72,13 +75,24 @@ export default function GeneralSettingsForm({
   const t = useTranslations('Settings.General')
   const tCommon = useTranslations('Common')
   const locale = useLocale()
-  const isSeerrActive = settings.connection.isSeerrActive
-  const externalLinkOptions = sortByLabel(
-    EXTERNAL_LINKS.map((site) => ({
-      value: site,
-      label: EXTERNAL_LINK_NAMES[site],
-      icon: <SiteLogo site={site} />,
-    })),
+  const { isSeerrActive, mediaServerType } = settings.connection
+  const mediaServerName = getMediaServerName(mediaServerType)
+  const linkOptions = sortByLabel(
+    [
+      {
+        value: 'mediaServer',
+        label: mediaServerName,
+        icon: <MediaServerLogo type={mediaServerType} />,
+      },
+      ...(isSeerrActive
+        ? [{ value: 'seerr', label: 'Seerr', icon: <SeerrLogo /> }]
+        : []),
+      ...EXTERNAL_LINKS.map((site) => ({
+        value: site,
+        label: EXTERNAL_LINK_NAMES[site],
+        icon: <SiteLogo site={site} />,
+      })),
+    ],
     locale,
   )
   // The server's own statistics first, then the rating sites'
@@ -282,11 +296,14 @@ export default function GeneralSettingsForm({
               </span>
             </Switch>
             <MultiSelect
-              key={`external-links-${generalSettings.activeExternalLinks.join(',')}`}
-              label={t('externalLinks')}
-              description={t('externalLinksDescription')}
+              key={`links-${generalSettings.activeExternalLinks.join(',')}`}
+              label={t('links')}
+              description={t(
+                isSeerrActive ? 'linksDescriptionSeerr' : 'linksDescription',
+                { server: mediaServerName },
+              )}
               name='activeExternalLinks'
-              options={externalLinkOptions}
+              options={linkOptions}
               defaultValue={generalSettings.activeExternalLinks}
               placeholder={tCommon('none')}
             />

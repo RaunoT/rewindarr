@@ -1,4 +1,5 @@
-import MediaServerLink from '@/components/MediaItem/MediaServerLink'
+import MediaLink, { MediaLinkIcon } from '@/components/MediaItem/MediaLink'
+import MediaServerLogo from '@/components/MediaItem/MediaServerLogo'
 import SiteLogo from '@/components/MediaItem/SiteLogo'
 import TitleDetails, {
   TitleDetailsData,
@@ -9,11 +10,7 @@ import UserBadge, { BadgeUser } from '@/components/UserBadge'
 import { PublicSettings } from '@/types/settings'
 import { EXTERNAL_LINK_NAMES, RATING_STATISTICS } from '@/utils/constants'
 import { Deeplink } from '@/utils/deeplink'
-import {
-  getExternalLinks,
-  getRatedSites,
-  LinkedItem,
-} from '@/utils/externalLinks'
+import { getExternalLinks, LinkedItem } from '@/utils/externalLinks'
 import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
 import { Fragment, ReactNode } from 'react'
@@ -53,9 +50,10 @@ type Props = {
   user?: BadgeUser | null
   // After the user's, such as the watch time and how it played
   stats?: ReactNode
-  // First among the links, such as a request's status in Seerr
+  // Among the links after the media server's, such as a request's status in
+  // Seerr
   action?: ReactNode
-  // The item in the media server, which the title and poster open
+  // The item in the media server or its request, which the poster opens
   deeplink?: Deeplink | null
   // Such as a play's date or when a stream ends, on the right of wide cards
   // and above the name on narrow ones
@@ -100,7 +98,7 @@ export default function MediaCard({
 }: Props) {
   const t = useTranslations()
   const isVideo = type === 'movie' || type === 'show'
-  const { activeItemStatistics } = settings.general
+  const { activeItemStatistics, activeExternalLinks } = settings.general
   // Only the title's own details, as the counts are the dashboard's
   const titleStats = activeItemStatistics.filter((stat) =>
     (RATING_STATISTICS as readonly string[]).includes(stat),
@@ -108,14 +106,16 @@ export default function MediaCard({
   const year =
     isVideo && activeItemStatistics.includes('year') ? item?.year : null
   const links =
-    item && isVideo
-      ? getExternalLinks(item, type, settings.general.activeExternalLinks)
-      : []
-  // A site whose rating is shown opens from the rating, so it gets no button
-  const ratedSites = item ? getRatedSites(item, titleStats) : []
-  const externalLinks = links.filter(({ site }) => !ratedSites.includes(site))
+    item && isVideo ? getExternalLinks(item, type, activeExternalLinks) : []
   const ratingLinks = Object.fromEntries(links.map((link) => [link.site, link]))
-  const hasLinks = !!action || externalLinks.length > 0
+  // The poster's link to the media server, as a button when it's chosen
+  const serverLink =
+    deeplink &&
+    'mediaServer' in deeplink &&
+    activeExternalLinks.includes('mediaServer')
+      ? deeplink
+      : null
+  const hasLinks = !!serverLink || !!action || links.length > 0
   // Above the name on phones, ending with the aside unless they show it
   // elsewhere
   const phoneNotes = [
@@ -135,8 +135,14 @@ export default function MediaCard({
         className,
       )}
     >
+      {serverLink && (
+        <MediaLink title={name} link={serverLink} className='button-card'>
+          {/* Just the logo, the label carries the name */}
+          <MediaServerLogo type={serverLink.mediaServer.type} />
+        </MediaLink>
+      )}
       {action}
-      {externalLinks.map(({ site, href, isSearch }) => (
+      {links.map(({ site, href, isSearch }) => (
         <a
           key={site}
           href={href}
@@ -170,6 +176,7 @@ export default function MediaCard({
       progress={progress}
     >
       {posterOverlay}
+      {deeplink && <MediaLinkIcon link={deeplink} />}
     </MediaCardPoster>
   )
 
@@ -180,19 +187,12 @@ export default function MediaCard({
       className={clsx(
         'flex flex-wrap gap-3 py-2.5 not-first:border-t not-first:border-white/10 first:pt-0 last:pb-0 sm:gap-4',
         children ? 'items-start' : 'items-start sm:items-center',
-        deeplink && 'media-link-group',
       )}
     >
       {deeplink ? (
-        <MediaServerLink
-          title={name}
-          mediaServer={deeplink.mediaServer}
-          ratingKey={deeplink.ratingKey}
-          isDuplicate
-          className='shrink-0'
-        >
+        <MediaLink title={name} link={deeplink} className='shrink-0'>
           {poster}
-        </MediaServerLink>
+        </MediaLink>
       ) : (
         poster
       )}
@@ -234,20 +234,7 @@ export default function MediaCard({
                 {/* The gap and the notes' own spacing make the space a line
                     of text would have */}
                 <span className='flex min-w-0 items-baseline gap-1'>
-                  <span className='min-w-0 truncate'>
-                    {deeplink ? (
-                      <MediaServerLink
-                        title={name}
-                        mediaServer={deeplink.mediaServer}
-                        ratingKey={deeplink.ratingKey}
-                        className='media-link-title'
-                      >
-                        {name}
-                      </MediaServerLink>
-                    ) : (
-                      name
-                    )}
-                  </span>
+                  <span className='min-w-0 truncate'>{name}</span>
                   {year && (
                     <TitleNote
                       label={t('Common.year')}

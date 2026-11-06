@@ -1,4 +1,4 @@
-import { ExternalLink } from '@/types/settings'
+import { ExternalLink, TitleLink } from '@/types/settings'
 import { TautulliItemRow } from '@/types/tautulli'
 import { EXTERNAL_LINKS } from './constants'
 
@@ -54,7 +54,7 @@ const HREFS: Record<
 export function getExternalLinks(
   item: LinkedItem,
   type: 'movie' | 'show',
-  activeLinks: ExternalLink[],
+  activeLinks: readonly TitleLink[],
 ): ExternalLinkHref[] {
   return EXTERNAL_LINKS.filter((site) => activeLinks.includes(site)).flatMap(
     (site) => {
@@ -73,64 +73,21 @@ export function getExternalLinks(
   )
 }
 
-type RatedItem = Pick<
-  TautulliItemRow,
-  | 'rating'
-  | 'imdb_rating'
-  | 'rotten_tomatoes_rating'
-  | 'rotten_tomatoes_audience_rating'
->
+// How many buttons a title with every ID gets, which is what skeletons hold
+// room for: one per chosen site, and the media server's, which most titles are
+// in. Music only gets the media server's.
+export function getLinkButtonCount(
+  type: 'movie' | 'show' | 'artist',
+  activeLinks: readonly TitleLink[],
+): number {
+  const sites =
+    type === 'artist'
+      ? []
+      : getExternalLinks(
+          { title: '', tmdb_id: 1, imdb_id: 'tt1', tvdb_id: 1 },
+          type,
+          activeLinks,
+        )
 
-// Sites whose rating the item shows, so a link to them would only repeat it
-export function getRatedSites(
-  item: RatedItem,
-  activeStats: string[],
-): ExternalLink[] {
-  const sites: ExternalLink[] = []
-
-  if (activeStats.includes('tmdbRating') && item.rating) {
-    sites.push('tmdb')
-  }
-
-  if (activeStats.includes('imdbRating') && item.imdb_rating) {
-    sites.push('imdb')
-  }
-
-  if (
-    (activeStats.includes('rottenTomatoesRating') &&
-      item.rotten_tomatoes_rating != null) ||
-    (activeStats.includes('rottenTomatoesAudienceRating') &&
-      item.rotten_tomatoes_audience_rating != null)
-  ) {
-    sites.push('rottenTomatoes')
-  }
-
-  return sites
-}
-
-// The sites a title with every ID and rating gets a button for, which is what
-// skeletons hold room for
-export function getLinkButtonSites(
-  type: 'movie' | 'show',
-  activeLinks: ExternalLink[],
-  activeStats: string[],
-): ExternalLink[] {
-  const ratedSites = getRatedSites(
-    {
-      rating: '1',
-      imdb_rating: '1',
-      rotten_tomatoes_rating: 1,
-      rotten_tomatoes_audience_rating: 1,
-    },
-    activeStats,
-  )
-  const links = getExternalLinks(
-    { title: '', tmdb_id: 1, imdb_id: 'tt1', tvdb_id: 1 },
-    type,
-    activeLinks,
-  )
-
-  return links
-    .map(({ site }) => site)
-    .filter((site) => !ratedSites.includes(site))
+  return sites.length + (activeLinks.includes('mediaServer') ? 1 : 0)
 }

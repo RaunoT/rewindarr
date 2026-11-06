@@ -1,9 +1,9 @@
 import Avatar from '@/components/Avatar'
-import MediaServerLink from '@/components/MediaItem/MediaServerLink'
+import MediaLink, { MediaLinkIcon } from '@/components/MediaItem/MediaLink'
 import PosterImage from '@/components/PosterImage'
 import { RewindStory } from '@/types/rewind'
 import { trackEvent } from '@/utils/analytics'
-import { getRowDeeplink } from '@/utils/deeplink'
+import { getRowDeeplink, getSeerrUrl } from '@/utils/deeplink'
 import {
   ArrowDownTrayIcon,
   ArrowPathIcon,
@@ -227,6 +227,7 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
                   item,
                   type,
                   userRewind.media_server,
+                  getSeerrUrl(settings),
                 )
                 const poster = (
                   <div className='poster w-full sm:w-full'>
@@ -235,24 +236,20 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
                       type={type}
                       sizes='(min-width: 640px) 8rem, 30vw'
                     />
+                    {deeplink && <MediaLinkIcon link={deeplink} />}
                   </div>
                 )
 
                 return (
-                  <li
-                    key={type}
-                    className={clsx('min-w-0', deeplink && 'media-link-group')}
-                  >
+                  <li key={type} className='min-w-0'>
                     {deeplink ? (
-                      <MediaServerLink
+                      <MediaLink
                         title={item.title}
-                        mediaServer={deeplink.mediaServer}
-                        ratingKey={deeplink.ratingKey}
-                        isDuplicate
+                        link={deeplink}
                         className='block'
                       >
                         {poster}
-                      </MediaServerLink>
+                      </MediaLink>
                     ) : (
                       poster
                     )}
@@ -260,18 +257,7 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
                       {label}
                     </p>
                     <p className='truncate text-sm font-medium text-white'>
-                      {deeplink ? (
-                        <MediaServerLink
-                          title={item.title}
-                          mediaServer={deeplink.mediaServer}
-                          ratingKey={deeplink.ratingKey}
-                          className='media-link-title'
-                        >
-                          {item.title}
-                        </MediaServerLink>
-                      ) : (
-                        item.title
-                      )}
+                      {item.title}
                     </p>
                   </li>
                 )

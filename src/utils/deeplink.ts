@@ -1,3 +1,4 @@
+import { PublicSettings } from '@/types/settings'
 import { MediaServer } from '@/types/statsSource'
 import { TautulliItemRow, TautulliSession } from '@/types/tautulli'
 
@@ -35,8 +36,11 @@ export function getDeeplinkRatingKeyFromSession(
   return session.rating_key
 }
 
-// What a title's and poster's links to the media server open
-export type Deeplink = { mediaServer: MediaServer; ratingKey: number | string }
+// What a poster's link opens: the item in the media server, or Seerr, where it
+// can be requested
+export type Deeplink =
+  | { mediaServer: MediaServer; ratingKey: number | string }
+  | { requestUrl: string }
 
 export function getDeeplinkRatingKeyFromRow(
   item: TautulliItemRow,
@@ -49,13 +53,49 @@ export function getDeeplinkRatingKeyFromRow(
   return item.rating_key
 }
 
-// A movie, show or artist row's link, unless it's gone from the media server
+// Seerr's address, while it's set up
+export function getSeerrUrl({ connection }: PublicSettings): string | null {
+  return connection.isSeerrActive ? connection.seerrUrl : null
+}
+
+// A movie or show that's gone from the media server can be requested again in
+// Seerr, which finds it by its TMDB ID
+export function getRequestUrl(
+  item: TautulliItemRow,
+  type: string,
+  seerrUrl: string | null | undefined,
+): string | null {
+  if (
+    !item.is_deleted ||
+    !seerrUrl ||
+    !item.tmdb_id ||
+    (type !== 'movie' && type !== 'show')
+  ) {
+    return null
+  }
+
+  return `${seerrUrl}/${type === 'movie' ? 'movie' : 'tv'}/${item.tmdb_id}`
+}
+
+// A movie, show or artist row's link, or once it's gone from the media server,
+// its request
 export function getRowDeeplink(
   item: TautulliItemRow | null | undefined,
   type: string,
   mediaServer: MediaServer | null | undefined,
+  seerrUrl?: string | null,
 ): Deeplink | null {
-  if (!item || item.is_deleted || !mediaServer) {
+  if (!item) {
+    return null
+  }
+
+  if (item.is_deleted) {
+    const requestUrl = getRequestUrl(item, type, seerrUrl)
+
+    return requestUrl ? { requestUrl } : null
+  }
+
+  if (!mediaServer) {
     return null
   }
 

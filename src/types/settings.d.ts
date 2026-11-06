@@ -33,12 +33,18 @@ export type ConnectionSettings = {
 export type ExternalLink =
   'imdb' | 'tmdb' | 'tvdb' | 'rottenTomatoes' | 'letterboxd' | 'trakt'
 
+// The title in the media server and in Seerr, which its poster opens either
+// way
+export type ServerLink = 'mediaServer' | 'seerr'
+
+export type TitleLink = ServerLink | ExternalLink
+
 export type GeneralSettings = {
   serverName: string
   activeLibraries: string[]
   excludedUsers: string[]
   isPostersTmdbOnly: boolean
-  activeExternalLinks: ExternalLink[]
+  activeExternalLinks: TitleLink[]
   // Shown for each title and user in the dashboard and Rewind lists
   activeItemStatistics: ItemStatistics
   // How far into an item, in percent, a play has to get to count as one

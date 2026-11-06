@@ -5,12 +5,9 @@ import PlaybackOverlay from '@/components/PlaybackOverlay'
 import SkeletonLine from '@/components/SkeletonLine'
 import { UserAvatar } from '@/components/UserBadge'
 import { useMediaDetails } from '@/hooks/useMediaDetails'
-import usePromiseValue from '@/hooks/usePromiseValue'
 import { PublicSettings } from '@/types/settings'
-import { MediaServer } from '@/types/statsSource'
 import { TautulliSession } from '@/types/tautulli'
 import { STATS_SOURCE_NAMES } from '@/utils/constants'
-import { getDeeplinkRatingKeyFromSession } from '@/utils/deeplink'
 import { toIndex } from '@/utils/formatting'
 import {
   ChevronRightIcon,
@@ -25,14 +22,10 @@ import TileItem, { TILE_ITEM_COUNT } from './TileItem'
 
 type Props = {
   settings: PublicSettings
-  // Left out while the page loads
-  mediaServer?: Promise<MediaServer | null>
 }
 
-const NO_MEDIA_SERVER = Promise.resolve(null)
-
 // Shares its query with the activity page, so both stay in sync
-export default function ActivityTile({ settings, mediaServer }: Props) {
+export default function ActivityTile({ settings }: Props) {
   const t = useTranslations()
   const { data: session } = useSession()
   const { data, isLoading, isError } = useQuery({
@@ -41,7 +34,6 @@ export default function ActivityTile({ settings, mediaServer }: Props) {
     refetchInterval: 5000,
     refetchIntervalInBackground: false,
   })
-  const server = usePromiseValue(mediaServer ?? NO_MEDIA_SERVER) ?? null
   // Null when the server got nothing from the source
   const isUnavailable = isError || data === null
 
@@ -104,7 +96,6 @@ export default function ActivityTile({ settings, mediaServer }: Props) {
               index={index}
               settings={settings}
               userId={session?.user.id}
-              mediaServer={server}
             />
           ))}
         </ul>
@@ -119,17 +110,10 @@ type ItemProps = {
   settings: PublicSettings
   // The signed-in user's
   userId?: string
-  mediaServer: MediaServer | null
 }
 
 // The poster is found like the activity page's, which shares the query
-function ActivityTileItem({
-  session,
-  index,
-  settings,
-  userId,
-  mediaServer,
-}: ItemProps) {
+function ActivityTileItem({ session, index, settings, userId }: ItemProps) {
   const t = useTranslations()
   const { posterUrl, isPosterLoading, details } = useMediaDetails(
     session,
@@ -146,7 +130,6 @@ function ActivityTileItem({
   }
   const season = toIndex(session.parent_media_index)
   const episode = toIndex(session.media_index)
-  const ratingKey = getDeeplinkRatingKeyFromSession(session)
 
   return (
     <TileItem
@@ -166,7 +149,6 @@ function ActivityTileItem({
         <PlaybackOverlay state={session.state} className='size-3.5' />
       }
       hasGlow={index === 0}
-      deeplink={mediaServer && ratingKey ? { mediaServer, ratingKey } : null}
     />
   )
 }

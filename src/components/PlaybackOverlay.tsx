@@ -26,7 +26,7 @@ export default function PlaybackOverlay({ state, className }: Props) {
     <span
       role='img'
       aria-label={isBuffering ? t('buffering') : t('paused')}
-      className='absolute inset-0 flex items-center justify-center bg-black/60'
+      className='poster-overlay'
     >
       <Icon
         className={clsx(

@@ -4,7 +4,7 @@ import { TotalsSkeleton } from '@/components/Totals'
 import { PublicSettings } from '@/types/settings'
 import { TautulliMediaType } from '@/types/tautulli'
 import { DASHBOARD_PAGE_SIZE, RATING_STATISTICS } from '@/utils/constants'
-import { getLinkButtonSites } from '@/utils/externalLinks'
+import { getLinkButtonCount } from '@/utils/externalLinks'
 import clsx from 'clsx'
 
 type Props = {
@@ -80,14 +80,10 @@ function ListItem({
   ]
     .filter((width): width is string => !!width)
     .slice(0, 2)
-  // Music has no links, and a site whose rating is shown opens from it
+  // Users have no links
   const linkCount =
-    type === 'movie' || type === 'show'
-      ? getLinkButtonSites(
-          type,
-          settings.general.activeExternalLinks,
-          activeStats,
-        ).length
+    type === 'movie' || type === 'show' || type === 'artist'
+      ? getLinkButtonCount(type, settings.general.activeExternalLinks)
       : 0
 
   return (

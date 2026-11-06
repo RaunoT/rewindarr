@@ -1,7 +1,5 @@
-import MediaServerLink from '@/components/MediaItem/MediaServerLink'
 import PosterImage from '@/components/PosterImage'
 import SkeletonLine from '@/components/SkeletonLine'
-import { Deeplink } from '@/utils/deeplink'
 import clsx from 'clsx'
 import { ReactNode } from 'react'
 import TileGlow from './TileGlow'
@@ -26,8 +24,6 @@ type Props = {
   posterOverlay?: ReactNode
   // The poster also lights up the tile, for the first row
   hasGlow?: boolean
-  // The item in the media server, which the title and poster open
-  deeplink?: Deeplink | null
 }
 
 // A home tile's row, with a poster about as tall as two lines of text
@@ -41,58 +37,26 @@ export default function TileItem({
   aside,
   posterOverlay,
   hasGlow,
-  deeplink,
 }: Props) {
-  const poster = (
-    <div
-      className={clsx('poster w-7 rounded-sm!', isPosterLoading && 'skeleton')}
-    >
-      {!isPosterLoading && (
-        <>
-          <PosterImage srcs={posters} type={type} sizes='3rem' />
-          {posterOverlay}
-        </>
-      )}
-    </div>
-  )
-
   return (
-    <li
-      className={clsx(
-        'group/tile-item flex min-w-0 items-center gap-3',
-        deeplink && 'media-link-group',
-      )}
-    >
+    <li className='group/tile-item flex min-w-0 items-center gap-3'>
       {hasGlow && !isPosterLoading && <TileGlow srcs={posters} />}
       {lead}
-      {deeplink ? (
-        <MediaServerLink
-          title={title}
-          mediaServer={deeplink.mediaServer}
-          ratingKey={deeplink.ratingKey}
-          isDuplicate
-          className='shrink-0'
-        >
-          {poster}
-        </MediaServerLink>
-      ) : (
-        poster
-      )}
-      <span className='flex min-w-0 flex-1 flex-col'>
-        {/* Only as wide as the title, so the rest of the row opens the
-            tile's page */}
-        {deeplink ? (
-          <MediaServerLink
-            title={title}
-            mediaServer={deeplink.mediaServer}
-            ratingKey={deeplink.ratingKey}
-            className='media-link-title max-w-full self-start truncate'
-          >
-            {title}
-          </MediaServerLink>
-        ) : (
-          <span className='truncate'>{title}</span>
+      <div
+        className={clsx(
+          'poster w-7 rounded-sm!',
+          isPosterLoading && 'skeleton',
         )}
+      >
+        {!isPosterLoading && (
+          <>
+            <PosterImage srcs={posters} type={type} sizes='3rem' />
+            {posterOverlay}
+          </>
+        )}
+      </div>
+      <span className='flex min-w-0 flex-1 flex-col'>
+        <span className='truncate'>{title}</span>
         {detail && (
           <span className='order-first truncate text-xs text-neutral-400'>
             {detail}

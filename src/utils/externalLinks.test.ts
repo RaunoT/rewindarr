@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { EXTERNAL_LINKS } from './constants'
-import { getExternalLinks, getRatedSites } from './externalLinks'
+import { getExternalLinks, getLinkButtonCount } from './externalLinks'
 
 const movie = {
   title: 'Dune: Part Two',
@@ -130,32 +130,14 @@ describe('getExternalLinks', () => {
   })
 })
 
-describe('getRatedSites', () => {
-  const ratings = {
-    rating: '8.1',
-    imdb_rating: '8.4',
-    rotten_tomatoes_rating: 92,
-    rotten_tomatoes_audience_rating: 95,
-  }
-
-  it('lists the sites whose rating is shown', () => {
-    expect(
-      getRatedSites(ratings, ['tmdbRating', 'imdbRating', 'year']),
-    ).toEqual(['tmdb', 'imdb'])
+describe('getLinkButtonCount', () => {
+  it("counts the chosen sites a title can have and the media server's", () => {
+    expect(getLinkButtonCount('movie', ['imdb', 'tvdb', 'mediaServer'])).toBe(2)
+    expect(getLinkButtonCount('show', ['imdb', 'tvdb', 'seerr'])).toBe(2)
   })
 
-  it('counts either Rotten Tomatoes score', () => {
-    expect(getRatedSites(ratings, ['rottenTomatoesAudienceRating'])).toEqual([
-      'rottenTomatoes',
-    ])
-  })
-
-  it('leaves out sites without a rating for the item', () => {
-    expect(
-      getRatedSites(
-        { ...ratings, imdb_rating: null, rotten_tomatoes_rating: null },
-        ['imdbRating', 'rottenTomatoesRating'],
-      ),
-    ).toEqual([])
+  it("gives music only the media server's", () => {
+    expect(getLinkButtonCount('artist', ['imdb', 'mediaServer'])).toBe(1)
+    expect(getLinkButtonCount('artist', ['imdb'])).toBe(0)
   })
 })

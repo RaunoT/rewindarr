@@ -6,7 +6,7 @@ import {
   HISTORY_PAGE_SIZES,
   RATING_STATISTICS,
 } from '@/utils/constants'
-import { getLinkButtonSites } from '@/utils/externalLinks'
+import { getLinkButtonCount } from '@/utils/externalLinks'
 
 type Props = {
   // A page's worth, so the card is as tall as the plays it waits for
@@ -29,12 +29,7 @@ export default function HistorySkeleton({
   const hasRatings = RATING_STATISTICS.some((rating) =>
     activeItemStatistics.includes(rating),
   )
-  // A site whose rating is shown opens from it
-  const linkCount = getLinkButtonSites(
-    'show',
-    activeExternalLinks,
-    activeItemStatistics,
-  ).length
+  const linkCount = getLinkButtonCount('show', activeExternalLinks)
 
   return (
     <div className='w-full'>
