@@ -21,4 +21,13 @@ describe('getCallbackPath', () => {
     expect(getCallbackPath('/\\example.com/rewind')).toBe('/')
     expect(getCallbackPath('javascript:alert(1)')).toBe('/')
   })
+
+  it('refuses a path that leads to another site once cleaned up', () => {
+    expect(getCallbackPath('/a/..//example.com/landing')).toBe('/')
+    expect(getCallbackPath('/a/../\\example.com')).toBe('/')
+  })
+
+  it('falls back to the home page for an address that cannot be read', () => {
+    expect(getCallbackPath('//[')).toBe('/')
+  })
 })
