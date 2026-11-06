@@ -71,6 +71,26 @@ export function canViewFeature(
   )
 }
 
+const FEATURES: Feature[] = ['rewind', 'dashboard', 'activity', 'history']
+
+// A page a logged-out visitor can't open but a login could, so the proxy
+// sends them to log in instead of to a missing page
+export function isLoginRequired(settings: Settings, pathname: string): boolean {
+  const section = pathname.split('/')[1]
+
+  if (section === 'settings') {
+    return !isInitialSetup(settings)
+  }
+
+  const feature = FEATURES.find((feature) => feature === section)
+
+  return (
+    !!feature &&
+    !canViewFeature(settings, feature, { isLoggedIn: false, isAdmin: false }) &&
+    canViewFeature(settings, feature, { isLoggedIn: true, isAdmin: true })
+  )
+}
+
 // The home page's tiles, so it knows when it has none to show
 export function getHomeTiles(
   settings: Pick<Settings, 'general' | Feature>,

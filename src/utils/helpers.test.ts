@@ -15,6 +15,7 @@ import {
   getSettingsPage,
   hasRewindPlays,
   isInitialSetup,
+  isLoginRequired,
   isPostUpdateMissingSettings,
   isSettingsPageLocked,
   Viewer,
@@ -415,6 +416,50 @@ describe('canViewFeature', () => {
     expect(canViewFeature(settings, 'dashboard', user)).toBe(false)
     expect(canViewFeature(settings, 'dashboard', visitor)).toBe(false)
     expect(canViewFeature(settings, 'activity', visitor)).toBe(true)
+  })
+})
+
+describe('isLoginRequired', () => {
+  it('asks a visitor to log in for the sections they can only see logged in', () => {
+    const settings = completeSettings()
+
+    expect(isLoginRequired(settings, '/rewind')).toBe(true)
+    expect(isLoginRequired(settings, '/dashboard/movies')).toBe(true)
+    expect(isLoginRequired(settings, '/activity')).toBe(true)
+    expect(isLoginRequired(settings, '/history')).toBe(true)
+    expect(isLoginRequired(settings, '/')).toBe(false)
+  })
+
+  it('leaves out what outside access opens up, but not the rewind', () => {
+    const settings = completeSettings()
+
+    settings.general.isOutsideAccess = true
+
+    expect(isLoginRequired(settings, '/dashboard')).toBe(false)
+    expect(isLoginRequired(settings, '/rewind')).toBe(true)
+  })
+
+  it('asks for a login to admin-only sections, but not turned-off ones', () => {
+    const settings = completeSettings()
+
+    settings.general.isOutsideAccess = true
+    settings.activity.isAdminOnly = true
+    settings.history.isActive = false
+
+    expect(isLoginRequired(settings, '/activity')).toBe(true)
+    expect(isLoginRequired(settings, '/history')).toBe(false)
+  })
+
+  it('asks for a login to the settings once the setup is done', () => {
+    const settings = completeSettings()
+
+    settings.setupComplete = true
+
+    expect(isLoginRequired(settings, '/settings/general')).toBe(true)
+
+    settings.setupComplete = false
+
+    expect(isLoginRequired(settings, '/settings/general')).toBe(false)
   })
 })
 
