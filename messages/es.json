@@ -262,6 +262,7 @@
       "linksDescriptionSeerr": "Los pósteres siempre enlazan a {server}, o a Seerr si el título se eliminó",
       "seerrStatus": "Estado de Seerr",
       "itemStatistics": "Estadísticas por elemento",
+      "itemStatisticsDescription": "Las valoraciones siempre enlazan a su sitio",
       "minPlayPercent": "Contar como reproducción desde %",
       "minPlayPercentDescription": "Las reproducciones más cortas solo suman tiempo de visualización. Las de duración desconocida también necesitan 30 segundos",
       "minPlayPercentError": "El umbral de reproducción debe ser un número entero entre 0 y 100.",

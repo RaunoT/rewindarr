@@ -262,6 +262,7 @@
       "linksDescriptionSeerr": "Posters always link to {server}, or to Seerr once deleted",
       "seerrStatus": "Seerr status",
       "itemStatistics": "Item statistics",
+      "itemStatisticsDescription": "Ratings always link to their site",
       "minPlayPercent": "Count as a play from %",
       "minPlayPercentDescription": "Shorter plays only add watch time. Plays whose length isn't known also need 30 seconds",
       "minPlayPercentError": "The play threshold must be a whole number from 0 to 100.",

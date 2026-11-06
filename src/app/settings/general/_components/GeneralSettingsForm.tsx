@@ -319,6 +319,7 @@ export default function GeneralSettingsForm({
                 ',',
               )}`}
               label={t('itemStatistics')}
+              description={t('itemStatisticsDescription')}
               name='activeItemStatistics'
               options={itemStatisticOptions}
               defaultValue={generalSettings.activeItemStatistics}

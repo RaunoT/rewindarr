@@ -262,6 +262,7 @@
       "linksDescriptionSeerr": "Le locandine rimandano sempre a {server}, o a Seerr se il titolo è eliminato",
       "seerrStatus": "Stato Seerr",
       "itemStatistics": "Statistiche per titolo",
+      "itemStatisticsDescription": "I voti rimandano sempre al loro sito",
       "minPlayPercent": "Conta come riproduzione da %",
       "minPlayPercentDescription": "Le riproduzioni più brevi aggiungono solo tempo di visualizzazione. Quelle di durata sconosciuta devono anche raggiungere 30 secondi",
       "minPlayPercentError": "La soglia di riproduzione deve essere un numero intero da 0 a 100.",

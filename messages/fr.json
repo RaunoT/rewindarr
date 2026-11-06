@@ -262,6 +262,7 @@
       "linksDescriptionSeerr": "Les affiches mènent toujours à {server}, ou à Seerr si le titre est supprimé",
       "seerrStatus": "Statut Seerr",
       "itemStatistics": "Statistiques des éléments",
+      "itemStatisticsDescription": "Les notes renvoient toujours à leur site",
       "minPlayPercent": "Compter comme lecture à partir de %",
       "minPlayPercentDescription": "Les lectures plus courtes n'ajoutent que de la durée de visionnage. Celles dont la durée totale est inconnue doivent aussi atteindre 30 secondes",
       "minPlayPercentError": "Le seuil de lecture doit être un nombre entier entre 0 et 100.",

@@ -11,7 +11,11 @@ import UserBadge, { BadgeUser } from '@/components/UserBadge'
 import { PublicSettings } from '@/types/settings'
 import { EXTERNAL_LINK_NAMES, RATING_STATISTICS } from '@/utils/constants'
 import { Deeplink, getSeerrPageUrl, getSeerrUrl } from '@/utils/deeplink'
-import { getExternalLinks, LinkedItem } from '@/utils/externalLinks'
+import {
+  getExternalLinks,
+  getRatingLinks,
+  LinkedItem,
+} from '@/utils/externalLinks'
 import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
 import { Fragment, ReactNode } from 'react'
@@ -108,7 +112,7 @@ export default function MediaCard({
     isVideo && activeItemStatistics.includes('year') ? item?.year : null
   const links =
     item && isVideo ? getExternalLinks(item, type, activeExternalLinks) : []
-  const ratingLinks = Object.fromEntries(links.map((link) => [link.site, link]))
+  const ratingLinks = item && isVideo ? getRatingLinks(item, type) : {}
   // The poster's link to the media server, as a button when it's chosen
   const serverLink =
     deeplink &&

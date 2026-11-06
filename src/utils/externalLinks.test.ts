@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { EXTERNAL_LINKS } from './constants'
-import { getExternalLinks, getLinkButtonCount } from './externalLinks'
+import {
+  getExternalLinks,
+  getLinkButtonCount,
+  getRatingLinks,
+} from './externalLinks'
 
 const movie = {
   title: 'Dune: Part Two',
@@ -127,6 +131,16 @@ describe('getExternalLinks', () => {
         isSearch: false,
       },
     ])
+  })
+})
+
+describe('getRatingLinks', () => {
+  it('links every rated site, whichever links are chosen', () => {
+    const links = getRatingLinks(movie, 'movie')
+
+    expect(links.imdb?.href).toBe('https://www.imdb.com/title/tt15239678')
+    expect(links.tmdb?.href).toBe('https://www.themoviedb.org/movie/693134')
+    expect(links.rottenTomatoes?.isSearch).toBe(true)
   })
 })
 

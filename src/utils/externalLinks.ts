@@ -73,6 +73,20 @@ export function getExternalLinks(
   )
 }
 
+// What the ratings link to, which is each site's page whichever links are
+// chosen
+export function getRatingLinks(
+  item: LinkedItem,
+  type: 'movie' | 'show',
+): Partial<Record<ExternalLink, ExternalLinkHref>> {
+  return Object.fromEntries(
+    getExternalLinks(item, type, EXTERNAL_LINKS).map((link) => [
+      link.site,
+      link,
+    ]),
+  )
+}
+
 // How many buttons a title with every ID gets, which is what skeletons hold
 // room for: one per chosen site, the media server's, which most titles are in,
 // and Seerr's while it's set up. Music only gets the media server's.

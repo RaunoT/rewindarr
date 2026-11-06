@@ -14,7 +14,7 @@ import {
   getSeerrPageUrl,
   getSeerrUrl,
 } from '@/utils/deeplink'
-import { getExternalLinks } from '@/utils/externalLinks'
+import { getExternalLinks, getRatingLinks } from '@/utils/externalLinks'
 import { secondsToTime } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import { countdownRow, slideDown } from '@/utils/motion'
@@ -92,7 +92,7 @@ export default function MediaItem({
   ) : null
   const { activeExternalLinks } = settings.general
   const links = isVideo ? getExternalLinks(data, type, activeExternalLinks) : []
-  const ratingLinks = Object.fromEntries(links.map((link) => [link.site, link]))
+  const ratingLinks = isVideo ? getRatingLinks(data, type) : {}
   const seerrUrl = getSeerrUrl(settings)
   // The poster opens it in the media server, or once it's gone, its request
   const posterLink = isUsers
