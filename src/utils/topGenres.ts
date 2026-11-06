@@ -1,5 +1,4 @@
-import { Genres, TasteMatch, TopGenre } from '@/types/statsSource'
-import { TautulliItemRow } from '@/types/tautulli'
+import { Genres, ItemRow, TasteMatch, TopGenre } from '@/types/statsSource'
 import { maxBy, omit, orderBy, sumBy } from 'lodash'
 import {
   fetchTmdbDetails,
@@ -22,7 +21,7 @@ const TYPES: TmdbMediaType[] = ['movie', 'tv']
 
 // A movie or show with how long each user watched it
 export type WatchedTitle = {
-  item: TautulliItemRow
+  item: ItemRow
   type: TmdbMediaType
   // In seconds, by the user's identity
   durations: Record<string, number>
@@ -70,7 +69,7 @@ async function getTmdbGenres(
 // Otherwise the source's own genres come first, then TMDB's for the source's
 // ID or for a search, like for a title no longer on the server.
 export async function getGenres(
-  item: TautulliItemRow,
+  item: ItemRow,
   type: TmdbMediaType,
   getSourceData: GetSourceData,
 ): Promise<string[]> {

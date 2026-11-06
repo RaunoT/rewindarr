@@ -37,7 +37,6 @@
   },
   "Activity": {
     "title": "Attività",
-    "poster": "Locandina di {title}",
     "anonymousAvatar": "Avatar anonimo",
     "anonymous": "Anonimo #{number}",
     "container": "Container",
@@ -257,11 +256,14 @@
       "noLibrariesMessage2": "Rewindarr ha bisogno di almeno una libreria per funzionare",
       "media": "Contenuti",
       "tmdbOnlyPosters": "Solo locandine TMDB",
-      "externalLinks": "Link esterni",
-      "externalLinksDescription": "Quando il voto di un sito è mostrato, è il voto a rimandare al sito",
+      "links": "Link",
+      "linksDescription": "Le locandine rimandano sempre a {server}",
+      "linksDescriptionSeerr": "Le locandine rimandano sempre a {server}, o a Seerr se il titolo è eliminato",
+      "seerrStatus": "Stato Seerr",
       "itemStatistics": "Statistiche per titolo",
+      "itemStatisticsDescription": "I voti rimandano sempre al loro sito",
       "minPlayPercent": "Conta come riproduzione da %",
-      "minPlayPercentDescription": "Le riproduzioni più brevi aggiungono solo tempo di visualizzazione. Quelle di durata sconosciuta devono anche raggiungere 30 secondi",
+      "minPlayPercentDescription": "Le riproduzioni più brevi aggiungono solo tempo di visualizzazione",
       "minPlayPercentError": "La soglia di riproduzione deve essere un numero intero da 0 a 100.",
       "privacy": "Privacy",
       "excludedUsers": "Utenti esclusi",
@@ -377,13 +379,13 @@
       "dateRange": "da <startDate>{startDateValue}</startDate> a <endDate>{endDateValue}</endDate>."
     },
     "Total": {
-      "duration": "Hai passato in <total>totale</total> <duration>{durationValue}</duration> su <plex>{serverName}!</plex>",
+      "duration": "Hai passato in <total>totale</total> <duration>{durationValue}</duration> su {serverName}!",
       "averageMore": "Cioè <difference>{percent, number, percent} in più</difference> dell'utente medio, che ha guardato <duration>{durationValue}</duration>.",
       "averageTimes": "Cioè <difference>{times, number}× il tempo</difference> dell'utente medio, che ha guardato <duration>{durationValue}</duration>.",
       "averageLess": "Cioè <difference>{percent, number, percent} in meno</difference> dell'utente medio, che ha guardato <duration>{durationValue}</duration>.",
       "averageSame": "È <difference>più o meno quanto</difference> l'utente medio, che ha guardato <duration>{durationValue}</duration>.",
-      "topPercent": "Sei nel <top>top {percent, number, percent}</top> degli spettatori di <plex>{serverName}!</plex>",
-      "noData": "Non hai riprodotto niente su <plex>{serverName}</plex> <emoji>😫</emoji>",
+      "topPercent": "Sei nel <top>top {percent, number, percent}</top> degli spettatori di {serverName}!",
+      "noData": "Non hai riprodotto niente su {serverName} <emoji>😫</emoji>",
       "breakdown": "Ecco come hai trascorso questo tempo:"
     },
     "Users": {
@@ -422,7 +424,7 @@
       "gaveUp": "Uno ti è sfuggito: <title>{titleValue}</title> si è fermato al <percent>{percentValue, number, percent}</percent>. Magari la prossima volta?"
     },
     "Libraries": {
-      "filesize": "Lo sapevi che tutti i contenuti su <plex>{serverName}</plex> occupano <size>{sizeValue}</size> di <filesize>spazio</filesize>?",
+      "filesize": "Lo sapevi che tutti i contenuti su {serverName} occupano <size>{sizeValue}</size> di <filesize>spazio</filesize>?",
       "sizePartial": "Alcune librerie non hanno dati sulle dimensioni. Attiva «Calculate Total File Sizes» in Tautulli.",
       "sizePartialTracearr": "Alcune librerie non hanno dati sulle dimensioni in Tracearr.",
       "libraries": "Le librerie oggi contengono:",
@@ -431,14 +433,14 @@
       "tracks": "{count, plural, one {brano} other {brani}}"
     },
     "Shows": {
-      "duration": "Hai dedicato <duration>{durationValue}</duration> alle <library>serie</library> su <plex>{serverName}.</plex>",
+      "duration": "Hai dedicato <duration>{durationValue}</duration> alle <library>serie</library> su {serverName}.",
       "count": "Hai guardato <count>{countValue, number}</count> <episodes>{countValue, plural, one {episodio} other {episodi}}</episodes> in tutto!",
       "favorite": "La tua preferita è stata",
       "only": "L'unica serie che hai guardato è stata",
       "mostTime": "La serie che hai guardato più a lungo è stata",
       "previousFavorite": "{period, select, year {L'anno prima} other {L'ultima volta}} era <title>{titleValue}</title>",
       "sameFavorite": "Era la tua preferita anche <before>{period, select, year {l'anno prima} other {l'ultima volta}}</before>!",
-      "noData": "Non hai guardato nessuna <shows>serie</shows> su <plex>{serverName}</plex> <emoji>😥</emoji>"
+      "noData": "Non hai guardato nessuna <shows>serie</shows> su {serverName} <emoji>😥</emoji>"
     },
     "Requests": {
       "noData": "Non ci sono state <requests>richieste</requests> <emoji>😲</emoji>",
@@ -460,7 +462,7 @@
       "mostTime": "Il film che hai guardato più a lungo è stato",
       "previousFavorite": "{period, select, year {L'anno prima} other {L'ultima volta}} era <title>{titleValue}</title>",
       "sameFavorite": "Era il tuo preferito anche <before>{period, select, year {l'anno prima} other {l'ultima volta}}</before>!",
-      "noData": "Non hai guardato nessun <movies>film</movies> su <plex>{serverName}</plex> <emoji>😵‍💫</emoji>"
+      "noData": "Non hai guardato nessun <movies>film</movies> su {serverName} <emoji>😵‍💫</emoji>"
     },
     "People": {
       "movies": "{count, plural, one {# film} other {# film}}",
@@ -471,14 +473,14 @@
       "seeLess": "Mostra meno"
     },
     "TasteMatch": {
-      "closest": "Tra tutti su <plex>{serverName}</plex>, <user>{userValue}</user> è chi condivide di più i tuoi gusti",
+      "closest": "Tra tutti su {serverName}, <user>{userValue}</user> è chi condivide di più i tuoi gusti",
       "score": "Affinità nei vostri generi: <score>{scoreValue}</score>",
       "genres": "Amate entrambi <genres>{genresValue}</genres>"
     },
     "OnlyYou": {
       "count": "{countValue, plural, one {<count># titolo</count> che hai guardato era <only>solo tuo</only>} other {<count># titoli</count> che hai guardato erano <only>solo tuoi</only>}}",
-      "nobodyElse": "Nessun altro su <plex>{serverName}</plex> {countValue, plural, one {l'ha guardato} other {li ha guardati}}",
-      "nobodyElseShare": "Nessun altro su <plex>{serverName}</plex> {countValue, plural, one {l'ha guardato} other {li ha guardati}}. Cioè il <share>{shareValue}</share> dei titoli che hai guardato.",
+      "nobodyElse": "Nessun altro su {serverName} {countValue, plural, one {l'ha guardato} other {li ha guardati}}",
+      "nobodyElseShare": "Nessun altro su {serverName} {countValue, plural, one {l'ha guardato} other {li ha guardati}}. Cioè il <share>{shareValue}</share> dei titoli che hai guardato.",
       "top": "{countValue, plural, one {Era <title>{titleValue}</title>} other {Il tuo preferito tra questi era <title>{titleValue}</title>}}",
       "topMostTime": "Quello che hai guardato più a lungo è stato <title>{titleValue}</title>"
     },
@@ -489,8 +491,8 @@
       "unwatched": "Il bello è che tu <still>non l'hai ancora guardato</still> <emoji>🙈</emoji>"
     },
     "ServerYear": {
-      "duration": "{usersValue, plural, one {<users># persona</users> ha passato} other {Insieme, <users># persone</users> hanno passato}} <duration>{durationValue}</duration> su <plex>{serverName}</plex>",
-      "durationAway": "Mentre eri via, {usersValue, plural, one {<users># persona</users> ha passato} other {<users># persone</users> hanno passato}} <duration>{durationValue}</duration> su <plex>{serverName}</plex>",
+      "duration": "{usersValue, plural, one {<users># persona</users> ha passato} other {Insieme, <users># persone</users> hanno passato}} <duration>{durationValue}</duration> su {serverName}",
+      "durationAway": "Mentre eri via, {usersValue, plural, one {<users># persona</users> ha passato} other {<users># persone</users> hanno passato}} <duration>{durationValue}</duration> su {serverName}",
       "share": "Il <share>{shareValue}</share> di quel tempo era tuo",
       "movie": "Il <movies>film</movies> più visto è stato <title>{titleValue}</title>",
       "show": "La <shows>serie</shows> più vista è stata <title>{titleValue}</title>"
@@ -508,9 +510,9 @@
       "streak": "Il tuo record: <days>{count, plural, one {# giorno} other {# giorni}} di fila</days> con almeno una riproduzione, dal <start>{startValue}</start> al <end>{endValue}</end>"
     },
     "YearOverYear": {
-      "yearBefore": "<before>L'anno prima</before> hai passato <duration>{durationValue}</duration> su <plex>{serverName}</plex>",
-      "rangeBefore": "<before>Da {startValue} a {endValue}</before> hai passato <duration>{durationValue}</duration> su <plex>{serverName}</plex>",
-      "monthBefore": "<before>In {startValue}</before> hai passato <duration>{durationValue}</duration> su <plex>{serverName}</plex>",
+      "yearBefore": "<before>L'anno prima</before> hai passato <duration>{durationValue}</duration> su {serverName}",
+      "rangeBefore": "<before>Da {startValue} a {endValue}</before> hai passato <duration>{durationValue}</duration> su {serverName}",
+      "monthBefore": "<before>In {startValue}</before> hai passato <duration>{durationValue}</duration> su {serverName}",
       "averageMore": "Questa volta è stato <difference>{percent, number, percent} in più</difference>",
       "averageTimes": "Questa volta è stato <difference>{times, number}× tanto</difference>",
       "averageLess": "Questa volta è stato <difference>{percent, number, percent} in meno</difference>",
@@ -523,7 +525,7 @@
       "hourChart": "Grafico a barre delle riproduzioni per ora del giorno. Ora più attiva: {hourValue} con {count, plural, one {# riproduzione} other {# riproduzioni}}."
     },
     "FirstPlay": {
-      "since": "Guardi <plex>{serverName}</plex> da <date>{dateValue}</date>",
+      "since": "Guardi {serverName} da <date>{dateValue}</date>",
       "timeSince": "Sono già <timeSince>{timeSinceValue}</timeSince>!",
       "title": "Tutto è iniziato con <title>{titleValue}</title>"
     },
@@ -654,12 +656,12 @@
       "failed": "Impossibile creare l'immagine. Riprova."
     },
     "Goodbye": {
-      "thanks": "Grazie per aver seguito il tuo <plex>{serverName} Rewind</plex>, <user>{userValue}!</user>",
+      "thanks": "Grazie per aver seguito il tuo {serverName} Rewind, <user>{userValue}!</user>",
       "sorry": "Peccato, questa volta non hai trovato niente da guardare o ascoltare. Andrà meglio la prossima volta!",
       "weWillBeBack": "Torneremo la prossima volta",
       "weWillBeHere": "In ogni caso, noi saremo qui",
       "insightsAndStats": "con ancora più <insightsAndStats>curiosità e statistiche.</insightsAndStats>",
-      "untilThen": "Fino ad allora, continua a esplorare e a goderti tutto quello che <plex>{serverName}</plex> ha da offrire.",
+      "untilThen": "Fino ad allora, continua a esplorare e a goderti tutto quello che {serverName} ha da offrire.",
       "watchAgain": "Guarda di nuovo",
       "backToHome": "Torna alla home",
       "journey": {

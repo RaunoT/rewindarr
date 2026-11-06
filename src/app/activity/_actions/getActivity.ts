@@ -2,7 +2,7 @@
 
 import { authOptions } from '@/lib/auth'
 import { Settings } from '@/types/settings'
-import { TautulliActivity, TautulliSession } from '@/types/tautulli'
+import { Activity, ActivitySession } from '@/types/statsSource'
 import getSettings from '@/utils/getSettings'
 import { canViewFeature, getViewer } from '@/utils/helpers'
 import { getActivity as fetchActivity } from '@/utils/statsSource'
@@ -64,16 +64,16 @@ const SESSION_FIELDS = [
   'video_full_resolution',
   'view_offset',
   'year',
-] as const satisfies readonly (keyof TautulliSession)[]
+] as const satisfies readonly (keyof ActivitySession)[]
 
 function toPublicSession(
-  session: TautulliSession,
+  session: ActivitySession,
   settings: Settings,
   viewer: Session | null,
-): TautulliSession {
+): ActivitySession {
   const publicSession = Object.fromEntries(
     SESSION_FIELDS.map((field) => [field, session[field]]),
-  ) as TautulliSession
+  ) as ActivitySession
   const { isAnonymized } = settings.general
   const isOwnSession =
     !!viewer?.user?.id && String(session.user_id) === String(viewer.user.id)
@@ -95,7 +95,7 @@ function toPublicSession(
   return publicSession
 }
 
-export default async function getActivity(): Promise<TautulliActivity | null> {
+export default async function getActivity(): Promise<Activity | null> {
   const settings = getSettings()
   const viewer = await getServerSession(authOptions)
 

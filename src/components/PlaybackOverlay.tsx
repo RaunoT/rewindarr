@@ -1,10 +1,10 @@
-import { TautulliSession } from '@/types/tautulli'
+import { ActivitySession } from '@/types/statsSource'
 import { ArrowPathIcon, PauseIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
 
 type Props = {
-  state: TautulliSession['state']
+  state: ActivitySession['state']
   // Sets the icon's size
   className: string
 }
@@ -26,7 +26,7 @@ export default function PlaybackOverlay({ state, className }: Props) {
     <span
       role='img'
       aria-label={isBuffering ? t('buffering') : t('paused')}
-      className='absolute inset-0 flex items-center justify-center bg-black/60'
+      className='poster-overlay'
     >
       <Icon
         className={clsx(

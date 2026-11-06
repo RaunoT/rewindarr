@@ -1,5 +1,5 @@
 import { RewindSocial, SocialItem } from '@/types/rewindSocial'
-import { TautulliLibrary } from '@/types/tautulli'
+import { Library } from '@/types/statsSource'
 import { uniqBy } from 'lodash'
 import { getTranslations } from 'next-intl/server'
 import { secondsToTime } from './formatting'
@@ -19,7 +19,7 @@ import { getStatsSource } from './statsSource'
 // once for all of it.
 export default async function getRewindSocial(
   userId: string,
-  libraries: TautulliLibrary[],
+  libraries: Library[],
 ): Promise<RewindSocial> {
   const settings = getSettings()
   const source = getStatsSource(settings)

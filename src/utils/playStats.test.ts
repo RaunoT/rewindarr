@@ -1,6 +1,5 @@
 import { Play, PlayMediaType } from '@/types/playHistory'
-import { TopItemsSort } from '@/types/statsSource'
-import { TautulliItemRow, TautulliLibrary } from '@/types/tautulli'
+import { ItemRow, Library, TopItemsSort } from '@/types/statsSource'
 import { sum } from 'lodash'
 import { describe, expect, it, vi } from 'vitest'
 import getSettings from './getSettings'
@@ -17,7 +16,7 @@ import {
 
 vi.mock('./getSettings', () => ({ default: vi.fn() }))
 vi.mock('./getMediaAdditionalData', () => ({
-  default: async (items: TautulliItemRow[]) => items,
+  default: async (items: ItemRow[]) => items,
 }))
 
 function play(
@@ -257,7 +256,7 @@ describe('getTopItems', () => {
       getPlays: async () => history,
       getUsers: async () => [],
       getMediaData: async () => ({ thumb: '', isDeleted: false }),
-    }).getTopItems({ section_type: 'movie' } as TautulliLibrary, {
+    }).getTopItems({ section_type: 'movie' } as Library, {
       period: 3650,
       sortBy,
       count: 5,
@@ -299,7 +298,7 @@ describe('plays short of the percent in the settings', () => {
       percentComplete: 40,
     }),
   ]
-  const movies = { section_type: 'movie' } as TautulliLibrary
+  const movies = { section_type: 'movie' } as Library
 
   function getStats(minPlayPercent = 50) {
     vi.mocked(getSettings).mockReturnValue({
@@ -475,7 +474,7 @@ describe('plays short of the percent in the settings', () => {
 })
 
 describe('getPlaysByTime', () => {
-  const movies = { section_type: 'movie' } as TautulliLibrary
+  const movies = { section_type: 'movie' } as Library
 
   function getStats(getPlays: () => Promise<Play[]>) {
     vi.mocked(getSettings).mockReturnValue({

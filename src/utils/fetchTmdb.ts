@@ -1,4 +1,5 @@
 import qs from 'qs'
+import { isTimeoutError } from './connectionErrors'
 import { TMDB_API_KEY } from './constants'
 import { isGatewayError, isHostDown, markHostDown } from './hostBackoff'
 
@@ -63,7 +64,7 @@ export default async function fetchTmdb<T>(
       markHostDown(TMDB_API_URL)
     }
 
-    if (error instanceof Error && error.name === 'TimeoutError') {
+    if (isTimeoutError(error)) {
       console.error(
         `[TMDB] - API request timed out after ${REQUEST_TIMEOUT_MS / 1000}s! The endpoint was '${endpoint}'.`,
       )

@@ -1,5 +1,9 @@
-import { MediaServer, ServerMembership, StatsSource } from '@/types/statsSource'
-import { TautulliItemRow } from '@/types/tautulli'
+import {
+  ItemRow,
+  MediaServer,
+  ServerMembership,
+  StatsSource,
+} from '@/types/statsSource'
 import {
   getTracearrActivity,
   getTracearrFirstPlay,
@@ -12,6 +16,7 @@ import {
   getTracearrServerUsers,
   getTracearrUser,
   getTracearrUsers,
+  isTracearrReachable,
 } from './fetchTracearr'
 import { SourceMediaData } from './getMediaAdditionalData'
 import getSettings from './getSettings'
@@ -19,10 +24,9 @@ import { fetchMediaServerId } from './mediaServer'
 import { getMediaServerUrl } from './mediaServerName'
 import {
   createPlayStats,
-  EMPTY_ROW,
   filterPlays,
   LIBRARY_PLAY_TYPES,
-  toSourceId,
+  toInactiveUserRow,
 } from './playStats'
 import { getSnapshot, isString, saveSnapshot } from './sourceSnapshot'
 
@@ -62,7 +66,7 @@ async function getServerUser(userId: string): Promise<ServerMembership> {
 
 // Tracearr's plays already carry the poster.
 export async function getTracearrMediaData(
-  item: TautulliItemRow,
+  item: ItemRow,
 ): Promise<SourceMediaData> {
   return {
     thumb: item.thumb,
@@ -72,7 +76,7 @@ export async function getTracearrMediaData(
 
 async function getTracearrInactiveUser(
   userId: string,
-): Promise<TautulliItemRow | null> {
+): Promise<ItemRow | null> {
   const users = await getTracearrUsers()
   const user = users.find((user) => user.user_id === userId)
 
@@ -81,13 +85,7 @@ async function getTracearrInactiveUser(
     return null
   }
 
-  return {
-    ...EMPTY_ROW,
-    user: user.username,
-    friendly_name: user.friendly_name,
-    user_thumb: user.user_thumb,
-    user_id: toSourceId(userId),
-  }
+  return toInactiveUserRow(user)
 }
 
 // Tracearr's libraries each span every library of a media type
@@ -114,6 +112,7 @@ const tracearrSource: StatsSource = {
   getInactiveUser: getTracearrInactiveUser,
   getFirstPlay: getTracearrFirstPlay,
   getHistoryReaders: async () => [getTracearrHistoryReader()],
+  isReachable: isTracearrReachable,
   getSnapshotKey: getTracearrKey,
 }
 

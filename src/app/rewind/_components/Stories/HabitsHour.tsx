@@ -2,6 +2,7 @@ import { RewindStory } from '@/types/rewind'
 import { ClockIcon } from '@heroicons/react/24/outline'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
+import { getHourDate } from '../habitsDate'
 import RewindBarChart from '../RewindBarChart'
 import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
@@ -13,7 +14,7 @@ const ANCHOR_HOURS = [6, 12, 18]
 const MIN_LABEL_GAP = 3
 
 function formatHour(hour: number, formatter: Intl.DateTimeFormat) {
-  return formatter.format(new Date(Date.UTC(2024, 0, 1, hour)))
+  return formatter.format(getHourDate(hour))
 }
 
 export default function StoryHabitsHour({ userRewind }: RewindStory) {

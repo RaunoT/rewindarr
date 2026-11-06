@@ -1,13 +1,13 @@
 'use client'
 
 import UserPicker from '@/components/filters/UserPicker'
-import { TautulliUser } from '@/types/tautulli'
+import { SourceUser } from '@/types/statsSource'
 import { useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 type Props = {
   users: Pick<
-    TautulliUser,
+    SourceUser,
     'user_id' | 'friendly_name' | 'thumb' | 'user_thumb'
   >[]
   defaultUserId: string

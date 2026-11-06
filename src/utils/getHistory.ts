@@ -5,11 +5,10 @@ import {
   HistoryTotals,
 } from '@/types/history'
 import { HistoryStatus } from '@/types/playHistory'
-import { HistoryPlay } from '@/types/statsSource'
-import { TautulliItemRow, TautulliLibrary } from '@/types/tautulli'
+import { HistoryPlay, ItemRow, Library } from '@/types/statsSource'
 import { clamp, orderBy, range, sumBy } from 'lodash'
 import { isSameBinge } from './binges'
-import { HISTORY_PAGE_SIZES } from './constants'
+import { HISTORY_PAGE_SIZES, SEERR_MEDIA_TYPES } from './constants'
 import getMediaAdditionalData from './getMediaAdditionalData'
 import {
   addRequestDetails,
@@ -54,7 +53,7 @@ export type RecentPlays = {
 // newest plays are enough.
 export async function getRecentPlays(
   count: number,
-  libraries?: TautulliLibrary[],
+  libraries?: Library[],
   now = Date.now(),
 ): Promise<RecentPlays> {
   const source = getStatsSource()
@@ -83,19 +82,11 @@ export async function getRecentPlays(
   }
 }
 
-// The libraries' types a request can be for. Music has none.
-const REQUEST_TYPES: Partial<
-  Record<TautulliLibrary['section_type'], HistoryRequest['mediaType']>
-> = {
-  movie: 'movie',
-  show: 'tv',
-}
-
 export type HistoryFilter = {
   // The start of the period
   since: string
   // Every library's plays without them, and only their types' requests
-  libraries?: TautulliLibrary[]
+  libraries?: Library[]
   // Everyone's without any
   userIds?: string[]
   // Looked for in the titles, and a show's or artist's name
@@ -171,7 +162,9 @@ async function getMatchingRequests({
   userIds,
 }: HistoryFilter): Promise<HistoryRequest[] | null> {
   const requests = await getHistoryRequests(since)
-  const types = libraries?.map((library) => REQUEST_TYPES[library.section_type])
+  const types = libraries?.map(
+    (library) => SEERR_MEDIA_TYPES[library.section_type],
+  )
 
   if (!requests) {
     return null
@@ -191,9 +184,9 @@ async function getMatchingRequests({
 // lookup, and a failed one leaves the entry without them.
 async function addItems(entries: HistoryEntry[]): Promise<HistoryEntry[]> {
   const source = getStatsSource()
-  const lookups = new Map<string, Promise<TautulliItemRow | null>>()
+  const lookups = new Map<string, Promise<ItemRow | null>>()
 
-  function lookUp(key: string, load: () => Promise<TautulliItemRow>) {
+  function lookUp(key: string, load: () => Promise<ItemRow>) {
     let lookup = lookups.get(key)
 
     if (!lookup) {

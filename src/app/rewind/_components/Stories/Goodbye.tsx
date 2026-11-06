@@ -1,6 +1,6 @@
 import { RewindStory } from '@/types/rewind'
 import { hasRewindPlays } from '@/utils/helpers'
-import { getMediaServerName } from '@/utils/mediaServerName'
+import { getServerName } from '@/utils/mediaServerName'
 import {
   ArrowPathIcon,
   FilmIcon,
@@ -61,10 +61,7 @@ export default function StoryGoodbye({ userRewind, settings }: RewindStory) {
       <RewindStat>
         <p>
           {t.rich('thanks', {
-            serverName:
-              settings.general.serverName ||
-              getMediaServerName(settings.connection.mediaServerType),
-            plex: (chunks) => chunks,
+            serverName: getServerName(settings),
             user: (chunks) => <span className='rewind-cat'>{chunks}</span>,
             userValue: userRewind.user.name,
           })}
@@ -107,14 +104,7 @@ export default function StoryGoodbye({ userRewind, settings }: RewindStory) {
         </p>
       </RewindStat>
       <RewindStat step={3} noScale>
-        <p>
-          {t.rich('untilThen', {
-            serverName:
-              settings.general.serverName ||
-              getMediaServerName(settings.connection.mediaServerType),
-            plex: (chunks) => chunks,
-          })}
-        </p>
+        <p>{t('untilThen', { serverName: getServerName(settings) })}</p>
         {/* Next is disabled on the last story, so these lead on from it */}
         <div className='mt-8 flex flex-wrap gap-3 text-base leading-normal font-normal tracking-normal'>
           <button type='button' className='button' onClick={restart}>

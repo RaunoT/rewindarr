@@ -1,6 +1,6 @@
 import MediaItems from '@/components/MediaItem/MediaItems'
 import { RewindStory } from '@/types/rewind'
-import { getMediaServerName } from '@/utils/mediaServerName'
+import { getServerName } from '@/utils/mediaServerName'
 import { FilmIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import CountUp from '../CountUp'
@@ -91,10 +91,7 @@ export default function StoryMovies({ userRewind, settings }: RewindStory) {
               movies: (chunks) => (
                 <RewindCat icon={<FilmIcon />}>{chunks}</RewindCat>
               ),
-              serverName:
-                settings.general.serverName ||
-                getMediaServerName(settings.connection.mediaServerType),
-              plex: (chunks) => chunks,
+              serverName: getServerName(settings),
               emoji: (chunks) => <span className='not-italic'>{chunks}</span>,
             })}
           </p>

@@ -1,10 +1,10 @@
 import { UserRewind } from '@/types/rewind'
 import { PersonalityType } from '@/types/rewindPersonality'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
 
 export type SummaryTop = {
   type: 'show' | 'movie' | 'artist'
-  item: TautulliItemRow
+  item: ItemRow
 }
 
 // What the summary is called, with the years it covers, like "2026" or

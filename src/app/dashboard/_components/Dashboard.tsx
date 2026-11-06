@@ -5,8 +5,7 @@ import SkeletonSized from '@/components/SkeletonSized'
 import StatusMessage from '@/components/StatusMessage'
 import Totals, { Total } from '@/components/Totals'
 import { PublicSettings } from '@/types/settings'
-import { MediaServer } from '@/types/statsSource'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow, MediaServer } from '@/types/statsSource'
 import { MoonIcon } from '@heroicons/react/24/outline'
 import { getFormatter, getTranslations } from 'next-intl/server'
 import { ReactNode, Suspense } from 'react'
@@ -14,7 +13,7 @@ import { DashboardListSkeleton } from './DashboardLoader'
 import ShowMore from './ShowMore'
 
 type Props = {
-  items?: TautulliItemRow[] | null
+  items?: ItemRow[] | null
   totalDuration?: string
   totalRequests?: number
   totalSize?: string | number

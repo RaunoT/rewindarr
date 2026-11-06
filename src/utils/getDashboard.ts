@@ -1,20 +1,17 @@
 import { Settings } from '@/types/settings'
-import { TopItemsQuery } from '@/types/statsSource'
-import { TautulliLibrary, TautulliMediaType } from '@/types/tautulli'
+import { Library, TopItemsQuery } from '@/types/statsSource'
 import { clamp } from 'lodash'
 import { getTranslations } from 'next-intl/server'
-import { DASHBOARD_MAX_ITEMS, DASHBOARD_PAGE_SIZE } from './constants'
+import {
+  DASHBOARD_MAX_ITEMS,
+  DASHBOARD_PAGE_SIZE,
+  SEERR_MEDIA_TYPES,
+} from './constants'
 import { fetchSeerrStats, fetchSeerrUserId } from './fetchSeerr'
 import { bytesToSize, secondsToTime } from './formatting'
 import { getStatsSource } from './statsSource'
 
-// Seerr has no music
-const SEERR_MEDIA_TYPES: Partial<Record<TautulliMediaType, string>> = {
-  movie: 'movie',
-  show: 'tv',
-}
-
-export async function getItems(library: TautulliLibrary, query: TopItemsQuery) {
+export async function getItems(library: Library, query: TopItemsQuery) {
   return getStatsSource().getTopItems(library, query)
 }
 
@@ -40,7 +37,7 @@ export function getNextItemsLimit(
 }
 
 export async function getTotalDuration(
-  library: TautulliLibrary,
+  library: Library,
   period: string,
   settings: Settings,
   userId?: string,
@@ -64,7 +61,7 @@ export async function getTotalDuration(
 export async function getTotalRequests(
   period: string,
   settings: Settings,
-  library?: TautulliLibrary,
+  library?: Library,
   userId?: string,
 ) {
   const { seerrUrl, seerrApiKey } = settings.connection
@@ -103,10 +100,7 @@ export async function getTotalRequests(
     : requests.length
 }
 
-export async function getTotalSize(
-  library: TautulliLibrary,
-  settings: Settings,
-) {
+export async function getTotalSize(library: Library, settings: Settings) {
   if (settings.dashboard.activeTotalStatistics.includes('size')) {
     const t = await getTranslations()
     const { size, isPartial } = await getStatsSource(settings).getLibrariesSize(
@@ -114,8 +108,8 @@ export async function getTotalSize(
     )
     const formattedSize = bytesToSize(size, 2, t)
 
-    // A Tracearr library spans every Plex library of its type, so only some
-    // of them can be missing a size.
+    // A Tracearr library spans every media server library of its type, so
+    // only some of them can be missing a size.
     return formattedSize && isPartial
       ? t('Dashboard.sizePartial', { size: formattedSize })
       : formattedSize

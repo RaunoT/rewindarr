@@ -1,6 +1,6 @@
 import MediaItems from '@/components/MediaItem/MediaItems'
 import { RewindStory } from '@/types/rewind'
-import { getMediaServerName } from '@/utils/mediaServerName'
+import { getServerName } from '@/utils/mediaServerName'
 import { FingerPrintIcon } from '@heroicons/react/24/outline'
 import { useFormatter, useTranslations } from 'next-intl'
 import { isFavorite } from '../favorite'
@@ -37,10 +37,7 @@ export default function StoryOnlyYou({ userRewind, settings }: RewindStory) {
         <p>
           {t.rich(hasShare ? 'nobodyElseShare' : 'nobodyElse', {
             countValue: onlyYou.count,
-            serverName:
-              settings.general.serverName ||
-              getMediaServerName(settings.connection.mediaServerType),
-            plex: (chunks) => chunks,
+            serverName: getServerName(settings),
             shareValue: format.number(onlyYou.share, { style: 'percent' }),
             share: (chunks) => <span className='rewind-stat'>{chunks}</span>,
           })}

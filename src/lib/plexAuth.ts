@@ -1,5 +1,6 @@
 import qs from 'qs'
 import { v4 as uuidv4 } from 'uuid'
+import { CALLBACK_URL_PARAM } from '../utils/callbackUrl'
 import { PLEX_API_ENDPOINT, PLEX_PRODUCT_NAME } from '../utils/constants'
 
 // Runs in the browser: the Plex PIN flow happens client-side and only the
@@ -41,9 +42,14 @@ async function fetchPlexPins(): Promise<PlexPinResponse> {
   }
 }
 
-export async function createPlexAuthUrl(siteUrl: string) {
+// Plex returns to the forward URL, which carries the page to open after the
+// login
+export async function createPlexAuthUrl(siteUrl: string, callbackPath = '/') {
   const { id, code } = await fetchPlexPins()
-  const forwardUrl = `${siteUrl}?plexPinId=${id}`
+  const forwardUrl = `${siteUrl}?${qs.stringify({
+    plexPinId: id,
+    [CALLBACK_URL_PARAM]: callbackPath === '/' ? undefined : callbackPath,
+  })}`
   const clientIdentifier = getClientIdentifier()
 
   if (!forwardUrl) {

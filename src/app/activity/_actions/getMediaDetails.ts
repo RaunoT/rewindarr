@@ -2,7 +2,7 @@
 
 import { TitleDetailsData } from '@/components/MediaItem/TitleDetails'
 import { authOptions } from '@/lib/auth'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
 import { LinkedItem } from '@/utils/externalLinks'
 import fetchTmdb from '@/utils/fetchTmdb'
 import getMediaAdditionalData, {
@@ -109,7 +109,7 @@ export default async function getMediaDetails({
     tmdb_id: tmdbId,
     imdb_id: ids.imdb,
     tvdb_id: ids.tvdb,
-  } as TautulliItemRow
+  } as ItemRow
   const [details] = await getMediaAdditionalData([item], type, async () => ({
     thumb: '',
     isDeleted: false,

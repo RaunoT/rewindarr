@@ -12,7 +12,7 @@ type Props = {
   type: string
   alt?: string
   sizes: string
-  priority?: boolean
+  preload?: boolean
 }
 
 // Fills its parent, like the poster frame
@@ -21,7 +21,7 @@ export default function PosterImage({
   type,
   alt = '',
   sizes,
-  priority,
+  preload,
 }: Props) {
   const [failedSrcs, setFailedSrcs] = useState<string[]>([])
   const src = srcs.find(
@@ -44,7 +44,7 @@ export default function PosterImage({
       src={src}
       sizes={sizes}
       onError={() => setFailedSrcs((failed) => [...failed, src])}
-      priority={priority}
+      preload={preload}
     />
   )
 }

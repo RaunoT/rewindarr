@@ -11,14 +11,18 @@ import {
 } from '@/utils/getDashboard'
 import getPeriod from '@/utils/getPeriod'
 import getSettings from '@/utils/getSettings'
-import { canViewFeature, getDashboardSort, getViewer } from '@/utils/helpers'
+import {
+  canViewFeature,
+  getDashboardSort,
+  getLibrarySlug,
+  getViewer,
+} from '@/utils/helpers'
 import { toPublicSettings } from '@/utils/publicSettings'
 import {
   getHistoryProgress,
   getLibraries,
   getMediaServer,
 } from '@/utils/statsSource'
-import { kebabCase } from 'lodash'
 import { Metadata } from 'next'
 import { getServerSession } from 'next-auth'
 import { getLocale } from 'next-intl/server'
@@ -37,9 +41,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params
   const libraries = await getLibraries()
-  const library = libraries.find(
-    (library) => kebabCase(library.section_name) === slug,
-  )
+  const library = libraries.find((library) => getLibrarySlug(library) === slug)
 
   return {
     title: library?.section_name,
@@ -60,9 +62,7 @@ async function DashboardContent({
   limit: number
 }) {
   const libraries = await getLibraries()
-  const library = libraries.find(
-    (library) => kebabCase(library.section_name) === slug,
-  )
+  const library = libraries.find((library) => getLibrarySlug(library) === slug)
   const settings = getSettings()
 
   if (!library || !library.is_active) {
@@ -148,7 +148,7 @@ export default async function DashboardPage({ searchParams, params }: Props) {
   const session = await getServerSession(authOptions)
   // Already fetched by the layout, so this doesn't hold up the loader
   const library = (await getLibraries()).find(
-    (library) => kebabCase(library.section_name) === slug,
+    (library) => getLibrarySlug(library) === slug,
   )
   const itemsLimit = getItemsLimit(limit)
   const publicSettings = toPublicSettings(settings)

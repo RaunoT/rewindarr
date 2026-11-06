@@ -1,12 +1,11 @@
 import { PublicSettings } from '@/types/settings'
-import { MediaServer } from '@/types/statsSource'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow, MediaServer } from '@/types/statsSource'
 import clsx from 'clsx'
 import { AnimatePresence } from 'motion/react'
 import MediaItem from './MediaItem'
 
 type Props = {
-  items: TautulliItemRow[]
+  items: ItemRow[]
   type: 'movie' | 'show' | 'artist' | 'users'
   mediaServer: MediaServer | null
   rows?: boolean
@@ -33,7 +32,7 @@ export default function MediaItems({
   shownFrom,
 }: Props) {
   function renderItem(
-    itemData: TautulliItemRow,
+    itemData: ItemRow,
     i: number,
     countdown?: 'reached' | 'placeholder',
   ) {

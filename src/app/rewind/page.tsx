@@ -1,8 +1,8 @@
 import HistoryReading from '@/components/HistoryReading'
 import { authOptions } from '@/lib/auth'
 import { RewindTotals, RewindUser, UserRewind } from '@/types/rewind'
-import { TautulliItemRow, TautulliLibrary } from '@/types/tautulli'
-import { TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
+import { ItemRow, Library } from '@/types/statsSource'
+import { PLAY_LIBRARY_TYPES, TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
 import {
   formatMonthYear,
   formatTimeSince,
@@ -88,7 +88,7 @@ async function RewindContent({ userId }: { userId?: string }) {
   // Only admins can open another user's rewind.
   if (session?.user.isAdmin && userId) {
     const users = await getActiveUsers(settings)
-    const queriedUser = users.find((u) => u.user_id == userId)
+    const queriedUser = users.find((u) => String(u.user_id) === userId)
 
     if (queriedUser) {
       user = {
@@ -143,8 +143,8 @@ async function RewindContent({ userId }: { userId?: string }) {
 // rest
 async function getTotals(
   userId: string,
-  libraries: TautulliLibrary[],
-  viewersRequest: Promise<TautulliItemRow[] | null>,
+  libraries: Library[],
+  viewersRequest: Promise<ItemRow[] | null>,
 ): Promise<RewindTotals> {
   const settings = getSettings()
   const [t, userTotalDuration, topMediaStats, usersDurationByType, viewers] =
@@ -223,14 +223,14 @@ async function getTotals(
 }
 
 type SharedRequests = {
-  viewersRequest: Promise<TautulliItemRow[] | null>
+  viewersRequest: Promise<ItemRow[] | null>
   totals: Promise<RewindTotals>
 }
 
 // What the stories after the total show, with the totals
 async function getRewind(
   user: RewindUser,
-  libraries: TautulliLibrary[],
+  libraries: Library[],
   timeZone: string | undefined,
   { viewersRequest, totals: totalsRequest }: SharedRequests,
 ): Promise<RewindData> {
@@ -323,7 +323,7 @@ async function getRewind(
         firstPlay.play && firstPlayItem
           ? {
               data: firstPlayItem,
-              type: ITEM_TYPES[firstPlay.play.mediaType],
+              type: PLAY_LIBRARY_TYPES[firstPlay.play.mediaType],
               hasTotals: hasFirstPlayTotals,
             }
           : null,
@@ -358,7 +358,7 @@ async function getRewind(
   const topShow = topMediaItems.shows[0]
   const topMovie = topMediaItems.movies[0]
   // From the library first, then Plex's own theme songs
-  const getShowThemes = (show: TautulliItemRow | null | undefined) =>
+  const getShowThemes = (show: ItemRow | null | undefined) =>
     isThemeMusicActive
       ? [
           getPlexThemeUrl(settings, show?.rating_key),
@@ -388,13 +388,6 @@ type Props = {
     userId?: string
   }>
 }
-
-// What a play rolls up into, as in the dashboard's lists
-const ITEM_TYPES = {
-  movie: 'movie',
-  episode: 'show',
-  track: 'artist',
-} as const
 
 export default async function RewindPage({ searchParams }: Props) {
   const { userId } = await searchParams

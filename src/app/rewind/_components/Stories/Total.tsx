@@ -1,6 +1,6 @@
 import { RewindStory, RewindTotals } from '@/types/rewind'
 import { getRewindBreakdown, hasRewindPlays } from '@/utils/helpers'
-import { getMediaServerName } from '@/utils/mediaServerName'
+import { getServerName } from '@/utils/mediaServerName'
 import { ClockIcon, TrophyIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import { getAverageMessage } from '../averageMessage'
@@ -27,16 +27,13 @@ export default function StoryTotal({
             <p>
               {t.rich('duration', {
                 durationValue: userRewind.duration.user,
-                serverName:
-                  settings.general.serverName ||
-                  getMediaServerName(settings.connection.mediaServerType),
+                serverName: getServerName(settings),
                 total: (chunks) => (
                   <RewindCat icon={<ClockIcon />}>{chunks}</RewindCat>
                 ),
                 duration: (chunks) => (
                   <span className='rewind-stat'>{chunks}</span>
                 ),
-                plex: (chunks) => chunks,
               })}
             </p>
           </RewindStat>
@@ -65,13 +62,10 @@ export default function StoryTotal({
               <p>
                 {t.rich('topPercent', {
                   percent: topPercent / 100,
-                  serverName:
-                    settings.general.serverName ||
-                    getMediaServerName(settings.connection.mediaServerType),
+                  serverName: getServerName(settings),
                   top: (chunks) => (
                     <RewindCat icon={<TrophyIcon />}>{chunks}</RewindCat>
                   ),
-                  plex: (chunks) => chunks,
                 })}
               </p>
             </RewindStat>
@@ -88,10 +82,7 @@ export default function StoryTotal({
         <RewindStat noScale>
           <p>
             {t.rich('noData', {
-              serverName:
-                settings.general.serverName ||
-                getMediaServerName(settings.connection.mediaServerType),
-              plex: (chunks) => chunks,
+              serverName: getServerName(settings),
               emoji: (chunks) => <span className='not-italic'>{chunks}</span>,
             })}
           </p>

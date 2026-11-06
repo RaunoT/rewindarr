@@ -4,6 +4,7 @@ import fs from 'fs'
 import { isEqual, isPlainObject, mergeWith, uniq } from 'lodash'
 import path from 'path'
 import { DEFAULT_SETTINGS, RATING_STATISTICS } from './constants'
+import { getErrorCode } from './files'
 import { checkRequiredSettings } from './helpers'
 
 type CachedSettings = {
@@ -461,12 +462,6 @@ function logOnce(message: string): void {
 
 function getFileKey(stat: fs.Stats): string {
   return [stat.mtimeMs, stat.ctimeMs, stat.size, stat.ino].join(':')
-}
-
-function getErrorCode(error: unknown): string | undefined {
-  return error instanceof Error && 'code' in error
-    ? String(error.code)
-    : undefined
 }
 
 function getErrorMessage(error: unknown): string {

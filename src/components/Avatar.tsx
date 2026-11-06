@@ -11,20 +11,14 @@ type Props = {
   name: string
   alt?: string
   sizes: string
-  priority?: boolean
+  preload?: boolean
 }
 
 // Fills its parent, which sets the size and shape. Accounts and people without
 // a picture get their initials, like a contact without a photo. The image proxy
 // turns away the coloured letters Plex generates for them, so those fall back
 // too. TMDB's portraits load directly, like its posters.
-export default function Avatar({
-  src,
-  name,
-  alt = '',
-  sizes,
-  priority,
-}: Props) {
+export default function Avatar({ src, name, alt = '', sizes, preload }: Props) {
   const imageSrc = !src
     ? null
     : src.startsWith('https://image.tmdb.org')
@@ -48,7 +42,7 @@ export default function Avatar({
       src={imageSrc}
       sizes={sizes}
       onError={() => setFailedSrc(imageSrc)}
-      priority={priority}
+      preload={preload}
     />
   )
 }

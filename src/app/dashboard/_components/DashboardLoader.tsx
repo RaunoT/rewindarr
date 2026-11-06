@@ -2,13 +2,13 @@ import CardWrapper from '@/app/_components/CardWrapper'
 import SkeletonLine from '@/components/SkeletonLine'
 import { TotalsSkeleton } from '@/components/Totals'
 import { PublicSettings } from '@/types/settings'
-import { TautulliMediaType } from '@/types/tautulli'
+import { LibraryType } from '@/types/statsSource'
 import { DASHBOARD_PAGE_SIZE, RATING_STATISTICS } from '@/utils/constants'
-import { getLinkButtonSites } from '@/utils/externalLinks'
+import { getLinkButtonCount } from '@/utils/externalLinks'
 import clsx from 'clsx'
 
 type Props = {
-  type: TautulliMediaType | 'users'
+  type: LibraryType | 'users'
   settings: PublicSettings
   rows?: number
 }
@@ -80,14 +80,14 @@ function ListItem({
   ]
     .filter((width): width is string => !!width)
     .slice(0, 2)
-  // Music has no links, and a site whose rating is shown opens from it
+  // Users have no links
   const linkCount =
-    type === 'movie' || type === 'show'
-      ? getLinkButtonSites(
+    type === 'movie' || type === 'show' || type === 'artist'
+      ? getLinkButtonCount(
           type,
           settings.general.activeExternalLinks,
-          activeStats,
-        ).length
+          settings.connection.isSeerrActive,
+        )
       : 0
 
   return (

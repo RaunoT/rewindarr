@@ -11,7 +11,7 @@ type Props = {
   type: string
   alt: string
   isLoading?: boolean
-  priority?: boolean
+  preload?: boolean
   // How far a play got, from 0 to 100. Phones show it under the poster, where
   // wider cards have it among the stats.
   progress?: number | null
@@ -19,14 +19,14 @@ type Props = {
   children?: ReactNode
 }
 
-// As big as the dashboard's. The card makes it a link when the media server
-// has the item.
+// As big as the dashboard's. The card makes it a link to the item in the media
+// server or its request.
 export default function MediaCardPoster({
   srcs,
   type,
   alt,
   isLoading,
-  priority,
+  preload,
   progress,
   children,
 }: Props) {
@@ -40,7 +40,7 @@ export default function MediaCardPoster({
             type={type}
             alt={alt}
             sizes='10rem'
-            priority={priority}
+            preload={preload}
           />
           {children}
         </>

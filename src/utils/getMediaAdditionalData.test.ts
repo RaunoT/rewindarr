@@ -1,5 +1,5 @@
 import { Settings } from '@/types/settings'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
 import { cloneDeep } from 'lodash'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
@@ -26,12 +26,11 @@ vi.mock('./fetchRottenTomatoes', () => ({ default: vi.fn() }))
 vi.mock('./fetchTmdb', () => ({ default: vi.fn() }))
 vi.mock('./getSettings', () => ({ default: vi.fn() }))
 
-const getSourceData =
-  vi.fn<(item: TautulliItemRow) => Promise<SourceMediaData>>()
+const getSourceData = vi.fn<(item: ItemRow) => Promise<SourceMediaData>>()
 
 type TmdbResponses = Record<string, unknown>
 
-function row(overrides: Partial<TautulliItemRow> = {}): TautulliItemRow {
+function row(overrides: Partial<ItemRow> = {}): ItemRow {
   return {
     title: 'Dune',
     year: 2021,

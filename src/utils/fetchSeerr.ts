@@ -1,3 +1,4 @@
+import { isTimeoutError } from './connectionErrors'
 import getSettings from './getSettings'
 import { isGatewayError, isHostDown, markHostDown } from './hostBackoff'
 import { normalizeJellyfinId } from './mediaServer'
@@ -109,7 +110,7 @@ export default async function fetchSeerr<T>(
       markHostDown(seerrUrl)
     }
 
-    if (error instanceof Error && error.name === 'TimeoutError') {
+    if (isTimeoutError(error)) {
       console.error(
         `[SEERR] - API request timed out after ${REQUEST_TIMEOUT_MS / 1000}s! The endpoint was '${endpoint}'.`,
       )

@@ -171,6 +171,61 @@ describe('proxy', () => {
     })
   })
 
+  describe('login', () => {
+    beforeEach(() => {
+      const settings: Settings = cloneDeep(DEFAULT_SETTINGS)
+
+      settings.setupComplete = true
+      settings.connection.tautulliUrl = 'http://tautulli:8181'
+      settings.connection.tautulliApiKey = 'key'
+
+      for (const section of [
+        'connection',
+        'general',
+        'rewind',
+        'dashboard',
+        'activity',
+        'history',
+      ] as const) {
+        settings[section].complete = true
+      }
+
+      vi.mocked(getSettings).mockReturnValue(settings)
+    })
+
+    it('sends a visitor to log in and back to the page they asked for', async () => {
+      const res = await request('', '/history?q=alien&_rsc=abc')
+
+      expect(res?.headers.get('location')).toBe(
+        'http://localhost:3000/?callbackUrl=%2Fhistory%3Fq%3Dalien',
+      )
+    })
+
+    it('lets a logged-in user through', async () => {
+      vi.mocked(getServerUser).mockResolvedValue({
+        status: 'member',
+        isAdmin: false,
+      })
+
+      const res = await requestAsAdmin('/rewind')
+
+      expect(res?.headers.get('location')).toBeNull()
+    })
+
+    it('leaves the pages outside access opens up alone', async () => {
+      const settings = getSettings()
+
+      settings.general.isOutsideAccess = true
+
+      expect((await request('', '/dashboard'))?.headers.get('location')).toBe(
+        null,
+      )
+      expect((await request('', '/rewind'))?.headers.get('location')).toBe(
+        'http://localhost:3000/?callbackUrl=%2Frewind',
+      )
+    })
+  })
+
   it('sends old links to the Tracearr shows library to its new name', async () => {
     const settings: Settings = cloneDeep(DEFAULT_SETTINGS)
 

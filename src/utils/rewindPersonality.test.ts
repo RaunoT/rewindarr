@@ -1,6 +1,6 @@
 import { Play } from '@/types/playHistory'
 import { UserRewind } from '@/types/rewind'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
 import { describe, expect, it } from 'vitest'
 import {
   getPersonality,
@@ -408,8 +408,8 @@ describe('getPlaySignals', () => {
   })
 })
 
-function row(title: string, duration: number): TautulliItemRow {
-  return { title, total_duration: duration } as TautulliItemRow
+function row(title: string, duration: number): ItemRow {
+  return { title, total_duration: duration } as ItemRow
 }
 
 describe('getPersonalitySignals', () => {

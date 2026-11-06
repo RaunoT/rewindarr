@@ -1,8 +1,8 @@
 import { DashboardSearchParams } from '@/types/dashboard'
 import { RewindTotals, UserRewind } from '@/types/rewind'
 import { Settings, StatisticsSource } from '@/types/settings'
-import { TautulliLibrary } from '@/types/tautulli'
-import { kebabCase } from 'lodash'
+import { Library } from '@/types/statsSource'
+import { get, kebabCase } from 'lodash'
 import { Session } from 'next-auth'
 import { getPeriods, SETTINGS_PAGES } from './constants'
 
@@ -24,16 +24,19 @@ export function isTracearrSource(settings: Settings): boolean {
   return settings.connection.statisticsSource === 'tracearr'
 }
 
+// What a library goes by in URLs and in the saved active libraries
+export function getLibrarySlug(library: Library): string {
+  return kebabCase(library.section_name)
+}
+
 // In the order the admin sorted them in the settings
 export function sortByActiveLibraries(
-  libraries: TautulliLibrary[],
+  libraries: Library[],
   settings: Settings,
-): TautulliLibrary[] {
+): Library[] {
   return settings.general.activeLibraries
-    .map((libSlug) =>
-      libraries.find((lib) => kebabCase(lib.section_name) === libSlug),
-    )
-    .filter((lib): lib is TautulliLibrary => lib !== undefined)
+    .map((libSlug) => libraries.find((lib) => getLibrarySlug(lib) === libSlug))
+    .filter((lib): lib is Library => lib !== undefined)
 }
 
 export type Feature = 'rewind' | 'dashboard' | 'activity' | 'history'
@@ -71,6 +74,26 @@ export function canViewFeature(
   )
 }
 
+const FEATURES: Feature[] = ['rewind', 'dashboard', 'activity', 'history']
+
+// A page a logged-out visitor can't open but a login could, so the proxy
+// sends them to log in instead of to a missing page
+export function isLoginRequired(settings: Settings, pathname: string): boolean {
+  const section = pathname.split('/')[1]
+
+  if (section === 'settings') {
+    return !isInitialSetup(settings)
+  }
+
+  const feature = FEATURES.find((feature) => feature === section)
+
+  return (
+    !!feature &&
+    !canViewFeature(settings, feature, { isLoggedIn: false, isAdmin: false }) &&
+    canViewFeature(settings, feature, { isLoggedIn: true, isAdmin: true })
+  )
+}
+
 // The home page's tiles, so it knows when it has none to show
 export function getHomeTiles(
   settings: Pick<Settings, 'general' | Feature>,
@@ -101,11 +124,7 @@ export function checkRequiredSettings(settings: Settings): string | null {
     ...serverRequiredSettings,
     ...REQUIRED_SETTINGS,
   ]) {
-    const keys = key.split('.')
-    // @ts-expect-error - TODO: we know this is safe, but should still look to resolve without exception
-    const settingValue = keys.reduce((acc, curr) => acc && acc[curr], settings)
-
-    if (!settingValue) {
+    if (!get(settings, key)) {
       return key
     }
   }

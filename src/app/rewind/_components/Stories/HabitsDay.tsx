@@ -2,14 +2,13 @@ import { RewindStory } from '@/types/rewind'
 import { CalendarDaysIcon } from '@heroicons/react/24/outline'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
+import { getWeekdayDate } from '../habitsDate'
 import RewindBarChart from '../RewindBarChart'
 import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 
-// 2024-01-07 is a Sunday, so adding the index lands on the matching weekday and
-// lets Intl produce a localized day name without hardcoding translations.
 function weekday(index: number, formatter: Intl.DateTimeFormat) {
-  return formatter.format(new Date(Date.UTC(2024, 0, 7 + index)))
+  return formatter.format(getWeekdayDate(index))
 }
 
 // The plays per day start on Sunday, as Date.getDay() does, but the chart

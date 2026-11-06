@@ -1,5 +1,5 @@
 import { Play, PlayMediaType } from '@/types/playHistory'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
 import { PreviousFavorite, YearOverYear } from '@/types/yearOverYear'
 import { maxBy, minBy, sumBy, uniq } from 'lodash'
 import { getTranslations } from 'next-intl/server'
@@ -24,7 +24,7 @@ export type PeriodPlays<T extends Play = Play> = {
 }
 
 // The period's favourite, as its story's card shows it
-export type FavoriteItem = Pick<TautulliItemRow, 'media_id' | 'title' | 'year'>
+export type FavoriteItem = Pick<ItemRow, 'media_id' | 'title' | 'year'>
 
 export type FavoriteChange = {
   // The newest play of the earlier favourite, for its title

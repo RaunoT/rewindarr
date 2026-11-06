@@ -1,6 +1,6 @@
 import { HistoryRequest } from '@/types/history'
 import { Settings } from '@/types/settings'
-import { TautulliUser } from '@/types/tautulli'
+import { SourceUser } from '@/types/statsSource'
 import { cloneDeep } from 'lodash'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
@@ -37,13 +37,13 @@ function seerrRequest(
   }
 }
 
-function user(userId: number, friendlyName: string): TautulliUser {
+function user(userId: number, friendlyName: string): SourceUser {
   return {
     user_id: String(userId),
     friendly_name: friendlyName,
     username: friendlyName.toLowerCase(),
     user_thumb: `https://plex.tv/users/${userId}/avatar`,
-  } as TautulliUser
+  } as SourceUser
 }
 
 function withSettings(update: (settings: Settings) => void = () => {}) {

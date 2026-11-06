@@ -2,17 +2,12 @@ import { Play, PlayMediaType } from '@/types/playHistory'
 import { TitleCard, TitleMoments } from '@/types/titleMoments'
 import { groupBy, mapValues, minBy, orderBy, sumBy } from 'lodash'
 import { getTranslations } from 'next-intl/server'
+import { PLAY_LIBRARY_TYPES } from './constants'
 import { secondsToTime } from './formatting'
 import getSettings from './getSettings'
 import { getItemTotals, groupPlays, isCountedPlay } from './playStats'
 import { getStatsSource } from './statsSource'
 
-// What a play rolls up into, as in the dashboard's lists
-const ITEM_TYPES = {
-  movie: 'movie',
-  episode: 'show',
-  track: 'artist',
-} as const
 // The media whose release year is worth travelling to
 const VIDEO_TYPES: PlayMediaType[] = ['movie', 'episode']
 
@@ -302,7 +297,7 @@ export async function getTitleMoments(
         ...(await source.getPlayItem(play)),
         ...getItemTotals(itemPlays, minPercent),
       },
-      type: ITEM_TYPES[play.mediaType],
+      type: PLAY_LIBRARY_TYPES[play.mediaType],
     }
   }
 

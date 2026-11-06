@@ -1,5 +1,5 @@
 import { Settings } from '@/types/settings'
-import { TautulliSession } from '@/types/tautulli'
+import { ActivitySession } from '@/types/statsSource'
 import { DEFAULT_SETTINGS } from '@/utils/constants'
 import getSettings from '@/utils/getSettings'
 import { getActivity as fetchActivity } from '@/utils/statsSource'
@@ -13,7 +13,7 @@ vi.mock('next-auth', () => ({ getServerSession: vi.fn() }))
 vi.mock('@/utils/getSettings', () => ({ default: vi.fn() }))
 vi.mock('@/utils/statsSource', () => ({ getActivity: vi.fn() }))
 
-function session(userId: number, player: string): TautulliSession {
+function session(userId: number, player: string): ActivitySession {
   return {
     friendly_name: `User ${userId}`,
     player,
@@ -21,7 +21,7 @@ function session(userId: number, player: string): TautulliSession {
     session_key: String(userId),
     user_id: userId,
     user_thumb: `https://plex.tv/users/${userId}/avatar`,
-  } as TautulliSession
+  } as ActivitySession
 }
 
 let settings: Settings

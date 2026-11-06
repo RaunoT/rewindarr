@@ -1,4 +1,4 @@
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow } from '@/types/statsSource'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import fetchTmdb from './fetchTmdb'
 import {
@@ -17,14 +17,13 @@ import {
 vi.mock('./fetchTmdb', () => ({ default: vi.fn() }))
 vi.mock('./getSettings', () => ({ default: vi.fn() }))
 
-const getSourceData =
-  vi.fn<(item: TautulliItemRow) => Promise<SourceMediaData>>()
+const getSourceData = vi.fn<(item: ItemRow) => Promise<SourceMediaData>>()
 
 function title(
   name: string,
   duration: number,
-  overrides: Partial<TautulliItemRow> = {},
-): TautulliItemRow {
+  overrides: Partial<ItemRow> = {},
+): ItemRow {
   return { ...EMPTY_ROW, title: name, total_duration: duration, ...overrides }
 }
 
@@ -506,8 +505,8 @@ describe('getTopPeople', () => {
       vi.restoreAllMocks()
       // The backoff keeps its state on globalThis
       ;(
-        globalThis as { plexRewindDownServices?: Map<string, unknown> }
-      ).plexRewindDownServices?.clear()
+        globalThis as { rewindarrDownServices?: Map<string, unknown> }
+      ).rewindarrDownServices?.clear()
     }
   })
 })

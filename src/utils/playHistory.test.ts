@@ -89,8 +89,7 @@ async function load() {
 }
 
 beforeEach(async () => {
-  delete (globalThis as { plexRewindPlayHistory?: unknown })
-    .plexRewindPlayHistory
+  delete (globalThis as { rewindarrPlayHistory?: unknown }).rewindarrPlayHistory
   vi.resetModules()
   vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] })
   vi.setSystemTime(now)

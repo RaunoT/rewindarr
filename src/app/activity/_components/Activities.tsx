@@ -40,13 +40,23 @@ export default function Activities({ settings, mediaServer }: Props) {
   }, [data?.stream_count, settings.general.serverName, t])
 
   if (isLoading) {
-    return <ActivitiesSkeleton general={settings.general} />
+    return (
+      <ActivitiesSkeleton
+        general={settings.general}
+        isSeerrActive={settings.connection.isSeerrActive}
+      />
+    )
   }
 
   if (error || !data?.sessions.length) {
     return (
       <SkeletonSized
-        skeleton={<ActivitiesSkeleton general={settings.general} />}
+        skeleton={
+          <ActivitiesSkeleton
+            general={settings.general}
+            isSeerrActive={settings.connection.isSeerrActive}
+          />
+        }
       >
         {error ? (
           <StatusMessage

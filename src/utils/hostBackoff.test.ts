@@ -14,8 +14,8 @@ function flush() {
 
 beforeEach(() => {
   // The module keeps its state on globalThis, which outlives resetModules
-  delete (globalThis as { plexRewindDownServices?: unknown })
-    .plexRewindDownServices
+  delete (globalThis as { rewindarrDownServices?: unknown })
+    .rewindarrDownServices
   vi.resetModules()
   vi.useFakeTimers({ toFake: ['Date'] })
   vi.stubGlobal('fetch', fetchMock)

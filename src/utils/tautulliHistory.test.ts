@@ -1,5 +1,6 @@
 import { Settings } from '@/types/settings'
-import { TautulliHistoryRow, TautulliLibrary } from '@/types/tautulli'
+import { Library } from '@/types/statsSource'
+import { TautulliHistoryRow } from '@/types/tautulli'
 import { cloneDeep } from 'lodash'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
@@ -34,11 +35,11 @@ function row(overrides: Partial<TautulliHistoryRow> = {}): TautulliHistoryRow {
   } as TautulliHistoryRow
 }
 
-function library(id: string, type: string): TautulliLibrary {
+function library(id: string, type: string): Library {
   return {
     section_id: id,
     section_name: id,
-    section_type: type as TautulliLibrary['section_type'],
+    section_type: type as Library['section_type'],
     count: '1',
     parent_count: '0',
     child_count: '0',

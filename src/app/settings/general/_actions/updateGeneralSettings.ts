@@ -2,15 +2,16 @@
 
 import { denySettingsAccess } from '@/lib/access'
 import {
-  ExternalLink,
   GeneralSettings,
   ItemStatistics,
   SettingsFormInitialState,
+  TitleLink,
 } from '@/types/settings'
 import {
   EXTERNAL_LINKS,
   GOOGLE_ANALYTICS_ID_PATTERN,
   ITEM_STATISTICS,
+  SERVER_LINKS,
 } from '@/utils/constants'
 import { getTranslations } from 'next-intl/server'
 import { z } from 'zod'
@@ -32,7 +33,7 @@ export default async function saveGeneralSettings(
     activeLibraries: z.array(z.string()),
     excludedUsers: z.array(z.string()),
     isPostersTmdbOnly: z.boolean(),
-    activeExternalLinks: z.array(z.enum(EXTERNAL_LINKS)),
+    activeExternalLinks: z.array(z.enum([...SERVER_LINKS, ...EXTERNAL_LINKS])),
     activeItemStatistics: z.array(z.enum(ITEM_STATISTICS)),
     minPlayPercent: z.custom<number>(
       (value) =>
@@ -56,9 +57,7 @@ export default async function saveGeneralSettings(
     activeLibraries: formData.getAll('activeLibraries') as string[],
     excludedUsers: formData.getAll('excludedUsers') as string[],
     isPostersTmdbOnly: formData.get('isPostersTmdbOnly') === 'on',
-    activeExternalLinks: formData.getAll(
-      'activeExternalLinks',
-    ) as ExternalLink[],
+    activeExternalLinks: formData.getAll('activeExternalLinks') as TitleLink[],
     activeItemStatistics: formData.getAll(
       'activeItemStatistics',
     ) as ItemStatistics,

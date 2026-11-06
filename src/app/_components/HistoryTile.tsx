@@ -3,8 +3,7 @@ import SkeletonLine from '@/components/SkeletonLine'
 import { UserAvatar } from '@/components/UserBadge'
 import { DashboardSearchParams } from '@/types/dashboard'
 import { Settings } from '@/types/settings'
-import { MediaServer } from '@/types/statsSource'
-import { TautulliLibrary } from '@/types/tautulli'
+import { Library } from '@/types/statsSource'
 import { getRecentPlays } from '@/utils/getHistory'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import { ChevronRightIcon, ClockIcon } from '@heroicons/react/24/outline'
@@ -17,10 +16,9 @@ import TileItem, { TILE_ITEM_COUNT, TileItemsSkeleton } from './TileItem'
 type Props = {
   settings: Settings
   session: Session | null
-  libraries: TautulliLibrary[]
+  libraries: Library[]
   // The dashboard's, which the history shares
   period: DashboardSearchParams['period']
-  mediaServer: Promise<MediaServer | null>
 }
 
 // The newest plays, like the activity tile's streams
@@ -29,13 +27,9 @@ export default async function HistoryTile({
   session,
   libraries,
   period,
-  mediaServer: mediaServerPromise,
 }: Props) {
   const t = await getTranslations()
-  const [{ plays, progress }, mediaServer] = await Promise.all([
-    getRecentPlays(TILE_ITEM_COUNT, libraries),
-    mediaServerPromise,
-  ])
+  const { plays, progress } = await getRecentPlays(TILE_ITEM_COUNT, libraries)
   const locale = await getLocale()
   const now = await getNow()
 
@@ -83,13 +77,6 @@ export default async function HistoryTile({
                 }
                 aside={<UserAvatar user={user} className='size-6' />}
                 hasGlow={index === 0}
-                // Like a history card's without the title's lookup, which
-                // says whether it's been deleted or re-added since
-                deeplink={
-                  mediaServer && play.ratingKey
-                    ? { mediaServer, ratingKey: play.ratingKey }
-                    : null
-                }
               />
             )
           })}

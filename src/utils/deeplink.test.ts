@@ -1,17 +1,16 @@
-import { MediaServer } from '@/types/statsSource'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow, MediaServer } from '@/types/statsSource'
 import { describe, expect, it } from 'vitest'
 import { generateDeeplinkUrl, getRowDeeplink } from './deeplink'
 
 const PLEX: MediaServer = { type: 'plex', id: 'abc123', url: '' }
 
-function row(fields: Partial<TautulliItemRow>): TautulliItemRow {
+function row(fields: Partial<ItemRow>): ItemRow {
   return {
     rating_key: 10,
     grandparent_rating_key: 20,
     is_deleted: false,
     ...fields,
-  } as TautulliItemRow
+  } as ItemRow
 }
 
 describe('getRowDeeplink', () => {
@@ -20,7 +19,10 @@ describe('getRowDeeplink', () => {
       mediaServer: PLEX,
       ratingKey: 10,
     })
-    expect(getRowDeeplink(row({}), 'artist', PLEX)?.ratingKey).toBe(20)
+    expect(getRowDeeplink(row({}), 'artist', PLEX)).toEqual({
+      mediaServer: PLEX,
+      ratingKey: 20,
+    })
   })
 
   it('leaves out an item without a server, a rating key or one deleted', () => {
@@ -28,6 +30,21 @@ describe('getRowDeeplink', () => {
     expect(getRowDeeplink(null, 'movie', PLEX)).toBeNull()
     expect(getRowDeeplink(row({ is_deleted: true }), 'show', PLEX)).toBeNull()
     expect(getRowDeeplink(row({ rating_key: 0 }), 'show', PLEX)).toBeNull()
+  })
+
+  it('links a deleted movie or show to its request in Seerr', () => {
+    const deleted = row({ is_deleted: true, tmdb_id: 603 })
+
+    expect(getRowDeeplink(deleted, 'movie', PLEX, 'http://seerr')).toEqual({
+      requestUrl: 'http://seerr/movie/603',
+    })
+    expect(getRowDeeplink(deleted, 'show', null, 'http://seerr')).toEqual({
+      requestUrl: 'http://seerr/tv/603',
+    })
+    expect(getRowDeeplink(deleted, 'artist', PLEX, 'http://seerr')).toBeNull()
+    expect(
+      getRowDeeplink(row({ is_deleted: true }), 'movie', PLEX, 'http://seerr'),
+    ).toBeNull()
   })
 })
 

@@ -1,3 +1,4 @@
+import { getErrorCode } from '@/utils/files'
 import { randomBytes } from 'crypto'
 import fs from 'fs'
 import path from 'path'
@@ -6,12 +7,6 @@ export const SECRET_PATH = path.join(process.cwd(), 'config/auth-secret')
 
 function createSecret(): string {
   return randomBytes(32).toString('base64')
-}
-
-function getErrorCode(error: unknown): string | undefined {
-  return error instanceof Error && 'code' in error
-    ? String(error.code)
-    : undefined
 }
 
 // The secret signs every session, so only the app's user may read it. A file

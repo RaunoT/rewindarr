@@ -25,15 +25,6 @@ export const countdownRow = {
   },
 }
 
-export const fadeIn = {
-  hidden: {
-    opacity: 0,
-  },
-  show: {
-    opacity: 1,
-  },
-}
-
 export const animateRewindStat = {
   hidden: {
     opacity: 0,

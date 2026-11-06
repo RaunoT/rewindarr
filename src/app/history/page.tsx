@@ -21,6 +21,7 @@ import getPeriod from '@/utils/getPeriod'
 import getSettings from '@/utils/getSettings'
 import {
   canViewFeature,
+  getLibrarySlug,
   getViewer,
   sortByActiveLibraries,
 } from '@/utils/helpers'
@@ -38,7 +39,7 @@ import {
   MoonIcon,
   PlayIcon,
 } from '@heroicons/react/24/outline'
-import { kebabCase, sortBy, upperFirst } from 'lodash'
+import { sortBy, upperFirst } from 'lodash'
 import { Metadata } from 'next'
 import { getServerSession, Session } from 'next-auth'
 import {
@@ -216,16 +217,22 @@ function HistoryLoader({
   rows,
   totalsCount,
   general,
+  isSeerrActive,
 }: {
   rows: number
   totalsCount: number
   general: ComponentProps<typeof HistorySkeleton>['general']
+  isSeerrActive: boolean
 }) {
   return (
     <>
       <TotalsSkeleton count={totalsCount} />
       <CardWrapper>
-        <HistorySkeleton rows={rows} general={general} />
+        <HistorySkeleton
+          rows={rows}
+          general={general}
+          isSeerrActive={isSeerrActive}
+        />
       </CardWrapper>
     </>
   )
@@ -287,7 +294,11 @@ async function HistoryContent({
           {requestsNotice}
           <SkeletonSized
             skeleton={
-              <HistorySkeleton rows={pageSize} general={settings.general} />
+              <HistorySkeleton
+                rows={pageSize}
+                general={settings.general}
+                isSeerrActive={isSeerrActive(settings)}
+              />
             }
           >
             {progress ? (
@@ -439,7 +450,11 @@ export default async function HistoryPage({ searchParams }: Props) {
         <CardWrapper>
           <SkeletonSized
             skeleton={
-              <HistorySkeleton rows={pageSize} general={settings.general} />
+              <HistorySkeleton
+                rows={pageSize}
+                general={settings.general}
+                isSeerrActive={isSeerrActive(settings)}
+              />
             }
           >
             <SourceUnreachable
@@ -459,7 +474,7 @@ export default async function HistoryPage({ searchParams }: Props) {
   )
   const libraryParams = [libraryParam ?? []].flat()
   const pickedLibraries = libraries.filter((library) =>
-    libraryParams.includes(kebabCase(library.section_name)),
+    libraryParams.includes(getLibrarySlug(library)),
   )
   // Only the users the filter offers, so the URL can't pick an excluded one
   const userIds = [user ?? []]
@@ -478,10 +493,7 @@ export default async function HistoryPage({ searchParams }: Props) {
   }
   const params = new URLSearchParams([
     ...(periodParam ? [['period', periodParam]] : []),
-    ...pickedLibraries.map((library) => [
-      'library',
-      kebabCase(library.section_name),
-    ]),
+    ...pickedLibraries.map((library) => ['library', getLibrarySlug(library)]),
     ...userIds.map((userId) => ['user', userId]),
     ...(hasRequests && kind ? [['kind', kind]] : []),
     ...(search ? [['q', search]] : []),
@@ -492,7 +504,7 @@ export default async function HistoryPage({ searchParams }: Props) {
     <>
       {filters(
         libraries.map((library) => ({
-          value: kebabCase(library.section_name),
+          value: getLibrarySlug(library),
           label: library.section_name,
           type: library.section_type,
         })),
@@ -502,6 +514,7 @@ export default async function HistoryPage({ searchParams }: Props) {
           <HistoryLoader
             rows={pageSize}
             general={settings.general}
+            isSeerrActive={hasRequests}
             totalsCount={getTotalKeys(filter, hasRequests).length}
           />
         }

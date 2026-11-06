@@ -1,17 +1,16 @@
 import { STAT_ICONS } from '@/components/icons'
 import MediaCard from '@/components/MediaCard'
-import SeerrLogo from '@/components/MediaItem/SeerrLogo'
+import SeerrButton from '@/components/MediaItem/SeerrButton'
 import { HistoryRequest } from '@/types/history'
 import { PublicSettings } from '@/types/settings'
-import { MediaServer } from '@/types/statsSource'
-import { TautulliItemRow } from '@/types/tautulli'
+import { ItemRow, MediaServer } from '@/types/statsSource'
 import { useTranslations } from 'next-intl'
 import HistoryTime from './HistoryTime'
 
 type Props = {
   request: HistoryRequest
   // The title's year, ratings and IDs
-  item: TautulliItemRow | null | undefined
+  item: ItemRow | null | undefined
   mediaServer: MediaServer | null
   settings: PublicSettings
   isAnonymous: boolean
@@ -20,8 +19,8 @@ type Props = {
 }
 
 // Built like a play's card, with the request's status in Seerr among its
-// links. Once some of it is there, the title and poster open it in the media
-// server.
+// links when Seerr's statuses are chosen. The poster opens the request, or once some of
+// it is there, the item in the media server.
 export default function HistoryRequestItem({
   request,
   item,
@@ -40,16 +39,19 @@ export default function HistoryRequestItem({
         ? t('History.season', { season: seasons[0] })
         : t('History.seasonCount', { count: seasons.length })
       : null
+  const requestUrl = `${settings.connection.seerrUrl}/${mediaType}/${request.tmdbId}`
   // What's there opens in the media server. Only a partly available one still
   // needs its status, as the rest is yet to come.
-  const deeplink =
+  const serverLink =
     (request.status === 'available' ||
       request.status === 'partiallyAvailable') &&
     mediaServer &&
     request.ratingKey
       ? { mediaServer, ratingKey: request.ratingKey }
       : null
-  const isStatusShown = request.status !== 'available' || !deeplink
+  const isStatusShown =
+    settings.general.activeExternalLinks.includes('seerrStatus') &&
+    (request.status !== 'available' || !serverLink)
 
   return (
     <MediaCard
@@ -65,7 +67,7 @@ export default function HistoryRequestItem({
         <span
           role='img'
           aria-label={t('History.request')}
-          className='absolute inset-0 flex items-center justify-center bg-black/60'
+          className='poster-overlay'
         >
           <STAT_ICONS.requests className='size-7 drop-shadow' />
         </span>
@@ -81,21 +83,17 @@ export default function HistoryRequestItem({
             }
           : null
       }
-      action={
+      seerrAction={
         isStatusShown && (
-          <a
-            href={`${settings.connection.seerrUrl}/${mediaType}/${request.tmdbId}`}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='button-card'
-            aria-label={t('History.requestStatusLabel', { status, title })}
+          <SeerrButton
+            href={requestUrl}
+            label={t('History.requestStatusLabel', { status, title })}
           >
-            <SeerrLogo />
             {status}
-          </a>
+          </SeerrButton>
         )
       }
-      deeplink={deeplink}
+      deeplink={serverLink ?? { requestUrl }}
       aside={<HistoryTime time={new Date(request.createdAt)} />}
       settings={settings}
     />

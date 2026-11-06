@@ -1,8 +1,8 @@
-import { TautulliItemRow } from './tautulli'
+import { ItemRow } from '@/types/statsSource'
 
 // A movie or show as a card, with the plays, time and people the story counts
 export type SocialItem = {
-  data: TautulliItemRow
+  data: ItemRow
   type: 'movie' | 'show'
 }
 
