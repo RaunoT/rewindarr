@@ -552,45 +552,73 @@
       updateNav()
       window.addEventListener('scroll', updateNav, { passive: true })
 
-      // The page ships with recent numbers and swaps in live ones when it can
+      // The page ships with recent numbers and swaps in live ones when it
+      // can. A failed request, such as a rate-limited one, keeps them.
+      const getJson = (url) =>
+        fetch(url).then((response) => {
+          if (!response.ok) {
+            throw new Error(`${response.status} ${url}`)
+          }
+
+          return response.json()
+        })
       const setStat = (name, value) => {
-        if (value != null) {
-          document.querySelector(`[data-stat="${name}"]`).textContent = value
+        document.querySelector(`[data-stat="${name}"]`).textContent = value
+      }
+      const setCount = (name, count) => {
+        if (Number.isFinite(count)) {
+          setStat(
+            name,
+            new Intl.NumberFormat('en', { notation: 'compact' })
+              .format(count)
+              .toLowerCase(),
+          )
         }
       }
-      const formatCount = (count) =>
-        new Intl.NumberFormat('en', { notation: 'compact' })
-          .format(count)
-          .toLowerCase()
 
-      fetch('https://api.github.com/repos/RaunoT/rewindarr')
-        .then((response) => response.ok && response.json())
+      getJson('https://api.github.com/repos/RaunoT/rewindarr')
         .then((repo) => {
-          setStat('stars', repo && formatCount(repo.stargazers_count))
-          setStat('forks', repo && formatCount(repo.forks_count))
+          setCount('stars', repo.stargazers_count)
+          setCount('forks', repo.forks_count)
         })
         .catch(() => {})
 
       // Written daily by the download-badge workflow
-      fetch(
+      getJson(
         'https://raw.githubusercontent.com/RaunoT/rewindarr/badges/downloads.json',
       )
-        .then((response) => response.ok && response.json())
-        .then((badge) => setStat('downloads', badge && badge.message))
+        .then((badge) => {
+          if (typeof badge.message === 'string' && badge.message) {
+            setStat('downloads', badge.message)
+          }
+        })
         .catch(() => {})
 
       document.querySelectorAll('[data-copy]').forEach((button) => {
         button.addEventListener('click', async () => {
-          const text = document.getElementById(button.dataset.copy).textContent
-
+          const code = document.getElementById(button.dataset.copy)
           const label = button.querySelector('.code-label')
 
           try {
-            await navigator.clipboard.writeText(text)
+            await navigator.clipboard.writeText(code.textContent)
             label.textContent = 'Copied'
             button.classList.add('code-copy--done')
           } catch {
-            label.textContent = 'Press ⌘C'
+            // Without clipboard access, select the snippet to copy by hand
+            const range = document.createRange()
+            const selection = window.getSelection()
+
+            range.selectNodeContents(code)
+            selection.removeAllRanges()
+            selection.addRange(range)
+
+            if (window.matchMedia('(pointer: coarse)').matches) {
+              label.textContent = 'Selected'
+            } else if (/Mac|iPhone|iPad/.test(navigator.userAgent)) {
+              label.textContent = 'Press ⌘C'
+            } else {
+              label.textContent = 'Press Ctrl+C'
+            }
           }
 
           setTimeout(() => {
