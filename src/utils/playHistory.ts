@@ -674,6 +674,15 @@ export async function getReadProgress(
   return isWaiting ? getStatus(stores) : null
 }
 
+// How far back every history has its plays, so a period that starts after it
+// can be shown without waiting for a read. -Infinity once each is read back
+// to its oldest play, Infinity before any page of one is read.
+export async function getReadFrom(readers: HistoryReader[]): Promise<number> {
+  const stores = await Promise.all(readers.map(getStore))
+
+  return Math.max(...stores.map((store) => store.readTo))
+}
+
 async function readWholeHistory(reader: HistoryReader): Promise<void> {
   const store = await getStore(reader)
 

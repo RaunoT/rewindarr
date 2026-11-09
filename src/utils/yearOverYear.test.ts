@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
 import getSettings from './getSettings'
+import { getEditionPeriod } from './rewindPeriod'
 import {
   compareYears,
   getFavoriteChange,
@@ -22,6 +23,7 @@ const NOW = Date.parse('2026-11-04T12:00:00Z')
 // The past year's start, and the year before it as long as the past year
 const SINCE = Date.parse('2025-11-04')
 const PREVIOUS_SINCE = Date.parse('2024-11-03T12:00:00Z')
+const PAST_YEAR = { since: '2025-11-04', year: null }
 const OPTIONS = {
   since: SINCE,
   now: NOW,
@@ -121,8 +123,13 @@ describe('splitPlays', () => {
       play('first', PREVIOUS_SINCE),
       play('last', SINCE - 1),
       play('now', SINCE),
+      play('after', NOW),
     ]
-    const { previous, current } = splitPlays(plays, PREVIOUS_SINCE, SINCE)
+    const { previous, current } = splitPlays(
+      plays,
+      { since: PREVIOUS_SINCE, until: SINCE },
+      { since: SINCE, until: NOW },
+    )
 
     expect(previous.map(({ id }) => id)).toEqual(['first', 'last'])
     expect(current.map(({ id }) => id)).toEqual(['now'])
@@ -137,7 +144,7 @@ describe('compareYears', () => {
         favorites: { movies: favorite('Dune', 2020) },
       }),
     ).toEqual({
-      previousSince: PREVIOUS_SINCE,
+      previous: { since: PREVIOUS_SINCE, until: SINCE },
       previousDuration: 15 * 60 * 60,
       difference: 40,
       shows: null,
@@ -168,8 +175,31 @@ describe('compareYears', () => {
     )
 
     expect(result).toMatchObject({
-      previousSince: 2 * since - NOW,
+      previous: { since: 2 * since - NOW, until: since },
       difference: -50,
+    })
+  })
+
+  it('compares an edition with the period asked for, up to its end', () => {
+    const since = Date.parse('2025-01-01')
+    const result = compareYears(
+      [
+        ...daily('before', '2024-01-10T20:00:00Z', 10),
+        ...daily('now', '2025-03-01T20:00:00Z', 10),
+        ...daily('after', '2026-03-01T20:00:00Z', 10),
+      ],
+      {
+        ...OPTIONS,
+        since,
+        until: Date.parse('2026-01-01'),
+        previous: { since: Date.parse('2024-01-01'), until: since },
+      },
+    )
+
+    expect(result).toMatchObject({
+      previous: { since: Date.parse('2024-01-01'), until: since },
+      previousDuration: 15 * 60 * 60,
+      difference: 0,
     })
   })
 
@@ -395,14 +425,15 @@ describe('getYearOverYear', () => {
 
   it('compares the past year with the year before', async () => {
     expect(
-      await getYearOverYear(shows, 'UTC', {
+      await getYearOverYear(shows, PAST_YEAR, 'UTC', {
         shows: favorite('The Bear'),
         movies: favorite('Dune', 2020),
       }),
     ).toEqual({
       since: '2024-11-03',
       until: '2025-11-03',
-      isPastYear: true,
+      isYear: true,
+      isSoFar: false,
       duration: '16 hr',
       difference: 34,
       shows: { title: 'Severance', isSame: false },
@@ -413,6 +444,7 @@ describe('getYearOverYear', () => {
   it('compares a period from a start date with as long a one before it', async () => {
     const settings = cloneDeep(DEFAULT_SETTINGS)
 
+    settings.rewind.period = 'custom'
     settings.rewind.startDate = '2026-01-01'
     vi.mocked(getSettings).mockReturnValue(settings)
 
@@ -421,13 +453,53 @@ describe('getYearOverYear', () => {
         ...daily('before', '2025-03-01T20:00:00Z', 10),
         ...daily('now', '2026-02-01T20:00:00Z', 10),
       ],
+      { since: '2026-01-01', year: null },
       'UTC',
     )
 
     expect(yearOverYear).toMatchObject({
       since: '2025-02-27',
       until: '2025-12-31',
-      isPastYear: false,
+      isYear: false,
+      difference: 0,
+    })
+  })
+
+  it('compares an edition with the whole year before', async () => {
+    const yearOverYear = await getYearOverYear(
+      [
+        ...daily('before', '2024-01-10T20:00:00Z', 10),
+        ...daily('now', '2025-06-01T20:00:00Z', 10),
+        ...daily('after', '2026-02-01T20:00:00Z', 10),
+      ],
+      getEditionPeriod(2025, 'UTC'),
+      'UTC',
+    )
+
+    expect(yearOverYear).toMatchObject({
+      since: '2024-01-01',
+      isYear: true,
+      isSoFar: false,
+      difference: 0,
+    })
+  })
+
+  it('compares an edition still going with the year before so far', async () => {
+    const yearOverYear = await getYearOverYear(
+      [
+        ...daily('before', '2025-01-10T20:00:00Z', 10),
+        // After this moment a year earlier
+        ...daily('later', '2025-11-05T20:00:00Z', 10),
+        ...daily('now', '2026-03-01T20:00:00Z', 10),
+      ],
+      getEditionPeriod(2026, 'UTC'),
+      'UTC',
+    )
+
+    expect(yearOverYear).toMatchObject({
+      since: '2025-01-01',
+      isYear: true,
+      isSoFar: true,
       difference: 0,
     })
   })
@@ -438,14 +510,14 @@ describe('getYearOverYear', () => {
     settings.general.excludedUsers = ['1']
     vi.mocked(getSettings).mockReturnValue(settings)
 
-    expect(await getYearOverYear(shows, 'UTC')).not.toBeNull()
+    expect(await getYearOverYear(shows, PAST_YEAR, 'UTC')).not.toBeNull()
   })
 
   it('waits for the whole history to be read', async () => {
-    expect(await getYearOverYear(null, 'UTC')).toBeNull()
+    expect(await getYearOverYear(null, PAST_YEAR, 'UTC')).toBeNull()
   })
 
   it('is null without enough plays before the period', async () => {
-    expect(await getYearOverYear(pastYear, 'UTC')).toBeNull()
+    expect(await getYearOverYear(pastYear, PAST_YEAR, 'UTC')).toBeNull()
   })
 })

@@ -49,25 +49,44 @@ describe('getSummaryTitle', () => {
   const now = new Date('2026-11-04T12:00:00Z')
 
   it('names this year for the default past year', () => {
-    expect(getSummaryTitle('', '', now)).toEqual({
+    expect(getSummaryTitle('', { editionYear: null }, now)).toEqual({
       type: 'default',
       years: '2026',
     })
   })
 
   it('adds the earlier year of a start date the admin set in one', () => {
-    expect(getSummaryTitle('', '2026-01-01', now)).toEqual({
+    expect(
+      getSummaryTitle(
+        '',
+        { customStartDate: '2026-01-01', editionYear: null },
+        now,
+      ),
+    ).toEqual({
       type: 'default',
       years: '2026',
     })
-    expect(getSummaryTitle('', '2024-11-04', now)).toEqual({
+    expect(
+      getSummaryTitle(
+        '',
+        { customStartDate: '2024-11-04', editionYear: null },
+        now,
+      ),
+    ).toEqual({
       type: 'default',
       years: '2024–2026',
     })
   })
 
+  it("names an edition after its year, even once it's over", () => {
+    expect(getSummaryTitle('', { editionYear: 2025 }, now)).toEqual({
+      type: 'default',
+      years: '2025',
+    })
+  })
+
   it("uses the server's name when the admin set one", () => {
-    expect(getSummaryTitle('Home Cinema', '', now)).toEqual({
+    expect(getSummaryTitle('Home Cinema', { editionYear: null }, now)).toEqual({
       type: 'server',
       serverName: 'Home Cinema',
       years: '2026',

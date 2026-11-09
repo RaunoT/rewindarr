@@ -1,6 +1,11 @@
 import HistoryReading from '@/components/HistoryReading'
 import { authOptions } from '@/lib/auth'
-import { RewindTotals, RewindUser, UserRewind } from '@/types/rewind'
+import {
+  RewindPeriod,
+  RewindTotals,
+  RewindUser,
+  UserRewind,
+} from '@/types/rewind'
 import { ItemRow, Library } from '@/types/statsSource'
 import { PLAY_LIBRARY_TYPES, TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
 import {
@@ -28,13 +33,17 @@ import {
   getAverage,
   getAverageShares,
   getDifference,
-  getRewindStartDate,
   getViewer,
 } from '@/utils/helpers'
 import { getPlexThemeUrl, getPlexTrackUrl } from '@/utils/plexAudio'
 import { toPublicSettings } from '@/utils/publicSettings'
 import { getRewindMoments } from '@/utils/rewindMoments'
 import { getMusicUrl, getThemeSongUrl } from '@/utils/rewindMusic'
+import {
+  getLatestEditionYear,
+  getRewindPeriod,
+  parseEditionYear,
+} from '@/utils/rewindPeriod'
 import {
   getPersonality,
   getPersonalitySignals,
@@ -70,7 +79,13 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-async function RewindContent({ userId }: { userId?: string }) {
+async function RewindContent({
+  userId,
+  year,
+}: {
+  userId?: string
+  year?: string
+}) {
   const session = await getServerSession(authOptions)
   const settings = getSettings()
 
@@ -104,26 +119,30 @@ async function RewindContent({ userId }: { userId?: string }) {
     return notFound()
   }
 
-  const startDate = getRewindStartDate(settings)
+  const timeZone = toTimeZone(
+    (await cookies()).get(TIME_ZONE_COOKIE_NAME)?.value,
+  )
+  const period = getRewindPeriod(settings, {
+    year: parseEditionYear(year, getLatestEditionYear(settings, timeZone)),
+    timeZone,
+  })
   const libraries = await getLibraries()
-  const progress = await getHistoryProgress(startDate, libraries)
+  const progress = await getHistoryProgress(period.since, libraries)
 
   if (progress) {
     return <HistoryReading progress={progress} isInCard />
   }
 
-  const timeZone = toTimeZone(
-    (await cookies()).get(TIME_ZONE_COOKIE_NAME)?.value,
-  )
   // Ranked once, for both the users' top and the average user
   const viewersRequest = getStatsSource(settings).getTopUsers({
-    since: startDate,
+    since: period.since,
+    until: period.until,
     libraries,
   })
   // Not waited for, so the welcome shows while they're read. The rest reads
   // the totals too, instead of reading them again.
-  const totals = getTotals(user.id, libraries, viewersRequest)
-  const rewind = getRewind(user, libraries, timeZone, {
+  const totals = getTotals(user.id, libraries, period, viewersRequest)
+  const rewind = getRewind(user, libraries, period, timeZone, {
     viewersRequest,
     totals,
   })
@@ -131,6 +150,7 @@ async function RewindContent({ userId }: { userId?: string }) {
   return (
     <RewindStories
       user={user}
+      period={period}
       settings={toPublicSettings(settings)}
       track={getMusicUrl(settings)}
       totals={totals}
@@ -144,15 +164,16 @@ async function RewindContent({ userId }: { userId?: string }) {
 async function getTotals(
   userId: string,
   libraries: Library[],
+  period: RewindPeriod,
   viewersRequest: Promise<ItemRow[] | null>,
 ): Promise<RewindTotals> {
   const settings = getSettings()
   const [t, userTotalDuration, topMediaStats, usersDurationByType, viewers] =
     await Promise.all([
       getTranslations(),
-      getUserTotalDuration(userId, libraries),
-      getTopMediaStats(userId, libraries),
-      getUsersDurationByType(libraries),
+      getUserTotalDuration(userId, libraries, period),
+      getTopMediaStats(userId, libraries, period),
+      getUsersDurationByType(libraries, period),
       viewersRequest,
     ])
   const isUserExcluded = settings.general.excludedUsers.includes(userId)
@@ -231,14 +252,16 @@ type SharedRequests = {
 async function getRewind(
   user: RewindUser,
   libraries: Library[],
+  period: RewindPeriod,
   timeZone: string | undefined,
   { viewersRequest, totals: totalsRequest }: SharedRequests,
 ): Promise<RewindData> {
   const settings = getSettings()
-  const startDate = getRewindStartDate(settings)
+  const { since, until } = period
   // Read once, for every stat from the user's own plays
   const userPlaysRequest = getStatsSource(settings).getHistoryPlays({
-    since: startDate,
+    since,
+    until,
     userId: user.id,
     libraries,
   })
@@ -259,19 +282,30 @@ async function getRewind(
   ] = await Promise.all([
     getLocale(),
     totalsRequest,
-    getTopMediaItems(user.id, libraries),
+    getTopMediaItems(user.id, libraries, period),
     getlibrariesTotalSize(libraries),
     getMediaServer(),
-    viewersRequest.then((users) => getUsersTop(user.id, startDate, { users })),
-    getPlaybackHabits(user.id, libraries, timeZone),
-    getStatsSource(settings).getFirstPlay(user.id),
-    getTopPeople(user.id, libraries),
-    getGenres(user.id, libraries),
-    getTopTrack(user.id, libraries),
-    getRewindSocial(user.id, libraries),
+    viewersRequest.then((users) =>
+      getUsersTop(user.id, since, { users, until }),
+    ),
+    getPlaybackHabits(user.id, libraries, period, timeZone),
+    // A user who joined after an edition has no first play in it
+    getStatsSource(settings)
+      .getFirstPlay(user.id)
+      .then((play) =>
+        play && (!until || Date.parse(play.date) < Date.parse(until))
+          ? play
+          : null,
+      ),
+    getTopPeople(user.id, libraries, period),
+    getGenres(user.id, libraries, period),
+    getTopTrack(user.id, libraries, period),
+    getRewindSocial(user.id, libraries, period),
     userPlaysRequest.then((plays) =>
       getRewindMoments(plays, {
-        since: startDate,
+        since,
+        // The chart stops at the edition's last month
+        until: until ? Math.min(Date.now(), Date.parse(until) - 1) : undefined,
         minPlayPercent: settings.general.minPlayPercent,
         timeZone,
         getPlayItem: (play) => getStatsSource(settings).getPlayItem(play),
@@ -287,20 +321,22 @@ async function getRewind(
         hasFirstPlayTotals ? user.id : undefined,
       )
     : null
-  // The viewer's plays in the period, and all of them once the whole history
-  // has been read, for what was new to them and what they never finished
+  // The viewer's plays in the period, and all of them up to its end once the
+  // whole history has been read, for what was new to them and what they never
+  // finished
   const [plays, allPlays] = await Promise.all([
     userPlaysRequest,
     hasFirstPlayTotals
       ? getStatsSource(settings).getHistoryPlays({
           since: new Date(0).toISOString(),
+          until,
           userId: user.id,
           libraries,
         })
       : null,
   ])
-  const titleMoments = await getTitleMoments(plays, allPlays)
-  const yearOverYear = await getYearOverYear(allPlays, timeZone, {
+  const titleMoments = await getTitleMoments(plays, allPlays, until)
+  const yearOverYear = await getYearOverYear(allPlays, period, timeZone, {
     shows: topMediaItems.shows[0],
     movies: topMediaItems.movies[0],
   })
@@ -335,6 +371,7 @@ async function getRewind(
     media_server: mediaServer,
     social,
     user: user,
+    period,
   }
 
   // Read from the stats above, once they're all in
@@ -349,7 +386,7 @@ async function getRewind(
     settings.connection.seerrUrl && settings.connection.seerrApiKey
 
   if (isSeerrActive) {
-    const requestTotals = await getRequestsTotals(user.id)
+    const requestTotals = await getRequestsTotals(user.id, period)
 
     userRewind.requests = requestTotals
   }
@@ -386,15 +423,17 @@ async function getRewind(
 type Props = {
   searchParams: Promise<{
     userId?: string
+    // A calendar year's edition, the latest without one
+    year?: string
   }>
 }
 
 export default async function RewindPage({ searchParams }: Props) {
-  const { userId } = await searchParams
+  const { userId, year } = await searchParams
 
   return (
-    <Suspense fallback={<Loading />} key={userId}>
-      <RewindContent userId={userId} />
+    <Suspense fallback={<Loading />} key={`${userId}|${year}`}>
+      <RewindContent userId={userId} year={year} />
     </Suspense>
   )
 }

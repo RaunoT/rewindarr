@@ -269,12 +269,14 @@ export function getGaveUp(
   return top ? { play: top.play, percent: top.percent / 100 } : null
 }
 
-// The title moments as the stories show them. All the user's plays are null
-// until the whole history has been read, which the discoveries and the movie
-// they gave up on wait for.
+// The title moments as the stories show them. All the user's plays, up to the
+// end of the period, are null until the whole history has been read, which the
+// discoveries and the movie they gave up on wait for. An edition that's over
+// stays as it was at its end.
 export async function getTitleMoments(
   plays: Play[],
   allPlays: Play[] | null,
+  until?: string,
 ): Promise<TitleMoments> {
   const t = await getTranslations()
   const settings = getSettings()
@@ -283,7 +285,14 @@ export async function getTitleMoments(
   const comfortWatch = getComfortWatch(plays, minPercent)
   const timeTravel = getTimeTravel(plays, minPercent)
   const discoveries = allPlays && getDiscoveries(plays, allPlays, minPercent)
-  const gaveUp = allPlays && getGaveUp(plays, allPlays, minPercent)
+  const gaveUp =
+    allPlays &&
+    getGaveUp(
+      plays,
+      allPlays,
+      minPercent,
+      Math.min(Date.now(), until ? Date.parse(until) : Infinity),
+    )
 
   // The card is looked up from one play, so its watch time and plays are the
   // user's for the item in the period, as in the top lists

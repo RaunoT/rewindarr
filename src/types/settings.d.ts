@@ -74,9 +74,21 @@ export type RewindSettings = {
   isThemeMusicActive: boolean
   music: RewindMusic | null
   isSnowActive: boolean
+  period: RewindPeriodType
+  // MM-DD, when each calendar year's edition comes out. A date before July is
+  // in the year after.
+  releaseDate: string
+  // Only used by the specific year
+  year?: number
+  // Only used by the custom period
   startDate?: string
   complete: boolean
 }
+
+// What a Rewind covers: each calendar year's edition, the 365 days up to now,
+// one calendar year, or from the start date up to now
+export type RewindPeriodType =
+  'calendarYear' | 'pastYear' | 'specificYear' | 'custom'
 
 export type ItemStatistics = (
   | 'year'

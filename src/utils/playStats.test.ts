@@ -125,6 +125,15 @@ describe('filterPlays', () => {
     ).toHaveLength(1)
   })
 
+  it('leaves out plays from the end on', () => {
+    const ids = filterPlays(plays, {
+      since: '2026-03-01',
+      until: '2026-03-09T08:00:00Z',
+    }).map((item) => item.id)
+
+    expect(ids).toEqual(['before', 'start'])
+  })
+
   it('returns nothing for an invalid start', () => {
     expect(filterPlays(plays, { since: 'not a date' })).toEqual([])
   })
@@ -437,7 +446,9 @@ describe('plays short of the percent in the settings', () => {
   })
 
   it('add watch time to the media stats, but not a play', async () => {
-    const stats = await getStats().getMediaStats('1', [movies], '2026-01-01')
+    const stats = await getStats().getMediaStats('1', [movies], {
+      since: '2026-01-01',
+    })
 
     expect(stats.movies).toEqual({ count: 0, duration: 100 * 60 })
   })
@@ -462,11 +473,9 @@ describe('plays short of the percent in the settings', () => {
   })
 
   it('are left out of the hours and days', async () => {
-    const { hourly, daily } = await getStats().getPlaysByTime(
-      '2',
-      [movies],
-      '2026-01-01',
-    )
+    const { hourly, daily } = await getStats().getPlaysByTime('2', [movies], {
+      since: '2026-01-01',
+    })
 
     expect(sum(hourly)).toBe(1)
     expect(sum(daily)).toBe(1)
@@ -491,7 +500,9 @@ describe('getPlaysByTime', () => {
   it('counts only the plays in the libraries', async () => {
     const getPlays = vi.fn(async () => plays)
 
-    await getStats(getPlays).getPlaysByTime('1', [movies], '2026-01-01')
+    await getStats(getPlays).getPlaysByTime('1', [movies], {
+      since: '2026-01-01',
+    })
 
     expect(getPlays).toHaveBeenCalledWith('2026-01-01', [movies])
   })
@@ -500,11 +511,16 @@ describe('getPlaysByTime', () => {
     // Saturday at 02:30 in UTC, still Friday evening in New York
     const late = play('late', '2026-03-07T02:30:00Z')
     const stats = getStats(async () => [late])
-    const utc = await stats.getPlaysByTime('1', [movies], '2026-01-01', 'UTC')
+    const utc = await stats.getPlaysByTime(
+      '1',
+      [movies],
+      { since: '2026-01-01' },
+      'UTC',
+    )
     const newYork = await stats.getPlaysByTime(
       '1',
       [movies],
-      '2026-01-01',
+      { since: '2026-01-01' },
       'America/New_York',
     )
 

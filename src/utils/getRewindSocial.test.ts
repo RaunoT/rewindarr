@@ -16,6 +16,7 @@ vi.mock('./getSettings', () => ({ default: vi.fn() }))
 vi.mock('./statsSource', () => ({ getStatsSource: vi.fn() }))
 
 const HOUR_MS = 60 * 60 * 1000
+const PERIOD = { since: '2026-01-01' }
 
 function play(id: string, userId: string, title: string): HistoryPlay {
   return {
@@ -65,7 +66,6 @@ function t(key: string, params?: { count: number }) {
 function withSettings(excludedUsers: string[], isSeerrActive = true) {
   const settings = cloneDeep(DEFAULT_SETTINGS)
 
-  settings.rewind.startDate = '2026-01-01'
   settings.general.excludedUsers = excludedUsers
 
   if (isSeerrActive) {
@@ -95,10 +95,32 @@ beforeEach(() => {
 })
 
 describe('getRewindSocial', () => {
+  it("reads an edition's plays and requests up to its end", async () => {
+    withSettings(['1'])
+
+    await getRewindSocial('1', [], {
+      since: '2025-01-01T00:00:00.000Z',
+      until: '2026-01-01T00:00:00.000Z',
+    })
+
+    expect(getHistoryPlays).toHaveBeenCalledWith({
+      since: '2025-01-01T00:00:00.000Z',
+      until: '2026-01-01T00:00:00.000Z',
+      libraries: [],
+    })
+    expect(getHistoryPlays).toHaveBeenCalledWith(
+      expect.objectContaining({ until: '2026-01-01T00:00:00.000Z' }),
+    )
+    expect(fetchRewindRequests).toHaveBeenCalledWith(
+      '2025-01-01T00:00:00.000Z',
+      '2026-01-01T00:00:00.000Z',
+    )
+  })
+
   it("adds an excluded user's own plays back to everyone's", async () => {
     withSettings(['1'])
 
-    const social = await getRewindSocial('1', [])
+    const social = await getRewindSocial('1', [], PERIOD)
 
     expect(getHistoryPlays).toHaveBeenCalledWith(
       expect.objectContaining({ userId: '1' }),
@@ -114,7 +136,7 @@ describe('getRewindSocial', () => {
   it("reads only everyone's plays for a user who isn't excluded", async () => {
     withSettings([])
 
-    const social = await getRewindSocial('1', [])
+    const social = await getRewindSocial('1', [], PERIOD)
 
     expect(getHistoryPlays).toHaveBeenCalledTimes(1)
     // Alice isn't among them, so there's nothing of hers to compare
@@ -125,7 +147,7 @@ describe('getRewindSocial', () => {
   it("gives the cards the story's own plays, time and people", async () => {
     withSettings(['1'])
 
-    const { onlyYou, serverYear } = await getRewindSocial('1', [])
+    const { onlyYou, serverYear } = await getRewindSocial('1', [], PERIOD)
 
     expect(onlyYou?.item).toEqual({
       type: 'movie',
@@ -148,7 +170,7 @@ describe('getRewindSocial', () => {
   it("doesn't ask Seerr when it isn't set up", async () => {
     withSettings([], false)
 
-    const social = await getRewindSocial('1', [])
+    const social = await getRewindSocial('1', [], PERIOD)
 
     expect(fetchRewindRequests).not.toHaveBeenCalled()
     expect(social.requestsReach).toBeNull()
@@ -167,9 +189,9 @@ describe('getRewindSocial', () => {
       },
     ])
 
-    const { requestsReach } = await getRewindSocial('1', [])
+    const { requestsReach } = await getRewindSocial('1', [], PERIOD)
 
-    expect(fetchRewindRequests).toHaveBeenCalledWith('2026-01-01')
+    expect(fetchRewindRequests).toHaveBeenCalledWith('2026-01-01', undefined)
     expect(requestsReach).toMatchObject({
       users: 1,
       requests: 1,

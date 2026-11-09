@@ -1,5 +1,5 @@
 import { RewindStory } from '@/types/rewind'
-import { PauseIcon, SparklesIcon } from '@heroicons/react/24/outline'
+import { BookmarkIcon, SparklesIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
@@ -81,7 +81,7 @@ export default function StoryDiscoveries({
               ),
               titleValue: gaveUp.title,
               title: (chunks) => (
-                <RewindCat icon={<PauseIcon />}>{chunks}</RewindCat>
+                <RewindCat icon={<BookmarkIcon />}>{chunks}</RewindCat>
               ),
             })}
           </p>

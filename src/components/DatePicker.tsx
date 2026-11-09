@@ -35,6 +35,10 @@ type Props = {
   name: string
   defaultValue?: string
   required?: boolean
+  // For a day that comes every year. The value still has a year, which the
+  // calendar opens on.
+  isYearHidden?: boolean
+  onChange?: (value: CalendarDate | null) => void
 }
 
 export default function DatePicker({
@@ -43,6 +47,8 @@ export default function DatePicker({
   name,
   defaultValue,
   required,
+  isYearHidden,
+  onChange,
 }: Props) {
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const [value, setValue] = useState<CalendarDate | null>(
@@ -56,7 +62,10 @@ export default function DatePicker({
       <AriaDatePicker
         value={value}
         isOpen={isOpen}
-        onChange={setValue}
+        onChange={(newValue) => {
+          setValue(newValue)
+          onChange?.(newValue)
+        }}
         onOpenChange={setIsOpen}
         className='input-wrapper'
         name={name}
@@ -73,7 +82,13 @@ export default function DatePicker({
               {(segment) => (
                 <DateSegment
                   segment={segment}
-                  className='rounded-sm px-1 uppercase outline-hidden focus:bg-white/15 data-placeholder:text-neutral-400 data-[type="literal"]:text-neutral-400'
+                  className={clsx(
+                    'rounded-sm px-1 uppercase outline-hidden focus:bg-white/15 data-placeholder:text-neutral-400 data-[type="literal"]:text-neutral-400',
+                    // With the separator before it. Hidden segments can't be
+                    // focused, so the keys skip it too.
+                    isYearHidden &&
+                      'data-[type="year"]:hidden [&:has(+[data-type="year"])]:hidden',
+                  )}
                 />
               )}
             </DateInput>

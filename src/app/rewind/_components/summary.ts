@@ -53,18 +53,23 @@ export function getSummaryTops({
   return tops.filter((top): top is SummaryTop => !!top.item)
 }
 
-// The period runs to now, so it's named after this year, like other years in
-// review, even when the default past year began in the last one. A YYYY-MM-DD
-// start date the admin set in an earlier year adds that year.
+// An edition is named after its year. The other periods run to now, so
+// they're named after this year, like other years in review, even when the
+// default past year began in the last one. A YYYY-MM-DD start date the admin
+// set in an earlier year adds that year.
 export function getSummaryTitle(
   serverName: string,
-  customStartDate: string | undefined,
+  {
+    customStartDate,
+    editionYear,
+  }: { customStartDate?: string; editionYear: number | null },
   now = new Date(),
 ): SummaryTitle {
-  const end = now.getUTCFullYear()
-  const start = customStartDate
-    ? new Date(customStartDate).getUTCFullYear()
-    : end
+  const end = editionYear ?? now.getUTCFullYear()
+  const start =
+    customStartDate && editionYear === null
+      ? new Date(customStartDate).getUTCFullYear()
+      : end
   const years = start < end ? `${start}–${end}` : `${end}`
 
   return serverName

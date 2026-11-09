@@ -27,6 +27,8 @@
     "signOut": "Esci",
     "greeting": "Ciao, {name} 👋",
     "rewindDescription": "I tuoi momenti migliori, una storia alla volta.",
+    "rewindEdition": "Il tuo Rewind {year} è arrivato, una storia alla volta.",
+    "earlierRewinds": "Anni precedenti",
     "streams": "{count, plural, =0 {Niente in riproduzione} one {# in riproduzione} other {# in riproduzione}}",
     "mostWatched": "Il più visto",
     "mostListened": "Il più ascoltato",
@@ -290,7 +292,24 @@
       "musicSizeError": "Il file supera {size}.",
       "musicError": "Non è stato possibile aggiornare la musica. Riprova.",
       "snow": "Neve",
-      "startDateHelperText": "Predefinita 365 giorni fa"
+      "period": "Periodo",
+      "covers": "Copre",
+      "periods": {
+        "calendarYear": "Anni solari",
+        "pastYear": "L'ultimo anno",
+        "specificYear": "Un anno specifico",
+        "custom": "Da una data di inizio"
+      },
+      "periodDescriptions": {
+        "calendarYear": "1° gen – 31 dic, con una nuova edizione ogni anno. Gli spettatori possono tornare agli anni precedenti.",
+        "pastYear": "I 365 giorni fino a oggi",
+        "specificYear": "1° gen – 31 dic di un solo anno, senza altri da scegliere",
+        "custom": "Dalla data di inizio a oggi"
+      },
+      "releaseDate": "Data di uscita",
+      "releaseDateDescription": "L'edizione {year} esce il {date}",
+      "releaseDateError": "Controlla la data di uscita.",
+      "yearError": "Controlla l'anno."
     }
   },
   "LocaleSelect": {
@@ -298,6 +317,9 @@
   },
   "UserSelect": {
     "label": "Seleziona l'utente"
+  },
+  "YearSelect": {
+    "label": "Seleziona l'anno"
   },
   "Common": {
     "dismiss": "Chiudi",
@@ -371,10 +393,12 @@
       "averageUser": "Utente medio"
     },
     "Welcome": {
-      "welcome": "Ti diamo il benvenuto nel tuo <rewind>{serverName} Rewind</rewind>, <user>{userValue}!</user>",
+      "welcome": "Ti diamo il benvenuto nel tuo <rewind>{hasServerName, select, true {{serverName} Rewind} other {Rewind}}</rewind>, <user>{userValue}!</user>",
+      "welcomeEdition": "Ti diamo il benvenuto nel tuo <rewind>{hasServerName, select, true {{serverName} Rewind} other {Rewind}} {year}</rewind>, <user>{userValue}!</user>",
       "takeYouThrough": "Ripercorriamo insieme i tuoi momenti migliori",
       "letsGetStarted": "Cominciamo!",
       "forPastYear": "<pastYear>dell'ultimo anno.</pastYear>",
+      "forYear": "del <year>{yearValue}.</year>",
       "singleDate": "in <singleDate>{singleDateValue}</singleDate>.",
       "dateRange": "da <startDate>{startDateValue}</startDate> a <endDate>{endDateValue}</endDate>."
     },
@@ -511,6 +535,7 @@
     },
     "YearOverYear": {
       "yearBefore": "<before>L'anno prima</before> hai passato <duration>{durationValue}</duration> su {serverName}",
+      "yearBeforeSoFar": "<before>A questo punto dell'anno prima</before> avevi passato <duration>{durationValue}</duration> su {serverName}",
       "rangeBefore": "<before>Da {startValue} a {endValue}</before> hai passato <duration>{durationValue}</duration> su {serverName}",
       "monthBefore": "<before>In {startValue}</before> hai passato <duration>{durationValue}</duration> su {serverName}",
       "averageMore": "Questa volta è stato <difference>{percent, number, percent} in più</difference>",
@@ -656,7 +681,7 @@
       "failed": "Impossibile creare l'immagine. Riprova."
     },
     "Goodbye": {
-      "thanks": "Grazie per aver seguito il tuo {serverName} Rewind, <user>{userValue}!</user>",
+      "thanks": "Grazie per aver seguito il tuo {hasServerName, select, true {{serverName} Rewind} other {Rewind}}, <user>{userValue}!</user>",
       "sorry": "Peccato, questa volta non hai trovato niente da guardare o ascoltare. Andrà meglio la prossima volta!",
       "weWillBeBack": "Torneremo la prossima volta",
       "weWillBeHere": "In ogni caso, noi saremo qui",

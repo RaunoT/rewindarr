@@ -1,12 +1,18 @@
 import { Play, PlayMediaType } from '@/types/playHistory'
+import { RewindPeriod } from '@/types/rewind'
 import { ItemRow } from '@/types/statsSource'
 import { PreviousFavorite, YearOverYear } from '@/types/yearOverYear'
 import { maxBy, minBy, sumBy, uniq } from 'lodash'
 import { getTranslations } from 'next-intl/server'
 import { secondsToTime } from './formatting'
 import getSettings from './getSettings'
-import { getDifference, getRewindStartDate } from './helpers'
+import { getDifference } from './helpers'
 import { groupPlays, isCountedPlay, isPlayOfItem } from './playStats'
+import {
+  getPreviousEdition,
+  getRewindPeriodType,
+  isEditionOngoing,
+} from './rewindPeriod'
 import { toDateKey } from './timeZone'
 
 const DAY = 24 * 60 * 60 * 1000
@@ -32,8 +38,14 @@ export type FavoriteChange = {
   isSame: boolean
 }
 
+// From `since` up to `until`, exclusive
+export type TimeWindow = {
+  since: number
+  until: number
+}
+
 export type YearComparison = {
-  previousSince: number
+  previous: TimeWindow
   // In seconds
   previousDuration: number
   // In percent, positive when the user spent more time in the period
@@ -45,7 +57,11 @@ export type YearComparison = {
 type CompareOptions = {
   // The start of the period
   since: number
+  // Its end, which a period that runs to now doesn't have
+  until?: number
   now?: number
+  // The period to compare with, as long a one before the start without one
+  previous?: TimeWindow
   minPlayPercent: number
   // The server's without one
   timeZone?: string
@@ -62,17 +78,19 @@ export function getPreviousStart(since: number, now: number): number | null {
   return since < now ? since - (now - since) : null
 }
 
-// The plays from the earlier period's start on, split at the period's start
+function isInWindow(play: Play, { since, until }: TimeWindow): boolean {
+  return play.startedAt >= since && play.startedAt < until
+}
+
+// The plays in the earlier period and in the period
 export function splitPlays<T extends Play>(
   plays: T[],
-  previousSince: number,
-  since: number,
+  previous: TimeWindow,
+  current: TimeWindow,
 ): PeriodPlays<T> {
   return {
-    previous: plays.filter(
-      (play) => play.startedAt >= previousSince && play.startedAt < since,
-    ),
-    current: plays.filter((play) => play.startedAt >= since),
+    previous: plays.filter((play) => isInWindow(play, previous)),
+    current: plays.filter((play) => isInWindow(play, current)),
   }
 }
 
@@ -129,7 +147,9 @@ export function compareYears(
   allPlays: Play[],
   {
     since,
+    until = Infinity,
     now = Date.now(),
+    previous: previousWindow,
     minPlayPercent,
     timeZone,
     favorites,
@@ -142,9 +162,10 @@ export function compareYears(
     return null
   }
 
+  const previous = previousWindow ?? { since: previousSince, until: since }
   const latestFirstPlay =
-    previousSince + (since - previousSince) * LATE_START_SHARE
-  const periods = splitPlays(allPlays, previousSince, since)
+    previous.since + (previous.until - previous.since) * LATE_START_SHARE
+  const periods = splitPlays(allPlays, previous, { since, until })
   const isCounted = (play: Play) => isCountedPlay(play, minPlayPercent)
   const previousCounted = periods.previous.filter(isCounted)
   const previousDays = uniq(
@@ -163,7 +184,7 @@ export function compareYears(
   }
 
   return {
-    previousSince,
+    previous,
     previousDuration,
     difference: getDifference(getDuration(periods.current), previousDuration),
     shows: getFavoriteChange(
@@ -198,9 +219,11 @@ function toPreviousFavorite({
 
 // The year over year as the stories show it. All the user's plays are null
 // until the whole history has been read, which it waits for, as only then are
-// the earlier period's plays all there.
+// the earlier period's plays all there. An edition is compared with the one
+// before, and the other periods with as long a one before them.
 export async function getYearOverYear(
   allPlays: Play[] | null,
+  period: RewindPeriod,
   timeZone?: string,
   favorites?: CompareOptions['favorites'],
 ): Promise<YearOverYear | null> {
@@ -209,9 +232,16 @@ export async function getYearOverYear(
   }
 
   const settings = getSettings()
-  const since = Date.parse(getRewindStartDate(settings))
+  const since = Date.parse(period.since)
+  const now = Date.now()
   const comparison = compareYears(allPlays, {
     since,
+    until: period.until ? Date.parse(period.until) : undefined,
+    now,
+    previous:
+      period.year === null
+        ? undefined
+        : getPreviousEdition(period, timeZone, now),
     minPlayPercent: settings.general.minPlayPercent,
     timeZone,
     favorites,
@@ -224,9 +254,10 @@ export async function getYearOverYear(
   const t = await getTranslations()
 
   return {
-    since: toDateString(comparison.previousSince),
+    since: toDateString(comparison.previous.since),
     until: toDateString(since - DAY),
-    isPastYear: !settings.rewind.startDate,
+    isYear: getRewindPeriodType(settings) !== 'custom',
+    isSoFar: isEditionOngoing(period, now),
     duration: secondsToTime(comparison.previousDuration, t),
     difference: comparison.difference,
     shows: comparison.shows && toPreviousFavorite(comparison.shows),

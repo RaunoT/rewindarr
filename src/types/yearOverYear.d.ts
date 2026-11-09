@@ -5,14 +5,18 @@ export type PreviousFavorite = {
   isSame: boolean
 }
 
-// The user's period next to the one before it, which is as long
+// The user's period next to the one before it, which is as long, or the
+// edition before
 export type YearOverYear = {
   // The earlier period's first and last day, YYYY-MM-DD
   since: string
   until: string
-  // Without a start date in the settings, the period is the past year and the
-  // earlier one the year before it
-  isPastYear: boolean
+  // The past year or an edition, which the year before is compared with,
+  // rather than a period from a start date
+  isYear: boolean
+  // An edition still going is compared with the year before up to the same
+  // moment
+  isSoFar: boolean
   // The user's time in the earlier period
   duration: string
   // In percent, positive when the user spent more time in the period

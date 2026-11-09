@@ -11,13 +11,17 @@ import {
   DASHBOARD_PERIOD_COOKIE_NAME,
   getSiteUrl,
   SETTINGS_HREF,
+  TIME_ZONE_COOKIE_NAME,
 } from '@/utils/constants'
 import { getItems } from '@/utils/getDashboard'
 import getPeriod, { parseCustomPeriod } from '@/utils/getPeriod'
+import getRewindEditions from '@/utils/getRewindEditions'
 import { getHomeTiles, getLibrarySlug, getViewer } from '@/utils/helpers'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import { toPublicSettings } from '@/utils/publicSettings'
+import { getNewEditionYear, getRewindPeriodType } from '@/utils/rewindPeriod'
 import { getHistoryProgress } from '@/utils/statsSource'
+import { toTimeZone } from '@/utils/timeZone'
 import {
   BackwardIcon,
   ChevronRightIcon,
@@ -29,6 +33,7 @@ import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import ActivityTile from './ActivityTile'
+import EarlierRewinds from './EarlierRewinds'
 import HeaderControls from './HeaderControls'
 import HistoryTile, { HistoryTileSkeleton } from './HistoryTile'
 import LoginButton from './LoginButton'
@@ -98,7 +103,7 @@ export default async function Overview({
         />
       ) : (
         <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-          {tiles.rewind && <RewindTile />}
+          {tiles.rewind && <RewindTile settings={settings} session={session} />}
           {tiles.activity && (
             <ActivityTile settings={toPublicSettings(settings)} />
           )}
@@ -151,7 +156,7 @@ export function OverviewSkeleton({ settings, session }: OverviewSkeletonProps) {
     <div className='page-width-wide'>
       <OverviewHeader settings={settings} session={session} />
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-        {tiles.rewind && <RewindTile />}
+        {tiles.rewind && <RewindTile settings={settings} session={session} />}
         {tiles.activity && (
           <ActivityTile settings={toPublicSettings(settings)} />
         )}
@@ -194,8 +199,17 @@ async function OverviewHeader({ settings, session }: OverviewSkeletonProps) {
   )
 }
 
-async function RewindTile() {
+type RewindTileProps = {
+  settings: Settings
+  session: Session | null
+}
+
+async function RewindTile({ settings, session }: RewindTileProps) {
   const t = await getTranslations()
+  const timeZone = toTimeZone(
+    (await cookies()).get(TIME_ZONE_COOKIE_NAME)?.value,
+  )
+  const newYear = getNewEditionYear(settings, timeZone)
 
   return (
     <div className='glass-sheet flex flex-col justify-between gap-4'>
@@ -210,14 +224,39 @@ async function RewindTile() {
           {t('Rewind.title')}
         </h2>
         <p className='mt-4 max-w-md text-xl font-semibold tracking-tight sm:text-2xl'>
-          {t('Home.rewindDescription')}
+          {newYear === null
+            ? t('Home.rewindDescription')
+            : t('Home.rewindEdition', { year: String(newYear) })}
         </p>
       </div>
-      <Link href='/rewind' className='button'>
-        {t('Home.rewind')}
-      </Link>
+      {/* Side by side, so the earlier editions don't make the tile taller
+          when they come in, unless a long label has to wrap */}
+      <div className='flex flex-wrap gap-2'>
+        <Link href='/rewind' className='button'>
+          {t('Home.rewind')}
+        </Link>
+        {session && getRewindPeriodType(settings) === 'calendarYear' && (
+          <Suspense>
+            <EarlierRewindsMenu userId={session.user.id} timeZone={timeZone} />
+          </Suspense>
+        )}
+      </div>
     </div>
   )
+}
+
+// Only with an earlier edition the viewer played in, which doesn't wait for
+// the history to be read
+async function EarlierRewindsMenu({
+  userId,
+  timeZone,
+}: {
+  userId: string
+  timeZone?: string
+}) {
+  const years = (await getRewindEditions(userId, false, timeZone))[userId]
+
+  return years?.length ? <EarlierRewinds years={years} /> : null
 }
 
 type LibraryTileProps = {
