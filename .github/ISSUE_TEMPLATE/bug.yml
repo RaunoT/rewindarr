@@ -20,7 +20,6 @@ body:
       label: Deployment method
       options:
         - Docker Compose
-        - Docker (docker run)
         - Unraid
         - Other (describe in additional context)
     validations:
@@ -70,17 +69,6 @@ body:
         - 'https://<your domain>'
         - 'http://<your domain>'
         - Other (describe in additional context)
-    validations:
-      required: true
-  - type: dropdown
-    id: media-server-url-scheme
-    attributes:
-      label: Media server URL scheme
-      description: The scheme of the Plex or Jellyfin URL under Settings → Connection, if one is set.
-      options:
-        - 'http://'
-        - 'https://'
-        - Not set
     validations:
       required: true
   - type: textarea
