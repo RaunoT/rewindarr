@@ -611,9 +611,13 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
       .sort((a, b) => b.total_duration - a.total_duration)
   }
 
-  async function getPlayItem(play: Play, userId?: string): Promise<ItemRow> {
+  async function getPlayItem(
+    play: Play,
+    userId?: string,
+    until?: string,
+  ): Promise<ItemRow> {
     const userPlays = userId
-      ? (await getPlays({ since: new Date(0), userId })).filter(
+      ? (await getPlays({ since: new Date(0), until, userId })).filter(
           (other) => other.mediaType === play.mediaType,
         )
       : []

@@ -332,9 +332,10 @@ export type StatsSource = {
   // Null when the user has no plays or the source couldn't be asked
   getFirstPlay: (userId: string) => Promise<FirstPlay | null>
   // A play's movie, show or artist as a row, with its poster and ratings. With
-  // a user, the row counts every play of it the user has, which waits for the
-  // whole history to be read. Without one, only this play.
-  getPlayItem: (play: Play, userId?: string) => Promise<ItemRow>
+  // a user, the row counts every play of it the user has, up to `until` when
+  // given, which waits for the whole history to be read. Without one, only
+  // this play.
+  getPlayItem: (play: Play, userId?: string, until?: string) => Promise<ItemRow>
   // Every play in the query's period, the newest first, without excluded users
   // unless the query is for one user
   getHistoryPlays: (query: DurationQuery) => Promise<HistoryPlay[]>

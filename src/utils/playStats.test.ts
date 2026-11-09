@@ -202,7 +202,7 @@ describe('getPlayItem', () => {
     }),
   ]
 
-  function getPlayItem(plays: Play[], userId?: string) {
+  function getPlayItem(plays: Play[], userId?: string, until?: string) {
     vi.mocked(getSettings).mockReturnValue({
       general: { excludedUsers: [] },
     } as unknown as ReturnType<typeof getSettings>)
@@ -211,7 +211,7 @@ describe('getPlayItem', () => {
       getPlays: async () => plays,
       getUsers: async () => [user('1', 'alice'), user('2', 'bob')],
       getMediaData: async () => ({ thumb: '', isDeleted: false }),
-    }).getPlayItem(firstPlay, userId)
+    }).getPlayItem(firstPlay, userId, until)
   }
 
   it("counts the user's plays of the item since their first play", async () => {
@@ -221,6 +221,13 @@ describe('getPlayItem', () => {
     expect(item.total_plays).toBe(2)
     expect(item.total_duration).toBe(9000)
     expect(item.users_watched).toBeUndefined()
+  })
+
+  it("leaves out the plays from an edition's end on", async () => {
+    const item = await getPlayItem(history, '1', '2024-01-01T00:00:00Z')
+
+    expect(item.total_plays).toBe(1)
+    expect(item.total_duration).toBe(6000)
   })
 
   it('counts the first play when the history leaves it out', async () => {

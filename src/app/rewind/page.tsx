@@ -313,12 +313,14 @@ async function getRewind(
     ),
   ])
   // The card for the first play needs its poster and ratings looked up. Its
-  // all-time watch time and plays wait for the whole history to be read.
+  // all-time watch time and plays, up to an edition's end, wait for the whole
+  // history to be read.
   const hasFirstPlayTotals = (await getHistoryStatus()).isComplete
   const firstPlayItem = firstPlay?.play
     ? await getStatsSource(settings).getPlayItem(
         firstPlay.play,
         hasFirstPlayTotals ? user.id : undefined,
+        until,
       )
     : null
   // The viewer's plays in the period, and all of them up to its end once the
