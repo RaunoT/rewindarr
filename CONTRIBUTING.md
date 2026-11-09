@@ -113,7 +113,7 @@ To try your changes in the production image, run `docker compose up --build`. Th
    }
    ```
 
-   The home page announces the new year's Rewind from its release date to the end of January, so set `releaseDate` (MM-DD) to a day before today. The mock's history goes back 400 days, which gives the Rewind tile its earlier years menu.
+   The home page announces the new year's Rewind from its release date to the end of January, so take the screenshots between July and January, with `releaseDate` (MM-DD) set to a day before today. The mock's history goes back 400 days, which gives the Rewind tile its earlier years menu.
 
 3. For the README, take the screenshots in a 1440×810 window at 2× scale, with the Next.js dev badge hidden. At that width the Rewind tile's buttons fit on one row. Save them as WebP:
 
