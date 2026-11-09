@@ -307,7 +307,7 @@
         "custom": "Alguskuupäevast tänaseni"
       },
       "releaseDate": "Avaldamise kuupäev",
-      "releaseDateDescription": "Millal {year}. aasta väljaanne ilmub ({date})",
+      "releaseDateDescription": "Millal {year}. aasta väljaanne ilmub",
       "releaseDateError": "Kontrolli avaldamise kuupäeva.",
       "yearError": "Kontrolli aastat."
     }
