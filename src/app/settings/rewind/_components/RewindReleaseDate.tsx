@@ -1,7 +1,7 @@
 'use client'
 
 import DatePicker from '@/components/DatePicker'
-import { formatLongDate } from '@/utils/formatting'
+import { formatShortDate } from '@/utils/formatting'
 import { getReleaseDay } from '@/utils/rewindPeriod'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
@@ -27,7 +27,7 @@ export default function RewindReleaseDate({ defaultValue }: Props) {
       label={t('releaseDate')}
       helperText={t('releaseDateDescription', {
         year: String(year),
-        date: formatLongDate(releaseDay.toDate('UTC'), locale),
+        date: formatShortDate(releaseDay.toDate('UTC'), locale),
       })}
       name='releaseDate'
       defaultValue={releaseDay.toString()}

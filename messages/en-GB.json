@@ -302,8 +302,8 @@
       },
       "periodDescriptions": {
         "calendarYear": "1 Jan – 31 Dec, with a new edition each year. Viewers can go back to earlier years.",
-        "pastYear": "The 365 days up to today",
-        "specificYear": "1 Jan – 31 Dec of one year, with no others to pick",
+        "pastYear": "365 days up to today",
+        "specificYear": "1 Jan – 31 Dec of one year",
         "custom": "From the start date up to today"
       },
       "releaseDate": "Release date",
