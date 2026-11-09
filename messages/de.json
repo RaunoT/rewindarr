@@ -281,7 +281,7 @@
       "themeMusic": "Titelmelodien",
       "themeMusicDescription": "Spielt Musik aus den Favoriten des Zuschauers",
       "musicTrack": "Hintergrundmusik",
-      "musicTrackDescription": "Bis zu {size}, große Dateien laden womöglich langsam",
+      "musicTrackDescription": "Bis zu {size}",
       "musicFileDetails": "{format} · {size}",
       "musicUpload": "Hochladen",
       "musicReplace": "Ersetzen",

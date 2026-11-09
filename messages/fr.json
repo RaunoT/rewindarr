@@ -281,7 +281,7 @@
       "themeMusic": "Génériques",
       "themeMusicDescription": "Joue la musique des favoris du spectateur",
       "musicTrack": "Musique de fond",
-      "musicTrackDescription": "Jusqu'à {size}, les gros fichiers peuvent charger lentement",
+      "musicTrackDescription": "Jusqu'à {size}",
       "musicFileDetails": "{format} · {size}",
       "musicUpload": "Importer",
       "musicReplace": "Remplacer",

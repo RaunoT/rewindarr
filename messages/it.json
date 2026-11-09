@@ -281,7 +281,7 @@
       "themeMusic": "Sigle",
       "themeMusicDescription": "Riproduce la musica dei preferiti dello spettatore",
       "musicTrack": "Musica di sottofondo",
-      "musicTrackDescription": "Fino a {size}, i file grandi possono caricarsi lentamente",
+      "musicTrackDescription": "Fino a {size}",
       "musicFileDetails": "{format} · {size}",
       "musicUpload": "Carica",
       "musicReplace": "Sostituisci",
