@@ -1,7 +1,13 @@
 'use server'
 
 import { denySettingsAccess } from '@/lib/access'
-import { RewindSettings, SettingsFormInitialState } from '@/types/settings'
+import {
+  RewindPeriodType,
+  RewindSettings,
+  SettingsFormInitialState,
+} from '@/types/settings'
+import { FIRST_YEAR, isReleaseDate } from '@/utils/rewindPeriod'
+import { getTranslations } from 'next-intl/server'
 import { z } from 'zod'
 import updateSettings from '../../_actions/updateSettings'
 
@@ -15,12 +21,30 @@ export default async function saveRewindSettings(
     return denied
   }
 
+  const t = await getTranslations('Settings.Rewind')
   const schema = z.object({
     isActive: z.boolean(),
     isAdminOnly: z.boolean().optional(),
     isLibrariesSizeAndCountActive: z.boolean().optional(),
     isThemeMusicActive: z.boolean().optional(),
     isSnowActive: z.boolean().optional(),
+    period: z
+      .enum(['calendarYear', 'pastYear', 'specificYear', 'custom'])
+      .optional(),
+    releaseDate: z
+      .string()
+      .refine(isReleaseDate, { message: t('releaseDateError') })
+      .optional(),
+    year: z
+      .number()
+      .refine(
+        (year) =>
+          Number.isInteger(year) &&
+          year >= FIRST_YEAR &&
+          year <= new Date().getFullYear(),
+        { message: t('yearError') },
+      )
+      .optional(),
     startDate: z.string().optional(),
     complete: z.boolean(),
   })
@@ -36,7 +60,21 @@ export default async function saveRewindSettings(
       formData.get('isLibrariesSizeAndCountActive') === 'on'
     data.isThemeMusicActive = formData.get('isThemeMusicActive') === 'on'
     data.isSnowActive = formData.get('isSnowActive') === 'on'
-    data.startDate = formData.get('startDate') as string
+    data.period = formData.get('period') as RewindPeriodType
+    // Only the custom period has a start date, so the others don't keep one
+    data.startDate =
+      data.period === 'custom' ? (formData.get('startDate') as string) : ''
+
+    // The other periods keep the release date and the year for when they're
+    // picked again
+    // The picker's date has a year, which the release date leaves out
+    if (data.period === 'calendarYear') {
+      data.releaseDate = String(formData.get('releaseDate')).slice(5)
+    }
+
+    if (data.period === 'specificYear') {
+      data.year = Number(formData.get('year'))
+    }
   }
 
   return await updateSettings(schema, data, 'rewind')

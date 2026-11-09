@@ -22,8 +22,10 @@ export default function StoryYearOverYear({
   const startValue = formatMonthYear(yearOverYear.since, locale)
   const endValue = formatMonthYear(yearOverYear.until, locale)
   // As in the welcome, a period from a start date is named by its months
-  const beforeKey = yearOverYear.isPastYear
-    ? 'yearBefore'
+  const beforeKey = yearOverYear.isYear
+    ? yearOverYear.isSoFar
+      ? 'yearBeforeSoFar'
+      : 'yearBefore'
     : startValue === endValue
       ? 'monthBefore'
       : 'rangeBefore'

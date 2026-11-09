@@ -61,7 +61,10 @@ export default function StoryGoodbye({ userRewind, settings }: RewindStory) {
       <RewindStat>
         <p>
           {t.rich('thanks', {
-            serverName: getServerName(settings),
+            // Named after the server only when the admin gave it a name, as
+            // in the welcome
+            serverName: settings.general.serverName,
+            hasServerName: String(!!settings.general.serverName),
             user: (chunks) => <span className='rewind-cat'>{chunks}</span>,
             userValue: userRewind.user.name,
           })}

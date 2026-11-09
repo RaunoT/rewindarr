@@ -1,30 +1,24 @@
 import { TopTrack } from '@/types/rewind'
-import { Library, MediaStatsType } from '@/types/statsSource'
+import { Library, MediaStatsType, PlayPeriod } from '@/types/statsSource'
 import { groupBy, maxBy } from 'lodash'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { cache } from 'react'
 import { fetchSeerrStats, getMediaUserIds } from './fetchSeerr'
 import { formatPercent, secondsToTime } from './formatting'
 import getSettings from './getSettings'
-import {
-  getAverage,
-  getAverageShares,
-  getDifference,
-  getRewindStartDate,
-} from './helpers'
+import { getAverage, getAverageShares, getDifference } from './helpers'
 import { LibrariesSize } from './librariesSize'
 import { isCountedPlay } from './playStats'
 import { getStatsSource } from './statsSource'
 
-export async function getTopMediaStats(userId: string, libraries: Library[]) {
+export async function getTopMediaStats(
+  userId: string,
+  libraries: Library[],
+  period: PlayPeriod,
+) {
   const t = await getTranslations()
   const locale = await getLocale()
-  const settings = getSettings()
-  const stats = await getStatsSource(settings).getMediaStats(
-    userId,
-    libraries,
-    getRewindStartDate(settings),
-  )
+  const stats = await getStatsSource().getMediaStats(userId, libraries, period)
   // Shares of the user's own playtime, so they add up across the libraries
   const totalDuration = Object.values(stats).reduce(
     (sum, { duration }) => sum + (duration ?? 0),
@@ -72,10 +66,9 @@ const MEDIA_SECTION_TYPES = {
 // excluded users. Null when the users can't be ranked.
 export async function getUsersDurationByType(
   libraries: Library[],
+  period: PlayPeriod,
 ): Promise<Map<string, MediaDurations> | null> {
-  const settings = getSettings()
-  const source = getStatsSource(settings)
-  const since = getRewindStartDate(settings)
+  const source = getStatsSource()
   const rankings = await Promise.all(
     Object.entries(MEDIA_SECTION_TYPES).map(async ([type, sectionType]) => {
       const typeLibraries = libraries.filter(
@@ -85,7 +78,7 @@ export async function getUsersDurationByType(
       return {
         type: type as MediaStatsType,
         users: typeLibraries.length
-          ? await source.getTopUsers({ since, libraries: typeLibraries })
+          ? await source.getTopUsers({ ...period, libraries: typeLibraries })
           : [],
       }
     }),
@@ -111,34 +104,25 @@ export async function getUsersDurationByType(
 export async function getUserTotalDuration(
   userId: string,
   libraries: Library[],
+  period: PlayPeriod,
 ) {
-  const settings = getSettings()
-
-  return getStatsSource(settings).getTotalDuration({
-    since: getRewindStartDate(settings),
-    userId,
-    libraries,
-  })
+  return getStatsSource().getTotalDuration({ ...period, userId, libraries })
 }
 
-export async function getTopMediaItems(userId: string, libraries: Library[]) {
-  const settings = getSettings()
-
-  return getStatsSource(settings).getTopMediaItems(
-    userId,
-    libraries,
-    getRewindStartDate(settings),
-  )
+export async function getTopMediaItems(
+  userId: string,
+  libraries: Library[],
+  period: PlayPeriod,
+) {
+  return getStatsSource().getTopMediaItems(userId, libraries, period)
 }
 
-export async function getTopPeople(userId: string, libraries: Library[]) {
-  const settings = getSettings()
-
-  return getStatsSource(settings).getTopPeople(
-    userId,
-    libraries,
-    getRewindStartDate(settings),
-  )
+export async function getTopPeople(
+  userId: string,
+  libraries: Library[],
+  period: PlayPeriod,
+) {
+  return getStatsSource().getTopPeople(userId, libraries, period)
 }
 
 // The user's most played track, by plays and then listening time. Like the
@@ -148,6 +132,7 @@ export async function getTopPeople(userId: string, libraries: Library[]) {
 export async function getTopTrack(
   userId: string,
   libraries: Library[],
+  period: PlayPeriod,
 ): Promise<TopTrack | null> {
   const settings = getSettings()
   const audioLibraries = libraries.filter(
@@ -159,7 +144,7 @@ export async function getTopTrack(
   }
 
   const plays = await getStatsSource(settings).getHistoryPlays({
-    since: getRewindStartDate(settings),
+    ...period,
     userId,
     libraries: audioLibraries,
   })
@@ -223,13 +208,17 @@ export async function getTopTrack(
 }
 
 // Anonymizing hides who the match would name, so it isn't looked for
-export async function getGenres(userId: string, libraries: Library[]) {
+export async function getGenres(
+  userId: string,
+  libraries: Library[],
+  period: PlayPeriod,
+) {
   const settings = getSettings()
 
   return getStatsSource(settings).getGenres(
     userId,
     libraries,
-    getRewindStartDate(settings),
+    period,
     !settings.general.isAnonymized,
   )
 }
@@ -253,13 +242,13 @@ function peakIndex(totals: number[]): number | null {
 export async function getPlaybackHabits(
   userId: string,
   libraries: Library[],
+  period: PlayPeriod,
   timeZone?: string,
 ) {
-  const settings = getSettings()
-  const { hourly, daily } = await getStatsSource(settings).getPlaysByTime(
+  const { hourly, daily } = await getStatsSource().getPlaysByTime(
     userId,
     libraries,
-    getRewindStartDate(settings),
+    period,
     timeZone,
   )
 
@@ -274,8 +263,8 @@ export async function getPlaybackHabits(
 
 // The timeout signal opts Seerr's requests out of fetch's per-render
 // deduplication, so the requests' totals and reach share one read.
-export const fetchRewindRequests = cache((since: string) =>
-  fetchSeerrStats('request', since),
+export const fetchRewindRequests = cache((since: string, until?: string) =>
+  fetchSeerrStats('request', since, until),
 )
 
 function countRequests(requests: { type: string }[]) {
@@ -286,10 +275,9 @@ function countRequests(requests: { type: string }[]) {
   }
 }
 
-export async function getRequestsTotals(userId: string) {
+export async function getRequestsTotals(userId: string, period: PlayPeriod) {
   const settings = getSettings()
-  const startDate = getRewindStartDate(settings)
-  const requests = await fetchRewindRequests(startDate)
+  const requests = await fetchRewindRequests(period.since, period.until)
 
   if (!requests) {
     return null

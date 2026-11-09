@@ -1,7 +1,12 @@
 'use client'
 
 import usePromiseValue from '@/hooks/usePromiseValue'
-import { RewindTotals, RewindUser, UserRewind } from '@/types/rewind'
+import {
+  RewindPeriod,
+  RewindTotals,
+  RewindUser,
+  UserRewind,
+} from '@/types/rewind'
 import { PublicSettings } from '@/types/settings'
 import { hasRewindPlays } from '@/utils/helpers'
 import { FC } from 'react'
@@ -66,6 +71,7 @@ export type RewindData = {
 
 type Props = {
   user: RewindUser
+  period: RewindPeriod
   settings: PublicSettings
   // The admin's own track, which every story falls back to
   track: string | null
@@ -87,6 +93,7 @@ const AUDIO_STORIES = ['audio', 'audio_top']
 
 export default function RewindStories({
   user,
+  period,
   settings,
   track,
   totals: totalsRequest,
@@ -98,7 +105,9 @@ export default function RewindStories({
   const welcome: Story = {
     id: 'welcome',
     type: 'component',
-    component: () => <StoryWelcome userRewind={{ user }} settings={settings} />,
+    component: () => (
+      <StoryWelcome userRewind={{ user, period }} settings={settings} />
+    ),
     music,
   }
   // Its place is known before its numbers are

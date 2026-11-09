@@ -15,6 +15,8 @@ type Options = {
   withFirstPlay?: boolean
   // The ranked users, when the caller has already read them
   users?: ItemRow[] | null
+  // When the period ends, exclusive. It runs to now without one.
+  until?: string
 }
 
 export default async function getUsersTop(
@@ -23,6 +25,7 @@ export default async function getUsersTop(
   {
     numberOfUsers = DASHBOARD_PAGE_SIZE,
     withFirstPlay = false,
+    until,
     ...options
   }: Options = {},
 ): Promise<TopItems | null> {
@@ -32,6 +35,7 @@ export default async function getUsersTop(
     options.users === undefined
       ? await source.getTopUsers({
           since: after,
+          until,
           libraries: await getLibraries(),
         })
       : options.users
@@ -69,6 +73,7 @@ export default async function getUsersTop(
           const userTotal = await fetchSeerrStats(
             `user/${seerrId}/requests`,
             after,
+            until,
           )
 
           return {

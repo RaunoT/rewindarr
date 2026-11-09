@@ -3,9 +3,20 @@ import { RewindMoments } from '@/utils/rewindMoments'
 import { RewindPersonality } from './rewindPersonality'
 import { RewindSocial } from './rewindSocial'
 import { PublicSettings } from './settings'
-import { Genres, MediaServer, TopPeople } from './statsSource'
+import { Genres, MediaServer, PlayPeriod, TopPeople } from './statsSource'
 import { TitleMoments } from './titleMoments'
 import { YearOverYear } from './yearOverYear'
+
+// The time a Rewind covers. A play counts in the period it started in.
+export type RewindPeriod = PlayPeriod & {
+  // ISO 8601: a YYYY-MM-DD date, read in UTC, for the periods that run to now,
+  // and the midnight in the viewer's timezone an edition starts at
+  since: string
+  // An edition's end, which the other periods don't have
+  until?: string
+  // An edition's year, null for the other periods
+  year: number | null
+}
 
 export type RewindUser = {
   id: string
@@ -99,7 +110,7 @@ export type UserRewind = {
     // few users or outside the top quarter
     topPercent: number | null
   }
-  // Formatted on the server, null without any play
+  // Formatted on the server, null without any play before the period ends
   firstPlay: {
     date: string
     timeSince: string
@@ -116,6 +127,7 @@ export type UserRewind = {
   // From the user's plays in the period
   moments: RewindMoments
   user: RewindUser
+  period: RewindPeriod
 }
 
 // What the total story shows, which is read before the rest

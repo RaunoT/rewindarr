@@ -177,17 +177,20 @@ describe('fetchSeerrStats', () => {
     expect(concurrency.maxInFlight).toBe(4)
   })
 
-  it('leaves out requests after the end date', async () => {
-    seerrFetch(hourlyRequests(30))
+  it('leaves out requests from the end date on', async () => {
+    const now = Date.now()
+
+    seerrFetch(hourlyRequests(30, now))
 
     const { fetchSeerrStats } = await load()
+    // The one made right at the end belongs to the next period
     const stats = await fetchSeerrStats(
       'request',
-      new Date(Date.now() - 100 * HOUR).toISOString(),
-      new Date(Date.now() - 10 * HOUR).toISOString(),
+      new Date(now - 100 * HOUR).toISOString(),
+      new Date(now - 10 * HOUR).toISOString(),
     )
 
-    expect(stats).toHaveLength(20)
+    expect(stats).toHaveLength(19)
   })
 
   it('returns null when a page after the first one fails', async () => {

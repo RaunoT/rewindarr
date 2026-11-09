@@ -1,11 +1,10 @@
 import { RewindSocial, SocialItem } from '@/types/rewindSocial'
-import { Library } from '@/types/statsSource'
+import { Library, PlayPeriod } from '@/types/statsSource'
 import { uniqBy } from 'lodash'
 import { getTranslations } from 'next-intl/server'
 import { secondsToTime } from './formatting'
 import { fetchRewindRequests } from './getRewind'
 import getSettings from './getSettings'
-import { getRewindStartDate } from './helpers'
 import { isSeerrActive } from './historyRequests'
 import {
   getOnlyYou,
@@ -20,20 +19,21 @@ import { getStatsSource } from './statsSource'
 export default async function getRewindSocial(
   userId: string,
   libraries: Library[],
+  period: PlayPeriod,
 ): Promise<RewindSocial> {
   const settings = getSettings()
   const source = getStatsSource(settings)
-  const since = getRewindStartDate(settings)
+  const { since, until } = period
   const { excludedUsers, minPlayPercent } = settings.general
   const [t, serverPlays, userPlays, requests] = await Promise.all([
     getTranslations(),
-    source.getHistoryPlays({ since, libraries }),
+    source.getHistoryPlays({ since, until, libraries }),
     // Everyone's plays leave excluded users out, so an excluded user's own
     // are added back
     excludedUsers.includes(userId)
-      ? source.getHistoryPlays({ since, userId, libraries })
+      ? source.getHistoryPlays({ since, until, userId, libraries })
       : [],
-    isSeerrActive(settings) ? fetchRewindRequests(since) : null,
+    isSeerrActive(settings) ? fetchRewindRequests(since, until) : null,
   ])
   const plays = uniqBy([...serverPlays, ...userPlays], 'id')
   const onlyYou = getOnlyYou(plays, userId, minPlayPercent)

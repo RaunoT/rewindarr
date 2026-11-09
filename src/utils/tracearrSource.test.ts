@@ -120,11 +120,9 @@ describe('getMediaStats', () => {
       play({ mediaType: 'episode' }),
     ])
 
-    const stats = await tracearrSource.getMediaStats(
-      '1',
-      [library('movie')],
-      '2026-01-01',
-    )
+    const stats = await tracearrSource.getMediaStats('1', [library('movie')], {
+      since: '2026-01-01',
+    })
 
     expect(stats).toEqual({
       movies: { count: 2, duration: 120 },
@@ -164,7 +162,9 @@ describe('getTopMediaItems', () => {
   async function getTop(plays: Play[]) {
     vi.mocked(getTracearrPlays).mockResolvedValue(plays)
 
-    return tracearrSource.getTopMediaItems('1', LIBRARIES, '2026-01-01')
+    return tracearrSource.getTopMediaItems('1', LIBRARIES, {
+      since: '2026-01-01',
+    })
   }
 
   it('counts imported plays of an artist with the artist', async () => {

@@ -187,14 +187,15 @@ async function fetchSeerrPages<T>(
 }
 
 // Null when Seerr fails, so callers can leave the requests out instead of
-// showing none
+// showing none. The end is left out, like a period's plays, so a request at
+// the turn of the year counts in one edition only.
 export async function fetchSeerrStats(
   req: string,
   startDate: string,
   endDate?: string,
 ): Promise<SeerrRequestItem[] | null> {
   const start = new Date(startDate).getTime()
-  const end = endDate ? new Date(endDate).getTime() : Date.now()
+  const end = endDate ? new Date(endDate).getTime() : Infinity
   // Both `request` and `user/{id}/requests` list the newest first by default,
   // so a page that is entirely older than the window means the rest is too.
   // No `sort` is sent: `user/{id}/requests` only takes `take` and `skip`, and
@@ -215,7 +216,7 @@ export async function fetchSeerrStats(
   return requests.filter((request) => {
     const requestDate = new Date(request.createdAt).getTime()
 
-    return requestDate >= start && requestDate <= end
+    return requestDate >= start && requestDate < end
   })
 }
 

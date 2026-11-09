@@ -27,6 +27,8 @@
     "signOut": "Logi välja",
     "greeting": "Tere, {name} 👋",
     "rewindDescription": "Sinu vaatamise tipphetked, lugu loo haaval.",
+    "rewindEdition": "Sinu {year}. aasta Rewind on kohal, lugu loo haaval.",
+    "earlierRewinds": "Varasemad aastad",
     "streams": "{count, plural, =0 {Midagi ei mängi} one {# voog} other {# voogu}}",
     "mostWatched": "Enim vaadatud",
     "mostListened": "Enim kuulatud",
@@ -290,7 +292,24 @@
       "musicSizeError": "Fail on suurem kui {size}.",
       "musicError": "Muusikat ei õnnestunud muuta. Proovi uuesti.",
       "snow": "Lumi",
-      "startDateHelperText": "Vaikimisi 365 päeva tagasi"
+      "period": "Periood",
+      "covers": "Hõlmab",
+      "periods": {
+        "calendarYear": "Kalendriaastad",
+        "pastYear": "Viimane aasta",
+        "specificYear": "Üks kindel aasta",
+        "custom": "Alguskuupäevast"
+      },
+      "periodDescriptions": {
+        "calendarYear": "1. jaan – 31. dets, igal aastal uus väljaanne. Vaatajad saavad varasemaid aastaid uuesti vaadata.",
+        "pastYear": "365 päeva tänaseni",
+        "specificYear": "Ühe aasta 1. jaan – 31. dets, teisi aastaid valida ei saa",
+        "custom": "Alguskuupäevast tänaseni"
+      },
+      "releaseDate": "Avaldamise kuupäev",
+      "releaseDateDescription": "{year}. aasta väljaanne ilmub {date}",
+      "releaseDateError": "Kontrolli avaldamise kuupäeva.",
+      "yearError": "Kontrolli aastat."
     }
   },
   "LocaleSelect": {
@@ -298,6 +317,9 @@
   },
   "UserSelect": {
     "label": "Vali kasutaja"
+  },
+  "YearSelect": {
+    "label": "Vali aasta"
   },
   "Common": {
     "dismiss": "Sulge",
@@ -371,10 +393,12 @@
       "averageUser": "Keskmine kasutaja"
     },
     "Welcome": {
-      "welcome": "Tere tulemast oma <rewind>{serverName} Rewind'i</rewind>, <user>{userValue}!</user>",
+      "welcome": "Tere tulemast oma <rewind>{hasServerName, select, true {{serverName} Rewind'i} other {Rewind'i}}</rewind>, <user>{userValue}!</user>",
+      "welcomeEdition": "Tere tulemast oma <rewind>{year}. aasta {hasServerName, select, true {{serverName} Rewind'i} other {Rewind'i}}</rewind>, <user>{userValue}!</user>",
       "takeYouThrough": "Vaatame üle su parimad hetked",
       "letsGetStarted": "Hakkame pihta!",
       "forPastYear": "<pastYear>viimase aasta</pastYear> jooksul.",
+      "forYear": "aastast <year>{yearValue}.</year>",
       "singleDate": "<singleDate>{singleDateValue}</singleDate> jooksul.",
       "dateRange": "vahemikus <startDate>{startDateValue}</startDate> kuni <endDate>{endDateValue}</endDate>."
     },
@@ -511,6 +535,7 @@
     },
     "YearOverYear": {
       "yearBefore": "<before>Aasta varem</before> kulutasid sa <duration>{durationValue}</duration> {serverName}'is",
+      "yearBeforeSoFar": "<before>Aasta varem samaks ajaks</before> olid sa kulutanud <duration>{durationValue}</duration> {serverName}'is",
       "rangeBefore": "<before>Vahemikus {startValue} kuni {endValue}</before> kulutasid sa <duration>{durationValue}</duration> {serverName}'is",
       "monthBefore": "<before>{startValue} jooksul</before> kulutasid sa <duration>{durationValue}</duration> {serverName}'is",
       "averageMore": "Seekord kulutasid sa <difference>{percent, number, percent} rohkem</difference>",
@@ -656,7 +681,7 @@
       "failed": "Pilti ei õnnestunud luua. Proovi uuesti."
     },
     "Goodbye": {
-      "thanks": "Tänan, et vaatasid oma {serverName} Rewind'i, <user>{userValue}!</user>",
+      "thanks": "Tänan, et vaatasid oma {hasServerName, select, true {{serverName} Rewind'i} other {Rewind'i}}, <user>{userValue}!</user>",
       "sorry": "Kahju, et sa ei leidnud seekord sisu mida vaadata või kuulata. Loodame, et järgmisel korral läheb paremini!",
       "weWillBeBack": "Oleme tagasi järgmisel korral",
       "weWillBeHere": "Igal juhul oleme olemas ka järgmine kord",
