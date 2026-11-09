@@ -302,8 +302,8 @@
       },
       "periodDescriptions": {
         "calendarYear": "1 ene – 31 dic, con una nueva edición cada año. Los espectadores pueden volver a años anteriores.",
-        "pastYear": "Los 365 días hasta hoy",
-        "specificYear": "1 ene – 31 dic de un solo año, sin otros para elegir",
+        "pastYear": "365 días hasta hoy",
+        "specificYear": "1 ene – 31 dic de un solo año",
         "custom": "Desde la fecha de inicio hasta hoy"
       },
       "releaseDate": "Fecha de lanzamiento",

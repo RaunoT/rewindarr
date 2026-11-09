@@ -112,10 +112,12 @@ export function formatMonthYear(
   }).format(new Date(date))
 }
 
-// Such as "1 December 2026", in UTC like the month and year
-export function formatLongDate(date: Date, locale: string): string {
+// Such as "1 Dec 2026", in UTC like the month and year
+export function formatShortDate(date: Date, locale: string): string {
   return new Intl.DateTimeFormat(locale, {
-    dateStyle: 'long',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
     timeZone: 'UTC',
   }).format(date)
 }

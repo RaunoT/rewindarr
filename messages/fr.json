@@ -302,8 +302,8 @@
       },
       "periodDescriptions": {
         "calendarYear": "1er janv. – 31 déc., avec une nouvelle édition chaque année. Les spectateurs peuvent revoir les années précédentes.",
-        "pastYear": "Les 365 jours jusqu'à aujourd'hui",
-        "specificYear": "1er janv. – 31 déc. d'une seule année, sans autre à choisir",
+        "pastYear": "365 jours jusqu'à aujourd'hui",
+        "specificYear": "1er janv. – 31 déc. d'une seule année",
         "custom": "De la date de début à aujourd'hui"
       },
       "releaseDate": "Date de sortie",

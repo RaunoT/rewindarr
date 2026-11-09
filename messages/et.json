@@ -303,7 +303,7 @@
       "periodDescriptions": {
         "calendarYear": "1. jaan – 31. dets, igal aastal uus väljaanne. Vaatajad saavad varasemaid aastaid uuesti vaadata.",
         "pastYear": "365 päeva tänaseni",
-        "specificYear": "Ühe aasta 1. jaan – 31. dets, teisi aastaid valida ei saa",
+        "specificYear": "Ühe aasta 1. jaan – 31. dets",
         "custom": "Alguskuupäevast tänaseni"
       },
       "releaseDate": "Avaldamise kuupäev",

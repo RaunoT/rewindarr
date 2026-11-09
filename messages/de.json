@@ -302,8 +302,8 @@
       },
       "periodDescriptions": {
         "calendarYear": "1. Jan. – 31. Dez., jedes Jahr eine neue Ausgabe. Zuschauer können frühere Jahre wieder ansehen.",
-        "pastYear": "Die 365 Tage bis heute",
-        "specificYear": "1. Jan. – 31. Dez. eines Jahres, ohne andere zur Auswahl",
+        "pastYear": "365 Tage bis heute",
+        "specificYear": "1. Jan. – 31. Dez. eines Jahres",
         "custom": "Vom Startdatum bis heute"
       },
       "releaseDate": "Erscheinungsdatum",
