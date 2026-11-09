@@ -55,8 +55,8 @@ services:
     container_name: rewindarr
     environment:
       - TZ=Europe/London # (optional) your timezone, used for finish times. Rewind's viewing habits use each viewer's own.
-      - PUID=1000 # (optional) user ID the app runs as, defaults to 1000
-      - PGID=1000 # (optional) group ID the app runs as, defaults to 1000
+      # - PUID=1000 # (optional) user ID the app runs as and gives ./config to, defaults to 1000. `id -u` shows yours
+      # - PGID=1000 # (optional) group ID the app runs as and gives ./config to, defaults to 1000. `id -g` shows yours
       # - NEXT_PUBLIC_SITE_URL=https://rewind.example.com # (optional) the address you open it at, only needed if signing in sends you to the wrong one
       # - NEXTAUTH_SECRET=your-secret # (optional) secret for signing logins, defaults to one created in config/auth-secret
     volumes:
