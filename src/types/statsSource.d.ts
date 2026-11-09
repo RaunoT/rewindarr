@@ -145,15 +145,21 @@ export type Activity = {
   stream_count: number
 }
 
-export type DurationQuery = {
+// The plays that started from `since` up to `until`, or up to now without one
+export type PlayPeriod = {
+  // ISO 8601
   since: string
+  // Exclusive
+  until?: string
+}
+
+export type DurationQuery = PlayPeriod & {
   userId?: string
   // Leaving out libraries counts plays of every media type.
   libraries?: Library[]
 }
 
-export type TopUsersQuery = {
-  since: string
+export type TopUsersQuery = PlayPeriod & {
   libraries: Library[]
 }
 
@@ -296,41 +302,42 @@ export type StatsSource = {
   getMediaStats: (
     userId: string,
     libraries: Library[],
-    since: string,
+    period: PlayPeriod,
   ) => Promise<MediaStats>
   getTopMediaItems: (
     userId: string,
     libraries: Library[],
-    since: string,
+    period: PlayPeriod,
   ) => Promise<TopMediaItems>
   getTopPeople: (
     userId: string,
     libraries: Library[],
-    since: string,
+    period: PlayPeriod,
   ) => Promise<TopPeople>
   // The match compares the user with everyone else, which costs a lookup of
   // their most watched titles.
   getGenres: (
     userId: string,
     libraries: Library[],
-    since: string,
+    period: PlayPeriod,
     withMatch: boolean,
   ) => Promise<Genres>
   // In the timezone, or the Rewindarr server's without one
   getPlaysByTime: (
     userId: string,
     libraries: Library[],
-    since: string,
+    period: PlayPeriod,
     timeZone?: string,
   ) => Promise<PlaysByTime>
   // Null when the user has no plays or the source couldn't be asked
   getFirstPlay: (userId: string) => Promise<FirstPlay | null>
   // A play's movie, show or artist as a row, with its poster and ratings. With
-  // a user, the row counts every play of it the user has, which waits for the
-  // whole history to be read. Without one, only this play.
-  getPlayItem: (play: Play, userId?: string) => Promise<ItemRow>
-  // Every play since the query's start, the newest first, without excluded
-  // users unless the query is for one user
+  // a user, the row counts every play of it the user has, up to `until` when
+  // given, which waits for the whole history to be read. Without one, only
+  // this play.
+  getPlayItem: (play: Play, userId?: string, until?: string) => Promise<ItemRow>
+  // Every play in the query's period, the newest first, without excluded users
+  // unless the query is for one user
   getHistoryPlays: (query: DurationQuery) => Promise<HistoryPlay[]>
   // The play histories the stats are read from. Without libraries, those of
   // every library, whoever is signed in.

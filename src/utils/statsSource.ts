@@ -11,6 +11,7 @@ import {
 import getSettings from './getSettings'
 import { getLibrarySlug } from './helpers'
 import {
+  getReadFrom,
   getReadProgress,
   getReadStatus,
   getUpdatedAt,
@@ -63,6 +64,15 @@ export async function getHistoryProgress(
   const readers = await getStatsSource().getHistoryReaders(libraries)
 
   return getReadProgress(readers, sinceTime, timeout)
+}
+
+// How far back the history has every play, without waiting for a read. A
+// period that starts after it can be shown straight away. Without libraries,
+// every library's history counts.
+export async function getHistoryReadFrom(
+  libraries?: Library[],
+): Promise<number> {
+  return getReadFrom(await getStatsSource().getHistoryReaders(libraries))
 }
 
 // So that pages find the history ready, instead of starting on it themselves

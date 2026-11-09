@@ -3,15 +3,18 @@
 import DatePicker from '@/components/DatePicker'
 import {
   PublicSettings,
+  RewindPeriodType,
   RewindSettings,
   SettingsFormInitialState,
 } from '@/types/settings'
+import { FIRST_YEAR, getRewindPeriodType } from '@/utils/rewindPeriod'
 import { useTranslations } from 'next-intl'
 import { useActionState, useState } from 'react'
 import { Switch } from 'react-aria-components'
 import SettingsForm from '../../_components/SettingsForm'
 import saveRewindSettings from '../_actions/updateRewindSettings'
 import RewindMusicUpload from './RewindMusicUpload'
+import RewindReleaseDate from './RewindReleaseDate'
 
 type Props = {
   settings: PublicSettings
@@ -19,10 +22,21 @@ type Props = {
 
 type RewindFormState = SettingsFormInitialState<Partial<RewindSettings>>
 
+const PERIOD_TYPES: RewindPeriodType[] = [
+  'calendarYear',
+  'pastYear',
+  'specificYear',
+  'custom',
+]
+
 export default function RewindSettingsForm({ settings }: Props) {
   const [isActive, setIsActive] = useState<boolean>(settings.rewind.isActive)
+  const [period, setPeriod] = useState<RewindPeriodType>(
+    getRewindPeriodType(settings),
+  )
   const t = useTranslations('Settings.Rewind')
   const tCommon = useTranslations('Common')
+  const thisYear = new Date().getFullYear()
   const initialState: RewindFormState = {
     message: '',
     status: '',
@@ -115,14 +129,62 @@ export default function RewindSettingsForm({ settings }: Props) {
             <RewindMusicUpload initialMusic={settings.rewind.music} />
           </section>
           <section className='group-settings group'>
-            <h2 className='heading-settings'>{tCommon('defaults')}</h2>
-            <DatePicker
-              key={`start-date-${rewindSettings.startDate}`}
-              label={tCommon('startDate')}
-              helperText={t('startDateHelperText')}
-              name='startDate'
-              defaultValue={rewindSettings.startDate}
-            />
+            <h2 className='heading-settings'>{t('period')}</h2>
+            <label className='input-wrapper'>
+              <span className='select-wrapper'>
+                <select
+                  className='input'
+                  name='period'
+                  value={period}
+                  onChange={(e) =>
+                    setPeriod(e.target.value as RewindPeriodType)
+                  }
+                >
+                  {PERIOD_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {t(`periods.${type}`)}
+                    </option>
+                  ))}
+                </select>
+              </span>
+              <span className='label'>
+                <span className='label-wrapper'>{t('covers')}</span>
+                <small>{t(`periodDescriptions.${period}`)}</small>
+              </span>
+            </label>
+            {period === 'calendarYear' && (
+              <RewindReleaseDate
+                key={`release-date-${rewindSettings.releaseDate}`}
+                defaultValue={rewindSettings.releaseDate}
+              />
+            )}
+            {period === 'specificYear' && (
+              <label className='input-wrapper'>
+                <input
+                  key={`year-${rewindSettings.year}`}
+                  type='number'
+                  className='input'
+                  name='year'
+                  // Last year's is the one most likely to be over
+                  defaultValue={rewindSettings.year ?? thisYear - 1}
+                  min={FIRST_YEAR}
+                  max={thisYear}
+                  required
+                />
+                <span className='label'>
+                  <span className='label-wrapper'>{tCommon('year')}</span>
+                </span>
+              </label>
+            )}
+            {period === 'custom' && (
+              <DatePicker
+                key={`start-date-${rewindSettings.startDate}`}
+                label={tCommon('startDate')}
+                name='startDate'
+                defaultValue={rewindSettings.startDate}
+                required
+              />
+            )}
           </section>
         </>
       )}

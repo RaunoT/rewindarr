@@ -55,8 +55,8 @@ services:
     container_name: rewindarr
     environment:
       - TZ=Europe/London # (optional) your timezone, used for finish times. Rewind's viewing habits use each viewer's own.
-      - PUID=1000 # (optional) user ID the app runs as, defaults to 1000
-      - PGID=1000 # (optional) group ID the app runs as, defaults to 1000
+      # - PUID=1000 # (optional) user ID the app runs as and gives ./config to, defaults to 1000. `id -u` shows yours
+      # - PGID=1000 # (optional) group ID the app runs as and gives ./config to, defaults to 1000. `id -g` shows yours
       # - NEXT_PUBLIC_SITE_URL=https://rewind.example.com # (optional) the address you open it at, only needed if signing in sends you to the wrong one
       # - NEXTAUTH_SECRET=your-secret # (optional) secret for signing logins, defaults to one created in config/auth-secret
     volumes:
@@ -90,10 +90,10 @@ If you like this project and wish to support it, you can do so on [GitHub Sponso
 
 ## Star History
 
-<a href="https://star-history.dera.page/#RaunoT/plex-rewind&type=date&legend=top-left">
+<a href="https://www.star-history.com/#RaunoT/rewindarr&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=RaunoT/plex-rewind&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=RaunoT/plex-rewind&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=RaunoT/plex-rewind&type=date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=RaunoT/rewindarr&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=RaunoT/rewindarr&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=RaunoT/rewindarr&type=date&legend=top-left" />
  </picture>
 </a>

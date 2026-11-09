@@ -23,8 +23,8 @@ export default function PreviousFavorite({ yearOverYear, type, step }: Props) {
     return null
   }
 
-  // Only the past year has a year before it
-  const period = yearOverYear.isPastYear ? 'year' : 'custom'
+  // Only the past year and an edition have a year before them
+  const period = yearOverYear.isYear ? 'year' : 'custom'
 
   return (
     <RewindStat step={step}>

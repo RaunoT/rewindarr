@@ -361,7 +361,7 @@ describe('getMediaStats', () => {
     const stats = await tautulliSource.getMediaStats(
       '5',
       [library('1', 'movie')],
-      '2026-01-01',
+      { since: '2026-01-01' },
     )
 
     expect(stats).toEqual({

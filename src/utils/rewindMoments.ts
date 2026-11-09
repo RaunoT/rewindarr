@@ -72,6 +72,8 @@ export type RewindMoments = {
   streak: Streak | null
 }
 
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/
+
 function getMonth(dateKey: string): string {
   return dateKey.slice(0, 7)
 }
@@ -83,8 +85,9 @@ function getNextMonth(month: string): string {
   return new Date(Date.UTC(year, nextIndex)).toISOString().slice(0, 7)
 }
 
-// The user's time in each month from the start of the period to its end. The
-// start is a date as the settings have it, so it's read in UTC.
+// The user's time in each month from the start of the period to its end. A
+// start date as the settings have it is read in UTC, and an edition's start,
+// the midnight it begins at, in the time zone.
 export function getMonthlyDurations(
   plays: Play[],
   since: string,
@@ -106,7 +109,9 @@ export function getMonthlyDurations(
   // A play on the evening before the start, in a time zone behind UTC, still
   // gets its month
   const first = min([
-    getMonth(toDateKey(Date.parse(since), 'UTC')),
+    getMonth(
+      toDateKey(Date.parse(since), DATE_ONLY.test(since) ? 'UTC' : timeZone),
+    ),
     ...durations.keys(),
   ])!
   const last = max([getMonth(toDateKey(until, timeZone)), ...durations.keys()])!
