@@ -307,7 +307,7 @@
         "custom": "Desde la fecha de inicio hasta hoy"
       },
       "releaseDate": "Fecha de lanzamiento",
-      "releaseDateDescription": "La edición {year} sale el {date}",
+      "releaseDateDescription": "Cuándo sale la edición {year}",
       "releaseDateError": "Revisa la fecha de lanzamiento.",
       "yearError": "Revisa el año."
     }

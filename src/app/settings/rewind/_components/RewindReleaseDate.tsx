@@ -1,10 +1,8 @@
 'use client'
 
 import DatePicker from '@/components/DatePicker'
-import { formatShortDate } from '@/utils/formatting'
 import { getReleaseDay } from '@/utils/rewindPeriod'
-import { useLocale, useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 type Props = {
   // MM-DD
@@ -15,25 +13,14 @@ type Props = {
 // show. The picker opens on this year's release.
 export default function RewindReleaseDate({ defaultValue }: Props) {
   const t = useTranslations('Settings.Rewind')
-  const locale = useLocale()
-  // This year's edition, which says whether a date is in the year after
   const year = new Date().getFullYear()
-  const [releaseDay, setReleaseDay] = useState(
-    getReleaseDay(year, defaultValue),
-  )
 
   return (
     <DatePicker
       label={t('releaseDate')}
-      helperText={t('releaseDateDescription', {
-        year: String(year),
-        date: formatShortDate(releaseDay.toDate('UTC'), locale),
-      })}
+      helperText={t('releaseDateDescription', { year: String(year) })}
       name='releaseDate'
-      defaultValue={releaseDay.toString()}
-      onChange={(value) =>
-        value && setReleaseDay(getReleaseDay(year, value.toString().slice(5)))
-      }
+      defaultValue={getReleaseDay(year, defaultValue).toString()}
       isYearHidden
       required
     />

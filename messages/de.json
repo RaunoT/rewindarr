@@ -307,7 +307,7 @@
         "custom": "Vom Startdatum bis heute"
       },
       "releaseDate": "Erscheinungsdatum",
-      "releaseDateDescription": "Die Ausgabe {year} erscheint am {date}",
+      "releaseDateDescription": "Wann die Ausgabe {year} erscheint",
       "releaseDateError": "Prüfe das Erscheinungsdatum.",
       "yearError": "Prüfe das Jahr."
     }

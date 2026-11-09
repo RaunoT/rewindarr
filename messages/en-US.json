@@ -307,7 +307,7 @@
         "custom": "From the start date up to today"
       },
       "releaseDate": "Release date",
-      "releaseDateDescription": "The {year} edition comes out on {date}",
+      "releaseDateDescription": "When the {year} edition comes out",
       "releaseDateError": "Check the release date.",
       "yearError": "Check the year."
     }
