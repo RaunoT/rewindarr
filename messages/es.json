@@ -281,7 +281,7 @@
       "themeMusic": "Sintonías",
       "themeMusicDescription": "Reproduce música de los favoritos del espectador",
       "musicTrack": "Música de fondo",
-      "musicTrackDescription": "Hasta {size}, los archivos grandes pueden tardar en cargar",
+      "musicTrackDescription": "Hasta {size}",
       "musicFileDetails": "{format} · {size}",
       "musicUpload": "Subir",
       "musicReplace": "Reemplazar",

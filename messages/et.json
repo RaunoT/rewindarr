@@ -281,7 +281,7 @@
       "themeMusic": "Tunnusmeloodiad",
       "themeMusicDescription": "Mängib muusikat vaataja lemmikutest",
       "musicTrack": "Taustamuusika",
-      "musicTrackDescription": "Kuni {size}, suured failid võivad aeglaselt laadida",
+      "musicTrackDescription": "Kuni {size}",
       "musicFileDetails": "{format} · {size}",
       "musicUpload": "Laadi üles",
       "musicReplace": "Asenda",

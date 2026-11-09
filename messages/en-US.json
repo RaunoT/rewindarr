@@ -281,7 +281,7 @@
       "themeMusic": "Theme songs",
       "themeMusicDescription": "Plays music from the viewer's favorites",
       "musicTrack": "Background track",
-      "musicTrackDescription": "Up to {size}, large files can load slowly",
+      "musicTrackDescription": "Up to {size}",
       "musicFileDetails": "{format} · {size}",
       "musicUpload": "Upload",
       "musicReplace": "Replace",
