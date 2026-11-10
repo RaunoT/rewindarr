@@ -475,7 +475,7 @@
       "averageLess": "See on <difference>{percent, number, percent} vähem</difference> kui keskmisel kasutajal, kes tegi <count>{countValue, plural, one {# tellimuse} other {# tellimust}}</count>.",
       "averageSame": "See on <difference>umbes sama palju</difference> kui keskmisel kasutajal, kes tegi <count>{countValue, plural, one {# tellimuse} other {# tellimust}}</count>.",
       "countTotal": "Kokku tehti samal perioodil <count>{countValue, plural, one {# tellimus} other {# tellimust}}</count>.",
-      "watchedSome": "Lisatud {addedValue, number} tellimusest vaatasid sa <count>{watchedValue, number}</count>",
+      "watchedSome": "Lisatud <count>{addedValue, number}</count> tellimusest vaatasid sa <count>{watchedValue, number}</count>",
       "watchedAll": "{addedValue, plural, one {Sa vaatasid ära <count>ainsa</count> lisatud tellimuse} other {Sa vaatasid ära <count>kõik #</count> lisatud tellimust}} <emoji>🍿</emoji>",
       "watchedNone": "{addedValue, plural, one {Sa ei vaadanud <count>ainsat</count> lisatud tellimust} other {Sa ei vaadanud <count>ühtegi #</count> lisatud tellimusest}} <emoji>👀</emoji>",
       "userBreakdown": "Siin on sinu tellimuste jaotus:",

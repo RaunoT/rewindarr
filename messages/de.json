@@ -475,7 +475,7 @@
       "averageLess": "Das sind <difference>{percent, number, percent} weniger</difference> als beim durchschnittlichen Benutzer, der <count>{countValue, plural, one {# Anfrage} other {# Anfragen}}</count> gestellt hat.",
       "averageSame": "Das sind <difference>etwa gleich viele</difference> wie beim durchschnittlichen Benutzer, der <count>{countValue, plural, one {# Anfrage} other {# Anfragen}}</count> gestellt hat.",
       "countTotal": "Insgesamt gab es <count>{countValue, plural, one {# Anfrage} other {# Anfragen}}</count> in der gleichen Zeit.",
-      "watchedSome": "Von den {addedValue, number} hinzugefügten Anfragen hast du dir <count>{watchedValue, number}</count> angesehen",
+      "watchedSome": "Von den <count>{addedValue, number}</count> hinzugefügten Anfragen hast du dir <count>{watchedValue, number}</count> angesehen",
       "watchedAll": "{addedValue, plural, one {Du hast dir <count>die eine</count> hinzugefügte Anfrage angesehen} other {Du hast dir <count>alle #</count> hinzugefügten Anfragen angesehen}} <emoji>🍿</emoji>",
       "watchedNone": "{addedValue, plural, one {Du hast dir <count>die eine</count> hinzugefügte Anfrage nicht angesehen} other {Du hast dir <count>keine der #</count> hinzugefügten Anfragen angesehen}} <emoji>👀</emoji>",
       "userBreakdown": "Das hast du angefragt:",
