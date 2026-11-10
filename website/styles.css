@@ -272,8 +272,14 @@ code {
     text-decoration: none;
     transition: color 0.2s;
 
-    &:hover {
+    &:hover,
+    &[aria-current] {
       color: var(--text);
+    }
+
+    &[aria-current] {
+      text-decoration: underline 2px var(--gold);
+      text-underline-offset: 0.5rem;
     }
   }
 }
@@ -385,7 +391,8 @@ main > section {
   gap: 2.5rem;
 }
 
-/* Phone-sized screenshots, a pair staggered so they read as a set */
+/* Screenshots of the installed app in an iPhone frame, a pair staggered so
+   they read as a set */
 .phones {
   display: flex;
   justify-content: center;
@@ -396,17 +403,11 @@ main > section {
 .phone {
   flex: 0 1 17rem;
   margin: 0;
-  padding: 0.375rem;
-  border-radius: 2.25rem;
-  background: var(--glass);
-  box-shadow:
-    inset 0 0 0 1px var(--line),
-    0 40px 80px -30px rgb(0 0 0 / 80%);
 
   img {
     width: 100%;
     height: auto;
-    border-radius: 1.875rem;
+    filter: drop-shadow(0 30px 40px rgb(0 0 0 / 60%));
   }
 
   & + & {
@@ -414,20 +415,20 @@ main > section {
   }
 }
 
-/* Phones drift against the scroll, the second of a pair further, so they
-   slide past each other */
+/* Phones drift against the scroll in opposite directions, so a pair slides
+   past each other */
 @supports (animation-timeline: view()) {
   .phone {
-    animation: drift-phone linear both;
+    animation: drift-phone-up linear both;
     animation-timeline: view();
   }
 
   .phone + .phone {
-    animation-name: drift-phone-far;
+    animation-name: drift-phone-down;
   }
 }
 
-@keyframes drift-phone {
+@keyframes drift-phone-up {
   from {
     translate: 0 3rem;
   }
@@ -437,13 +438,13 @@ main > section {
   }
 }
 
-@keyframes drift-phone-far {
+@keyframes drift-phone-down {
   from {
-    translate: 0 6rem;
+    translate: 0 -3rem;
   }
 
   to {
-    translate: 0 -6rem;
+    translate: 0 3rem;
   }
 }
 
