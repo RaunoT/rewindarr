@@ -693,14 +693,14 @@
       "watchAgain": "Noch einmal ansehen",
       "backToHome": "Zurück zur Startseite",
       "journey": {
-        "movies": "Mit deinen liebsten <movies>Filmen</movies> war es ein erinnerungswürdiger Weg!",
-        "shows": "Mit den unterhaltsamsten <shows>Serien</shows> war es ein erinnerungswürdiger Weg!",
-        "audio": "Mit den unvergesslichsten <tracks>Titeln</tracks> war es ein erinnerungswürdiger Weg!",
-        "moviesShows": "Von deinen liebsten <movies>Filmen</movies> bis zu den unterhaltsamsten <shows>Serien</shows> war es ein erinnerungswürdiger Weg!",
-        "moviesAudio": "Von deinen liebsten <movies>Filmen</movies> bis zu den unvergesslichsten <tracks>Titeln</tracks> war es ein erinnerungswürdiger Weg!",
-        "showsAudio": "Von den unterhaltsamsten <shows>Serien</shows> bis zu den unvergesslichsten <tracks>Titeln</tracks> war es ein erinnerungswürdiger Weg!",
-        "moviesShowsAudio": "Von deinen liebsten <movies>Filmen</movies> über die unterhaltsamsten <shows>Serien</shows> bis zu den unvergesslichsten <tracks>Titeln</tracks> war es ein erinnerungswürdiger Weg!",
-        "none": "Es war ein erinnerungswürdiger Weg!"
+        "movies": "Mit deinen liebsten <movies>Filmen</movies> war es ein erinnerungswürdiger Weg.",
+        "shows": "Mit den unterhaltsamsten <shows>Serien</shows> war es ein erinnerungswürdiger Weg.",
+        "audio": "Mit den unvergesslichsten <tracks>Titeln</tracks> war es ein erinnerungswürdiger Weg.",
+        "moviesShows": "Von deinen liebsten <movies>Filmen</movies> bis zu den unterhaltsamsten <shows>Serien</shows> war es ein erinnerungswürdiger Weg.",
+        "moviesAudio": "Von deinen liebsten <movies>Filmen</movies> bis zu den unvergesslichsten <tracks>Titeln</tracks> war es ein erinnerungswürdiger Weg.",
+        "showsAudio": "Von den unterhaltsamsten <shows>Serien</shows> bis zu den unvergesslichsten <tracks>Titeln</tracks> war es ein erinnerungswürdiger Weg.",
+        "moviesShowsAudio": "Von deinen liebsten <movies>Filmen</movies> über die unterhaltsamsten <shows>Serien</shows> bis zu den unvergesslichsten <tracks>Titeln</tracks> war es ein erinnerungswürdiger Weg.",
+        "none": "Es war ein erinnerungswürdiger Weg."
       }
     }
   },

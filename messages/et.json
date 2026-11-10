@@ -458,7 +458,7 @@
     },
     "Shows": {
       "duration": "<library>Seriaalid</library> võtsid <duration>{durationValue}</duration> sinu ajast {serverName}'is",
-      "count": "Sa vaatasid kokku <count>{countValue, number}</count> <episodes>{countValue, plural, one {episoodi} other {episoodi}}</episodes>",
+      "count": "Sa vaatasid kokku <count>{countValue, number}</count> <episodes>{countValue, plural, one {episoodi} other {episoodi}}</episodes>!",
       "favorite": "Sinu lemmik oli",
       "only": "Ainus sari, mida vaatasid, oli",
       "mostTime": "Sari, mida vaatasid kõige kauem, oli",
@@ -483,7 +483,7 @@
     },
     "Movies": {
       "duration": "<duration>{durationValue}</duration> kulus sul <movies>filmidele</movies>",
-      "count": "Vaatasid <count>{countValue, number}</count> <movies>{countValue, plural, one {filmi} other {filmi}}</movies>",
+      "count": "Kokku vaatasid sa <count>{countValue, number}</count> <movies>{countValue, plural, one {filmi} other {filmi}}</movies>!",
       "favorite": "Sinu lemmik oli",
       "only": "Ainus film, mida vaatasid, oli",
       "mostTime": "Film, mida vaatasid kõige kauem, oli",
