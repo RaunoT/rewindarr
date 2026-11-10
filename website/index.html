@@ -6,11 +6,12 @@
     <title>Rewindarr: your Plex and Jellyfin year, rewound</title>
     <meta
       name="description"
-      content="A self-hosted rewind for your media server. Wrapped-style stories for every user, a dashboard, live activity and history for Plex and Jellyfin, from Tautulli or Tracearr."
+      content="A self-hosted rewind for Plex and Jellyfin. Wrapped-style stories for every user, plus a dashboard, live activity and history, from Tautulli or Tracearr."
     />
     <meta name="theme-color" content="#000000" />
     <link rel="canonical" href="https://rewindarr.eu/" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Rewindarr" />
     <meta property="og:url" content="https://rewindarr.eu/" />
     <meta property="og:title" content="Rewindarr" />
     <meta
@@ -18,10 +19,22 @@
       content="Your Plex and Jellyfin year, rewound. Free, open source and self-hosted."
     />
     <meta property="og:image" content="https://rewindarr.eu/assets/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="The Rewindarr logo with the line: Your Plex and Jellyfin year, rewound"
+    />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="assets/rewindarr.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="assets/apple-icon.png" />
     <link rel="stylesheet" href="styles.css" />
+    <script
+      defer
+      src="https://cloud.umami.is/script.js"
+      data-website-id="4a7a21c5-b256-45b1-b7ee-c4c364bb8168"
+      data-domains="rewindarr.eu"
+    ></script>
   </head>
   <body>
     <div class="sky" aria-hidden="true"></div>
@@ -143,19 +156,11 @@
             Each user steps through their year one stat at a time.
           </p>
           <ul class="checks">
-            <li>
-              Top movies, shows and artists, plus the actors and directors.
-            </li>
-            <li>
-              The busiest month, the biggest binge and the favourite hour.
-            </li>
-            <li>
-              How each user ranks against everyone else, and who shares their
-              taste.
-            </li>
-            <li>A viewing personality that sums up the year.</li>
+            <li>The year's favourite movies, shows and music.</li>
+            <li>When and how they watched, all year long.</li>
+            <li>How users rank against each other.</li>
+            <li>A personal viewing personality that sums up the year.</li>
             <li>A summary card to save and share.</li>
-            <li>Custom period, release date and background music.</li>
           </ul>
         </div>
         <div class="phones">
@@ -163,8 +168,8 @@
             <img
               src="assets/rewind-summary.webp"
               alt="A Rewind summary card with a viewing personality, top show, movie and artist, and the highlights of the year"
-              width="780"
-              height="1688"
+              width="900"
+              height="1840"
               loading="lazy"
             />
           </figure>
@@ -172,8 +177,8 @@
             <img
               src="assets/rewind-shows.webp"
               alt="A Rewind story on shows: total time, share of playtime, episodes watched and the favourite show"
-              width="780"
-              height="1688"
+              width="900"
+              height="1840"
               loading="lazy"
             />
           </figure>
@@ -185,8 +190,8 @@
           <p class="eyebrow">Dashboard</p>
           <h2>Your server's favourites, all year round.</h2>
           <p class="showcase-lead">
-            The most watched movies, shows and music, and who's watching the
-            most, from now back to day one.
+            The top movies, shows and music, and your biggest watchers, from the
+            past week back to day one.
           </p>
           <ul class="checks">
             <li>Ratings from IMDb, TMDB and Rotten Tomatoes on every title.</li>
@@ -199,8 +204,8 @@
             <img
               src="assets/dashboard-phone.webp"
               alt="The movie dashboard for the past year, ranking the most watched movies with ratings, watch time, plays and users"
-              width="780"
-              height="1688"
+              width="900"
+              height="1840"
               loading="lazy"
             />
           </figure>
@@ -208,8 +213,8 @@
             <img
               src="assets/dashboard-users.webp"
               alt="The users dashboard for the past year, ranking everyone by watch time with their plays and requests"
-              width="780"
-              height="1688"
+              width="900"
+              height="1840"
               loading="lazy"
             />
           </figure>
@@ -226,7 +231,9 @@
             browse and search past plays and requests.
           </p>
           <ul class="checks">
-            <li>Binges grouped together, so a season reads as one.</li>
+            <li>
+              Back-to-back plays of one show or artist grouped into a binge.
+            </li>
             <li>Play time, plays, requests and users for any period.</li>
           </ul>
         </div>
@@ -235,8 +242,8 @@
             <img
               src="assets/activity-phone.webp"
               alt="The activity page with a movie being transcoded, its stream details open, and a song playing below"
-              width="780"
-              height="1688"
+              width="900"
+              height="1840"
               loading="lazy"
             />
           </figure>
@@ -244,8 +251,8 @@
             <img
               src="assets/history-phone.webp"
               alt="The history page with play time, plays and users for the last 30 days, followed by recent plays"
-              width="780"
-              height="1688"
+              width="900"
+              height="1840"
               loading="lazy"
             />
           </figure>
@@ -311,8 +318,8 @@
             </svg>
             <h3>Six languages</h3>
             <p>
-              English (UK and US), Estonian, French, German, Italian and
-              Spanish, following each user's browser language.
+              English, Estonian, French, German, Italian and Spanish, following
+              each user's browser language.
             </p>
           </article>
           <article class="feature">
@@ -340,7 +347,7 @@
           <div class="compat-row">
             <a
               class="compat-logo-link"
-              href="https://www.plex.tv"
+              href="https://www.plex.tv/your-media/"
               target="_blank"
               rel="noopener"
             >
@@ -475,7 +482,7 @@
             >
               <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" /></svg
           ></a>
-          for optional settings and how to update.
+          for optional settings.
         </p>
       </section>
 
@@ -551,6 +558,29 @@
 
       updateNav()
       window.addEventListener('scroll', updateNav, { passive: true })
+
+      // Highlights the link of the section a third of the way down the
+      // screen, and none over the sections without one
+      const navLinks = [...document.querySelectorAll('.nav-links a')]
+      const updateCurrent = () => {
+        const line = window.innerHeight / 3
+
+        navLinks.forEach((link) => {
+          const { top, bottom } = document
+            .querySelector(link.hash)
+            .getBoundingClientRect()
+
+          if (top <= line && bottom > line) {
+            link.setAttribute('aria-current', 'location')
+          } else {
+            link.removeAttribute('aria-current')
+          }
+        })
+      }
+
+      updateCurrent()
+      window.addEventListener('scroll', updateCurrent, { passive: true })
+      window.addEventListener('resize', updateCurrent)
 
       // The page ships with recent numbers and swaps in live ones when it
       // can. A failed request, such as a rate-limited one, keeps them.

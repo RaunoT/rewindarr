@@ -744,6 +744,17 @@ async function findArtworkUrl(source) {
     return search.data?.[0]?.cover_xl
   }
 
+  // A photo of the band, as Plex shows, where Deezer often has a logo
+  const audioDb = await fetch(
+    `https://www.theaudiodb.com/api/v1/json/123/search.php?s=${encodeURIComponent(source.artist)}`,
+  )
+    .then((res) => res.json())
+    .catch(() => null)
+
+  if (audioDb?.artists?.[0]?.strArtistThumb) {
+    return audioDb.artists[0].strArtistThumb
+  }
+
   const search = await fetch(
     `https://api.deezer.com/search/artist?q=${encodeURIComponent(source.artist)}`,
   ).then((res) => res.json())
