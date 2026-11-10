@@ -159,8 +159,9 @@ function getRequestedMedia(request: SeerrRequestItem) {
 }
 
 // Seerr knows a title's ID in the media server while it's there, and its TMDB
-// ID. Tautulli's plays carry no TMDB ID, and Tracearr's episodes carry their
-// own, so only movies match by it. IDs are compared as strings.
+// ID. The TMDB ID only stands in without one, as it can't tell a 4K copy from
+// the other. Tautulli's plays carry no TMDB ID, and Tracearr's episodes carry
+// their own, so only movies match by it. IDs are compared as strings.
 function isRequestedTitle(
   request: SeerrRequestItem,
   play: HistoryPlay,
@@ -172,11 +173,14 @@ function isRequestedTitle(
   const ratingKey = getRatingKey(play)
   const requestKeys = getRequestedMedia(request).keys
 
+  if (requestKeys.length) {
+    return !!ratingKey && requestKeys.includes(normalizeJellyfinId(ratingKey))
+  }
+
   return (
-    (!!ratingKey && requestKeys.includes(normalizeJellyfinId(ratingKey))) ||
-    (play.mediaType === 'movie' &&
-      !!play.tmdbId &&
-      play.tmdbId === request.media?.tmdbId)
+    play.mediaType === 'movie' &&
+    !!play.tmdbId &&
+    play.tmdbId === request.media?.tmdbId
   )
 }
 
@@ -255,17 +259,15 @@ export function getRequestsReach(
 // How many of the user's requests they watched themselves, out of those that
 // came to the media server. A show counts with a play of any requested
 // season. Seerr forgets a deleted title's media server ID, so it's left out
-// unless it's a movie and the plays carry TMDB IDs to match it by. Null
-// without any.
+// unless it's a movie and the source's plays carry TMDB IDs to match it by.
+// Null without any.
 export function getRequestsWatched(
   requests: SeerrRequestItem[],
   plays: HistoryPlay[],
   userId: string,
   minPercent: number,
+  hasPlayTmdbIds: boolean,
 ): RequestsWatched | null {
-  const hasTmdbIds = plays.some(
-    (play) => play.mediaType === 'movie' && !!play.tmdbId,
-  )
   const added = requests.filter((request) => {
     const media = getRequestedMedia(request)
 
@@ -275,7 +277,9 @@ export function getRequestsWatched(
       (request.status === COMPLETED_STATUS ||
         ADDED_MEDIA_STATUSES.includes(media.status ?? 0)) &&
       (media.keys.length > 0 ||
-        (request.type === 'movie' && !!request.media?.tmdbId && hasTmdbIds)) &&
+        (request.type === 'movie' &&
+          !!request.media?.tmdbId &&
+          hasPlayTmdbIds)) &&
       getMediaUserIds(request.requestedBy).includes(userId)
     )
   })

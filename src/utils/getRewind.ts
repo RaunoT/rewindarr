@@ -11,7 +11,12 @@ import { cache } from 'react'
 import { fetchSeerrStats, getMediaUserIds } from './fetchSeerr'
 import { formatPercent, secondsToTime } from './formatting'
 import getSettings from './getSettings'
-import { getAverage, getAverageShares, getDifference } from './helpers'
+import {
+  getAverage,
+  getAverageShares,
+  getDifference,
+  isTracearrSource,
+} from './helpers'
 import { LibrariesSize } from './librariesSize'
 import { isCountedPlay } from './playStats'
 import { getRequestsWatched } from './rewindSocial'
@@ -336,6 +341,8 @@ export async function getRequestsTotals(
       plays,
       userId,
       settings.general.minPlayPercent,
+      // Tautulli's plays carry no TMDB ID
+      isTracearrSource(settings),
     ),
   }
 }
