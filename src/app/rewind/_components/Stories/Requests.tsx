@@ -20,6 +20,14 @@ export default function StoryRequests({ userRewind, settings }: RewindStory) {
     : []
   // A single type would only repeat the count
   const hasBreakdown = breakdown.length > 1
+  const watched = userRewind.requests?.watched
+  const watchedKey =
+    watched &&
+    (watched.watched === 0
+      ? 'watchedNone'
+      : watched.watched === watched.added
+        ? 'watchedAll'
+        : 'watchedSome')
   // Also stands in for the comparison when there's nobody to compare with
   const totalStat = userRewind.requests && (
     <RewindStat step={1}>
@@ -124,8 +132,25 @@ export default function StoryRequests({ userRewind, settings }: RewindStory) {
                   totalStat
                 )}
 
+                {watched && watchedKey && (
+                  <RewindStat step={2}>
+                    <p>
+                      {t.rich(watchedKey, {
+                        watchedValue: watched.watched,
+                        addedValue: watched.added,
+                        count: (chunks) => (
+                          <span className='rewind-stat'>{chunks}</span>
+                        ),
+                        emoji: (chunks) => (
+                          <span className='not-italic'>{chunks}</span>
+                        ),
+                      })}
+                    </p>
+                  </RewindStat>
+                )}
+
                 {hasBreakdown && (
-                  <RewindStat step={2} noScale>
+                  <RewindStat step={3} noScale>
                     <p>{t('userBreakdown')}</p>
                     <RewindBreakdown items={breakdown} />
                   </RewindStat>

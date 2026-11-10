@@ -388,7 +388,7 @@ async function getRewind(
     settings.connection.seerrUrl && settings.connection.seerrApiKey
 
   if (isSeerrActive) {
-    const requestTotals = await getRequestsTotals(user.id, period)
+    const requestTotals = await getRequestsTotals(user.id, period, plays)
 
     userRewind.requests = requestTotals
   }
