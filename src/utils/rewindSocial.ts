@@ -40,6 +40,13 @@ export type RequestsReach = {
   isTopWatched: boolean
 }
 
+export type RequestsWatched = {
+  // The user's requests that are in the media server
+  added: number
+  // Of them, the ones the user has a play of that counts
+  watched: number
+}
+
 export type ServerYear = {
   // Everyone's time, in seconds
   duration: number
@@ -59,6 +66,11 @@ const REQUEST_PLAY_TYPES: Record<string, PlayMediaType> = {
 }
 // Seerr's status for a declined request, which brought nothing
 const DECLINED_STATUS = 3
+// And for one whose title came to the media server
+const COMPLETED_STATUS = 5
+// Seerr's statuses for a title that came to the media server: partly or fully
+// there, or deleted since
+const ADDED_MEDIA_STATUSES = [4, 5, 7]
 
 function getDuration(plays: HistoryPlay[]): number {
   return Math.round(sumBy(plays, 'durationMs') / 1000)
@@ -130,7 +142,23 @@ export function getOnlyYou(
   return { count: onlyYou.length, share: onlyYou.length / watched.length, top }
 }
 
-// Seerr knows a title's ID in the media server once it's there, and its TMDB
+// The status and media server IDs of the version asked for, 4K or not.
+// Plex's rating keys and Jellyfin's IDs, which can't clash.
+function getRequestedMedia(request: SeerrRequestItem) {
+  const media = request.media
+  const keys = request.is4k
+    ? [media?.ratingKey4k, media?.jellyfinMediaId4k]
+    : [media?.ratingKey, media?.jellyfinMediaId]
+
+  return {
+    status: request.is4k ? media?.status4k : media?.status,
+    keys: keys
+      .filter((key) => !!key)
+      .map((key) => normalizeJellyfinId(String(key))),
+  }
+}
+
+// Seerr knows a title's ID in the media server while it's there, and its TMDB
 // ID. Tautulli's plays carry no TMDB ID, and Tracearr's episodes carry their
 // own, so only movies match by it. IDs are compared as strings.
 function isRequestedTitle(
@@ -142,10 +170,7 @@ function isRequestedTitle(
   }
 
   const ratingKey = getRatingKey(play)
-  // Plex's rating keys and Jellyfin's IDs, which can't clash
-  const requestKeys = [request.media?.ratingKey, request.media?.jellyfinMediaId]
-    .filter((key) => !!key)
-    .map((key) => normalizeJellyfinId(String(key)))
+  const requestKeys = getRequestedMedia(request).keys
 
   return (
     (!!ratingKey && requestKeys.includes(normalizeJellyfinId(ratingKey))) ||
@@ -225,6 +250,51 @@ export function getRequestsReach(
       ({ title, isWatched }) => title === top && isWatched,
     ),
   }
+}
+
+// How many of the user's requests they watched themselves, out of those that
+// came to the media server. A show counts with a play of any requested
+// season. Seerr forgets a deleted title's media server ID, so it's left out
+// unless it's a movie and the plays carry TMDB IDs to match it by. Null
+// without any.
+export function getRequestsWatched(
+  requests: SeerrRequestItem[],
+  plays: HistoryPlay[],
+  userId: string,
+  minPercent: number,
+): RequestsWatched | null {
+  const hasTmdbIds = plays.some(
+    (play) => play.mediaType === 'movie' && !!play.tmdbId,
+  )
+  const added = requests.filter((request) => {
+    const media = getRequestedMedia(request)
+
+    return (
+      Object.hasOwn(REQUEST_PLAY_TYPES, request.type) &&
+      request.status !== DECLINED_STATUS &&
+      (request.status === COMPLETED_STATUS ||
+        ADDED_MEDIA_STATUSES.includes(media.status ?? 0)) &&
+      (media.keys.length > 0 ||
+        (request.type === 'movie' && !!request.media?.tmdbId && hasTmdbIds)) &&
+      getMediaUserIds(request.requestedBy).includes(userId)
+    )
+  })
+
+  if (!added.length) {
+    return null
+  }
+
+  const ownPlays = plays.filter(
+    (play) => play.userId === userId && isCountedPlay(play, minPercent),
+  )
+  const watched = added.filter((request) =>
+    ownPlays.some(
+      (play) =>
+        isRequestedTitle(request, play) && isRequestedSeason(request, play),
+    ),
+  )
+
+  return { added: added.length, watched: watched.length }
 }
 
 // Everyone's year together, with the most watched movie and show. Null when

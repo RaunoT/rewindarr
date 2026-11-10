@@ -1,5 +1,10 @@
 import { TopTrack } from '@/types/rewind'
-import { Library, MediaStatsType, PlayPeriod } from '@/types/statsSource'
+import {
+  HistoryPlay,
+  Library,
+  MediaStatsType,
+  PlayPeriod,
+} from '@/types/statsSource'
 import { groupBy, maxBy } from 'lodash'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { cache } from 'react'
@@ -9,6 +14,7 @@ import getSettings from './getSettings'
 import { getAverage, getAverageShares, getDifference } from './helpers'
 import { LibrariesSize } from './librariesSize'
 import { isCountedPlay } from './playStats'
+import { getRequestsWatched } from './rewindSocial'
 import { getStatsSource } from './statsSource'
 
 export async function getTopMediaStats(
@@ -275,7 +281,12 @@ function countRequests(requests: { type: string }[]) {
   }
 }
 
-export async function getRequestsTotals(userId: string, period: PlayPeriod) {
+// `plays` are the user's own in the period
+export async function getRequestsTotals(
+  userId: string,
+  period: PlayPeriod,
+  plays: HistoryPlay[],
+) {
   const settings = getSettings()
   const requests = await fetchRewindRequests(period.since, period.until)
 
@@ -320,5 +331,11 @@ export async function getRequestsTotals(userId: string, period: PlayPeriod) {
             difference: getDifference(user.total, averageCount),
           },
     averageShares,
+    watched: getRequestsWatched(
+      requests,
+      plays,
+      userId,
+      settings.general.minPlayPercent,
+    ),
   }
 }

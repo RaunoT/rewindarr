@@ -1,5 +1,6 @@
 import { ItemRow, Library } from '@/types/statsSource'
 import { RewindMoments } from '@/utils/rewindMoments'
+import { RequestsWatched } from '@/utils/rewindSocial'
 import { RewindPersonality } from './rewindPersonality'
 import { RewindSocial } from './rewindSocial'
 import { PublicSettings } from './settings'
@@ -75,6 +76,9 @@ export type UserRewind = {
         // The average requester's split of their own requests, null without
         // anyone else
         averageShares: { movies: number; shows: number } | null
+        // How many of the user's requests in the media server they watched,
+        // null without any there
+        watched: RequestsWatched | null
       })
     | null
   // How the user watched, null with too little to go on

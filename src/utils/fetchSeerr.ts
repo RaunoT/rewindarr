@@ -29,13 +29,19 @@ export type SeerrRequestItem = {
   type: string
   // 1 pending, 2 approved, 3 declined, 4 failed and 5 completed
   status?: number
+  // A 4K request has its own status and IDs, in the `4k` fields
+  is4k?: boolean
   media?: {
     tmdbId: number | null
-    // 1 unknown, 2 pending, 3 processing, 4 partly and 5 fully available
+    // 1 unknown, 2 pending, 3 processing, 4 partly and 5 fully available,
+    // 6 blocklisted and 7 deleted
     status?: number
-    // The title's ID in Plex or Jellyfin, once it's there
+    status4k?: number
+    // The title's ID in Plex or Jellyfin while it's there
     ratingKey?: string | null
+    ratingKey4k?: string | null
     jellyfinMediaId?: string | null
+    jellyfinMediaId4k?: string | null
   }
   // A show's requested seasons
   seasons?: { seasonNumber: number }[]

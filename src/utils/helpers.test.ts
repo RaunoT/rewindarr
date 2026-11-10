@@ -262,6 +262,7 @@ describe('getRequestsBreakdown', () => {
     user: { total: 4, movies: 1, shows: 3 },
     average: null,
     averageShares: { movies: 0.7, shows: 0.3 },
+    watched: null,
   }
 
   it("splits the user's and the average user's requests by type", () => {
