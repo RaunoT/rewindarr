@@ -720,7 +720,25 @@ const ARTWORK = {
 }
 const artworkCache = new Map()
 
-async function findArtworkUrl(source) {
+// The image at a URL, or null when its host doesn't answer with one
+async function fetchImage(url) {
+  if (!url) {
+    return null
+  }
+
+  const res = await fetch(url)
+
+  if (!res.ok) {
+    return null
+  }
+
+  return {
+    type: res.headers.get('content-type') || 'image/jpeg',
+    body: Buffer.from(await res.arrayBuffer()),
+  }
+}
+
+async function findArtwork(source) {
   if (source.tmdb) {
     const yearParam =
       source.tmdb === 'movie' ? 'primary_release_year' : 'first_air_date_year'
@@ -729,11 +747,13 @@ async function findArtworkUrl(source) {
     ).then((res) => res.json())
     const poster = search.results?.[0]?.poster_path
 
-    return poster && `https://image.tmdb.org/t/p/w500${poster}`
+    return fetchImage(poster && `https://image.tmdb.org/t/p/w500${poster}`)
   }
 
   if (source.portrait) {
-    return `https://randomuser.me/api/portraits/${source.portrait}.jpg`
+    return fetchImage(
+      `https://randomuser.me/api/portraits/${source.portrait}.jpg`,
+    )
   }
 
   if (source.album) {
@@ -741,25 +761,26 @@ async function findArtworkUrl(source) {
       `https://api.deezer.com/search/album?q=${encodeURIComponent(`${source.artist} ${source.album}`)}`,
     ).then((res) => res.json())
 
-    return search.data?.[0]?.cover_xl
+    return fetchImage(search.data?.[0]?.cover_xl)
   }
 
   // A photo of the band, as Plex shows, where Deezer often has a logo
-  const audioDb = await fetch(
+  const photo = await fetch(
     `https://www.theaudiodb.com/api/v1/json/123/search.php?s=${encodeURIComponent(source.artist)}`,
   )
     .then((res) => res.json())
+    .then((audioDb) => fetchImage(audioDb?.artists?.[0]?.strArtistThumb))
     .catch(() => null)
 
-  if (audioDb?.artists?.[0]?.strArtistThumb) {
-    return audioDb.artists[0].strArtistThumb
+  if (photo) {
+    return photo
   }
 
   const search = await fetch(
     `https://api.deezer.com/search/artist?q=${encodeURIComponent(source.artist)}`,
   ).then((res) => res.json())
 
-  return search.data?.[0]?.picture_xl
+  return fetchImage(search.data?.[0]?.picture_xl)
 }
 
 async function artwork(img) {
@@ -773,20 +794,7 @@ async function artwork(img) {
   if (!artworkCache.has(key)) {
     artworkCache.set(
       key,
-      (async () => {
-        const url = await findArtworkUrl(source)
-
-        if (!url) {
-          return null
-        }
-
-        const res = await fetch(url)
-
-        return {
-          type: res.headers.get('content-type') || 'image/jpeg',
-          body: Buffer.from(await res.arrayBuffer()),
-        }
-      })().catch(() => null),
+      findArtwork(source).catch(() => null),
     )
   }
 
