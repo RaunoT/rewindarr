@@ -112,14 +112,6 @@ export function formatMonthYear(
   }).format(new Date(date))
 }
 
-// Such as "1 December 2026", in UTC like the month and year
-export function formatLongDate(date: Date, locale: string): string {
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: 'long',
-    timeZone: 'UTC',
-  }).format(date)
-}
-
 // Such as "4 years and 7 months", or days while it's under a month. Empty for
 // under a day.
 export function formatTimeSince(

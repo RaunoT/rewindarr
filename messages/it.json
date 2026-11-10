@@ -281,7 +281,7 @@
       "themeMusic": "Sigle",
       "themeMusicDescription": "Riproduce la musica dei preferiti dello spettatore",
       "musicTrack": "Musica di sottofondo",
-      "musicTrackDescription": "Fino a {size}, i file grandi possono caricarsi lentamente",
+      "musicTrackDescription": "Fino a {size}",
       "musicFileDetails": "{format} · {size}",
       "musicUpload": "Carica",
       "musicReplace": "Sostituisci",
@@ -302,12 +302,12 @@
       },
       "periodDescriptions": {
         "calendarYear": "1° gen – 31 dic, con una nuova edizione ogni anno. Gli spettatori possono tornare agli anni precedenti.",
-        "pastYear": "I 365 giorni fino a oggi",
-        "specificYear": "1° gen – 31 dic di un solo anno, senza altri da scegliere",
+        "pastYear": "365 giorni fino a oggi",
+        "specificYear": "1° gen – 31 dic di un solo anno",
         "custom": "Dalla data di inizio a oggi"
       },
       "releaseDate": "Data di uscita",
-      "releaseDateDescription": "L'edizione {year} esce il {date}",
+      "releaseDateDescription": "Quando esce l'edizione {year}",
       "releaseDateError": "Controlla la data di uscita.",
       "yearError": "Controlla l'anno."
     }
@@ -384,7 +384,7 @@
       "topMovieActors": "{count, plural, one {<top>La star</top> che hai visto di più nei film} other {<top>Le # star</top> che hai visto di più nei film}}",
       "topMovieGenres": "{count, plural, one {<top>Il genere</top> che ha dominato le tue serate cinema} other {<top>I # generi</top> che hanno dominato le tue serate cinema}}",
       "topArtists": "Ecco {count, plural, one {<top>l'unico artista</top> che hai ascoltato} other {la tua <top>top # degli artisti</top>}}",
-      "percentage": "<percentage>{percentageValue}</percentage> del tuo tempo di riproduzione totale.",
+      "percentage": "<percentage>{percentageValue}</percentage> del tuo tempo di riproduzione totale",
       "shows": "Serie",
       "movies": "Film",
       "audio": "Musica",
@@ -404,10 +404,10 @@
     },
     "Total": {
       "duration": "Hai passato in <total>totale</total> <duration>{durationValue}</duration> su {serverName}!",
-      "averageMore": "Cioè <difference>{percent, number, percent} in più</difference> dell'utente medio, che ha guardato <duration>{durationValue}</duration>.",
-      "averageTimes": "Cioè <difference>{times, number}× il tempo</difference> dell'utente medio, che ha guardato <duration>{durationValue}</duration>.",
-      "averageLess": "Cioè <difference>{percent, number, percent} in meno</difference> dell'utente medio, che ha guardato <duration>{durationValue}</duration>.",
-      "averageSame": "È <difference>più o meno quanto</difference> l'utente medio, che ha guardato <duration>{durationValue}</duration>.",
+      "averageMore": "Cioè <difference>{percent, number, percent} in più</difference> dell'utente medio, che ha guardato <duration>{durationValue}</duration>",
+      "averageTimes": "Cioè <difference>{times, number}× il tempo</difference> dell'utente medio, che ha guardato <duration>{durationValue}</duration>",
+      "averageLess": "Cioè <difference>{percent, number, percent} in meno</difference> dell'utente medio, che ha guardato <duration>{durationValue}</duration>",
+      "averageSame": "È <difference>più o meno quanto</difference> l'utente medio, che ha guardato <duration>{durationValue}</duration>",
       "topPercent": "Sei nel <top>top {percent, number, percent}</top> degli spettatori di {serverName}!",
       "noData": "Non hai riprodotto niente su {serverName} <emoji>😫</emoji>",
       "breakdown": "Ecco come hai trascorso questo tempo:"
@@ -457,7 +457,7 @@
       "tracks": "{count, plural, one {brano} other {brani}}"
     },
     "Shows": {
-      "duration": "Hai dedicato <duration>{durationValue}</duration> alle <library>serie</library> su {serverName}.",
+      "duration": "Hai dedicato <duration>{durationValue}</duration> alle <library>serie</library> su {serverName}",
       "count": "Hai guardato <count>{countValue, number}</count> <episodes>{countValue, plural, one {episodio} other {episodi}}</episodes> in tutto!",
       "favorite": "La tua preferita è stata",
       "only": "L'unica serie che hai guardato è stata",
@@ -470,11 +470,14 @@
       "noData": "Non ci sono state <requests>richieste</requests> <emoji>😲</emoji>",
       "noUserData": "Non hai fatto nessuna <requests>richiesta</requests>. Puoi farne tramite <requestLink>{requestLinkValue}</requestLink>.",
       "count": "Hai fatto <count>{countValue, number}</count> <requests>{countValue, plural, one {richiesta} other {richieste}}</requests>",
-      "averageMore": "Cioè <difference>{percent, number, percent} in più</difference> dell'utente medio, che ha fatto <count>{countValue, plural, one {# richiesta} other {# richieste}}</count>.",
-      "averageTimes": "Cioè <difference>{times, number}× quelle</difference> dell'utente medio, che ha fatto <count>{countValue, plural, one {# richiesta} other {# richieste}}</count>.",
-      "averageLess": "Cioè <difference>{percent, number, percent} in meno</difference> dell'utente medio, che ha fatto <count>{countValue, plural, one {# richiesta} other {# richieste}}</count>.",
-      "averageSame": "Sono <difference>più o meno quante</difference> quelle dell'utente medio, che ha fatto <count>{countValue, plural, one {# richiesta} other {# richieste}}</count>.",
-      "countTotal": "In tutto {countValue, plural, one {c'è stata} other {ci sono state}} <count>{countValue, plural, one {# richiesta} other {# richieste}}</count> nello stesso periodo.",
+      "averageMore": "Cioè <difference>{percent, number, percent} in più</difference> dell'utente medio, che ha fatto <count>{countValue, plural, one {# richiesta} other {# richieste}}</count>",
+      "averageTimes": "Cioè <difference>{times, number}× quelle</difference> dell'utente medio, che ha fatto <count>{countValue, plural, one {# richiesta} other {# richieste}}</count>",
+      "averageLess": "Cioè <difference>{percent, number, percent} in meno</difference> dell'utente medio, che ha fatto <count>{countValue, plural, one {# richiesta} other {# richieste}}</count>",
+      "averageSame": "Sono <difference>più o meno quante</difference> quelle dell'utente medio, che ha fatto <count>{countValue, plural, one {# richiesta} other {# richieste}}</count>",
+      "countTotal": "In tutto {countValue, plural, one {c'è stata} other {ci sono state}} <count>{countValue, plural, one {# richiesta} other {# richieste}}</count> nello stesso periodo",
+      "watchedSome": "Hai guardato <count>{watchedValue, number}</count> delle <count>{addedValue, number}</count> richieste aggiunte",
+      "watchedAll": "{addedValue, plural, one {Hai guardato <count>l'unica</count> richiesta aggiunta} other {Hai guardato <count>tutte e #</count> le richieste aggiunte}} <emoji>🍿</emoji>",
+      "watchedNone": "{addedValue, plural, one {Non hai guardato <count>l'unica</count> richiesta aggiunta} other {Non hai guardato <count>nessuna delle #</count> richieste aggiunte}} <emoji>👀</emoji>",
       "userBreakdown": "Ecco cosa hai chiesto:",
       "breakdown": "Ecco il dettaglio:"
     },

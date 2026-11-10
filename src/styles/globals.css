@@ -316,10 +316,11 @@
   }
 
   /* Rewind's card. On phones it fills the screen in place of the page,
-     reaching under the notch and the home bar. */
+     reaching under the notch and the home bar. Like the page, it stays under
+     the status bar fade and starts below it. */
   .rewind-player {
     @variant max-sm {
-      @apply fixed inset-0 z-40 rounded-none pt-[max(1.25rem,env(safe-area-inset-top))] pr-[max(1.25rem,env(safe-area-inset-right))] pb-[max(1.25rem,env(safe-area-inset-bottom))] pl-[max(1.25rem,env(safe-area-inset-left))] shadow-none before:hidden;
+      @apply fixed inset-0 z-30 rounded-none pt-[max(1.25rem,var(--page-top),env(safe-area-inset-top))] pr-[max(1.25rem,env(safe-area-inset-right))] pb-[max(1.25rem,env(safe-area-inset-bottom))] pl-[max(1.25rem,env(safe-area-inset-left))] shadow-none before:hidden;
     }
 
     /* The stories keep to a column as wide as the card's content, with the

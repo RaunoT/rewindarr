@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rewindarr: your Plex and Jellyfin year, rewound</title>
+    <meta
+      name="description"
+      content="A self-hosted rewind for Plex and Jellyfin. Wrapped-style stories for every user, plus a dashboard, live activity and history, from Tautulli or Tracearr."
+    />
+    <meta name="theme-color" content="#000000" />
+    <link rel="canonical" href="https://rewindarr.eu/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Rewindarr" />
+    <meta property="og:url" content="https://rewindarr.eu/" />
+    <meta property="og:title" content="Rewindarr" />
+    <meta
+      property="og:description"
+      content="Your Plex and Jellyfin year, rewound. Free, open source and self-hosted."
+    />
+    <meta property="og:image" content="https://rewindarr.eu/assets/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="The Rewindarr logo with the line: Your Plex and Jellyfin year, rewound"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="assets/rewindarr.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/apple-icon.png" />
+    <link rel="stylesheet" href="styles.css" />
+    <script
+      defer
+      src="https://cloud.umami.is/script.js"
+      data-website-id="4a7a21c5-b256-45b1-b7ee-c4c364bb8168"
+      data-domains="rewindarr.eu"
+    ></script>
+  </head>
+  <body>
+    <div class="sky" aria-hidden="true"></div>
+
+    <header class="nav">
+      <a class="nav-brand" href="#top" aria-label="Rewindarr home">
+        <img src="assets/rewindarr.svg" alt="" width="32" height="32" />
+        Rewindarr
+      </a>
+      <nav class="nav-links" aria-label="Sections">
+        <a href="#rewind">Rewind</a>
+        <a href="#dashboard">Dashboard</a>
+        <a href="#activity">Activity</a>
+        <a href="#features">Features</a>
+        <a href="#install">Install</a>
+      </nav>
+      <a
+        class="button button--small button--glass"
+        href="https://github.com/RaunoT/rewindarr"
+        target="_blank"
+        rel="noopener"
+      >
+        <svg viewBox="0 0 98 96" aria-hidden="true">
+          <path
+            fill="currentColor"
+            fill-rule="evenodd"
+            d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"
+          />
+        </svg>
+        GitHub
+        <svg class="button-external" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" />
+        </svg>
+      </a>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <img
+          class="hero-icon"
+          src="assets/arrows.svg"
+          alt=""
+          width="112"
+          height="84"
+        />
+        <h1 class="hero-title">
+          Your year, <span class="gold">rewound.</span>
+        </h1>
+        <p class="hero-lead">
+          Stories for everyone on your Plex or Jellyfin server, plus a
+          dashboard, live activity and history. Self-hosted, free and open
+          source.
+        </p>
+        <div class="hero-actions">
+          <a class="button" href="#install">Get started</a>
+          <a
+            class="button button--glass"
+            href="https://github.com/RaunoT/rewindarr"
+            target="_blank"
+            rel="noopener"
+          >
+            View on GitHub
+            <svg class="button-external" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" />
+            </svg>
+          </a>
+        </div>
+        <ul class="stats" aria-label="Project stats">
+          <li>
+            <a
+              href="https://github.com/RaunoT/rewindarr/pkgs/container/rewindarr"
+              target="_blank"
+              rel="noopener"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
+                />
+              </svg>
+              <strong data-stat="downloads">787k</strong> downloads
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://github.com/RaunoT/rewindarr"
+              target="_blank"
+              rel="noopener"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M11.48 3.5a.56.56 0 0 1 1.04 0l2.13 5.11a.56.56 0 0 0 .47.35l5.52.44c.5.04.7.66.32.99l-4.2 3.6a.56.56 0 0 0-.18.56l1.28 5.38a.56.56 0 0 1-.84.61l-4.72-2.88a.56.56 0 0 0-.59 0l-4.73 2.88a.56.56 0 0 1-.84-.61l1.29-5.38a.56.56 0 0 0-.18-.56l-4.2-3.6a.56.56 0 0 1 .32-.99l5.51-.44a.56.56 0 0 0 .48-.35Z"
+                />
+              </svg>
+              <strong data-stat="stars">356</strong> stars
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://github.com/RaunoT/rewindarr"
+              target="_blank"
+              rel="noopener"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M6 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 0v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V9m0 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-6 3v3m0 0a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"
+                />
+              </svg>
+              <strong data-stat="forks">14</strong> forks
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <section class="showcase" id="rewind">
+        <div class="showcase-text">
+          <p class="eyebrow">Rewind</p>
+          <h2>Everyone gets their own year in review.</h2>
+          <p class="showcase-lead">
+            Each user steps through their year one stat at a time.
+          </p>
+          <ul class="checks">
+            <li>The year's favourite movies, shows and music.</li>
+            <li>When and how they watched, all year long.</li>
+            <li>How users rank against each other.</li>
+            <li>A personal viewing personality that sums up the year.</li>
+            <li>A summary card to save and share.</li>
+          </ul>
+        </div>
+        <div class="phones">
+          <figure class="phone">
+            <img
+              src="assets/rewind-summary.webp"
+              alt="A Rewind summary card with a viewing personality, top show, movie and artist, and the highlights of the year"
+              width="900"
+              height="1840"
+              loading="lazy"
+            />
+          </figure>
+          <figure class="phone">
+            <img
+              src="assets/rewind-shows.webp"
+              alt="A Rewind story on shows: total time, share of playtime, episodes watched and the favourite show"
+              width="900"
+              height="1840"
+              loading="lazy"
+            />
+          </figure>
+        </div>
+      </section>
+
+      <section class="showcase showcase--flip" id="dashboard">
+        <div class="showcase-text">
+          <p class="eyebrow">Dashboard</p>
+          <h2>Your server's favourites, all year round.</h2>
+          <p class="showcase-lead">
+            The top movies, shows and music, and your biggest watchers, from the
+            past week back to day one.
+          </p>
+          <ul class="checks">
+            <li>Ratings from IMDb, TMDB and Rotten Tomatoes on every title.</li>
+            <li>Request fan favourites you've since deleted through Seerr.</li>
+            <li>Watch time, request counts and library sizes up top.</li>
+          </ul>
+        </div>
+        <div class="phones">
+          <figure class="phone">
+            <img
+              src="assets/dashboard-phone.webp"
+              alt="The movie dashboard for the past year, ranking the most watched movies with ratings, watch time, plays and users"
+              width="900"
+              height="1840"
+              loading="lazy"
+            />
+          </figure>
+          <figure class="phone">
+            <img
+              src="assets/dashboard-users.webp"
+              alt="The users dashboard for the past year, ranking everyone by watch time with their plays and requests"
+              width="900"
+              height="1840"
+              loading="lazy"
+            />
+          </figure>
+        </div>
+      </section>
+
+      <section class="showcase" id="activity">
+        <div class="showcase-text">
+          <p class="eyebrow">Activity and history</p>
+          <h2>What's playing now, and everything played before.</h2>
+          <p class="showcase-lead">
+            See who's watching or listening right now, with progress and stream
+            details: quality, direct play or transcode, and bandwidth. Then
+            browse and search past plays and requests.
+          </p>
+          <ul class="checks">
+            <li>
+              Back-to-back plays of one show or artist grouped into a binge.
+            </li>
+            <li>Play time, plays, requests and users for any period.</li>
+          </ul>
+        </div>
+        <div class="phones">
+          <figure class="phone">
+            <img
+              src="assets/activity-phone.webp"
+              alt="The activity page with a movie being transcoded, its stream details open, and a song playing below"
+              width="900"
+              height="1840"
+              loading="lazy"
+            />
+          </figure>
+          <figure class="phone">
+            <img
+              src="assets/history-phone.webp"
+              alt="The history page with play time, plays and users for the last 30 days, followed by recent plays"
+              width="900"
+              height="1840"
+              loading="lazy"
+            />
+          </figure>
+        </div>
+      </section>
+
+      <section class="features" id="features">
+        <p class="eyebrow">Features</p>
+        <h2>Everything your users wanted to know.</h2>
+        <div class="features-grid">
+          <article class="feature">
+            <svg class="feature-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.1a7.5 7.5 0 0 1 15 0A17.9 17.9 0 0 1 12 21.75c-2.68 0-5.22-.58-7.5-1.65Z"
+              />
+            </svg>
+            <h3>Easy sign-in</h3>
+            <p>
+              Users sign in with their Plex account or Jellyfin Quick Connect.
+            </p>
+          </article>
+          <article class="feature">
+            <svg class="feature-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M9 12.75 11.25 15 15 9.75M12 2.71A11.96 11.96 0 0 1 3.6 6 12 12 0 0 0 3 9.75c0 5.59 3.82 10.29 9 11.62 5.18-1.33 9-6.03 9-11.62 0-1.31-.21-2.57-.6-3.75h-.15A11.96 11.96 0 0 1 12 2.71Z"
+              />
+            </svg>
+            <h3>Privacy built in</h3>
+            <p>
+              Anonymise other users, keep pages for admins only, or open the
+              dashboard to guests without a login.
+            </p>
+          </article>
+          <article class="feature">
+            <svg class="feature-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"
+              />
+            </svg>
+            <h3>At home on any screen</h3>
+            <p>
+              Fits everything from phones to desktops, and can be added to your
+              home screen.
+            </p>
+          </article>
+          <article class="feature">
+            <svg class="feature-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M16.02 9.35h4.99v0M2.99 19.64v-4.99m0 0h4.99m-4.99 0 3.18 3.18a8.25 8.25 0 0 0 13.8-3.7M4.03 9.87a8.25 8.25 0 0 1 13.8-3.7l3.18 3.18m0-4.99v4.99"
+              />
+            </svg>
+            <h3>Always up to date</h3>
+            <p>
+              Statistics come from your live play history, read once and then
+              kept topped up as new plays arrive.
+            </p>
+          </article>
+          <article class="feature">
+            <svg class="feature-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M10.5 21 15.75 9.75 21 21m-9-3h7.5M3 5.62a48.47 48.47 0 0 1 6-.37m0 0c1.12 0 2.23.04 3.33.11M9 5.25V3m3.33 2.36C11.17 10.66 7.69 15.08 3 17.5m6.05-4.42A18.1 18.1 0 0 1 5.29 8.25"
+              />
+            </svg>
+            <h3>Six languages</h3>
+            <p>
+              English, Estonian, French, German, Italian and Spanish, following
+              each user's browser language.
+            </p>
+          </article>
+          <article class="feature">
+            <svg class="feature-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"
+              />
+            </svg>
+            <h3>One container</h3>
+            <p>
+              A single Docker image for amd64 and arm64, set up entirely in the
+              browser.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="compat" aria-labelledby="compat-title">
+        <h2 id="compat-title">Works with your setup.</h2>
+        <div class="compat-table">
+          <div class="compat-row compat-row--head">
+            <span>Media server</span>
+            <span>Statistics from</span>
+          </div>
+          <div class="compat-row">
+            <a
+              class="compat-logo-link"
+              href="https://www.plex.tv/your-media/"
+              target="_blank"
+              rel="noopener"
+            >
+              <img
+                class="compat-logo compat-logo--plex"
+                src="assets/plex.svg"
+                alt="Plex"
+              />
+            </a>
+            <span
+              ><a
+                class="text-link"
+                href="https://tautulli.com"
+                target="_blank"
+                rel="noopener"
+                >Tautulli<svg
+                  class="link-arrow"
+                  viewBox="0 0 16 16"
+                  aria-hidden="true"
+                >
+                  <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" /></svg
+              ></a>
+              or
+              <a
+                class="text-link"
+                href="https://github.com/connorgallopo/Tracearr"
+                target="_blank"
+                rel="noopener"
+                >Tracearr<svg
+                  class="link-arrow"
+                  viewBox="0 0 16 16"
+                  aria-hidden="true"
+                >
+                  <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" /></svg></a
+            ></span>
+          </div>
+          <div class="compat-row">
+            <a
+              class="compat-logo-link"
+              href="https://jellyfin.org"
+              target="_blank"
+              rel="noopener"
+            >
+              <img
+                class="compat-logo compat-logo--jellyfin"
+                src="assets/jellyfin.svg"
+                alt="Jellyfin"
+              />
+            </a>
+            <span
+              ><a
+                class="text-link"
+                href="https://github.com/connorgallopo/Tracearr"
+                target="_blank"
+                rel="noopener"
+                >Tracearr<svg
+                  class="link-arrow"
+                  viewBox="0 0 16 16"
+                  aria-hidden="true"
+                >
+                  <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" /></svg></a
+            ></span>
+          </div>
+        </div>
+        <p class="compat-note">
+          Add
+          <a
+            class="text-link"
+            href="https://seerr.dev"
+            target="_blank"
+            rel="noopener"
+            >Seerr<svg
+              class="link-arrow"
+              viewBox="0 0 16 16"
+              aria-hidden="true"
+            >
+              <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" /></svg
+          ></a>
+          for request totals and request buttons.
+        </p>
+      </section>
+
+      <section class="install" id="install">
+        <p class="eyebrow">Install</p>
+        <h2>Up and running in a minute.</h2>
+        <ol class="steps">
+          <li>
+            Save this as <code>docker-compose.yml</code> wherever you keep your
+            services.
+          </li>
+          <li>Run <code>docker compose up -d</code>.</li>
+          <li>
+            Open <code>http://localhost:8383</code> and connect your server in
+            the setup.
+          </li>
+        </ol>
+        <div class="code">
+          <button class="code-copy" type="button" data-copy="compose">
+            <svg class="code-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                class="code-icon-copy"
+                d="M15.75 17.25v3.38c0 .62-.5 1.12-1.12 1.12h-9.76c-.62 0-1.12-.5-1.12-1.12V7.88c0-.62.5-1.13 1.12-1.13H8.25m7.5 10.5h3.38c.62 0 1.12-.5 1.12-1.12V3.38c0-.62-.5-1.13-1.12-1.13H9.38c-.62 0-1.13.5-1.13 1.13v13.87"
+              />
+              <path class="code-icon-done" d="m4.5 12.75 6 6 9-13.5" />
+            </svg>
+            <span class="code-label">Copy</span>
+          </button>
+          <!-- prettier-ignore -->
+          <pre><code id="compose"><span class="yaml-key">services</span>:
+  <span class="yaml-key">rewindarr</span>:
+    <span class="yaml-key">image</span>: <span class="yaml-value">ghcr.io/raunot/rewindarr:latest</span>
+    <span class="yaml-key">container_name</span>: <span class="yaml-value">rewindarr</span>
+    <span class="yaml-key">environment</span>:
+      - <span class="yaml-value">TZ=Europe/London</span>
+    <span class="yaml-key">volumes</span>:
+      - <span class="yaml-value">./config:/app/config</span>
+    <span class="yaml-key">ports</span>:
+      - <span class="yaml-number">8383:8383</span>
+    <span class="yaml-key">restart</span>: <span class="yaml-value">unless-stopped</span></code></pre>
+        </div>
+        <p class="install-more">
+          See the
+          <a
+            class="text-link"
+            href="https://github.com/RaunoT/rewindarr#getting-started"
+            target="_blank"
+            rel="noopener"
+            >README<svg
+              class="link-arrow"
+              viewBox="0 0 16 16"
+              aria-hidden="true"
+            >
+              <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" /></svg
+          ></a>
+          for optional settings.
+        </p>
+      </section>
+
+      <section class="support">
+        <h2>Free and open source.</h2>
+        <p>If it brings joy to your server, you can support it.</p>
+        <div class="hero-actions">
+          <a
+            class="button"
+            href="https://github.com/sponsors/RaunoT"
+            target="_blank"
+            rel="noopener"
+          >
+            <svg class="button-heart" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 20.25c-.3 0-8.25-4.5-8.25-10.5a4.5 4.5 0 0 1 8.25-2.48 4.5 4.5 0 0 1 8.25 2.48c0 6-7.95 10.5-8.25 10.5Z"
+              />
+            </svg>
+            Sponsor on GitHub
+          </a>
+          <a
+            class="button button--glass"
+            href="https://buymeacoffee.com/fr9lzfrhdh"
+            target="_blank"
+            rel="noopener"
+          >
+            <svg class="button-coffee" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M4.5 9h12v4.5a5.25 5.25 0 0 1-5.25 5.25h-1.5A5.25 5.25 0 0 1 4.5 13.5V9Zm12 1.5h1.13a2.63 2.63 0 0 1 0 5.25h-1.5M8.25 3v3M12 3v3M3.75 21h13.5"
+              />
+            </svg>
+            Buy me a coffee
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Rewindarr</span>
+      <nav aria-label="Project links">
+        <a
+          href="https://github.com/RaunoT/rewindarr"
+          target="_blank"
+          rel="noopener"
+          >GitHub<svg class="link-arrow" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" /></svg
+        ></a>
+        <a
+          href="https://github.com/RaunoT/rewindarr/releases"
+          target="_blank"
+          rel="noopener"
+          >Releases<svg
+            class="link-arrow"
+            viewBox="0 0 16 16"
+            aria-hidden="true"
+          >
+            <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" /></svg
+        ></a>
+        <a
+          href="https://github.com/RaunoT/rewindarr/issues"
+          target="_blank"
+          rel="noopener"
+          >Issues<svg class="link-arrow" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" /></svg
+        ></a>
+      </nav>
+    </footer>
+
+    <script>
+      const nav = document.querySelector('.nav')
+      const updateNav = () =>
+        nav.classList.toggle('nav--scrolled', window.scrollY > 0)
+
+      updateNav()
+      window.addEventListener('scroll', updateNav, { passive: true })
+
+      // Highlights the link of the section a third of the way down the
+      // screen, and none over the sections without one
+      const navLinks = [...document.querySelectorAll('.nav-links a')]
+      const updateCurrent = () => {
+        const line = window.innerHeight / 3
+
+        navLinks.forEach((link) => {
+          const { top, bottom } = document
+            .querySelector(link.hash)
+            .getBoundingClientRect()
+
+          if (top <= line && bottom > line) {
+            link.setAttribute('aria-current', 'location')
+          } else {
+            link.removeAttribute('aria-current')
+          }
+        })
+      }
+
+      updateCurrent()
+      window.addEventListener('scroll', updateCurrent, { passive: true })
+      window.addEventListener('resize', updateCurrent)
+
+      // The page ships with recent numbers and swaps in live ones when it
+      // can. A failed request, such as a rate-limited one, keeps them.
+      const getJson = (url) =>
+        fetch(url).then((response) => {
+          if (!response.ok) {
+            throw new Error(`${response.status} ${url}`)
+          }
+
+          return response.json()
+        })
+      const setStat = (name, value) => {
+        document.querySelector(`[data-stat="${name}"]`).textContent = value
+      }
+      const setCount = (name, count) => {
+        if (Number.isFinite(count)) {
+          setStat(
+            name,
+            new Intl.NumberFormat('en', { notation: 'compact' })
+              .format(count)
+              .toLowerCase(),
+          )
+        }
+      }
+
+      getJson('https://api.github.com/repos/RaunoT/rewindarr')
+        .then((repo) => {
+          setCount('stars', repo.stargazers_count)
+          setCount('forks', repo.forks_count)
+        })
+        .catch(() => {})
+
+      // Written daily by the download-badge workflow
+      getJson(
+        'https://raw.githubusercontent.com/RaunoT/rewindarr/badges/downloads.json',
+      )
+        .then((badge) => {
+          if (typeof badge.message === 'string' && badge.message) {
+            setStat('downloads', badge.message)
+          }
+        })
+        .catch(() => {})
+
+      document.querySelectorAll('[data-copy]').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const code = document.getElementById(button.dataset.copy)
+          const label = button.querySelector('.code-label')
+
+          try {
+            await navigator.clipboard.writeText(code.textContent)
+            label.textContent = 'Copied'
+            button.classList.add('code-copy--done')
+          } catch {
+            // Without clipboard access, select the snippet to copy by hand
+            const range = document.createRange()
+            const selection = window.getSelection()
+
+            range.selectNodeContents(code)
+            selection.removeAllRanges()
+            selection.addRange(range)
+
+            if (window.matchMedia('(pointer: coarse)').matches) {
+              label.textContent = 'Selected'
+            } else if (/Mac|iPhone|iPad/.test(navigator.userAgent)) {
+              label.textContent = 'Press ⌘C'
+            } else {
+              label.textContent = 'Press Ctrl+C'
+            }
+          }
+
+          setTimeout(() => {
+            label.textContent = 'Copy'
+            button.classList.remove('code-copy--done')
+          }, 2000)
+        })
+      })
+    </script>
+  </body>
+</html>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="96 145 296 222">
+  <defs>
+    <linearGradient id="rw-white" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" />
+      <stop offset="1" stop-color="#d4d4d4" />
+    </linearGradient>
+    <linearGradient id="rw-gold" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0" stop-color="#f8cf5c" />
+      <stop offset="1" stop-color="#e5a00d" />
+    </linearGradient>
+    <mask
+      id="rw-cut"
+      maskUnits="userSpaceOnUse"
+      x="0"
+      y="0"
+      width="512"
+      height="512"
+    >
+      <rect width="512" height="512" fill="#fff" />
+      <path
+        d="M229.0 256 L379.0 158.0 L379.0 354.0 Z"
+        fill="#000"
+        stroke="#000"
+        stroke-width="78"
+        stroke-linejoin="round"
+      />
+    </mask>
+  </defs>
+  <g mask="url(#rw-cut)">
+    <path
+      d="M109.0 256 L259.0 158.0 L259.0 354.0 Z"
+      fill="url(#rw-white)"
+      stroke="url(#rw-white)"
+      stroke-width="26"
+      stroke-linejoin="round"
+    />
+  </g>
+  <path
+    d="M229.0 256 L379.0 158.0 L379.0 354.0 Z"
+    fill="url(#rw-gold)"
+    stroke="url(#rw-gold)"
+    stroke-width="26"
+    stroke-linejoin="round"
+  />
+</svg>

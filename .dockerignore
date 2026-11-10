@@ -19,3 +19,4 @@ config/*
 !config/.gitkeep
 public/sw.js
 public/swe-worker-*.js
+website

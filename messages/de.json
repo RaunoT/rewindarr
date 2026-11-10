@@ -281,7 +281,7 @@
       "themeMusic": "Titelmelodien",
       "themeMusicDescription": "Spielt Musik aus den Favoriten des Zuschauers",
       "musicTrack": "Hintergrundmusik",
-      "musicTrackDescription": "Bis zu {size}, große Dateien laden womöglich langsam",
+      "musicTrackDescription": "Bis zu {size}",
       "musicFileDetails": "{format} · {size}",
       "musicUpload": "Hochladen",
       "musicReplace": "Ersetzen",
@@ -302,12 +302,12 @@
       },
       "periodDescriptions": {
         "calendarYear": "1. Jan. – 31. Dez., jedes Jahr eine neue Ausgabe. Zuschauer können frühere Jahre wieder ansehen.",
-        "pastYear": "Die 365 Tage bis heute",
-        "specificYear": "1. Jan. – 31. Dez. eines Jahres, ohne andere zur Auswahl",
+        "pastYear": "365 Tage bis heute",
+        "specificYear": "1. Jan. – 31. Dez. eines Jahres",
         "custom": "Vom Startdatum bis heute"
       },
       "releaseDate": "Erscheinungsdatum",
-      "releaseDateDescription": "Die Ausgabe {year} erscheint am {date}",
+      "releaseDateDescription": "Wann die Ausgabe {year} erscheint",
       "releaseDateError": "Prüfe das Erscheinungsdatum.",
       "yearError": "Prüfe das Jahr."
     }
@@ -384,7 +384,7 @@
       "topMovieActors": "{count, plural, one {Der <top>Star</top>, den du in Filmen am meisten gesehen hast} other {Die <top># Stars</top>, die du in Filmen am meisten gesehen hast}}",
       "topMovieGenres": "{count, plural, one {Das <top>Genre</top>, das deine Filmabende bestimmt hat} other {Die <top># Genres</top>, die deine Filmabende bestimmt haben}}",
       "topArtists": "{count, plural, one {Hier ist <top>der einzige Künstler</top>, den du gehört hast} other {Hier sind deine <top>Top # Künstler</top>}}",
-      "percentage": "Das sind <percentage>{percentageValue}</percentage> deiner gesamten Wiedergabezeit.",
+      "percentage": "Das sind <percentage>{percentageValue}</percentage> deiner gesamten Wiedergabezeit",
       "shows": "Serien",
       "movies": "Filme",
       "audio": "Musik",
@@ -404,10 +404,10 @@
     },
     "Total": {
       "duration": "Du hast <total>insgesamt</total> <duration>{durationValue}</duration> auf {serverName} verbracht!",
-      "averageMore": "Das sind <difference>{percent, number, percent} mehr</difference> als beim durchschnittlichen Benutzer, der <duration>{durationValue}</duration> geschaut hat.",
-      "averageTimes": "Das ist <difference>{times, number}× so viel</difference> wie beim durchschnittlichen Benutzer, der <duration>{durationValue}</duration> geschaut hat.",
-      "averageLess": "Das sind <difference>{percent, number, percent} weniger</difference> als beim durchschnittlichen Benutzer, der <duration>{durationValue}</duration> geschaut hat.",
-      "averageSame": "Das ist <difference>etwa gleich viel</difference> wie beim durchschnittlichen Benutzer, der <duration>{durationValue}</duration> geschaut hat.",
+      "averageMore": "Das sind <difference>{percent, number, percent} mehr</difference> als beim durchschnittlichen Benutzer, der <duration>{durationValue}</duration> geschaut hat",
+      "averageTimes": "Das ist <difference>{times, number}× so viel</difference> wie beim durchschnittlichen Benutzer, der <duration>{durationValue}</duration> geschaut hat",
+      "averageLess": "Das sind <difference>{percent, number, percent} weniger</difference> als beim durchschnittlichen Benutzer, der <duration>{durationValue}</duration> geschaut hat",
+      "averageSame": "Das ist <difference>etwa gleich viel</difference> wie beim durchschnittlichen Benutzer, der <duration>{durationValue}</duration> geschaut hat",
       "topPercent": "Du gehörst zu den <top>Top {percent, number, percent}</top> der Zuschauer auf {serverName}!",
       "noData": "Du hast nichts auf {serverName} abgespielt <emoji>😫</emoji>",
       "breakdown": "So hast du diese Zeit verbracht:"
@@ -416,7 +416,7 @@
       "top": "Im Vergleich zu anderen <users>Benutzern</users>"
     },
     "Audio": {
-      "duration": "Du hast <duration>{durationValue}</duration> <audio>Musik</audio> gehört.",
+      "duration": "Du hast <duration>{durationValue}</duration> <audio>Musik</audio> gehört",
       "count": "Du hast insgesamt <count>{countValue, number}</count> <tracks>{countValue, plural, one {Titel} other {Titel}}</tracks> angehört!",
       "favorite": "Dein Lieblingstitel war",
       "only": "Der einzige Künstler, den du gehört hast, war",
@@ -457,7 +457,7 @@
       "tracks": "{count, plural, one {Titel} other {Titel}}"
     },
     "Shows": {
-      "duration": "<library>Serien</library> haben <duration>{durationValue}</duration> deiner Zeit auf {serverName} eingenommen.",
+      "duration": "<library>Serien</library> haben <duration>{durationValue}</duration> deiner Zeit auf {serverName} eingenommen",
       "count": "Du hast insgesamt <count>{countValue, number}</count> <episodes>{countValue, plural, one {Episode} other {Episoden}}</episodes> geschaut!",
       "favorite": "Deine Lieblingsserie war",
       "only": "Die einzige Serie, die du geschaut hast, war",
@@ -469,17 +469,20 @@
     "Requests": {
       "noData": "Es gab keine <requests>Anfragen</requests> <emoji>😲</emoji>",
       "noUserData": "Du hast keine <requests>Anfragen</requests> gestellt. Anfragen kannst du über <requestLink>{requestLinkValue}</requestLink> stellen.",
-      "count": "Du hast <count>{countValue, number}</count> <requests>{countValue, plural, one {Anfrage} other {Anfragen}}</requests> gestellt.",
-      "averageMore": "Das sind <difference>{percent, number, percent} mehr</difference> als beim durchschnittlichen Benutzer, der <count>{countValue, plural, one {# Anfrage} other {# Anfragen}}</count> gestellt hat.",
-      "averageTimes": "Das sind <difference>{times, number}× so viele</difference> wie beim durchschnittlichen Benutzer, der <count>{countValue, plural, one {# Anfrage} other {# Anfragen}}</count> gestellt hat.",
-      "averageLess": "Das sind <difference>{percent, number, percent} weniger</difference> als beim durchschnittlichen Benutzer, der <count>{countValue, plural, one {# Anfrage} other {# Anfragen}}</count> gestellt hat.",
-      "averageSame": "Das sind <difference>etwa gleich viele</difference> wie beim durchschnittlichen Benutzer, der <count>{countValue, plural, one {# Anfrage} other {# Anfragen}}</count> gestellt hat.",
-      "countTotal": "Insgesamt gab es <count>{countValue, plural, one {# Anfrage} other {# Anfragen}}</count> in der gleichen Zeit.",
+      "count": "Du hast <count>{countValue, number}</count> <requests>{countValue, plural, one {Anfrage} other {Anfragen}}</requests> gestellt",
+      "averageMore": "Das sind <difference>{percent, number, percent} mehr</difference> als beim durchschnittlichen Benutzer, der <count>{countValue, plural, one {# Anfrage} other {# Anfragen}}</count> gestellt hat",
+      "averageTimes": "Das sind <difference>{times, number}× so viele</difference> wie beim durchschnittlichen Benutzer, der <count>{countValue, plural, one {# Anfrage} other {# Anfragen}}</count> gestellt hat",
+      "averageLess": "Das sind <difference>{percent, number, percent} weniger</difference> als beim durchschnittlichen Benutzer, der <count>{countValue, plural, one {# Anfrage} other {# Anfragen}}</count> gestellt hat",
+      "averageSame": "Das sind <difference>etwa gleich viele</difference> wie beim durchschnittlichen Benutzer, der <count>{countValue, plural, one {# Anfrage} other {# Anfragen}}</count> gestellt hat",
+      "countTotal": "Insgesamt gab es <count>{countValue, plural, one {# Anfrage} other {# Anfragen}}</count> in der gleichen Zeit",
+      "watchedSome": "Von den <count>{addedValue, number}</count> hinzugefügten Anfragen hast du dir <count>{watchedValue, number}</count> angesehen",
+      "watchedAll": "{addedValue, plural, one {Du hast dir <count>die eine</count> hinzugefügte Anfrage angesehen} other {Du hast dir <count>alle #</count> hinzugefügten Anfragen angesehen}} <emoji>🍿</emoji>",
+      "watchedNone": "{addedValue, plural, one {Du hast dir <count>die eine</count> hinzugefügte Anfrage nicht angesehen} other {Du hast dir <count>keine der #</count> hinzugefügten Anfragen angesehen}} <emoji>👀</emoji>",
       "userBreakdown": "Das hast du angefragt:",
       "breakdown": "Hier ist die Aufteilung:"
     },
     "Movies": {
-      "duration": "<duration>{durationValue}</duration> deiner Zeit hast du mit <movies>Filmen</movies> verbracht.",
+      "duration": "<duration>{durationValue}</duration> deiner Zeit hast du mit <movies>Filmen</movies> verbracht",
       "count": "Du hast <count>{countValue, number}</count> <movies>{countValue, plural, one {Film} other {Filme}}</movies> gesehen!",
       "favorite": "Dein Lieblingsfilm war",
       "only": "Der einzige Film, den du gesehen hast, war",
@@ -690,14 +693,14 @@
       "watchAgain": "Noch einmal ansehen",
       "backToHome": "Zurück zur Startseite",
       "journey": {
-        "movies": "Mit deinen liebsten <movies>Filmen</movies> war es ein erinnerungswürdiger Weg!",
-        "shows": "Mit den unterhaltsamsten <shows>Serien</shows> war es ein erinnerungswürdiger Weg!",
-        "audio": "Mit den unvergesslichsten <tracks>Titeln</tracks> war es ein erinnerungswürdiger Weg!",
-        "moviesShows": "Von deinen liebsten <movies>Filmen</movies> bis zu den unterhaltsamsten <shows>Serien</shows> war es ein erinnerungswürdiger Weg!",
-        "moviesAudio": "Von deinen liebsten <movies>Filmen</movies> bis zu den unvergesslichsten <tracks>Titeln</tracks> war es ein erinnerungswürdiger Weg!",
-        "showsAudio": "Von den unterhaltsamsten <shows>Serien</shows> bis zu den unvergesslichsten <tracks>Titeln</tracks> war es ein erinnerungswürdiger Weg!",
-        "moviesShowsAudio": "Von deinen liebsten <movies>Filmen</movies> über die unterhaltsamsten <shows>Serien</shows> bis zu den unvergesslichsten <tracks>Titeln</tracks> war es ein erinnerungswürdiger Weg!",
-        "none": "Es war ein erinnerungswürdiger Weg!"
+        "movies": "Mit deinen liebsten <movies>Filmen</movies> war es ein erinnerungswürdiger Weg.",
+        "shows": "Mit den unterhaltsamsten <shows>Serien</shows> war es ein erinnerungswürdiger Weg.",
+        "audio": "Mit den unvergesslichsten <tracks>Titeln</tracks> war es ein erinnerungswürdiger Weg.",
+        "moviesShows": "Von deinen liebsten <movies>Filmen</movies> bis zu den unterhaltsamsten <shows>Serien</shows> war es ein erinnerungswürdiger Weg.",
+        "moviesAudio": "Von deinen liebsten <movies>Filmen</movies> bis zu den unvergesslichsten <tracks>Titeln</tracks> war es ein erinnerungswürdiger Weg.",
+        "showsAudio": "Von den unterhaltsamsten <shows>Serien</shows> bis zu den unvergesslichsten <tracks>Titeln</tracks> war es ein erinnerungswürdiger Weg.",
+        "moviesShowsAudio": "Von deinen liebsten <movies>Filmen</movies> über die unterhaltsamsten <shows>Serien</shows> bis zu den unvergesslichsten <tracks>Titeln</tracks> war es ein erinnerungswürdiger Weg.",
+        "none": "Es war ein erinnerungswürdiger Weg."
       }
     }
   },

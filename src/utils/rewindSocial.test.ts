@@ -1,7 +1,12 @@
 import { HistoryPlay } from '@/types/statsSource'
 import { describe, expect, it, vi } from 'vitest'
 import { SeerrRequestItem } from './fetchSeerr'
-import { getOnlyYou, getRequestsReach, getServerYear } from './rewindSocial'
+import {
+  getOnlyYou,
+  getRequestsReach,
+  getRequestsWatched,
+  getServerYear,
+} from './rewindSocial'
 
 vi.mock('./getSettings', () => ({ default: vi.fn() }))
 
@@ -315,6 +320,32 @@ describe('getRequestsReach', () => {
     })
   })
 
+  it("doesn't count the other copy's plays for a 4K request", () => {
+    const requests = [
+      request(1, {
+        is4k: true,
+        media: { tmdbId: 1, ratingKey: '100', ratingKey4k: '101' },
+      }),
+    ]
+
+    expect(
+      getRequestsReach(
+        requests,
+        [play('arrival-bob', BOB, { ratingKey: '100', tmdbId: 1 })],
+        '1',
+        MIN_PERCENT,
+      ),
+    ).toBeNull()
+    expect(
+      getRequestsReach(
+        requests,
+        [play('arrival-bob', BOB, { ratingKey: '101', tmdbId: 1 })],
+        '1',
+        MIN_PERCENT,
+      ),
+    ).toMatchObject({ users: 1 })
+  })
+
   it("doesn't count someone whose plays don't count", () => {
     const requests = [request(1, { media: { tmdbId: 1, ratingKey: '100' } })]
     const plays = [
@@ -322,6 +353,139 @@ describe('getRequestsReach', () => {
     ]
 
     expect(getRequestsReach(requests, plays, '1', MIN_PERCENT)).toBeNull()
+  })
+})
+
+describe('getRequestsWatched', () => {
+  it('counts the requests in the media server the user watched', () => {
+    const requests = [
+      request(1, { media: { tmdbId: 1, ratingKey: '100', status: 5 } }),
+      request(2, {
+        type: 'tv',
+        media: { tmdbId: 2, ratingKey: '200', status: 4 },
+      }),
+      request(3, { media: { tmdbId: 3, ratingKey: '300', status: 5 } }),
+      // Not there yet
+      request(4, { media: { tmdbId: 4, status: 3 } }),
+      // Declined, though someone else's request brought it
+      request(5, {
+        media: { tmdbId: 5, ratingKey: '500', status: 5 },
+        status: 3,
+      }),
+      // Someone else's
+      request(6, {
+        media: { tmdbId: 6, ratingKey: '600', status: 5 },
+        requestedBy: { id: 8, plexId: 2 },
+      }),
+    ]
+    const plays = [
+      play('arrival', ALICE, { ratingKey: '100' }),
+      episode('dark', ALICE, 'Dark', { grandparentRatingKey: '200' }),
+      // Not far enough to count
+      play('brick', ALICE, { ratingKey: '300', percentComplete: 10 }),
+      play('coco', ALICE, { ratingKey: '500' }),
+      // Someone else watching it doesn't count
+      play('brick-bob', BOB, { ratingKey: '300' }),
+    ]
+
+    expect(
+      getRequestsWatched(requests, plays, '1', MIN_PERCENT, false),
+    ).toEqual({ added: 3, watched: 2 })
+  })
+
+  it("only counts a show's requested seasons", () => {
+    const requests = [
+      request(1, {
+        type: 'tv',
+        media: { tmdbId: 1, ratingKey: '100', status: 5 },
+        seasons: [{ seasonNumber: 2 }],
+      }),
+    ]
+
+    expect(
+      getRequestsWatched(
+        requests,
+        [episode('dark-1', ALICE, 'Dark', { grandparentRatingKey: '100' })],
+        '1',
+        MIN_PERCENT,
+        false,
+      ),
+    ).toEqual({ added: 1, watched: 0 })
+    expect(
+      getRequestsWatched(
+        requests,
+        [
+          episode('dark-2', ALICE, 'Dark', {
+            grandparentRatingKey: '100',
+            seasonNumber: 2,
+          }),
+        ],
+        '1',
+        MIN_PERCENT,
+        false,
+      ),
+    ).toEqual({ added: 1, watched: 1 })
+  })
+
+  it('reads the 4K fields of a 4K request', () => {
+    const requests = [
+      request(1, {
+        is4k: true,
+        media: {
+          tmdbId: 1,
+          status: 5,
+          ratingKey: '100',
+          status4k: 5,
+          ratingKey4k: '101',
+        },
+      }),
+      request(2, {
+        is4k: true,
+        type: 'tv',
+        media: { tmdbId: 2, status: 1, status4k: 4, ratingKey4k: '200' },
+      }),
+    ]
+    const plays = [
+      // The other copy, with the same TMDB ID
+      play('arrival', ALICE, { ratingKey: '100', tmdbId: 1 }),
+      episode('dark', ALICE, 'Dark', { grandparentRatingKey: '200' }),
+    ]
+
+    expect(getRequestsWatched(requests, plays, '1', MIN_PERCENT, true)).toEqual(
+      { added: 2, watched: 1 },
+    )
+  })
+
+  it('matches deleted movies by TMDB ID when the plays carry one', () => {
+    const requests = [
+      request(1, { status: 5, media: { tmdbId: 1, status: 7 } }),
+      request(2, { status: 5, media: { tmdbId: 2, status: 7 } }),
+      // A show has no ID left to match by
+      request(3, { type: 'tv', status: 5, media: { tmdbId: 3, status: 7 } }),
+    ]
+
+    expect(
+      getRequestsWatched(
+        requests,
+        [play('arrival', ALICE, { tmdbId: 1 })],
+        '1',
+        MIN_PERCENT,
+        true,
+      ),
+    ).toEqual({ added: 2, watched: 1 })
+    // Whatever the user played
+    expect(getRequestsWatched(requests, [], '1', MIN_PERCENT, true)).toEqual({
+      added: 2,
+      watched: 0,
+    })
+    // Tautulli's plays carry no TMDB ID
+    expect(getRequestsWatched(requests, [], '1', MIN_PERCENT, false)).toBeNull()
+  })
+
+  it('is null without any request in the media server', () => {
+    const requests = [request(1, { media: { tmdbId: 1, status: 2 } })]
+
+    expect(getRequestsWatched(requests, [], '1', MIN_PERCENT, true)).toBeNull()
   })
 })
 
