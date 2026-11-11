@@ -36,8 +36,9 @@ export default function RewindStat({
 
   return isShown ? (
     <motion.div
-      // On phones the story scrolls, and WebKit there can leave the old lines
-      // of a statement that shrinks on screen. Its own layer keeps them out.
+      // On phones the story scrolls, and WebKit there has left the old lines
+      // of a statement that shrinks on screen. Asking for its own layer is
+      // meant to keep them out.
       className={clsx(
         'mb-4 text-3xl leading-tight font-medium tracking-tight [overflow-wrap:anywhere] text-neutral-100 last-of-type:mb-0 max-sm:will-change-[opacity] sm:text-4xl',
         className,
