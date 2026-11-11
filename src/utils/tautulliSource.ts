@@ -4,6 +4,7 @@ import {
   Activity,
   FirstPlay,
   ItemRow,
+  LibrariesQuery,
   Library,
   MediaServer,
   ServerMembership,
@@ -14,7 +15,7 @@ import { TautulliHistoryRow, TautulliMetadata } from '@/types/tautulli'
 import { pick } from 'lodash'
 import { getServerSession } from 'next-auth'
 import { cache } from 'react'
-import fetchTautulli from './fetchTautulli'
+import fetchTautulli, { TautulliResponse } from './fetchTautulli'
 import {
   MediaIds,
   parseGuids,
@@ -45,9 +46,72 @@ import {
   toTautulliPlay,
 } from './tautulliHistory'
 
+type LibrariesResponse = TautulliResponse<Library[]> | null
+
+type LibrariesCache = {
+  // The Tautulli they're from, by its URL and API key
+  key: string
+  response: LibrariesResponse
+  expiresAt: number
+  pending: Promise<LibrariesResponse> | null
+}
+
+// How long Tautulli's libraries are kept before they're asked for again
+const LIBRARIES_TTL = 5 * 60 * 1000
+// Next.js can bundle this file into more than one chunk, and each copy would
+// otherwise ask for the libraries on its own.
+const globalForTautulli = globalThis as unknown as {
+  rewindarrTautulliLibraries?: LibrariesCache
+}
+
+async function requestLibraries(
+  libraries: LibrariesCache,
+): Promise<LibrariesResponse> {
+  try {
+    const response = await fetchTautulli<Library[]>('get_libraries')
+    // Not an empty list, which Tautulli answers with while Plex can't be
+    // reached, so it's asked again
+    const hasLibraries =
+      Array.isArray(response?.response?.data) &&
+      response.response.data.length > 0
+
+    libraries.response = hasLibraries ? response : null
+    libraries.expiresAt = hasLibraries ? Date.now() + LIBRARIES_TTL : 0
+
+    return response
+  } finally {
+    libraries.pending = null
+  }
+}
+
+// For every library, get_libraries has Tautulli count the items on Plex, which
+// takes seconds for a large one and times out when several requests run at
+// once. So every page and the history reads share one request, and its answer
+// is kept. Once it's due again, the kept answer is given while the new one is
+// on its way, so that no page waits for the counts. Asked for a fresh one, the
+// caller waits for a new answer, which is still shared with a request on its way.
+function fetchLibraries(fresh = false): Promise<LibrariesResponse> {
+  const { tautulliUrl, tautulliApiKey } = getSettings().connection
+  const key = `${tautulliUrl}|${tautulliApiKey}`
+
+  let libraries = globalForTautulli.rewindarrTautulliLibraries
+
+  if (libraries?.key !== key) {
+    libraries = { key, response: null, expiresAt: 0, pending: null }
+    globalForTautulli.rewindarrTautulliLibraries = libraries
+  }
+
+  if (fresh || Date.now() >= libraries.expiresAt) {
+    libraries.pending ??= requestLibraries(libraries)
+  }
+
+  return libraries.response && !fresh
+    ? Promise.resolve(libraries.response)
+    : (libraries.pending ?? Promise.resolve(null))
+}
+
 // The timeout signal opts requests out of fetch's per-render deduplication, so
 // lookups repeated by a page's layout, metadata and content share one call.
-const fetchLibraries = cache(() => fetchTautulli<Library[]>('get_libraries'))
 const fetchUsers = cache(() => fetchTautulli<SourceUser[]>('get_users'))
 const fetchUser = cache((userId: string) =>
   fetchTautulli<SourceUser>('get_user', { user_id: userId }),
@@ -110,9 +174,9 @@ async function fetchServerId(): Promise<string | null> {
 // background and shared between users. Not only the active ones, so the read
 // starts before the libraries are picked, and picking one doesn't start another.
 // The saved ones stand in while Tautulli is down.
-async function getAllLibraries(): Promise<Library[] | null> {
+async function getAllLibraries(fresh = false): Promise<Library[] | null> {
   const key = `${getTautulliKey()}|libraries`
-  const libraries = (await fetchLibraries())?.response?.data
+  const libraries = (await fetchLibraries(fresh))?.response?.data
 
   if (!Array.isArray(libraries)) {
     return getSnapshot(key, isListOf<Library>)
@@ -126,8 +190,10 @@ async function getAllLibraries(): Promise<Library[] | null> {
   return libraries
 }
 
-async function getLibraries(): Promise<Library[]> {
-  const libraries = await getAllLibraries()
+async function getLibraries({ fresh }: LibrariesQuery = {}): Promise<
+  Library[]
+> {
+  const libraries = await getAllLibraries(fresh)
 
   if (!libraries) {
     console.warn('[TAUTULLI] - No libraries found!')

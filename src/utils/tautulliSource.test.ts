@@ -3,7 +3,7 @@ import { Settings } from '@/types/settings'
 import { ItemRow, Library } from '@/types/statsSource'
 import { cloneDeep } from 'lodash'
 import { getServerSession } from 'next-auth'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
 import fetchTautulli from './fetchTautulli'
 import getSettings from './getSettings'
@@ -56,6 +56,9 @@ beforeEach(() => {
   settings.general.excludedUsers = ['3']
   vi.resetAllMocks()
   vi.mocked(getSettings).mockReturnValue(settings)
+  // The libraries are kept on globalThis, which would leak between tests
+  delete (globalThis as { rewindarrTautulliLibraries?: unknown })
+    .rewindarrTautulliLibraries
 })
 
 describe('getTautulliMediaData', () => {
@@ -268,6 +271,155 @@ function mockServer(plays: Play[]) {
     return null
   })
 }
+
+describe('getLibraries', () => {
+  const libraries = [library('1', 'movie'), library('2', 'show')]
+
+  function countRequests() {
+    return fetchMock.mock.calls.filter(([query]) => query === 'get_libraries')
+      .length
+  }
+
+  beforeEach(() => {
+    vi.mocked(getSettings)().general.isOutsideAccess = true
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-06-15T12:00:00Z'))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('shares one request between everything that asks at once', async () => {
+    let answer: (response: never) => void = () => {}
+
+    fetchMock.mockReturnValue(
+      new Promise((resolve) => {
+        answer = resolve
+      }),
+    )
+
+    const asked = [
+      tautulliSource.getLibraries(),
+      tautulliSource.getLibraries(),
+      tautulliSource.isReachable(),
+      tautulliSource.getHistoryReaders(),
+    ]
+
+    answer(tautulliData(libraries))
+
+    const [first, second, isReachable] = await Promise.all(asked)
+
+    expect(first).toEqual(libraries)
+    expect(second).toEqual(libraries)
+    expect(isReachable).toBe(true)
+    expect(countRequests()).toBe(1)
+  })
+
+  it('keeps the answer for five minutes', async () => {
+    fetchMock.mockResolvedValue(tautulliData(libraries))
+
+    await tautulliSource.getLibraries()
+    vi.advanceTimersByTime(5 * 60 * 1000 - 1)
+
+    await expect(tautulliSource.getLibraries()).resolves.toEqual(libraries)
+    expect(countRequests()).toBe(1)
+  })
+
+  it('gives the kept answer while a newer one is on its way', async () => {
+    const newer = [...libraries, library('3', 'artist')]
+
+    let answer: (response: never) => void = () => {}
+
+    fetchMock.mockResolvedValueOnce(tautulliData(libraries))
+    await tautulliSource.getLibraries()
+
+    fetchMock.mockReturnValue(
+      new Promise((resolve) => {
+        answer = resolve
+      }),
+    )
+    vi.advanceTimersByTime(5 * 60 * 1000)
+
+    await expect(tautulliSource.getLibraries()).resolves.toEqual(libraries)
+    await expect(tautulliSource.getLibraries()).resolves.toEqual(libraries)
+    expect(countRequests()).toBe(2)
+
+    answer(tautulliData(newer))
+    await vi.waitFor(async () =>
+      expect(await tautulliSource.getLibraries()).toEqual(newer),
+    )
+    expect(countRequests()).toBe(2)
+  })
+
+  it('waits for a new answer when asked for a fresh one', async () => {
+    const newer = [...libraries, library('3', 'artist')]
+
+    let answer: (response: never) => void = () => {}
+
+    fetchMock.mockResolvedValueOnce(tautulliData(libraries))
+    await tautulliSource.getLibraries()
+
+    fetchMock.mockReturnValue(
+      new Promise((resolve) => {
+        answer = resolve
+      }),
+    )
+
+    const fresh = [
+      tautulliSource.getLibraries({ fresh: true }),
+      tautulliSource.getLibraries({ fresh: true }),
+    ]
+
+    // Everything else still gets the kept one in the meantime
+    await expect(tautulliSource.getLibraries()).resolves.toEqual(libraries)
+    answer(tautulliData(newer))
+
+    await expect(Promise.all(fresh)).resolves.toEqual([newer, newer])
+    await expect(tautulliSource.getLibraries()).resolves.toEqual(newer)
+    expect(countRequests()).toBe(2)
+  })
+
+  it('falls back to the saved libraries once a newer answer fails', async () => {
+    fetchMock.mockResolvedValueOnce(tautulliData(libraries))
+    await tautulliSource.getLibraries()
+
+    fetchMock.mockResolvedValue(null)
+    vi.mocked(getSnapshot).mockResolvedValue([library('9', 'movie')] as never)
+    vi.advanceTimersByTime(5 * 60 * 1000)
+
+    // Still the kept one, as the request that fails was only just made
+    await expect(tautulliSource.getLibraries()).resolves.toEqual(libraries)
+    await expect(tautulliSource.isReachable()).resolves.toBe(false)
+    await expect(tautulliSource.getLibraries()).resolves.toEqual([
+      library('9', 'movie'),
+    ])
+  })
+
+  it('asks again after an empty answer, which Tautulli gives while Plex is down', async () => {
+    fetchMock.mockResolvedValueOnce(tautulliData([]))
+    fetchMock.mockResolvedValueOnce(tautulliData(libraries))
+
+    await expect(tautulliSource.getLibraries()).resolves.toEqual([])
+    await expect(tautulliSource.getLibraries()).resolves.toEqual(libraries)
+    expect(countRequests()).toBe(2)
+  })
+
+  it('asks another Tautulli for its own libraries', async () => {
+    const settings = vi.mocked(getSettings)()
+
+    fetchMock.mockResolvedValueOnce(tautulliData(libraries))
+    await tautulliSource.getLibraries()
+
+    settings.connection.tautulliUrl = 'http://other:8181'
+    fetchMock.mockResolvedValueOnce(tautulliData([library('5', 'artist')]))
+
+    await expect(tautulliSource.getLibraries()).resolves.toEqual([
+      library('5', 'artist'),
+    ])
+    expect(countRequests()).toBe(2)
+  })
+})
 
 describe('getTotalDuration', () => {
   beforeEach(() => {
