@@ -67,6 +67,9 @@ beforeEach(() => {
   vi.mocked(getSnapshot).mockReset()
   vi.mocked(hasSnapshot).mockReset()
   vi.mocked(getUpdatedAt).mockReset()
+  // Tautulli's libraries are kept on globalThis, which would leak between tests
+  delete (globalThis as { rewindarrTautulliLibraries?: unknown })
+    .rewindarrTautulliLibraries
 })
 
 afterEach(() => {
@@ -246,6 +249,20 @@ describe('getReachableLibraries', () => {
     fetchMock.mockImplementation(async () => tautulliResponse([]))
 
     await expect(getReachableLibraries()).resolves.toEqual([])
+  })
+
+  it('asks Tautulli again for fresh libraries', async () => {
+    fetchMock.mockImplementationOnce(async () =>
+      tautulliResponse([libraries[0]]),
+    )
+    await getReachableLibraries(false)
+
+    fetchMock.mockImplementation(async () => tautulliResponse(libraries))
+
+    await expect(getReachableLibraries(false)).resolves.toEqual([libraries[0]])
+    await expect(
+      getReachableLibraries(false, { fresh: true }),
+    ).resolves.toEqual(libraries)
   })
 
   it('returns null when the source fails', async () => {

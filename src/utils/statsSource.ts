@@ -2,6 +2,7 @@ import { HistoryStatus } from '@/types/playHistory'
 import { Settings, StatisticsSource } from '@/types/settings'
 import {
   Activity,
+  LibrariesQuery,
   Library,
   MediaServer,
   ServerMembership,
@@ -112,9 +113,12 @@ export async function getMediaServer(): Promise<MediaServer | null> {
   return getStatsSource().getMediaServer()
 }
 
-export async function getLibraries(excludeInactive = true): Promise<Library[]> {
+export async function getLibraries(
+  excludeInactive = true,
+  query?: LibrariesQuery,
+): Promise<Library[]> {
   const settings = getSettings()
-  const libraries = await getStatsSource(settings).getLibraries()
+  const libraries = await getStatsSource(settings).getLibraries(query)
   const activeLibraries = settings.general.activeLibraries
 
   return excludeInactive
@@ -128,9 +132,10 @@ export async function getLibraries(excludeInactive = true): Promise<Library[]> {
 // it, which an empty list can't show
 export async function getReachableLibraries(
   excludeInactive = true,
+  query?: LibrariesQuery,
 ): Promise<Library[] | null> {
   const [libraries, isReachable, hasSaved] = await Promise.all([
-    getLibraries(excludeInactive),
+    getLibraries(excludeInactive, query),
     isStatsSourceReachable(),
     hasSnapshot(getStatsSource().getSnapshotKey()),
   ])

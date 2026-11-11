@@ -281,12 +281,18 @@ export type MediaServer = {
   url: string
 }
 
+export type LibrariesQuery = {
+  // Asks Tautulli again instead of giving the libraries it kept, for where
+  // they're picked. Tracearr's are one per media type, so they hardly change.
+  fresh?: boolean
+}
+
 // Each statistics source maps its data onto the types above.
 export type StatsSource = {
   // Null when the links can't be made
   getMediaServer: () => Promise<MediaServer | null>
   // Only the libraries the signed-in user can see
-  getLibraries: () => Promise<Library[]>
+  getLibraries: (query?: LibrariesQuery) => Promise<Library[]>
   getLibrariesSize: (libraries: Library[]) => Promise<LibrariesSize>
   // Includes excluded users
   getUsers: () => Promise<SourceUser[]>

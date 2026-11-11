@@ -3,7 +3,7 @@ import { isTimeoutError } from './connectionErrors'
 import getSettings from './getSettings'
 import { isGatewayError, isHostDown, markHostDown } from './hostBackoff'
 
-type TautulliResponse<T> = {
+export type TautulliResponse<T> = {
   response: {
     result: string
     message?: string | null
