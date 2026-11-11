@@ -67,6 +67,9 @@ beforeEach(() => {
   vi.mocked(getSnapshot).mockReset()
   vi.mocked(hasSnapshot).mockReset()
   vi.mocked(getUpdatedAt).mockReset()
+  // Tautulli's libraries are kept on globalThis, which would leak between tests
+  delete (globalThis as { rewindarrTautulliLibraries?: unknown })
+    .rewindarrTautulliLibraries
 })
 
 afterEach(() => {
