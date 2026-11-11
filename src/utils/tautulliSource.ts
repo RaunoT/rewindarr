@@ -4,6 +4,7 @@ import {
   Activity,
   FirstPlay,
   ItemRow,
+  LibrariesQuery,
   Library,
   MediaServer,
   ServerMembership,
@@ -87,8 +88,9 @@ async function requestLibraries(
 // takes seconds for a large one and times out when several requests run at
 // once. So every page and the history reads share one request, and its answer
 // is kept. Once it's due again, the kept answer is given while the new one is
-// on its way, so that no page waits for the counts.
-function fetchLibraries(): Promise<LibrariesResponse> {
+// on its way, so that no page waits for the counts. Asked for a fresh one, the
+// caller waits for a new answer, which is still shared with a request on its way.
+function fetchLibraries(fresh = false): Promise<LibrariesResponse> {
   const { tautulliUrl, tautulliApiKey } = getSettings().connection
   const key = `${tautulliUrl}|${tautulliApiKey}`
 
@@ -99,11 +101,11 @@ function fetchLibraries(): Promise<LibrariesResponse> {
     globalForTautulli.rewindarrTautulliLibraries = libraries
   }
 
-  if (Date.now() >= libraries.expiresAt) {
+  if (fresh || Date.now() >= libraries.expiresAt) {
     libraries.pending ??= requestLibraries(libraries)
   }
 
-  return libraries.response
+  return libraries.response && !fresh
     ? Promise.resolve(libraries.response)
     : (libraries.pending ?? Promise.resolve(null))
 }
@@ -172,9 +174,9 @@ async function fetchServerId(): Promise<string | null> {
 // background and shared between users. Not only the active ones, so the read
 // starts before the libraries are picked, and picking one doesn't start another.
 // The saved ones stand in while Tautulli is down.
-async function getAllLibraries(): Promise<Library[] | null> {
+async function getAllLibraries(fresh = false): Promise<Library[] | null> {
   const key = `${getTautulliKey()}|libraries`
-  const libraries = (await fetchLibraries())?.response?.data
+  const libraries = (await fetchLibraries(fresh))?.response?.data
 
   if (!Array.isArray(libraries)) {
     return getSnapshot(key, isListOf<Library>)
@@ -188,8 +190,10 @@ async function getAllLibraries(): Promise<Library[] | null> {
   return libraries
 }
 
-async function getLibraries(): Promise<Library[]> {
-  const libraries = await getAllLibraries()
+async function getLibraries({ fresh }: LibrariesQuery = {}): Promise<
+  Library[]
+> {
+  const libraries = await getAllLibraries(fresh)
 
   if (!libraries) {
     console.warn('[TAUTULLI] - No libraries found!')

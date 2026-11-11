@@ -352,6 +352,34 @@ describe('getLibraries', () => {
     expect(countRequests()).toBe(2)
   })
 
+  it('waits for a new answer when asked for a fresh one', async () => {
+    const newer = [...libraries, library('3', 'artist')]
+
+    let answer: (response: never) => void = () => {}
+
+    fetchMock.mockResolvedValueOnce(tautulliData(libraries))
+    await tautulliSource.getLibraries()
+
+    fetchMock.mockReturnValue(
+      new Promise((resolve) => {
+        answer = resolve
+      }),
+    )
+
+    const fresh = [
+      tautulliSource.getLibraries({ fresh: true }),
+      tautulliSource.getLibraries({ fresh: true }),
+    ]
+
+    // Everything else still gets the kept one in the meantime
+    await expect(tautulliSource.getLibraries()).resolves.toEqual(libraries)
+    answer(tautulliData(newer))
+
+    await expect(Promise.all(fresh)).resolves.toEqual([newer, newer])
+    await expect(tautulliSource.getLibraries()).resolves.toEqual(newer)
+    expect(countRequests()).toBe(2)
+  })
+
   it('falls back to the saved libraries once a newer answer fails', async () => {
     fetchMock.mockResolvedValueOnce(tautulliData(libraries))
     await tautulliSource.getLibraries()

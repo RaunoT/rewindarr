@@ -19,7 +19,8 @@ export default async function GeneralSettingsPage() {
   await requireSettingsAccess()
 
   const [libraries, users] = await Promise.all([
-    getReachableLibraries(false),
+    // Fresh, so a library that was just added can be picked straight away
+    getReachableLibraries(false, { fresh: true }),
     getUsers(),
   ])
   const settings = getSettings()
