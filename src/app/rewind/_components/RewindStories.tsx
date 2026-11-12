@@ -81,15 +81,10 @@ type Props = {
   rewind: Promise<RewindData>
 }
 
-// Where the top show's and top movie's theme songs play
-const SHOW_STORIES = ['shows', 'shows_top', 'shows_actors', 'shows_genres']
-const MOVIE_STORIES = [
-  'movies',
-  'movies_top',
-  'movies_directors',
-  'movies_actors',
-  'movies_genres',
-]
+// Where the top show's and top movie's theme songs play: the stories that
+// show the title, not the people and genres after them
+const SHOW_STORIES = ['shows', 'shows_top']
+const MOVIE_STORIES = ['movies', 'movies_top']
 const AUDIO_STORIES = ['audio', 'audio_top']
 
 export default function RewindStories({
