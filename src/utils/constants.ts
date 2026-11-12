@@ -94,6 +94,7 @@ export const DEFAULT_SETTINGS: Settings = {
       'plays',
       'users',
       'requests',
+      'requestsWatched',
     ],
     minPlayPercent: 50,
     googleAnalyticsId: '',
@@ -194,6 +195,7 @@ export const ITEM_STATISTICS = [
   'plays',
   'users',
   'requests',
+  'requestsWatched',
 ] as const satisfies ItemStatistics
 
 export const RATING_STATISTICS = [
