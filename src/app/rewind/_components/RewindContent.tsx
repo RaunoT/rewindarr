@@ -62,24 +62,15 @@ import { toTimeZone } from '@/utils/timeZone'
 import { getTitleMoments } from '@/utils/titleMoments'
 import { getYearOverYear } from '@/utils/yearOverYear'
 import { sumBy } from 'lodash'
-import { Metadata } from 'next'
 import { getServerSession } from 'next-auth'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
-import RewindStories, { RewindData } from './_components/RewindStories'
-import Loading from './loading'
+import RewindStories, { RewindData } from './RewindStories'
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('Rewind')
-
-  return {
-    title: t('title'),
-  }
-}
-
-async function RewindContent({
+// The viewer's Rewind, or with an admin's userId another user's.
+// Shared by the Rewind page and the player page.
+export default async function RewindContent({
   userId,
   year,
 }: {
@@ -420,22 +411,4 @@ async function getRewind(
         : null,
     },
   }
-}
-
-type Props = {
-  searchParams: Promise<{
-    userId?: string
-    // A calendar year's edition, the latest without one
-    year?: string
-  }>
-}
-
-export default async function RewindPage({ searchParams }: Props) {
-  const { userId, year } = await searchParams
-
-  return (
-    <Suspense fallback={<Loading />} key={`${userId}|${year}`}>
-      <RewindContent userId={userId} year={year} />
-    </Suspense>
-  )
 }
