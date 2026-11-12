@@ -194,6 +194,7 @@ export const ITEM_STATISTICS = [
   'plays',
   'users',
   'requests',
+  'requestsWatched',
 ] as const satisfies ItemStatistics
 
 export const RATING_STATISTICS = [

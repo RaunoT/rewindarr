@@ -100,6 +100,7 @@ export type ItemStatistics = (
   | 'plays'
   | 'users'
   | 'requests'
+  | 'requestsWatched'
 )[]
 export type DashboardTotalStatistics = (
   'size' | 'duration' | 'count' | 'requests'

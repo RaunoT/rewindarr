@@ -845,7 +845,10 @@ function tautulli(params) {
   }
 }
 
-// Requests spread over the last year and a half, more from heavier users
+// Requests spread over the last year and a half, more from heavier users.
+// Each is for one of the titles above, and most have come to the server, so
+// the plays tell which of them were watched. Seerr forgets a deleted title's
+// rating key.
 function makeRequests() {
   const requests = []
 
@@ -858,12 +861,24 @@ function makeRequests() {
       const activity = user.hours.movie + user.hours.show
 
       if ((seed % 1000) / 1000 < activity / 1300 && activeDays(user, day) > 0) {
+        const type = seed % 3 === 0 ? 'tv' : 'movie'
+        const list = items[type === 'tv' ? 'show' : 'movie']
+        const item = list[Math.floor(seed / 3) % list.length]
+        const isAdded = Math.floor(seed / 36) % 6 !== 0
+
         requests.push({
           id: requests.length + 1,
-          type: seed % 3 === 0 ? 'tv' : 'movie',
+          type,
+          // Completed, or approved and still on its way
+          status: isAdded ? 5 : 2,
           createdAt: new Date(
             (NOW - day * DAY - i * 3600) * 1000,
           ).toISOString(),
+          media: {
+            tmdbId: null,
+            status: !isAdded ? 3 : item.isDeleted ? 7 : 5,
+            ratingKey: isAdded && !item.isDeleted ? String(item.key) : null,
+          },
           requestedBy: { id: i + 1, plexId: Number(user.id) },
         })
       }

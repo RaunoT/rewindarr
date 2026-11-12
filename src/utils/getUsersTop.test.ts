@@ -4,6 +4,11 @@ import { Library } from '@/types/statsSource'
 import { cloneDeep } from 'lodash'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
+import {
+  fetchSeerrStats,
+  fetchSeerrUserId,
+  SeerrRequestItem,
+} from './fetchSeerr'
 import fetchTautulli from './fetchTautulli'
 import getSettings from './getSettings'
 import getUsersTop from './getUsersTop'
@@ -13,7 +18,8 @@ import { getTautulliPlays } from './tautulliHistory'
 vi.mock('@/lib/auth', () => ({ authOptions: {} }))
 vi.mock('next-auth', () => ({ getServerSession: vi.fn() }))
 vi.mock('./fetchTautulli', () => ({ default: vi.fn() }))
-vi.mock('./fetchSeerr', () => ({
+vi.mock('./fetchSeerr', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./fetchSeerr')>()),
   fetchSeerrStats: vi.fn(),
   fetchSeerrUserId: vi.fn(),
 }))
@@ -122,6 +128,32 @@ function mockTautulli(getUser: unknown, plays = rankedPlays([300, 200])) {
 
 function firstPlayCalls() {
   return fetchMock.mock.calls.filter(([query]) => query === 'get_history')
+}
+
+// A movie that came to the media server
+function request(userId: number, ratingKey: string): SeerrRequestItem {
+  return {
+    id: Number(ratingKey),
+    createdAt: '2026-03-02T00:00:00Z',
+    type: 'movie',
+    status: 5,
+    media: { tmdbId: null, status: 5, ratingKey },
+    requestedBy: { id: userId + 10, plexId: userId },
+  }
+}
+
+// Each user's Seerr ID is their Plex ID plus 10
+function mockSeerr(settings: Settings, requests: SeerrRequestItem[]) {
+  settings.connection.seerrUrl = 'http://seerr'
+  settings.connection.seerrApiKey = 'key'
+  vi.mocked(fetchSeerrUserId).mockImplementation(
+    async (userId) => Number(userId) + 10,
+  )
+  vi.mocked(fetchSeerrStats).mockImplementation(async (endpoint) =>
+    requests.filter(
+      ({ requestedBy }) => endpoint === `user/${requestedBy.id}/requests`,
+    ),
+  )
 }
 
 describe('getUsersTop with Tautulli', () => {
@@ -297,5 +329,60 @@ describe('getUsersTop with Tautulli', () => {
     expect(users?.[0].first_played_at).toBe('2021-03-15T00:00:00.000Z')
     expect(users?.[1].first_played_at).toBeUndefined()
     expect(firstPlayCalls()).toHaveLength(1)
+  })
+
+  it('adds the share of their requests each listed user watched when asked', async () => {
+    mockSeerr(settings, [
+      request(1, '100'),
+      request(1, '101'),
+      request(2, '200'),
+      // Still on its way, so it can't have been watched
+      { ...request(2, '201'), status: 2, media: { tmdbId: null, status: 3 } },
+    ])
+    mockTautulli({}, [
+      { ...play(1, 'movie', 300), ratingKey: '100' },
+      // Someone else's request
+      { ...play(1, 'movie', 300), ratingKey: '200' },
+      { ...play(2, 'movie', 200), ratingKey: '101' },
+    ])
+
+    const users = (
+      await getUsersTop('1', '2026-03-01', { withRequestsWatched: true })
+    )?.items
+
+    expect(users).toMatchObject([
+      { user_id: 1, requests: 2, requests_watched_share: 0.5 },
+      { user_id: 2, requests: 2, requests_watched_share: 0 },
+    ])
+  })
+
+  it('has no share for a user without a request in the media server', async () => {
+    mockSeerr(settings, [
+      { ...request(1, '100'), status: 2, media: { tmdbId: null, status: 3 } },
+    ])
+    mockTautulli({})
+
+    const users = (
+      await getUsersTop('1', '2026-03-01', { withRequestsWatched: true })
+    )?.items
+
+    expect(users).toMatchObject([
+      { user_id: 1, requests: 1 },
+      { user_id: 2, requests: 0 },
+    ])
+    expect(
+      users?.every((user) => user.requests_watched_share === undefined),
+    ).toBe(true)
+  })
+
+  it('does not work out the share unless asked', async () => {
+    mockSeerr(settings, [request(1, '100')])
+    mockTautulli({}, [{ ...play(1, 'movie', 300), ratingKey: '100' }])
+
+    const users = (await getUsersTop('1', '2026-03-01'))?.items
+
+    expect(users?.[0]).toMatchObject({ requests: 1 })
+    expect(users?.[0].requests_watched_share).toBeUndefined()
+    expect(getTautulliPlays).toHaveBeenCalledTimes(1)
   })
 })

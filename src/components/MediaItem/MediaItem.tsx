@@ -260,6 +260,18 @@ export default function MediaItem({
                     {t('statRequests', { count: data.requests })}
                   </li>
                 )}
+              {/* Requests watched */}
+              {activeStats.includes('requestsWatched') &&
+                isUsers &&
+                data.requests_watched_share !== undefined && (
+                  <li className={STAT_PILL}>
+                    <STAT_ICONS.requestsWatched />
+                    <span className='sr-only'>{t('labelRequests')}</span>{' '}
+                    {t('statRequestsWatched', {
+                      share: data.requests_watched_share,
+                    })}
+                  </li>
+                )}
             </ul>
           </div>
           {/* The media server's link, a deleted title's request or label and

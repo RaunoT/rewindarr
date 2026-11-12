@@ -113,6 +113,11 @@ export default function GeneralSettingsForm({
             label: tCommon('requests'),
             icon: <STAT_ICONS.requests />,
           },
+          {
+            value: 'requestsWatched',
+            label: tCommon('requestsWatched'),
+            icon: <STAT_ICONS.requestsWatched />,
+          },
         ]
       : []),
     {
