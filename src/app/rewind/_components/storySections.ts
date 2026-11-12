@@ -17,3 +17,11 @@ export function joinStorySections<T>(
 
   return stories
 }
+
+// The stories without the ones the admin hid
+export function removeHiddenStories<T extends { id: string }>(
+  stories: T[],
+  hiddenStories: readonly string[],
+): T[] {
+  return stories.filter((story) => !hiddenStories.includes(story.id))
+}

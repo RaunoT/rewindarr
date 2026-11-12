@@ -13,14 +13,17 @@ import {
   ArrowsPointingOutIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  PauseIcon,
+  PlayIcon,
   SpeakerWaveIcon,
   SpeakerXMarkIcon,
 } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
-import { MotionConfig } from 'motion/react'
+import { motion, MotionConfig } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import {
   createContext,
+  FocusEvent,
   Fragment,
   PointerEvent,
   ReactNode,
@@ -33,6 +36,7 @@ import {
 } from 'react'
 import StoriesIntro from './StoriesIntro'
 import StoryBackdrop from './StoryBackdrop'
+import useAutoplay from './useAutoplay'
 
 type StoryStep = {
   // The latest statement shown, by its step in the story
@@ -78,6 +82,7 @@ type Props = {
 
 const INTRO_SEEN_KEY = 'rewindIntroSeen'
 const SOUND_KEY = 'rewindSound'
+const AUTOPLAY_KEY = 'rewindAutoplay'
 const NO_MUSIC: string[] = []
 const NO_ART: string[] = []
 // A longer press or a drag doesn't count as a tap
@@ -133,6 +138,12 @@ export default function Stories({ stories }: Props) {
   // The tracks a click started, null before one. Safari only plays those, and
   // the stories still on the way bring more.
   const [unlockedMusic, setUnlockedMusic] = useState<string[] | null>(null)
+  const [isAutoplayOn, setIsAutoplayOn] = useState(false)
+  // A press on the story holds it there until it's let go
+  const [isPressed, setIsPressed] = useState(false)
+  // The statement the viewer was at when they used something in the story,
+  // such as a link or the summary's buttons. Autoplay waits there for them.
+  const [heldStatement, setHeldStatement] = useState<string | null>(null)
   const [announcement, setAnnouncement] = useState('')
   const [step, setStep] = useState(0)
   // The steps of the current story's statements
@@ -202,6 +213,14 @@ export default function Stories({ stories }: Props) {
   const shownSteps = storySteps.filter((other) => other <= step)
   // Fills as the story's statements are stepped through
   const progress = storySteps.length ? shownSteps.length / storySteps.length : 0
+  const statement = `${currentIndex}:${step}`
+
+  // The hold ends once the viewer moves on, so coming back to the statement
+  // plays on
+  if (heldStatement !== null && heldStatement !== statement) {
+    setHeldStatement(null)
+  }
+
   const canGoBack = currentIndex > 0 || shownSteps.length > 1
   // A story still on the way holds the viewer there, or it would arrive
   // behind them
@@ -259,6 +278,33 @@ export default function Stories({ stories }: Props) {
       })
   }, [])
   const restart = useCallback(() => goTo(0), [goTo])
+  // Moves on by itself, each statement staying up for as long as it takes to
+  // read. Its time also fills the progress bar.
+  const autoplayProgress = useAutoplay({
+    slideRef,
+    storyIndex: currentIndex,
+    step,
+    isStoryEnd: nextStep === undefined,
+    isRunning:
+      isAutoplayOn &&
+      isCurrentStoryIn &&
+      isIntroShown === false &&
+      !isHidden &&
+      !isPressed &&
+      heldStatement !== statement,
+    from: storySteps.length
+      ? Math.max(shownSteps.length - 1, 0) / storySteps.length
+      : 0,
+    to: progress,
+    onEnd: goToNext,
+  })
+  const toggleAutoplay = useCallback(() => {
+    const isOn = !isAutoplayOn
+
+    setIsAutoplayOn(isOn)
+    setHeldStatement(null)
+    writeStorage(AUTOPLAY_KEY, isOn ? 'on' : 'off')
+  }, [isAutoplayOn])
   const dismissIntro = useCallback(() => {
     // Still dismissed when storage is blocked, it just shows again next time
     writeStorage(INTRO_SEEN_KEY, 'true')
@@ -284,19 +330,41 @@ export default function Stories({ stories }: Props) {
     setIsSoundBlocked(false)
     writeStorage(SOUND_KEY, isOn ? 'on' : 'off')
   }, [isSoundAudible, unlockMusic])
-  const handlePointerDown = useCallback((e: PointerEvent<HTMLDivElement>) => {
-    tapStartRef.current =
-      !e.isPrimary ||
-      (e.pointerType === 'mouse' && e.button !== 0) ||
-      isInteractiveTarget(e.target)
-        ? null
-        : {
-            pointerId: e.pointerId,
-            x: e.clientX,
-            y: e.clientY,
-            time: e.timeStamp,
-          }
-  }, [])
+  const handlePointerDown = useCallback(
+    (e: PointerEvent<HTMLDivElement>) => {
+      if (!e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) {
+        tapStartRef.current = null
+
+        return
+      }
+
+      setIsPressed(true)
+
+      if (isInteractiveTarget(e.target)) {
+        tapStartRef.current = null
+        setHeldStatement(statement)
+
+        return
+      }
+
+      tapStartRef.current = {
+        pointerId: e.pointerId,
+        x: e.clientX,
+        y: e.clientY,
+        time: e.timeStamp,
+      }
+    },
+    [statement],
+  )
+  // Reached with the keyboard, which a press doesn't tell
+  const handleFocus = useCallback(
+    (e: FocusEvent<HTMLDivElement>) => {
+      if (isInteractiveTarget(e.target)) {
+        setHeldStatement(statement)
+      }
+    },
+    [statement],
+  )
   // Only a tap that started on the slide steps the story
   const handlePointerUp = useCallback(
     (e: PointerEvent<HTMLDivElement>) => {
@@ -343,7 +411,26 @@ export default function Stories({ stories }: Props) {
     )
     // On unless the visitor turned it off
     setIsSoundOn(readStorage(SOUND_KEY) !== 'off')
+    // Off unless the visitor turned it on
+    setIsAutoplayOn(readStorage(AUTOPLAY_KEY) === 'on')
   }, [])
+
+  // The press can be let go anywhere, or end in a scroll
+  useEffect(() => {
+    if (!isPressed) {
+      return
+    }
+
+    const listeners = new AbortController()
+    const release = () => setIsPressed(false)
+
+    window.addEventListener('pointerup', release, { signal: listeners.signal })
+    window.addEventListener('pointercancel', release, {
+      signal: listeners.signal,
+    })
+
+    return () => listeners.abort()
+  }, [isPressed])
 
   // Browsers only start audio on a click or a key press, so blocked music
   // starts on the visitor's first one, wherever it is, as does the music of
@@ -400,13 +487,21 @@ export default function Stories({ stories }: Props) {
         goToPrev()
       } else if (e.key === 'ArrowRight') {
         goToNext()
+      } else if (e.key === ' ') {
+        // Space would scroll the page
+        e.preventDefault()
+
+        // Held down, it would turn autoplay on and off over and over
+        if (!e.repeat) {
+          toggleAutoplay()
+        }
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
 
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [goToNext, goToPrev])
+  }, [goToNext, goToPrev, toggleAutoplay])
 
   useEffect(() => {
     // The refs keep Strict Mode's second run, or a re-render, from counting
@@ -519,12 +614,17 @@ export default function Stories({ stories }: Props) {
                 <span className='block h-1 overflow-hidden rounded-full bg-white/15 transition-colors group-hover:bg-white/30'>
                   {index < currentIndex ? (
                     <span className='link-dark block h-full w-full bg-white' />
-                  ) : index === currentIndex ? (
+                  ) : index !== currentIndex ? null : isAutoplayOn ? (
+                    <motion.span
+                      className='link-dark block h-full w-full bg-white'
+                      style={{ scaleX: autoplayProgress, originX: 0 }}
+                    />
+                  ) : (
                     <span
                       className='link-dark block h-full w-full origin-left bg-white transition-transform duration-300 ease-out'
                       style={{ transform: `scaleX(${progress})` }}
                     />
-                  ) : null}
+                  )}
                 </span>
               </button>
             ))}
@@ -544,6 +644,7 @@ export default function Stories({ stories }: Props) {
           className='relative w-full flex-1 pt-8 outline-none select-none [-webkit-touch-callout:none] max-sm:-mx-2 max-sm:min-h-0 max-sm:w-auto max-sm:overflow-y-auto max-sm:overscroll-contain max-sm:px-2 sm:flex sm:flex-col sm:justify-center'
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
+          onFocus={handleFocus}
           onPointerCancel={() => {
             tapStartRef.current = null
           }}
@@ -565,6 +666,18 @@ export default function Stories({ stories }: Props) {
               aria-label={t('previous')}
             >
               <ChevronLeftIcon className='size-5' />
+            </button>
+            <button
+              className='icon-button'
+              onClick={toggleAutoplay}
+              aria-pressed={isAutoplayOn}
+              aria-label={t('autoplay')}
+            >
+              {isAutoplayOn ? (
+                <PauseIcon className='size-5' />
+              ) : (
+                <PlayIcon className='size-5' />
+              )}
             </button>
             <button
               className='icon-button'

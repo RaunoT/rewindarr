@@ -1,6 +1,7 @@
 import {
   CalendarDaysIcon,
   ClockIcon,
+  EyeIcon,
   FilmIcon,
   FolderIcon,
   MusicalNoteIcon,
@@ -25,6 +26,7 @@ export const STAT_ICONS = {
   duration: ClockIcon,
   users: UsersIcon,
   requests: PlusCircleIcon,
+  requestsWatched: EyeIcon,
   size: FolderIcon,
   year: CalendarDaysIcon,
   rating: StarIcon,

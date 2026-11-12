@@ -229,6 +229,47 @@ describe('getSettings', () => {
     expect(getSettings().rewind.period).toBe('pastYear')
   })
 
+  it('hides the libraries story its old switch turned off', async () => {
+    const saved = {
+      ...DEFAULT_SETTINGS,
+      rewind: {
+        ...DEFAULT_SETTINGS.rewind,
+        hiddenStories: undefined,
+        isLibrariesSizeAndCountActive: false,
+      },
+    }
+
+    fs.writeFileSync(settingsPath, JSON.stringify(saved))
+
+    const { default: getSettings } = await loadModule()
+
+    expect(getSettings().rewind.hiddenStories).toEqual(['libraries'])
+    expect(readSavedSettings().rewind.hiddenStories).toEqual(['libraries'])
+    expect(readSavedSettings().rewind).not.toHaveProperty(
+      'isLibrariesSizeAndCountActive',
+    )
+  })
+
+  it('hides no story when the old libraries switch was on', async () => {
+    const saved = {
+      ...DEFAULT_SETTINGS,
+      rewind: {
+        ...DEFAULT_SETTINGS.rewind,
+        hiddenStories: undefined,
+        isLibrariesSizeAndCountActive: true,
+      },
+    }
+
+    fs.writeFileSync(settingsPath, JSON.stringify(saved))
+
+    const { default: getSettings } = await loadModule()
+
+    expect(getSettings().rewind.hiddenStories).toEqual([])
+    expect(readSavedSettings().rewind).not.toHaveProperty(
+      'isLibrariesSizeAndCountActive',
+    )
+  })
+
   it('turns the old rating statistic into one per rating provider', async () => {
     const { activeItemStatistics: _, ...general } = DEFAULT_SETTINGS.general
     // Saved before item statistics moved to general

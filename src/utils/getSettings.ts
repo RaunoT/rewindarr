@@ -133,14 +133,16 @@ function loadSettings(key: string): Settings {
   }
 
   const savedSettings = saved as Partial<Settings>
-  const settings = renameTracearrShowsLibrary(
-    dropSortFilterSetting(
-      dropMdblistApiKey(
-        migrateRatingStatistic(
-          mergeWithDefaults(
-            completeHistorySettings(
-              addRewindPeriod(
-                moveItemStatistics(renameOverseerrSettings(savedSettings)),
+  const settings = hideLibrariesStory(
+    renameTracearrShowsLibrary(
+      dropSortFilterSetting(
+        dropMdblistApiKey(
+          migrateRatingStatistic(
+            mergeWithDefaults(
+              completeHistorySettings(
+                addRewindPeriod(
+                  moveItemStatistics(renameOverseerrSettings(savedSettings)),
+                ),
               ),
             ),
           ),
@@ -367,6 +369,25 @@ function renameTracearrShowsLibrary(settings: Settings): Settings {
       (library) => (library === 'tv-shows' ? 'shows' : library),
     )
   }
+
+  return settings
+}
+
+// The libraries story had a switch of its own before any story could be
+// hidden
+function hideLibrariesStory(settings: Settings): Settings {
+  const rewind = settings.rewind as Settings['rewind'] & {
+    isLibrariesSizeAndCountActive?: boolean
+  }
+
+  if (
+    rewind.isLibrariesSizeAndCountActive === false &&
+    !rewind.hiddenStories.includes('libraries')
+  ) {
+    rewind.hiddenStories.push('libraries')
+  }
+
+  delete rewind.isLibrariesSizeAndCountActive
 
   return settings
 }

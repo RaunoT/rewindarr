@@ -91,6 +91,8 @@ async function DashboardUsersContent({
       getUsersTop(loggedInUserId ?? '', period.string, {
         numberOfUsers: limit,
         withFirstPlay: true,
+        withRequestsWatched:
+          settings.general.activeItemStatistics.includes('requestsWatched'),
       }),
       getTotalDuration(period.string, settings, t),
       getUsersCount(settings),

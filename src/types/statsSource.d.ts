@@ -62,6 +62,9 @@ export type ItemRow = {
   user: string
   friendly_name: string
   requests: number
+  // Of the user's requests that came to the media server, the share they
+  // watched, from 0 to 1. Set for the users page, and not without any.
+  requests_watched_share?: number
   audio_plays_count: number
   movies_plays_count: number
   shows_plays_count: number

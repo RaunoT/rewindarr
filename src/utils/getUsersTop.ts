@@ -1,18 +1,26 @@
 import { ItemRow, TopItems } from '@/types/statsSource'
+import { groupBy } from 'lodash'
 import { DASHBOARD_PAGE_SIZE } from './constants'
 import { fetchSeerrStats, fetchSeerrUserId } from './fetchSeerr'
 import getSettings from './getSettings'
+import { isTracearrSource } from './helpers'
+import { getRequestsWatched } from './rewindSocial'
 import { getLibraries, getStatsSource } from './statsSource'
 
 type UserRequestCounts =
   | {
       requests: number
+      // Of those that came to the media server, from 0 to 1
+      watchedShare?: number
     }
   | undefined
 
 type Options = {
   numberOfUsers?: number
   withFirstPlay?: boolean
+  // How many of their requests each user watched, which reads everyone's
+  // plays in the period
+  withRequestsWatched?: boolean
   // The ranked users, when the caller has already read them
   users?: ItemRow[] | null
   // When the period ends, exclusive. It runs to now without one.
@@ -25,6 +33,7 @@ export default async function getUsersTop(
   {
     numberOfUsers = DASHBOARD_PAGE_SIZE,
     withFirstPlay = false,
+    withRequestsWatched = false,
     until,
     ...options
   }: Options = {},
@@ -61,23 +70,47 @@ export default async function getUsersTop(
   let usersRequestsCounts: UserRequestCounts[] = []
 
   if (isSeerrActive) {
-    const seerrUserIds = await Promise.all(
-      listedUsers.map(
-        async (user) => await fetchSeerrUserId(String(user.user_id)),
+    const [seerrUserIds, plays] = await Promise.all([
+      Promise.all(
+        listedUsers.map(
+          async (user) => await fetchSeerrUserId(String(user.user_id)),
+        ),
       ),
-    )
+      // The same plays as each user's watch time
+      withRequestsWatched
+        ? source.getHistoryPlays({
+            since: after,
+            until,
+            libraries: await getLibraries(),
+          })
+        : [],
+    ])
+    const playsByUser = groupBy(plays, 'userId')
 
     usersRequestsCounts = await Promise.all(
-      seerrUserIds.map(async (seerrId) => {
+      seerrUserIds.map(async (seerrId, i) => {
         if (seerrId) {
+          const userId = String(listedUsers[i].user_id)
           const userTotal = await fetchSeerrStats(
             `user/${seerrId}/requests`,
             after,
             until,
           )
+          const watched =
+            withRequestsWatched && userTotal
+              ? getRequestsWatched(
+                  userTotal,
+                  playsByUser[userId] ?? [],
+                  userId,
+                  settings.general.minPlayPercent,
+                  // Tautulli's plays carry no TMDB ID
+                  isTracearrSource(settings),
+                )
+              : null
 
           return {
             requests: userTotal?.length ?? 0,
+            watchedShare: watched ? watched.watched / watched.added : undefined,
           }
         }
       }),
@@ -99,6 +132,7 @@ export default async function getUsersTop(
 
   listedUsers.map((user, i) => {
     user.requests = usersRequestsCounts[i]?.requests || 0
+    user.requests_watched_share = usersRequestsCounts[i]?.watchedShare
     user.first_played_at = firstPlays[i]?.date
   })
 
