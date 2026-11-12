@@ -399,6 +399,7 @@
       "goToStory": "Ir a la historia {index}",
       "previous": "Anterior",
       "next": "Siguiente",
+      "autoplay": "Reproducción automática",
       "sound": "Sonido",
       "fullscreen": "Pantalla completa",
       "label": "Historias de Rewind",
