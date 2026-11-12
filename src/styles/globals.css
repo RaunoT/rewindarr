@@ -332,11 +332,25 @@
     }
   }
 
+  /* The player page fills the window on wider screens too,
+     laid out like full screen */
+  .rewind-player-page {
+    @variant sm {
+      @apply fixed inset-0 z-30 rounded-none py-8 shadow-none before:hidden;
+
+      padding-inline: max(1.25rem, (100% - 45.5rem) / 2);
+    }
+  }
+
   /* Nothing scrolls behind the stories while they fill a phone's screen */
   html:has(.rewind-player) {
     @variant max-sm {
       @apply overflow-hidden overscroll-none;
     }
+  }
+
+  html:has(.rewind-player-page) {
+    @apply overflow-hidden overscroll-none;
   }
 
   .poster {

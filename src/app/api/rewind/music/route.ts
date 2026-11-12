@@ -111,7 +111,8 @@ export async function PUT(request: Request) {
 
     settings.rewind.music = music
     writeSettings(settings)
-    revalidatePath('/rewind')
+    // The Rewind page and the player page
+    revalidatePath('/rewind', 'layout')
 
     return Response.json({ music })
   } catch (error) {
@@ -132,7 +133,8 @@ export async function DELETE() {
     settings.rewind.music = null
     writeSettings(settings)
     removeMusic()
-    revalidatePath('/rewind')
+    // The Rewind page and the player page
+    revalidatePath('/rewind', 'layout')
 
     return Response.json({ music: null })
   } catch (error) {

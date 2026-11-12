@@ -39,6 +39,8 @@ const SIDEBAR_ROUTES = [
   '/history',
   '/settings',
 ]
+// Shows the stories alone, without the sidebar or the header controls
+const PLAYER_ROUTE = '/rewind/play'
 const queryClient = new QueryClient()
 
 export default function AppProvider({
@@ -52,10 +54,13 @@ export default function AppProvider({
 }: Props) {
   const pathname = usePathname()
   const router = useRouter()
+  const isPlayer =
+    pathname === PLAYER_ROUTE || pathname.startsWith(`${PLAYER_ROUTE}/`)
   // Not during setup or before logging in, when there's nothing to browse yet
   const hasSidebar =
     !missingSetting &&
     canBrowse &&
+    !isPlayer &&
     (pathname === '/' ||
       SIDEBAR_ROUTES.some((route) => pathname.startsWith(route)))
 
@@ -127,7 +132,9 @@ export default function AppProvider({
               </div>
 
               {/* The sidebar, or a page's header on smaller screens, shows these controls instead */}
-              <HeaderControls className='absolute top-(--page-top) right-4 z-10 max-lg:group-has-[[data-page-header]]/main:hidden lg:group-data-[sidebar]/app:hidden' />
+              {!isPlayer && (
+                <HeaderControls className='absolute top-(--page-top) right-4 z-10 max-lg:group-has-[[data-page-header]]/main:hidden lg:group-data-[sidebar]/app:hidden' />
+              )}
 
               {hasSidebar && (
                 <SourceOutageNotice

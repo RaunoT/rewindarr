@@ -201,6 +201,15 @@ describe('proxy', () => {
       )
     })
 
+    // The link that opens straight into the viewer's Rewind
+    it('sends a visitor to log in and back to the Rewind player', async () => {
+      const res = await request('', '/rewind/play?year=2025')
+
+      expect(res?.headers.get('location')).toBe(
+        'http://localhost:3000/?callbackUrl=%2Frewind%2Fplay%3Fyear%3D2025',
+      )
+    })
+
     it('lets a logged-in user through', async () => {
       vi.mocked(getServerUser).mockResolvedValue({
         status: 'member',
