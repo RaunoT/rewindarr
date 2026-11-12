@@ -6,6 +6,7 @@ import {
   RewindSettings,
   SettingsFormInitialState,
 } from '@/types/settings'
+import { REWIND_STORIES, RewindStoryId } from '@/utils/constants'
 import { FIRST_YEAR, isReleaseDate } from '@/utils/rewindPeriod'
 import { getTranslations } from 'next-intl/server'
 import { z } from 'zod'
@@ -25,7 +26,7 @@ export default async function saveRewindSettings(
   const schema = z.object({
     isActive: z.boolean(),
     isAdminOnly: z.boolean().optional(),
-    isLibrariesSizeAndCountActive: z.boolean().optional(),
+    hiddenStories: z.array(z.enum(REWIND_STORIES)).optional(),
     isThemeMusicActive: z.boolean().optional(),
     isSnowActive: z.boolean().optional(),
     period: z
@@ -56,8 +57,7 @@ export default async function saveRewindSettings(
 
   if (isActive) {
     data.isAdminOnly = formData.get('isAdminOnly') === 'on'
-    data.isLibrariesSizeAndCountActive =
-      formData.get('isLibrariesSizeAndCountActive') === 'on'
+    data.hiddenStories = formData.getAll('hiddenStories') as RewindStoryId[]
     data.isThemeMusicActive = formData.get('isThemeMusicActive') === 'on'
     data.isSnowActive = formData.get('isSnowActive') === 'on'
     data.period = formData.get('period') as RewindPeriodType

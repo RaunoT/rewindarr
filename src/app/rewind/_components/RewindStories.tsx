@@ -8,6 +8,7 @@ import {
   UserRewind,
 } from '@/types/rewind'
 import { PublicSettings } from '@/types/settings'
+import { RewindStoryId } from '@/utils/constants'
 import { hasRewindPlays } from '@/utils/helpers'
 import { FC } from 'react'
 import Snow from './Snow'
@@ -46,7 +47,7 @@ import StoryUsersTop from './Stories/UsersTop'
 import StoryWelcome from './Stories/Welcome'
 import StoryYearOverYear from './Stories/YearOverYear'
 import { getStoryArt } from './storyArt'
-import { joinStorySections } from './storySections'
+import { joinStorySections, removeHiddenStories } from './storySections'
 
 type StoryComponent = {
   userRewind: UserRewind
@@ -119,9 +120,12 @@ export default function RewindStories({
         music,
       }
     : { id: 'total', type: 'loading', music }
-  const stories = joinStorySections<Story>(
-    [[welcome], [total], rewind ? getStories(rewind, settings, track) : null],
-    { id: 'more', type: 'loading', music },
+  const stories = removeHiddenStories(
+    joinStorySections<Story>(
+      [[welcome], [total], rewind ? getStories(rewind, settings, track) : null],
+      { id: 'more', type: 'loading', music },
+    ),
+    settings.rewind.hiddenStories,
   )
 
   return (
@@ -138,7 +142,10 @@ function getStories(
   settings: PublicSettings,
   track: string | null,
 ): Story[] {
-  function createStory(id: string, Component: FC<StoryComponent>): Story {
+  function createStory(
+    id: RewindStoryId | 'goodbye',
+    Component: FC<StoryComponent>,
+  ): Story {
     // The track also stands in for a title without a theme song
     const themes = SHOW_STORIES.includes(id)
       ? music.showThemes
@@ -163,8 +170,6 @@ function getStories(
   }
 
   const isSeerrActive = settings.connection.isSeerrActive
-  const isLibrariesSizeAndCountActive =
-    settings.rewind.isLibrariesSizeAndCountActive
   const hasMovieLibraries = userRewind.libraries.some(
     (library) => library.section_type === 'movie',
   )
@@ -255,7 +260,7 @@ function getStories(
     ...(userRewind.social.serverYear
       ? [createStory('server_year', StoryServerYear)]
       : []),
-    ...(userRewind.libraries_total_size && isLibrariesSizeAndCountActive
+    ...(userRewind.libraries_total_size
       ? [createStory('libraries', StoryLibraries)]
       : []),
     ...(userRewind.firstPlay

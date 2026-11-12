@@ -1,3 +1,5 @@
+import { RewindStoryId } from '@/utils/constants'
+
 export type SettingsFormInitialState<T> = {
   message: string
   status: string
@@ -68,7 +70,8 @@ export type RewindMusic = {
 export type RewindSettings = {
   isActive: boolean
   isAdminOnly: boolean
-  isLibrariesSizeAndCountActive: boolean
+  // Hidden rather than shown, so a story added later shows without a save
+  hiddenStories: RewindStoryId[]
   // The theme songs of the viewer's top show, top movie and binged show, and
   // their top track, play during their stories
   isThemeMusicActive: boolean
