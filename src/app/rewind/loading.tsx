@@ -17,9 +17,9 @@ export default function Loading() {
           <SkeletonLine className='sm:hidden' width='w-9/12' />
         </div>
       </div>
-      {/* Previous and next */}
+      {/* Previous, autoplay and next */}
       <div className='mt-4 flex'>
-        <div className='skeleton h-10 w-[74px]' />
+        <div className='skeleton h-10 w-[108px]' />
       </div>
     </div>
   )

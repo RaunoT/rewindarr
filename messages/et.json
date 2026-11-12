@@ -399,6 +399,7 @@
       "goToStory": "Mine loole {index}",
       "previous": "Eelmine",
       "next": "Järgmine",
+      "autoplay": "Automaatesitus",
       "sound": "Heli",
       "fullscreen": "Täisekraan",
       "label": "Rewind'i lood",

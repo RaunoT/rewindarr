@@ -111,6 +111,8 @@ export default function RewindBarChart({
       className={clsx('w-full not-italic', className)}
       role='img'
       aria-label={ariaLabel}
+      // Autoplay stays longer on a chart
+      data-story-chart
     >
       {/* The axis column is as wide as its label or counts, whichever is
           wider, so a long label in another language never spills out */}

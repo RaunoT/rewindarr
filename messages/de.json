@@ -399,6 +399,7 @@
       "goToStory": "Gehe zu Story {index}",
       "previous": "Zurück",
       "next": "Weiter",
+      "autoplay": "Automatische Wiedergabe",
       "sound": "Ton",
       "fullscreen": "Vollbild",
       "label": "Rewind-Stories",

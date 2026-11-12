@@ -43,6 +43,8 @@ export default function RewindStat({
         'mb-4 text-3xl leading-tight font-medium tracking-tight [overflow-wrap:anywhere] text-neutral-100 last-of-type:mb-0 max-sm:will-change-[opacity] sm:text-4xl',
         className,
       )}
+      // So autoplay can measure what the step shows
+      data-story-step={step}
       variants={isAnimated ? animateRewindStat : undefined}
       initial={shouldReduceMotion ? false : 'hidden'}
       animate={isScaledDown ? ['show', 'scaleDown'] : ['show']}
