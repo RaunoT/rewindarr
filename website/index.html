@@ -145,6 +145,20 @@
               <strong data-stat="forks">14</strong> forks
             </a>
           </li>
+          <li>
+            <a
+              href="https://github.com/RaunoT/rewindarr/releases/latest"
+              target="_blank"
+              rel="noopener"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M9.57 3H5.25A2.25 2.25 0 0 0 3 5.25v4.32c0 .6.24 1.17.66 1.59l9.58 9.58c.7.7 1.78.87 2.61.33a18.1 18.1 0 0 0 5.22-5.22c.54-.83.37-1.91-.33-2.61L11.16 3.66A2.25 2.25 0 0 0 9.57 3ZM6 6h.01v.01H6V6Z"
+                />
+              </svg>
+              <strong data-stat="version">v5.12.1</strong> latest
+            </a>
+          </li>
         </ul>
       </section>
 
@@ -610,6 +624,15 @@
         .then((repo) => {
           setCount('stars', repo.stargazers_count)
           setCount('forks', repo.forks_count)
+        })
+        .catch(() => {})
+
+      // Pre-releases from develop are left out of the latest release
+      getJson('https://api.github.com/repos/RaunoT/rewindarr/releases/latest')
+        .then((release) => {
+          if (typeof release.tag_name === 'string' && release.tag_name) {
+            setStat('version', release.tag_name)
+          }
         })
         .catch(() => {})
 
