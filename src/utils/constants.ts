@@ -94,7 +94,6 @@ export const DEFAULT_SETTINGS: Settings = {
       'plays',
       'users',
       'requests',
-      'requestsWatched',
     ],
     minPlayPercent: 50,
     googleAnalyticsId: '',
