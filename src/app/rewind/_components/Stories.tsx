@@ -214,6 +214,13 @@ export default function Stories({ stories }: Props) {
   // Fills as the story's statements are stepped through
   const progress = storySteps.length ? shownSteps.length / storySteps.length : 0
   const statement = `${currentIndex}:${step}`
+
+  // The hold ends once the viewer moves on, so coming back to the statement
+  // plays on
+  if (heldStatement !== null && heldStatement !== statement) {
+    setHeldStatement(null)
+  }
+
   const canGoBack = currentIndex > 0 || shownSteps.length > 1
   // A story still on the way holds the viewer there, or it would arrive
   // behind them
@@ -483,7 +490,11 @@ export default function Stories({ stories }: Props) {
       } else if (e.key === ' ') {
         // Space would scroll the page
         e.preventDefault()
-        toggleAutoplay()
+
+        // Held down, it would turn autoplay on and off over and over
+        if (!e.repeat) {
+          toggleAutoplay()
+        }
       }
     }
 

@@ -118,14 +118,19 @@ export default function useAutoplay({
       timer.content = statements.length ? measure(statements) : null
 
       // A phone's screen can be shorter than a story, and the statements
-      // after the first can come in below it
+      // after the first can come in below it. A countdown's next place comes
+      // in at the top of its list, which its story starts with.
       if (step > 0) {
-        statements[statements.length - 1]?.scrollIntoView({
-          block: 'nearest',
-          behavior: window.matchMedia(REDUCED_MOTION_QUERY).matches
-            ? 'auto'
-            : 'smooth',
-        })
+        const latest = statements[statements.length - 1]
+        const behavior = window.matchMedia(REDUCED_MOTION_QUERY).matches
+          ? 'auto'
+          : 'smooth'
+
+        if (latest) {
+          latest.scrollIntoView({ block: 'nearest', behavior })
+        } else {
+          slide.scrollTo({ top: 0, behavior })
+        }
       }
     }
 
