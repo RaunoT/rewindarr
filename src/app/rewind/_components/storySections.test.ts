@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { joinStorySections } from './storySections'
+import { joinStorySections, removeHiddenStories } from './storySections'
 
 describe('joinStorySections', () => {
   it('joins the sections in order once they are all in', () => {
@@ -35,5 +35,26 @@ describe('joinStorySections', () => {
       'welcome',
       '…',
     ])
+  })
+})
+
+describe('removeHiddenStories', () => {
+  const stories = [
+    { id: 'welcome' },
+    { id: 'total' },
+    { id: 'months' },
+    { id: 'goodbye' },
+  ]
+
+  it('leaves out the hidden stories and keeps the order of the rest', () => {
+    expect(removeHiddenStories(stories, ['total', 'libraries'])).toEqual([
+      { id: 'welcome' },
+      { id: 'months' },
+      { id: 'goodbye' },
+    ])
+  })
+
+  it('keeps every story when none are hidden', () => {
+    expect(removeHiddenStories(stories, [])).toEqual(stories)
   })
 })

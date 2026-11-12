@@ -104,7 +104,7 @@ export const DEFAULT_SETTINGS: Settings = {
   rewind: {
     isActive: true,
     isAdminOnly: false,
-    isLibrariesSizeAndCountActive: true,
+    hiddenStories: [],
     isThemeMusicActive: false,
     music: null,
     isSnowActive: true,
@@ -218,6 +218,44 @@ export const SEERR_MEDIA_TYPES: Partial<
   movie: 'movie',
   show: 'tv',
 }
+
+// The stories an admin can hide, named as in the player and in the order they
+// play. The welcome and the goodbye always show.
+export const REWIND_STORIES = [
+  'total',
+  'months',
+  'year_over_year',
+  'shows',
+  'shows_top',
+  'shows_actors',
+  'shows_genres',
+  'movies',
+  'movies_top',
+  'movies_directors',
+  'movies_actors',
+  'movies_genres',
+  'audio',
+  'audio_top',
+  'comfort_watch',
+  'time_travel',
+  'discoveries',
+  'binge',
+  'biggest_day',
+  'habits_day',
+  'habits_hour',
+  'taste_match',
+  'only_you',
+  'users_top',
+  'requests',
+  'requests_reach',
+  'server_year',
+  'libraries',
+  'first_play',
+  'personality',
+  'summary',
+] as const
+
+export type RewindStoryId = (typeof REWIND_STORIES)[number]
 
 export const REWIND_MUSIC_MAX_BYTES = 50 * 1024 * 1024
 // What a Rewind track may be, by file extension, and the type it's served as
