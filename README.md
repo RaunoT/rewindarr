@@ -87,6 +87,7 @@ If you like this project and wish to support it, you can do so on [GitHub Sponso
 ### Supporters
 
 - NAS Assist
+- surlybuddhist
 
 ## Star History
 
