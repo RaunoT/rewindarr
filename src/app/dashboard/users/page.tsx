@@ -11,7 +11,7 @@ import {
 import getPeriod from '@/utils/getPeriod'
 import getSettings from '@/utils/getSettings'
 import getUsersTop from '@/utils/getUsersTop'
-import { canViewFeature, getViewer } from '@/utils/helpers'
+import { canViewFeature, getViewer, isUsersPageVisible } from '@/utils/helpers'
 import { toPublicSettings } from '@/utils/publicSettings'
 import {
   getHistoryProgress,
@@ -66,7 +66,7 @@ async function DashboardUsersContent({
   const session = await getServerSession(authOptions)
 
   if (
-    !settings.dashboard.isUsersPageActive ||
+    !isUsersPageVisible(settings, session) ||
     !canViewFeature(settings, 'dashboard', getViewer(session))
   ) {
     return notFound()

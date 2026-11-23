@@ -15,6 +15,7 @@ import {
   canViewFeature,
   getDashboardSort,
   getLibrarySlug,
+  getOwnOnlyUserId,
   getViewer,
 } from '@/utils/helpers'
 import { toPublicSettings } from '@/utils/publicSettings'
@@ -89,9 +90,14 @@ async function DashboardContent({
     )
   }
 
-  const personalUserId = personalSp === 'true' ? loggedInUserId : undefined
-  // Plays rank by default; the sort filter can switch to watch time or users
-  const sortBy = getDashboardSort(sortBySp) ?? 'plays'
+  const personalUserId =
+    getOwnOnlyUserId(settings, 'dashboard', session) ??
+    (personalSp === 'true' ? loggedInUserId : undefined)
+  // Plays rank by default; the sort filter can switch to watch time or users,
+  // which says nothing when they're all one user's
+  const sort = getDashboardSort(sortBySp)
+  const sortBy =
+    (personalUserId && sort === 'users' ? undefined : sort) ?? 'plays'
   const [
     { items, hasMore },
     totalDuration,
@@ -152,12 +158,14 @@ export default async function DashboardPage({ searchParams, params }: Props) {
   )
   const itemsLimit = getItemsLimit(limit)
   const publicSettings = toPublicSettings(settings)
+  const isOwnOnly = !!getOwnOnlyUserId(settings, 'dashboard', session)
 
   return (
     <>
       <DashboardToolbar
         settings={publicSettings}
-        personalFilter={!!session?.user.id}
+        personalFilter={!!session?.user.id && !isOwnOnly}
+        isOwnOnly={isOwnOnly}
       />
       <Suspense
         fallback={

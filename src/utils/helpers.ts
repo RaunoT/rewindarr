@@ -79,18 +79,19 @@ export function canViewFeature(
   )
 }
 
-export type OwnOnlyFeature = 'activity' | 'history'
+// A rewind is always the viewer's own
+export type OwnOnlyFeature = Exclude<Feature, 'rewind'>
 
 function isOwnOnlyFeature(feature: Feature): feature is OwnOnlyFeature {
-  return feature === 'activity' || feature === 'history'
+  return feature !== 'rewind'
 }
 
-// The user whose own streams or plays alone the page shows, or none for
-// everyone's
-export function getOwnOnlyUserId(
-  settings: Pick<Settings, OwnOnlyFeature>,
-  feature: OwnOnlyFeature,
-  session: Session | null,
+// The user whose own stats, streams or plays alone the page shows, or none
+// for everyone's
+export function getOwnOnlyUserId<F extends OwnOnlyFeature>(
+  settings: Pick<Settings, F>,
+  feature: F,
+  session: Session | null | undefined,
 ): string | undefined {
   const { isOwnOnly, isOwnOnlyForAdmin } = settings[feature]
 
@@ -102,6 +103,18 @@ export function getOwnOnlyUserId(
 }
 
 const FEATURES: Feature[] = ['rewind', 'dashboard', 'activity', 'history']
+
+// The users page is all about everyone else, so a viewer who only sees their
+// own stats doesn't get it
+export function isUsersPageVisible(
+  settings: Pick<Settings, 'dashboard'>,
+  session: Session | null | undefined,
+): boolean {
+  return (
+    settings.dashboard.isUsersPageActive &&
+    !getOwnOnlyUserId(settings, 'dashboard', session)
+  )
+}
 
 // A page a logged-out visitor can't open but a login could, so the proxy
 // sends them to log in instead of to a missing page

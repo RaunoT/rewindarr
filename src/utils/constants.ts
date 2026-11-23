@@ -116,6 +116,8 @@ export const DEFAULT_SETTINGS: Settings = {
   dashboard: {
     isActive: true,
     isAdminOnly: false,
+    isOwnOnly: false,
+    isOwnOnlyForAdmin: false,
     isUsersPageActive: true,
     activeTotalStatistics: ['size', 'duration', 'count', 'requests'],
     customPeriod: '30',

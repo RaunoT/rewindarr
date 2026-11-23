@@ -19,6 +19,7 @@ import {
   isLoginRequired,
   isPostUpdateMissingSettings,
   isSettingsPageLocked,
+  isUsersPageVisible,
   Viewer,
 } from './helpers'
 
@@ -429,6 +430,22 @@ describe('own-only sections', () => {
     settings.history.isOwnOnlyForAdmin = true
 
     expect(getOwnOnlyUserId(settings, 'history', session(true))).toBe('7')
+  })
+
+  it('hides the users page from those who see only their own stats', () => {
+    const settings = cloneDeep(DEFAULT_SETTINGS)
+
+    expect(isUsersPageVisible(settings, session(false))).toBe(true)
+
+    settings.dashboard.isOwnOnly = true
+
+    expect(isUsersPageVisible(settings, session(false))).toBe(false)
+    expect(isUsersPageVisible(settings, session(true))).toBe(true)
+    expect(getOwnOnlyUserId(settings, 'dashboard', session(false))).toBe('7')
+
+    settings.dashboard.isUsersPageActive = false
+
+    expect(isUsersPageVisible(settings, session(true))).toBe(false)
   })
 
   function completeOwnOnly() {

@@ -25,6 +25,8 @@ export default async function saveDashboardSettings(
     isActive: z.boolean(),
     isAdminOnly: z.boolean().optional(),
     isUsersPageActive: z.boolean().optional(),
+    isOwnOnly: z.boolean().optional(),
+    isOwnOnlyForAdmin: z.boolean().optional(),
     activeTotalStatistics: z
       .array(z.enum(['size', 'duration', 'count', 'requests']))
       .optional(),
@@ -59,6 +61,12 @@ export default async function saveDashboardSettings(
   if (isActive) {
     data.isAdminOnly = formData.get('isAdminOnly') === 'on'
     data.isUsersPageActive = formData.get('isUsersPageActive') === 'on'
+    data.isOwnOnly = formData.get('isOwnOnly') === 'on'
+
+    if (data.isOwnOnly) {
+      data.isOwnOnlyForAdmin = formData.get('isOwnOnlyForAdmin') === 'on'
+    }
+
     data.activeTotalStatistics = formData.getAll(
       'activeTotalStatistics',
     ) as DashboardTotalStatistics
