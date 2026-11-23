@@ -36,6 +36,7 @@ export default function GoogleAnalytics({ id, isSignedIn, nonce }: Props) {
     window.dataLayer = window.dataLayer || []
     window.gtag = function gtag() {
       // gtag.js expects the arguments object itself, not an array.
+      // oxlint-disable-next-line react/unsupported-syntax
       window.dataLayer?.push(arguments)
     }
     window.gtag('js', new Date())

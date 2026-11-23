@@ -139,7 +139,7 @@ export default function StoryAudio({ userRewind, settings }: RewindStory) {
               from: (chunks) => (
                 <span className='whitespace-nowrap'>
                   {chunks}
-                  {/* eslint-disable-next-line react/jsx-no-literals */}
+                  {/* oxlint-disable-next-line react/jsx-no-literals */}
                   <span className='not-italic'>🥴</span>
                 </span>
               ),

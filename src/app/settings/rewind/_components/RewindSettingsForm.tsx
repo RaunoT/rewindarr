@@ -107,6 +107,7 @@ export default function RewindSettingsForm({ settings }: Props) {
   const openPages = getOpenPages(settings, USER).filter(
     (page) => page !== 'rewind',
   )
+  // oxlint-disable-next-line react/purity
   const thisYear = new Date().getFullYear()
   const storyOptions = REWIND_STORIES.filter(
     (story) =>

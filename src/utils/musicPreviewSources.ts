@@ -20,7 +20,8 @@ import {
 // Deezer's preview links stop working after minutes, so its track is saved
 // and the link asked for again. iTunes' links stay.
 export type MusicPreview =
-  { source: 'deezer'; id: number } | { source: 'itunes'; url: string }
+  | { source: 'deezer'; id: number }
+  | { source: 'itunes'; url: string }
 
 type Service = {
   name: string

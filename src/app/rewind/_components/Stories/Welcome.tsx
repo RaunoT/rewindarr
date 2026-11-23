@@ -19,6 +19,7 @@ export default function StoryWelcome({
   const formattedStartDate = formatMonthYear(since, locale)
   // Only an edition ends, so the other periods' ranges end today
   const formattedEndDate = formatMonthYear(
+    // oxlint-disable-next-line react/purity
     new Date().toISOString().split('T')[0],
     locale,
   )

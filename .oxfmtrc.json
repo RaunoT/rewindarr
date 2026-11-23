@@ -1,0 +1,38 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "singleQuote": true,
+  "jsxSingleQuote": true,
+  "semi": false,
+  "tabWidth": 2,
+  "useTabs": false,
+  "printWidth": 80,
+  "sortPackageJson": false,
+  "sortTailwindcss": {},
+  "sortImports": {
+    "groups": [
+      [
+        "builtin",
+        "external",
+        "internal",
+        "subpath",
+        "type-builtin",
+        "type-external",
+        "type-internal",
+        "type-subpath",
+        "unknown"
+      ],
+      [
+        "parent",
+        "sibling",
+        "index",
+        "type-parent",
+        "type-sibling",
+        "type-index"
+      ]
+    ],
+    "newlinesBetween": false,
+    "ignoreCase": true
+  },
+  "associations": [{ "files": ["*.svg"], "language": "html" }],
+  "ignorePatterns": [".next", "pnpm-lock.yaml", ".claude"]
+}

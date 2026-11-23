@@ -36,7 +36,12 @@ export type ConnectionSettings = {
 }
 
 export type ExternalLink =
-  'imdb' | 'tmdb' | 'tvdb' | 'rottenTomatoes' | 'letterboxd' | 'trakt'
+  | 'imdb'
+  | 'tmdb'
+  | 'tvdb'
+  | 'rottenTomatoes'
+  | 'letterboxd'
+  | 'trakt'
 
 // The title in the media server and in Seerr, which its poster opens either
 // way, and Seerr's link only where it has something to say, such as a
@@ -94,7 +99,10 @@ export type RewindSettings = {
 // What a Rewind covers: each calendar year's edition, the 365 days up to now,
 // one calendar year, or from the start date up to now
 export type RewindPeriodType =
-  'calendarYear' | 'pastYear' | 'specificYear' | 'custom'
+  | 'calendarYear'
+  | 'pastYear'
+  | 'specificYear'
+  | 'custom'
 
 export type ItemStatistics = (
   | 'year'
@@ -109,7 +117,10 @@ export type ItemStatistics = (
   | 'requestsWatched'
 )[]
 export type DashboardTotalStatistics = (
-  'size' | 'duration' | 'count' | 'requests'
+  | 'size'
+  | 'duration'
+  | 'count'
+  | 'requests'
 )[]
 
 // Signed-in users see only their own stats, streams or plays, and admins too when

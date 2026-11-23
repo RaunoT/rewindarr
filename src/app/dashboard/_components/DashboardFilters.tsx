@@ -58,7 +58,7 @@ export default function DashboardFilters({
   } = useContext(GlobalContext)
   const t = useTranslations('DashboardFilters')
 
-  // eslint-disable-next-line @stylistic/padding-line-between-statements
+  // oxlint-disable-next-line @stylistic/padding-line-between-statements
   const getUrl = useCallback(
     (
       personal: DashboardSearchParams['personal'],

@@ -1,33 +1,18 @@
 {
   "editor.formatOnSave": true,
+  "editor.defaultFormatter": "oxc.oxc-vscode",
   "editor.codeActionsOnSave": {
-    "source.organizeImports": "never"
+    "source.organizeImports": "never",
+    "source.fixAll.oxc": "explicit"
   },
-  "eslint.enable": true,
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ],
-  "[css]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
+  "oxc.fmt.configPath": ".oxfmtrc.json",
   "css.validate": false,
   "stylelint.packageManager": "pnpm",
   "stylelint.snippet": ["css", "postcss"],
   "stylelint.validate": ["css", "postcss"],
-  "prettier.documentSelectors": ["**/*.svg"],
   "files.associations": {
     "*.css": "tailwindcss"
   },
-  "typescript.tsdk": "node_modules/typescript/lib",
   "i18n-ally.localesPaths": ["messages", "src/i18n"],
   "i18n-ally.keystyle": "nested"
 }
