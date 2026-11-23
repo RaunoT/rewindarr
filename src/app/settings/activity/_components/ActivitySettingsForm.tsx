@@ -8,6 +8,7 @@ import {
 import { useTranslations } from 'next-intl'
 import { useActionState, useState } from 'react'
 import { Switch } from 'react-aria-components'
+import OwnOnlySwitches from '../../_components/OwnOnlySwitches'
 import SettingsForm from '../../_components/SettingsForm'
 import saveActivitySettings from '../_actions/updateActivitySettings'
 
@@ -67,6 +68,15 @@ export default function ActivitySettingsForm({ settings }: Props) {
               <span className='label-wrapper'>{tCommon('adminOnly')}</span>
             </span>
           </Switch>
+        )}
+        {isActive && (
+          <OwnOnlySwitches
+            isOwnOnly={activitySettings.isOwnOnly}
+            isOwnOnlyForAdmin={activitySettings.isOwnOnlyForAdmin}
+            label={tCommon('ownOnly')}
+            adminLabel={tCommon('ownOnlyForAdmin')}
+            adminDescription={tCommon('ownOnlyForAdminDescription')}
+          />
         )}
       </section>
     </SettingsForm>

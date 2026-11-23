@@ -6,6 +6,7 @@ import { DEFAULT_SETTINGS } from './constants'
 import { fetchSeerrStats } from './fetchSeerr'
 import {
   getArtistTopTracks,
+  getGenres,
   getRequestsTotals,
   getTopMediaStats,
   getTopTrack,
@@ -376,6 +377,35 @@ describe('getArtistTopTracks', () => {
 
     expect(getArtistTopTracks(plays, [artist('Artist')], 50)).toEqual([
       expect.objectContaining({ title: 'Half', plays: 0 }),
+    ])
+  })
+})
+
+describe('getGenres', () => {
+  const getGenresFromSource = vi.fn()
+  const period = { since: '2026-01-01' }
+
+  beforeEach(() => {
+    getGenresFromSource.mockReset()
+    vi.mocked(getStatsSource).mockReturnValue({
+      getGenres: getGenresFromSource,
+    } as unknown as ReturnType<typeof getStatsSource>)
+  })
+
+  it('looks for a taste match unless it is hidden or anonymized', async () => {
+    await getGenres('1', [], period)
+    await getGenres('1', [], period, false)
+
+    const settings = cloneDeep(DEFAULT_SETTINGS)
+
+    settings.general.isAnonymized = true
+    vi.mocked(getSettings).mockReturnValue(settings)
+    await getGenres('1', [], period)
+
+    expect(getGenresFromSource.mock.calls.map((call) => call[3])).toEqual([
+      true,
+      false,
+      false,
     ])
   })
 })

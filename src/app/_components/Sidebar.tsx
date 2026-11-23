@@ -6,7 +6,12 @@ import SkeletonLine from '@/components/SkeletonLine'
 import { PublicSettings } from '@/types/settings'
 import { Library } from '@/types/statsSource'
 import { APP_NAME, SETTINGS_HREF, STATS_SOURCE_NAMES } from '@/utils/constants'
-import { canViewFeature, getLibrarySlug, Viewer } from '@/utils/helpers'
+import {
+  canViewFeature,
+  getLibrarySlug,
+  isUsersPageVisible,
+  Viewer,
+} from '@/utils/helpers'
 import {
   ArrowPathIcon,
   BackwardIcon,
@@ -42,6 +47,7 @@ export default function Sidebar({ libraries, settings }: Props) {
   const isAdmin = isLoggedIn && !!session?.user.isAdmin
   const viewer: Viewer = { isLoggedIn, isAdmin }
   const isSettings = pathname.startsWith('/settings')
+  const isUsersPageActive = isUsersPageVisible(settings, session)
   const dashboardParams = new URLSearchParams({
     ...(isPersonal && { personal: 'true' }),
     ...(period && { period }),
@@ -108,7 +114,7 @@ export default function Sidebar({ libraries, settings }: Props) {
                 <DashboardLinksSkeleton
                   count={
                     settings.general.activeLibraries.length +
-                    Number(settings.dashboard.isUsersPageActive)
+                    Number(isUsersPageActive)
                   }
                 />
               }
@@ -118,6 +124,7 @@ export default function Sidebar({ libraries, settings }: Props) {
                 settings={settings}
                 pathname={pathname}
                 query={dashboardQuery}
+                isUsersPageActive={isUsersPageActive}
               />
             </Suspense>
           )}
@@ -164,6 +171,7 @@ type DashboardLinksProps = {
   settings: PublicSettings
   pathname: string
   query: string
+  isUsersPageActive: boolean
 }
 
 function DashboardLinks({
@@ -171,11 +179,12 @@ function DashboardLinks({
   settings,
   pathname,
   query,
+  isUsersPageActive,
 }: DashboardLinksProps) {
   const libraries = use(librariesPromise)
   const t = useTranslations()
 
-  if (libraries?.length === 0 && !settings.dashboard.isUsersPageActive) {
+  if (libraries?.length === 0 && !isUsersPageActive) {
     return null
   }
 
@@ -204,7 +213,7 @@ function DashboardLinks({
               </SidebarLink>
             )
           })}
-          {settings.dashboard.isUsersPageActive && (
+          {isUsersPageActive && (
             <SidebarLink
               href={`/dashboard/users${query}`}
               icon={<UsersIcon />}

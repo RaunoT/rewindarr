@@ -109,7 +109,14 @@ export type DashboardTotalStatistics = (
   'size' | 'duration' | 'count' | 'requests'
 )[]
 
-export type DashboardSettings = {
+// Signed-in users see only their own stats, streams or plays, and admins too when
+// it's on for them
+type OwnOnlySettings = {
+  isOwnOnly: boolean
+  isOwnOnlyForAdmin: boolean
+}
+
+export type DashboardSettings = OwnOnlySettings & {
   isActive: boolean
   isAdminOnly: boolean
   isUsersPageActive: boolean
@@ -119,13 +126,13 @@ export type DashboardSettings = {
   complete: boolean
 }
 
-export type ActivitySettings = {
+export type ActivitySettings = OwnOnlySettings & {
   isActive: boolean
   isAdminOnly: boolean
   complete: boolean
 }
 
-export type HistorySettings = {
+export type HistorySettings = OwnOnlySettings & {
   isActive: boolean
   isAdminOnly: boolean
   complete: boolean
