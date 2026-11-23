@@ -278,6 +278,8 @@
     },
     "Rewind": {
       "title": "Rewind seaded",
+      "startsOnRewind": "Kasutajad jõuavad otse Rewindi, sest see on ainus neile avatud leht.",
+      "startsOnHome": "Kasutajad alustavad avalehelt. Et nad jõuaksid otse Rewindi, lülita välja või tee ainult administraatoritele: <pages></pages>.",
       "cards": "Lood",
       "hiddenStories": "Peidetud lood",
       "stories": {

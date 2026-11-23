@@ -149,6 +149,32 @@ export function getHomeTiles(
   }
 }
 
+// The pages a viewer can open. A dashboard with no libraries and no users
+// page has nothing in it.
+export function getOpenPages(
+  settings: Pick<Settings, 'general' | Feature>,
+  viewer: Viewer,
+): Feature[] {
+  return FEATURES.filter(
+    (feature) =>
+      canViewFeature(settings, feature, viewer) &&
+      (feature !== 'dashboard' ||
+        settings.general.activeLibraries.length > 0 ||
+        settings.dashboard.isUsersPageActive),
+  )
+}
+
+// With nothing else to show, the home page would only lead to Rewind, so
+// Rewind takes its place
+export function isRewindOnly(
+  settings: Pick<Settings, 'general' | Feature>,
+  viewer: Viewer,
+): boolean {
+  const pages = getOpenPages(settings, viewer)
+
+  return pages.length === 1 && pages[0] === 'rewind'
+}
+
 export function checkRequiredSettings(settings: Settings): string | null {
   const sourceRequiredSettings = isTracearrSource(settings)
     ? SOURCE_REQUIRED_SETTINGS.tracearr

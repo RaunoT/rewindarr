@@ -18,6 +18,7 @@ import {
   isInitialSetup,
   isLoginRequired,
   isPostUpdateMissingSettings,
+  isRewindOnly,
   isSettingsPageLocked,
   isUsersPageVisible,
   Viewer,
@@ -563,6 +564,65 @@ describe('getHomeTiles', () => {
 
     expect(getHomeTiles(settings, user, 2).rewind).toBe(false)
     expect(getHomeTiles(settings, admin, 2).rewind).toBe(true)
+  })
+})
+
+describe('isRewindOnly', () => {
+  function rewindOnly() {
+    const settings = cloneDeep(DEFAULT_SETTINGS)
+
+    settings.activity.isActive = false
+    settings.dashboard.isActive = false
+    settings.history.isActive = false
+
+    return settings
+  }
+
+  it('is true when Rewind is all a user can see', () => {
+    expect(isRewindOnly(rewindOnly(), user)).toBe(true)
+    expect(isRewindOnly(rewindOnly(), admin)).toBe(true)
+  })
+
+  it('is false while another section is open to the viewer', () => {
+    const settings = rewindOnly()
+
+    settings.history.isActive = true
+
+    expect(isRewindOnly(settings, user)).toBe(false)
+  })
+
+  it('leaves out a dashboard with nothing in it', () => {
+    const settings = rewindOnly()
+
+    settings.dashboard.isActive = true
+    settings.dashboard.isUsersPageActive = false
+    settings.general.activeLibraries = []
+
+    expect(isRewindOnly(settings, user)).toBe(true)
+
+    settings.dashboard.isUsersPageActive = true
+
+    expect(isRewindOnly(settings, user)).toBe(false)
+  })
+
+  it('goes by what each viewer can see', () => {
+    const settings = rewindOnly()
+
+    settings.activity.isActive = true
+    settings.activity.isAdminOnly = true
+
+    expect(isRewindOnly(settings, user)).toBe(true)
+    expect(isRewindOnly(settings, admin)).toBe(false)
+  })
+
+  it('is false without Rewind, or for visitors who are not logged in', () => {
+    const settings = rewindOnly()
+
+    expect(isRewindOnly(settings, visitor)).toBe(false)
+
+    settings.rewind.isActive = false
+
+    expect(isRewindOnly(settings, user)).toBe(false)
   })
 })
 

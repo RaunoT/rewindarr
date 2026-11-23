@@ -11,6 +11,7 @@ import {
   isInitialSetup,
   isLoginRequired,
   isPostUpdateMissingSettings,
+  isRewindOnly,
 } from './utils/helpers'
 
 // The proxy runs on the Node.js runtime, so it reads the settings file
@@ -153,6 +154,18 @@ export default async function proxy(req: NextRequest) {
     isLoginRequired(settings, pathname)
   ) {
     return redirectToLogin(req)
+  }
+
+  // Here rather than in the home page, so its loading state doesn't show first
+  if (
+    pathname === '/' &&
+    token &&
+    req.method === 'GET' &&
+    settings &&
+    !missingSetting &&
+    isRewindOnly(settings, { isLoggedIn: true, isAdmin: !!token.isAdmin })
+  ) {
+    return NextResponse.redirect(new URL('/rewind', req.nextUrl))
   }
 
   return nextWithCsp(req)

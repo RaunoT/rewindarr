@@ -10,6 +10,7 @@ import {
   SettingsFormInitialState,
 } from '@/types/settings'
 import { REWIND_STORIES, RewindStoryId } from '@/utils/constants'
+import { getOpenPages, Viewer } from '@/utils/helpers'
 import { FIRST_YEAR, getRewindPeriodType } from '@/utils/rewindPeriod'
 import {
   BackwardIcon,
@@ -27,7 +28,8 @@ import {
   UsersIcon,
   VideoCameraIcon,
 } from '@heroicons/react/24/outline'
-import { useTranslations } from 'next-intl'
+import { useFormatter, useTranslations } from 'next-intl'
+import Link from 'next/link'
 import { ComponentType, SVGProps, useActionState, useState } from 'react'
 import { Switch } from 'react-aria-components'
 import SettingsForm from '../../_components/SettingsForm'
@@ -86,14 +88,25 @@ const STORY_ICONS: Record<
 }
 // Only told with Seerr
 const REQUEST_STORIES: RewindStoryId[] = ['requests', 'requests_reach']
+// Where users start depends on what they can open
+const USER: Viewer = { isLoggedIn: true, isAdmin: false }
 
 export default function RewindSettingsForm({ settings }: Props) {
   const [isActive, setIsActive] = useState<boolean>(settings.rewind.isActive)
   const [period, setPeriod] = useState<RewindPeriodType>(
     getRewindPeriodType(settings),
   )
+  const [isAdminOnly, setIsAdminOnly] = useState<boolean>(
+    settings.rewind.isAdminOnly,
+  )
   const t = useTranslations('Settings.Rewind')
   const tCommon = useTranslations('Common')
+  const tNav = useTranslations('Settings.Nav')
+  const format = useFormatter()
+  // As saved on their own pages
+  const openPages = getOpenPages(settings, USER).filter(
+    (page) => page !== 'rewind',
+  )
   const thisYear = new Date().getFullYear()
   const storyOptions = REWIND_STORIES.filter(
     (story) =>
@@ -143,13 +156,37 @@ export default function RewindSettingsForm({ settings }: Props) {
             key={`admin-only-${rewindSettings.isAdminOnly}`}
             className='switch items-start'
             name='isAdminOnly'
-            defaultSelected={rewindSettings.isAdminOnly}
+            isSelected={isAdminOnly}
+            onChange={setIsAdminOnly}
           >
             <div className='indicator' />
             <span className='label'>
               <span className='label-wrapper'>{tCommon('adminOnly')}</span>
             </span>
           </Switch>
+        )}
+        {/* Where users start depends on the other pages too, so it's spelled
+            out here */}
+        {isActive && !isAdminOnly && (
+          <p className='text-xs text-neutral-400 sm:pl-50'>
+            {openPages.length
+              ? t.rich('startsOnHome', {
+                  pages: () =>
+                    format.list(
+                      openPages.map((page) => (
+                        <Link
+                          key={page}
+                          href={`/settings/${page}`}
+                          className='link-light text-neutral-200 underline underline-offset-2'
+                        >
+                          {tNav(page)}
+                        </Link>
+                      )),
+                      { type: 'conjunction' },
+                    ),
+                })
+              : t('startsOnRewind')}
+          </p>
         )}
       </section>
       {isActive && (

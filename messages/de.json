@@ -278,6 +278,8 @@
     },
     "Rewind": {
       "title": "Rewind Einstellungen",
+      "startsOnRewind": "Benutzer landen direkt in Rewind, da es die einzige Seite ist, die ihnen offensteht.",
+      "startsOnHome": "Benutzer starten auf der Startseite. Damit sie direkt in Rewind landen, schalte aus oder beschränke auf Admins: <pages></pages>.",
       "cards": "Stories",
       "hiddenStories": "Ausgeblendete Stories",
       "stories": {

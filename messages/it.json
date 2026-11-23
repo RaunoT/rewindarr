@@ -278,6 +278,8 @@
     },
     "Rewind": {
       "title": "Impostazioni del Rewind",
+      "startsOnRewind": "Gli utenti arrivano direttamente a Rewind, perché è l'unica pagina aperta a loro.",
+      "startsOnHome": "Gli utenti partono dalla Home. Per mandarli direttamente a Rewind, disattiva o riserva agli amministratori: <pages></pages>.",
       "cards": "Storie",
       "hiddenStories": "Storie nascoste",
       "stories": {
