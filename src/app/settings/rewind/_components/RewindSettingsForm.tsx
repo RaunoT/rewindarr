@@ -10,7 +10,7 @@ import {
   SettingsFormInitialState,
 } from '@/types/settings'
 import { REWIND_STORIES, RewindStoryId } from '@/utils/constants'
-import { canViewFeature, OwnOnlyFeature, Viewer } from '@/utils/helpers'
+import { getOpenPages, Viewer } from '@/utils/helpers'
 import { FIRST_YEAR, getRewindPeriodType } from '@/utils/rewindPeriod'
 import {
   BackwardIcon,
@@ -88,8 +88,7 @@ const STORY_ICONS: Record<
 }
 // Only told with Seerr
 const REQUEST_STORIES: RewindStoryId[] = ['requests', 'requests_reach']
-// Users start on Rewind when none of these is open to them
-const OTHER_PAGES: OwnOnlyFeature[] = ['dashboard', 'activity', 'history']
+// Where users start depends on what they can open
 const USER: Viewer = { isLoggedIn: true, isAdmin: false }
 
 export default function RewindSettingsForm({ settings }: Props) {
@@ -105,8 +104,8 @@ export default function RewindSettingsForm({ settings }: Props) {
   const tNav = useTranslations('Settings.Nav')
   const format = useFormatter()
   // As saved on their own pages
-  const openPages = OTHER_PAGES.filter((page) =>
-    canViewFeature(settings, page, USER),
+  const openPages = getOpenPages(settings, USER).filter(
+    (page) => page !== 'rewind',
   )
   const thisYear = new Date().getFullYear()
   const storyOptions = REWIND_STORIES.filter(
@@ -157,7 +156,7 @@ export default function RewindSettingsForm({ settings }: Props) {
             key={`admin-only-${rewindSettings.isAdminOnly}`}
             className='switch items-start'
             name='isAdminOnly'
-            defaultSelected={rewindSettings.isAdminOnly}
+            isSelected={isAdminOnly}
             onChange={setIsAdminOnly}
           >
             <div className='indicator' />

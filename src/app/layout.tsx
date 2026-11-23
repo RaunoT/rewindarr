@@ -12,6 +12,7 @@ import {
   canViewFeature,
   checkRequiredSettings,
   getViewer,
+  isRewindOnly,
   sortByActiveLibraries,
 } from '@/utils/helpers'
 import { toPublicSettings } from '@/utils/publicSettings'
@@ -137,6 +138,7 @@ export default async function RootLayout({ children }: Props) {
                 libraries={libraries}
                 settings={toPublicSettings(settings)}
                 canBrowse={!!session || settings.general.isOutsideAccess}
+                isRewindOnly={isRewindOnly(settings, getViewer(session))}
                 isActivityDetailsHidden={
                   detailsCookie ? detailsCookie !== 'shown' : undefined
                 }

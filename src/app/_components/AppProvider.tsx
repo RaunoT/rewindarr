@@ -28,6 +28,8 @@ type Props = {
   libraries: Promise<Library[] | null>
   settings: PublicSettings
   canBrowse: boolean
+  // Rewind is all the viewer can open, so a sidebar would only hold its link
+  isRewindOnly: boolean
   // From its cookie, missing until the choice was first saved there
   isActivityDetailsHidden?: boolean
 }
@@ -48,16 +50,18 @@ export default function AppProvider({
   libraries,
   settings,
   canBrowse,
+  isRewindOnly,
   isActivityDetailsHidden,
 }: Props) {
   const pathname = usePathname()
   const router = useRouter()
   // Not during setup or before logging in, when there's nothing to browse yet
-  const hasSidebar =
+  const isBrowsing =
     !missingSetting &&
     canBrowse &&
     (pathname === '/' ||
       SIDEBAR_ROUTES.some((route) => pathname.startsWith(route)))
+  const hasSidebar = isBrowsing && !isRewindOnly
 
   // Saved on every page, so it's there by the time Rewind is opened. A Rewind
   // rendered without it, or with an old one, is rendered again once it's saved.
@@ -106,7 +110,7 @@ export default function AppProvider({
                 'group/main flex h-full min-h-dvh flex-col items-center overflow-x-clip p-4 pt-(--page-top)',
                 {
                   'justify-center':
-                    (pathname === '/' && !hasSidebar) ||
+                    (pathname === '/' && !isBrowsing) ||
                     pathname === '/~offline',
                   'lg:pl-68': hasSidebar,
                 },
@@ -129,7 +133,7 @@ export default function AppProvider({
               {/* The sidebar, or a page's header on smaller screens, shows these controls instead */}
               <HeaderControls className='absolute top-(--page-top) right-4 z-10 max-lg:group-has-[[data-page-header]]/main:hidden lg:group-data-[sidebar]/app:hidden' />
 
-              {hasSidebar && (
+              {isBrowsing && (
                 <SourceOutageNotice
                   source={settings.connection.statisticsSource}
                 />

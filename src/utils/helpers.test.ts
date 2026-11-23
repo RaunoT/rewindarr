@@ -591,6 +591,20 @@ describe('isRewindOnly', () => {
     expect(isRewindOnly(settings, user)).toBe(false)
   })
 
+  it('leaves out a dashboard with nothing in it', () => {
+    const settings = rewindOnly()
+
+    settings.dashboard.isActive = true
+    settings.dashboard.isUsersPageActive = false
+    settings.general.activeLibraries = []
+
+    expect(isRewindOnly(settings, user)).toBe(true)
+
+    settings.dashboard.isUsersPageActive = true
+
+    expect(isRewindOnly(settings, user)).toBe(false)
+  })
+
   it('goes by what each viewer can see', () => {
     const settings = rewindOnly()
 
