@@ -8,6 +8,7 @@ import {
   searchTmdbId,
   TmdbMediaType,
 } from './getMediaAdditionalData'
+import getSettings from './getSettings'
 
 // Bit parts and cameos would otherwise rank alongside the leads.
 const BILLED_ACTORS = 10
@@ -111,11 +112,16 @@ export async function getCredits(
   }
 
   const source = await getSourceData(item, type)
+  // A title re-added on the server plays its theme song under its new key
+  const sourcedItem = {
+    ...item,
+    rating_key: source.ratingKey ?? item.rating_key,
+  }
   const tvdbId = item.tvdb_id || source.ids?.tvdb || null
 
   if (source.credits) {
     return {
-      item,
+      item: sourcedItem,
       type,
       tmdbId: source.ids?.tmdb ?? null,
       tvdbId,
@@ -130,7 +136,7 @@ export async function getCredits(
       type,
     ))
 
-  return tmdbId ? getTmdbCredits(item, type, tmdbId, tvdbId) : null
+  return tmdbId ? getTmdbCredits(sourcedItem, type, tmdbId, tvdbId) : null
 }
 
 export async function mapWithLimit<T, R>(
@@ -280,7 +286,12 @@ async function findTvdbId(
   { topTitle }: RankedPerson,
   type: TmdbMediaType,
 ): Promise<number | null> {
-  if (topTitle.tvdbId || type !== 'tv' || !topTitle.tmdbId) {
+  if (
+    topTitle.tvdbId ||
+    type !== 'tv' ||
+    !topTitle.tmdbId ||
+    !getSettings().rewind.isThemeMusicActive
+  ) {
     return topTitle.tvdbId
   }
 

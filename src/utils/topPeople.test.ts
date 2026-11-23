@@ -1,3 +1,4 @@
+import { Settings } from '@/types/settings'
 import { ItemRow } from '@/types/statsSource'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import fetchTmdb from './fetchTmdb'
@@ -6,6 +7,7 @@ import {
   SourceMediaData,
   TmdbMediaType,
 } from './getMediaAdditionalData'
+import getSettings from './getSettings'
 import { EMPTY_ROW } from './playStats'
 import {
   CreditedTitle,
@@ -51,6 +53,9 @@ function mockTmdb(responses: Record<string, unknown>) {
 
 beforeEach(() => {
   vi.resetAllMocks()
+  vi.mocked(getSettings).mockReturnValue({
+    rewind: { isThemeMusicActive: false },
+  } as Settings)
 })
 
 describe('rankPeople', () => {
@@ -284,6 +289,23 @@ describe('getCredits', () => {
     expect(getSourceData).not.toHaveBeenCalled()
   })
 
+  it("keeps the source's new rating key for a re-added title", async () => {
+    getSourceData.mockResolvedValue({
+      thumb: '',
+      isDeleted: false,
+      ratingKey: 20,
+      credits: { directors: ['Greta Gerwig'], actors: [] },
+    })
+
+    await expect(
+      getCredits(
+        title('Barbie', 1, { rating_key: 10 }),
+        'movie',
+        getSourceData,
+      ),
+    ).resolves.toMatchObject({ item: { rating_key: 20 } })
+  })
+
   it("prefers the source's own credits, keeping its TMDB ID", async () => {
     const item = title('Barbie', 1)
 
@@ -371,6 +393,9 @@ describe('getCredits', () => {
 
 describe('getTopPeople', () => {
   it("looks up a show actor's top show's TVDB ID on TMDB", async () => {
+    vi.mocked(getSettings).mockReturnValue({
+      rewind: { isThemeMusicActive: true },
+    } as Settings)
     getSourceData.mockImplementation(async (item) => ({
       thumb: '',
       isDeleted: false,
