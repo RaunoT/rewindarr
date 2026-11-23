@@ -206,6 +206,8 @@
       "source": "Source",
       "server": "Serveur",
       "chooseServer": "Choisissez un serveur",
+      "otherServers": "Compter aussi les lectures de",
+      "otherServersHelp": "La connexion, les utilisateurs, les bibliothèques et les liens restent ceux du serveur choisi. Liez les comptes de chaque personne dans Tracearr pour que ses lectures s'additionnent.",
       "token": "Jeton (facultatif)",
       "tokenDescription": "Permet au Rewind de jouer la musique de votre bibliothèque. <link>Comment le trouver ?</link>",
       "optionalService": "{service} (facultatif)",

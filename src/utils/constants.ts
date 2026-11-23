@@ -71,6 +71,7 @@ export const DEFAULT_SETTINGS: Settings = {
     tracearrUrl: '',
     tracearrApiKey: '',
     tracearrServerId: '',
+    tracearrOtherServerIds: [],
     mediaServerType: 'plex',
     plexUrl: '',
     plexToken: '',

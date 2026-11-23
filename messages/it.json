@@ -206,6 +206,8 @@
       "source": "Sorgente",
       "server": "Server",
       "chooseServer": "Scegli un server",
+      "otherServers": "Conta anche le riproduzioni di",
+      "otherServersHelp": "Accesso, utenti, librerie e link restano quelli del server scelto. Collega gli account di ogni persona in Tracearr perché le sue riproduzioni si sommino.",
       "token": "Token (facoltativo)",
       "tokenDescription": "Permette al Rewind di riprodurre musica dalla tua libreria. <link>Come trovarlo?</link>",
       "optionalService": "{service} (facoltativo)",

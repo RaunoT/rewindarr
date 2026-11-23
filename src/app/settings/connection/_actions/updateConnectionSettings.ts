@@ -15,7 +15,11 @@ import {
   getTautulliResultError,
 } from '@/utils/connectionErrors'
 import { maskApiKeys, restoreApiKeys } from '@/utils/connectionSecrets'
-import { selectServer, toServerOptions } from '@/utils/fetchTracearr'
+import {
+  selectOtherServers,
+  selectServer,
+  toServerOptions,
+} from '@/utils/fetchTracearr'
 import getSettings from '@/utils/getSettings'
 import { getLibrarySlug } from '@/utils/helpers'
 import { isGatewayError, markHostUp } from '@/utils/hostBackoff'
@@ -34,6 +38,7 @@ const baseSchema = z.object({
   tracearrUrl: z.string().url().or(z.literal('')),
   tracearrApiKey: z.string(),
   tracearrServerId: z.string(),
+  tracearrOtherServerIds: z.array(z.string()),
   seerrUrl: z.string().url().optional().or(z.literal('')),
   seerrApiKey: z.string().optional(),
   mediaServerType: z.enum(['plex', 'jellyfin']),
@@ -133,6 +138,9 @@ async function testAndSave(
     tracearrUrl: normalizeUrl(formData.get('tracearrUrl') as string),
     tracearrApiKey: formData.get('tracearrApiKey') as string,
     tracearrServerId: (formData.get('tracearrServerId') as string | null) ?? '',
+    tracearrOtherServerIds: formData.getAll(
+      'tracearrOtherServerIds',
+    ) as string[],
     seerrUrl: normalizeUrl(formData.get('seerrUrl') as string),
     seerrApiKey: formData.get('seerrApiKey') as string,
     // Tautulli only tracks Plex. Tracearr's is set from the chosen server.
@@ -211,6 +219,12 @@ async function testAndSave(
       }
 
       data.tracearrServerId = server.server_id
+      // Without the chosen one, and any that's gone from Tracearr
+      data.tracearrOtherServerIds = selectOtherServers(
+        servers.data,
+        server,
+        data.tracearrOtherServerIds,
+      ).map(({ server_id }) => server_id)
       data.mediaServerType =
         server.server_type === 'jellyfin' ? 'jellyfin' : 'plex'
     } else {

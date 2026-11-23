@@ -17,6 +17,8 @@ Present [Plex](https://plex.tv) and [Jellyfin](https://jellyfin.org) user statis
 | Plex         | Tautulli or Tracearr |
 | Jellyfin     | Tracearr             |
 
+With Tracearr, plays on more than one server can count together, Plex and Jellyfin mixed. Pick the other servers in the connection settings. Sign-in, users, libraries and links stay the main server's, so link each person's accounts in Tracearr for their plays to add up.
+
 ## Features
 
 - 📱 Fully responsive - viewable, usable & enjoyable on desktop, tablet or mobile.

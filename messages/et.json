@@ -206,6 +206,8 @@
       "source": "Allikas",
       "server": "Server",
       "chooseServer": "Vali server",
+      "otherServers": "Arvesta ka mängimisi serveritest",
+      "otherServersHelp": "Sisselogimine, kasutajad, teegid ja lingid jäävad valitud serveri omaks. Seo Tracearris iga inimese kontod, et tema mängimised kokku loetaks.",
       "token": "Token (valikuline)",
       "tokenDescription": "Laseb Rewind'il mängida muusikat sinu kogust. <link>Kuidas seda leida?</link>",
       "optionalService": "{service} (valikuline)",
