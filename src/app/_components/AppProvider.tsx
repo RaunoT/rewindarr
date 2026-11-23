@@ -130,8 +130,8 @@ export default function AppProvider({
                 <div className='bg-clouds sm:opacity-50' />
               </div>
 
-              {/* The sidebar, or a page's header on smaller screens, shows these controls instead */}
-              <HeaderControls className='absolute top-(--page-top) right-4 z-10 max-lg:group-has-[[data-page-header]]/main:hidden lg:group-data-[sidebar]/app:hidden' />
+              {/* The sidebar, or a page's header on smaller screens, shows these controls instead. A page can also show them itself. */}
+              <HeaderControls className='absolute top-(--page-top) right-4 z-10 group-has-[[data-own-controls]]/main:hidden max-lg:group-has-[[data-page-header]]/main:hidden lg:group-data-[sidebar]/app:hidden' />
 
               {isBrowsing && (
                 <SourceOutageNotice
