@@ -433,8 +433,8 @@ describe('getTopPeople', () => {
     )
 
     expect(showActors[0].themeTitles).toEqual([
-      { ratingKey: 1, tvdbId: 81189 },
-      { ratingKey: 2, tvdbId: null },
+      { ratingKey: 1, tvdbId: 81189, tmdbId: 1396 },
+      { ratingKey: 2, tvdbId: null, tmdbId: 60059 },
     ])
   })
 
@@ -469,8 +469,8 @@ describe('getTopPeople', () => {
         duration: 300,
         titles: ['Tenet', 'Inception'],
         themeTitles: [
-          { ratingKey: 0, tvdbId: null },
-          { ratingKey: 0, tvdbId: null },
+          { ratingKey: 0, tvdbId: null, tmdbId: null },
+          { ratingKey: 0, tvdbId: null, tmdbId: null },
         ],
         together: [],
         image: null,

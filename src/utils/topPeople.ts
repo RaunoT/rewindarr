@@ -53,11 +53,9 @@ export type CreditedTitle = {
   credits: Credits
 }
 
-// With the titles to look their portrait up in, most watched first, and the
-// theme titles' TMDB IDs to look their TVDB IDs up with
-type RankedPerson = Omit<TopPerson, 'image' | 'themeTitles'> & {
+// With the titles to look their portrait up in, most watched first
+type RankedPerson = Omit<TopPerson, 'image'> & {
   tmdbIds: number[]
-  themeTitles: (ThemeTitle & { tmdbId: number | null })[]
 }
 
 function toKey(name: string): string {
@@ -285,7 +283,7 @@ async function findPortrait(
 // A show's theme song goes by its TVDB ID, which TMDB has when the source
 // doesn't. Movies have none.
 async function findTvdbId(
-  title: RankedPerson['themeTitles'][number],
+  title: ThemeTitle,
   type: TmdbMediaType,
 ): Promise<number | null> {
   if (
@@ -318,7 +316,7 @@ async function getRanking(
         findPortrait(person, role, type),
         Promise.all(
           person.themeTitles.map(async (title) => ({
-            ratingKey: title.ratingKey,
+            ...title,
             tvdbId: await findTvdbId(title, type),
           })),
         ),

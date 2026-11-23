@@ -77,7 +77,7 @@ export type RewindThemes = {
   // The theme songs of the titles the other stories name, or an artist's
   // most played track
   titleThemes: Record<TitleSlot, string[]>
-  // The viewer's most played track, from the media server
+  // The viewer's most played track, from the media server or a preview of it
   topTrack: string[]
   // The top artists' most played tracks, in their order
   artistTracks: string[][]

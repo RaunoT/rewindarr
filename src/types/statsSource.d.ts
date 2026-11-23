@@ -179,7 +179,10 @@ export type TopMediaItems = Record<MediaStatsType, ItemRow[]>
 // A title whose theme song can stand in for a person
 export type ThemeTitle = {
   ratingKey: number | string
+  // For a show's theme song
   tvdbId: number | null
+  // For a movie's soundtrack
+  tmdbId: number | null
 }
 
 export type TopPerson = {

@@ -7,6 +7,7 @@ import {
   markHostDown,
   markHostUp,
 } from './hostBackoff'
+import { passAudio } from './rewindMusic'
 
 // An item's theme song, or a song itself
 export type PlexAudioKind = 'theme' | 'track'
@@ -26,8 +27,6 @@ const AUDIO_PATH_TTL_MS = 60 * 60 * 1000
 // other path with the server's token, so nothing else is requested.
 const THEME_PATH = /^\/library\/metadata\/\d+\/theme\/\d+$/
 const TRACK_PATH = /^\/library\/parts\/\d+\/\d+\/file\.([a-z0-9]+)$/i
-const PASSED_STATUSES = [200, 206, 416]
-const PASSED_HEADERS = ['Content-Length', 'Content-Range', 'Accept-Ranges']
 // Browsers ask for parts of the song, each of which would look the item up
 const audioPaths = new Map<string, AudioPath>()
 
@@ -222,27 +221,6 @@ export async function streamPlexAudio(
         request.signal,
       )
     : null
-  const type = path && audio ? getAudioType(path, audio) : null
 
-  if (!audio || !type || !PASSED_STATUSES.includes(audio.status)) {
-    await audio?.body?.cancel()
-
-    return new Response(null, { status: 404 })
-  }
-
-  const headers = new Headers({
-    'Content-Type': type,
-    'Cache-Control': 'private, max-age=86400',
-    'Content-Security-Policy': 'sandbox',
-  })
-
-  for (const name of PASSED_HEADERS) {
-    const value = audio.headers.get(name)
-
-    if (value) {
-      headers.set(name, value)
-    }
-  }
-
-  return new Response(audio.body, { status: audio.status, headers })
+  return passAudio(audio, path && audio ? getAudioType(path, audio) : null)
 }
