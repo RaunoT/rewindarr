@@ -1,5 +1,6 @@
 'use client'
 
+import MultiSelect from '@/components/MultiSelect'
 import { HistoryStatus } from '@/types/playHistory'
 import {
   ConnectionSettings,
@@ -37,6 +38,7 @@ export default function ConnectionSettingsForm({
   historyStatus,
 }: Props) {
   const t = useTranslations('Settings')
+  const tCommon = useTranslations('Common')
   const initialState: ConnectionFormState = {
     message: '',
     status: '',
@@ -81,6 +83,12 @@ export default function ConnectionSettingsForm({
     : 'plex'
   const isJellyfin = mediaServerType === 'jellyfin'
   const mediaServerName = getMediaServerName(mediaServerType)
+  const otherServerOptions = tracearrServers
+    .filter((server) => server.server_id !== tracearrServerId)
+    .map((server) => ({
+      value: server.server_id,
+      label: `${server.server_name} (${getMediaServerName(server.server_type)})`,
+    }))
 
   return (
     <SettingsForm
@@ -214,6 +222,28 @@ export default function ConnectionSettingsForm({
               <span className='label-wrapper'>{t('Connection.server')}</span>
             </span>
           </label>
+        )}
+        {tracearrServers.length > 1 ? (
+          <MultiSelect
+            key={`tracearr-other-servers-${connectionSettings.tracearrOtherServerIds.join(',')}`}
+            label={t('Connection.otherServers')}
+            description={t('Connection.otherServersHelp')}
+            name='tracearrOtherServerIds'
+            options={otherServerOptions}
+            defaultValue={connectionSettings.tracearrOtherServerIds}
+            placeholder={tCommon('none')}
+          />
+        ) : (
+          // Kept while Tracearr's servers can't be listed, so saving doesn't
+          // drop them
+          connectionSettings.tracearrOtherServerIds.map((serverId) => (
+            <input
+              key={`tracearr-other-server-${serverId}`}
+              type='hidden'
+              name='tracearrOtherServerIds'
+              value={serverId}
+            />
+          ))
         )}
       </section>
       {/* Tautulli finds Plex itself, so its URL is only for the token */}

@@ -7,7 +7,7 @@ import {
 import {
   getTracearrActivity,
   getTracearrFirstPlay,
-  getTracearrHistoryReader,
+  getTracearrHistoryReaders,
   getTracearrKey,
   getTracearrLibraries,
   getTracearrLibrariesSize,
@@ -111,7 +111,7 @@ const tracearrSource: StatsSource = {
   getActivity: getTracearrActivity,
   getInactiveUser: getTracearrInactiveUser,
   getFirstPlay: getTracearrFirstPlay,
-  getHistoryReaders: async () => [getTracearrHistoryReader()],
+  getHistoryReaders: async () => getTracearrHistoryReaders(),
   isReachable: isTracearrReachable,
   getSnapshotKey: getTracearrKey,
 }

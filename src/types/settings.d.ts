@@ -20,6 +20,9 @@ export type ConnectionSettings = {
   tracearrUrl: string
   tracearrApiKey: string
   tracearrServerId: string
+  // Other servers Tracearr tracks, of either type, whose plays count with the
+  // chosen one's. Users, libraries and links stay the chosen server's.
+  tracearrOtherServerIds: string[]
   seerrUrl?: string
   seerrApiKey?: string
   mediaServerType: MediaServerType

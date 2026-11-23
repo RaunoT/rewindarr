@@ -28,13 +28,14 @@ const fetchMock = vi.fn()
 
 type Handlers = Record<string, (url: URL) => unknown>
 
-function setup(savedServerId = '') {
+function setup(savedServerId = '', otherServerIds: string[] = []) {
   const settings: Settings = cloneDeep(DEFAULT_SETTINGS)
 
   settings.connection.statisticsSource = 'tracearr'
   settings.connection.tracearrUrl = 'http://tracearr:3000'
   settings.connection.tracearrApiKey = 'key'
   settings.connection.tracearrServerId = savedServerId
+  settings.connection.tracearrOtherServerIds = otherServerIds
 
   return settings
 }
@@ -87,10 +88,10 @@ function requestsTo(path: string) {
   )
 }
 
-async function load(savedServerId = '') {
+async function load(savedServerId = '', otherServerIds: string[] = []) {
   const { default: getSettings } = await import('./getSettings')
 
-  vi.mocked(getSettings).mockReturnValue(setup(savedServerId))
+  vi.mocked(getSettings).mockReturnValue(setup(savedServerId, otherServerIds))
 
   return import('./fetchTracearr')
 }
@@ -1302,7 +1303,7 @@ describe('getTracearrPlays', () => {
   async function loadHistory() {
     const tracearr = await load()
     const history = await import('./playHistory')
-    const readers = () => [tracearr.getTracearrHistoryReader()]
+    const readers = () => tracearr.getTracearrHistoryReaders()
 
     return {
       ...tracearr,
@@ -1900,6 +1901,331 @@ describe('getTracearrPlays', () => {
         expect.any(Error),
       )
     })
+  })
+})
+
+describe('other servers', () => {
+  // s1 is the chosen Plex server, s2 a Jellyfin server whose plays count too,
+  // and s3 a Plex server whose plays don't
+  const servers = [plexServer('s1'), jellyfinServer('s2'), plexServer('s3')]
+  const records = [
+    record('p1', 's1', '2026-10-03T00:00:00.000Z'),
+    record('p2', 's2', '2026-10-02T00:00:00.000Z'),
+    record('p3', 's3', '2026-10-01T00:00:00.000Z'),
+  ]
+
+  function record(id: string, serverId: string, startedAt: string) {
+    return {
+      id,
+      server_id: serverId,
+      started_at: startedAt,
+      media_type: 'movie',
+      media_title: 'Dune',
+      show_title: null,
+      artist_name: null,
+      duration_ms: 60_000,
+      percent_complete: 100,
+      poster_url: null,
+      rating_key: `key-${serverId}`,
+      grandparent_rating_key: null,
+      media_id: 'm1',
+      user: { id: 'u1', avatar_url: null },
+    }
+  }
+
+  // Like Tracearr, the plays up to `until` of the server asked for, or of
+  // every server
+  function historyRoute(): Handlers {
+    return {
+      servers: () => ({ data: servers }),
+      users: () => ({
+        data: [user('s1')],
+        meta: { nextCursor: null, pageSize: 100 },
+      }),
+      history: (url) => {
+        const serverId = url.searchParams.get('server_id')
+        const until = url.searchParams.get('until')
+
+        return {
+          data: records.filter(
+            (record) =>
+              (!serverId || record.server_id === serverId) &&
+              (!until || Date.parse(record.started_at) <= Date.parse(until)),
+          ),
+          meta: { nextCursor: null, pageSize: 100 },
+        }
+      },
+    }
+  }
+
+  function historyServerIds() {
+    return requestsTo('history').map(([input]) =>
+      new URL(input).searchParams.get('server_id'),
+    )
+  }
+
+  it('counts the plays of the chosen servers, reading each on its own', async () => {
+    route(historyRoute())
+
+    const { getTracearrPlays } = await load('s1', ['s2'])
+    const plays = await getTracearrPlays('2026-01-01')
+
+    expect(plays.map((play) => play.id).sort()).toEqual(['p1', 'p2'])
+    expect(new Set(historyServerIds())).toEqual(new Set(['s1', 's2']))
+  })
+
+  it("keeps only the chosen server's rating keys", async () => {
+    route(historyRoute())
+
+    const { getTracearrPlays } = await load('s1', ['s2'])
+    const plays = await getTracearrPlays('2026-01-01')
+
+    expect(plays.find((play) => play.id === 'p1')).toMatchObject({
+      ratingKey: 'key-s1',
+    })
+    expect(plays.find((play) => play.id === 'p2')).toMatchObject({
+      ratingKey: null,
+      grandparentRatingKey: null,
+    })
+  })
+
+  it("reads only the added server's plays when one is added", async () => {
+    route(historyRoute())
+
+    const { default: getSettings } = await import('./getSettings')
+    const { getTracearrPlays } = await load('s1')
+
+    await getTracearrPlays('2026-01-01')
+
+    const chosenServerReads = historyServerIds().length
+
+    vi.mocked(getSettings).mockReturnValue(setup('s1', ['s2']))
+
+    await expect(getTracearrPlays('2026-01-01')).resolves.toHaveLength(2)
+    expect(historyServerIds().slice(chosenServerReads)).toEqual(['s2'])
+  })
+
+  it('leaves out a saved server that is the chosen one', async () => {
+    route(historyRoute())
+
+    const { getTracearrHistoryReaders } = await load('s1', ['s1', 's2', 's2'])
+
+    expect(getTracearrHistoryReaders().map((reader) => reader.key)).toEqual([
+      'tracearr|http://tracearr:3000|s1',
+      'tracearr|http://tracearr:3000|s2',
+    ])
+  })
+
+  it('finds the first play on any of the chosen servers', async () => {
+    route(historyRoute())
+
+    const { getTracearrFirstPlay } = await load('s1', ['s2'])
+
+    await expect(getTracearrFirstPlay('42')).resolves.toMatchObject({
+      date: '2026-10-02T00:00:00.000Z',
+      play: { id: 'p2', ratingKey: null },
+    })
+    expect(historyServerIds()).not.toContain('s3')
+  })
+
+  it('is not removed while another chosen server still has it, and opens on the chosen one only', async () => {
+    route({
+      servers: () => ({ data: servers }),
+      'media/m1': () => ({
+        id: 'm1',
+        availability: [
+          { server_id: 's1', rating_key: '10', removed_at: '2026-01-01' },
+          { server_id: 's2', rating_key: 'abc', removed_at: null },
+        ],
+      }),
+    })
+
+    const { getTracearrMedia } = await load('s1', ['s2'])
+    const media = await getTracearrMedia('m1')
+
+    expect(media.isDeleted).toBe(false)
+    expect(media.ratingKey).toBeUndefined()
+  })
+
+  it('is removed when only a server whose plays do not count has it', async () => {
+    route({
+      servers: () => ({ data: servers }),
+      'media/m1': () => ({
+        id: 'm1',
+        availability: [
+          { server_id: 's1', rating_key: '10', removed_at: '2026-01-01' },
+          { server_id: 's3', rating_key: '20', removed_at: null },
+        ],
+      }),
+    })
+
+    const { getTracearrMedia } = await load('s1', ['s2'])
+
+    await expect(getTracearrMedia('m1')).resolves.toMatchObject({
+      isDeleted: true,
+    })
+  })
+
+  it("shows the chosen servers' streams, with only the chosen one's rating keys", async () => {
+    const stream = (serverId: string) => ({
+      id: `stream-${serverId}`,
+      server_id: serverId,
+      username: 'Jane',
+      media_type: 'movie',
+      media_title: 'Dune',
+      rating_key: '10',
+      parent_rating_key: null,
+      grandparent_rating_key: null,
+      poster_url: null,
+      progress_ms: 0,
+      duration_ms: null,
+      state: 'playing',
+    })
+
+    route({
+      servers: () => ({ data: servers }),
+      users: () => ({
+        data: [user('s1')],
+        meta: { nextCursor: null, pageSize: 100 },
+      }),
+      streams: () => ({ data: ['s1', 's2', 's3'].map(stream) }),
+    })
+
+    const { getTracearrActivity } = await load('s1', ['s2'])
+    const activity = await getTracearrActivity()
+
+    expect(
+      activity?.sessions.map(({ session_key, rating_key }) => ({
+        session_key,
+        rating_key,
+      })),
+    ).toEqual([
+      { session_key: 'stream-s1', rating_key: 10 },
+      { session_key: 'stream-s2', rating_key: 0 },
+    ])
+    expect(
+      new URL(requestsTo('streams')[0][0]).searchParams.has('server_id'),
+    ).toBe(false)
+  })
+
+  describe("another server's streams", () => {
+    const stream = {
+      id: 'stream-s2',
+      server_id: 's2',
+      username: 'Jane',
+      media_type: 'movie',
+      media_title: 'Dune',
+      media_id: 'm1',
+      rating_key: 'abc',
+      parent_rating_key: null,
+      grandparent_rating_key: null,
+      poster_url: null,
+      progress_ms: 0,
+      duration_ms: null,
+      state: 'playing',
+    }
+    const s2Account = {
+      server_id: 's2',
+      username: 'jane',
+      external_user_id: 'abc',
+      removed_at: null,
+    }
+
+    function streamsRoute(users: unknown[]): Handlers {
+      return {
+        servers: () => ({ data: servers }),
+        users: () => ({
+          data: users,
+          meta: { nextCursor: null, pageSize: 100 },
+        }),
+        streams: () => ({ data: [stream] }),
+        'media/m1': () => ({
+          id: 'm1',
+          availability: [
+            { server_id: 's1', rating_key: '10', removed_at: null },
+            { server_id: 's2', rating_key: 'abc', removed_at: null },
+          ],
+        }),
+      }
+    }
+
+    it("are the user's when their accounts are linked in Tracearr", async () => {
+      const linked = user('s1')
+
+      linked.accounts.push(s2Account)
+      route(streamsRoute([linked]))
+
+      const { getTracearrActivity } = await load('s1', ['s2'])
+
+      await expect(getTracearrActivity()).resolves.toMatchObject({
+        sessions: [{ user_id: 42 }],
+      })
+    })
+
+    it("are not a user's when someone else there has their name", async () => {
+      route(
+        streamsRoute([
+          user('s1'),
+          {
+            id: 'u2',
+            username: 'Jane',
+            identity_name: null,
+            email: null,
+            plex_account_id: null,
+            accounts: [s2Account],
+          },
+        ]),
+      )
+
+      const { getTracearrActivity } = await load('s1', ['s2'])
+
+      await expect(getTracearrActivity()).resolves.toMatchObject({
+        sessions: [{ user_id: 0 }],
+      })
+    })
+
+    it('open the item on the chosen server', async () => {
+      route(streamsRoute([user('s1')]))
+
+      const { getTracearrActivity } = await load('s1', ['s2'])
+
+      await expect(getTracearrActivity()).resolves.toMatchObject({
+        sessions: [{ rating_key: 10 }],
+      })
+    })
+  })
+
+  it('stops counting the plays of a server that is gone from Tracearr', async () => {
+    const routes = historyRoute()
+
+    route(routes)
+
+    const { getTracearrPlays } = await load('s1', ['s2'])
+
+    await getTracearrPlays('2026-01-01')
+
+    // Tracearr's servers are cached for 5 minutes
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(Date.now() + 10 * 60 * 1000)
+    route({ ...routes, servers: () => ({ data: [plexServer('s1')] }) })
+
+    const plays = await getTracearrPlays('2026-01-01')
+
+    expect(plays.map((play) => play.id)).toEqual(['p1'])
+  })
+
+  it('offers the other servers of either type, but not Emby', async () => {
+    const { selectOtherServers } = await load()
+    const embyServer = { ...plexServer('s4'), server_type: 'emby' }
+    const all = [...servers, embyServer] as Parameters<
+      typeof selectOtherServers
+    >[0]
+
+    expect(
+      selectOtherServers(all, all[0], ['s1', 's2', 's4', 'gone']).map(
+        (server) => server.server_id,
+      ),
+    ).toEqual(['s2'])
   })
 })
 

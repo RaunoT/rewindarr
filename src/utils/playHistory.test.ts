@@ -135,6 +135,34 @@ describe('playHistory', () => {
     expect(old.cursors).toEqual([undefined, undefined])
   })
 
+  it('forgets only the histories left out of the keys given', async () => {
+    const chosen = reader(`${TRACEARR_KEY}s1`, () => [play('a', 1)])
+    const other = reader(`${TRACEARR_KEY}s2`, () => [play('b', 1)])
+    const tautulli = reader(`${TAUTULLI_PREFIX}1`, () => [play('t', 1)])
+    const { dropStaleHistories, readPlays } = await load()
+
+    await readPlays([chosen.reader, other.reader, tautulli.reader], 0)
+    await dropStaleHistories([`${TRACEARR_KEY}s1`])
+    await readPlays([chosen.reader, other.reader, tautulli.reader], 0)
+
+    expect(chosen.cursors).toEqual([undefined])
+    expect(other.cursors).toEqual([undefined, undefined])
+    expect(tautulli.cursors).toEqual([undefined])
+  })
+
+  it('keeps the plays of each history apart when asked to', async () => {
+    const chosen = reader(`${TRACEARR_KEY}s1`, () => [play('a', 1)])
+    const other = reader(`${TRACEARR_KEY}s2`, () => [play('b', 1)])
+    const { readHistories } = await load()
+    const [chosenPlays, otherPlays] = await readHistories(
+      [chosen.reader, other.reader],
+      0,
+    )
+
+    expect(chosenPlays.map((play) => play.id)).toEqual(['a'])
+    expect(otherPlays.map((play) => play.id)).toEqual(['b'])
+  })
+
   it('saves the histories nothing has read since the start with the rest', async () => {
     const tautulliKey = `${TAUTULLI_PREFIX}1`
     const { readHistoryFile, readPlays, writeHistoryFile } = await load()
