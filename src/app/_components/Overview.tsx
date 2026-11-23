@@ -183,9 +183,10 @@ async function OverviewHeader({ settings, session }: OverviewSkeletonProps) {
   return (
     <header
       data-page-header
-      className='mb-4 flex min-h-10 items-center justify-between gap-3'
+      className='mb-4 flex min-h-10 items-center justify-between gap-3 sm:mb-6 lg:mt-2 lg:mb-8'
     >
-      <h1 className='truncate text-2xl font-bold tracking-tight sm:text-3xl'>
+      {/* On phones the same size as the other pages' titles */}
+      <h1 className='truncate text-xl font-semibold tracking-tight sm:text-3xl sm:font-bold lg:text-4xl'>
         {firstName
           ? t('greeting', { name: firstName })
           : settings.general.serverName || t('title')}

@@ -65,7 +65,7 @@ export default function PageTitle({
           {title && (
             <h1
               className={clsx(
-                'truncate text-lg font-semibold tracking-tight sm:text-xl lg:group-data-[sidebar]/app:sr-only',
+                'truncate text-xl font-semibold tracking-tight lg:group-data-[sidebar]/app:sr-only',
                 titleMenu && 'max-lg:sr-only',
                 isTitleHidden && 'sr-only',
               )}
