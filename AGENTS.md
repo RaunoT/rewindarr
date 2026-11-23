@@ -2,7 +2,7 @@
 
 Self-hosted Next.js 16 app (App Router, React 19, Tailwind 4, TypeScript) that shows Plex and Jellyfin statistics from Tautulli or Tracearr (Jellyfin only through Tracearr). It ships as a Docker image (`ghcr.io/raunot/rewindarr`, `raunoot/rewindarr`, also published under the old `plex-rewind` names) that listens on port 8383.
 
-Contributor setup is in [CONTRIBUTING.md](CONTRIBUTING.md). Use pnpm (pinned in `package.json`) and Node 24.
+Contributor setup is in [CONTRIBUTING.md](CONTRIBUTING.md). Use pnpm (pinned in `package.json`) and Node 26.
 
 ## Commands
 

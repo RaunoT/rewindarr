@@ -41,17 +41,13 @@ export default function StoriesIntro({ buttonRef, onDismiss }: Props) {
 
   return (
     <div
+      // A modal <dialog> would cover the whole page, not just the player
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
       role='dialog'
       aria-modal='true'
       aria-labelledby={titleId}
       // Padded like the player, so the sides line up with the story's
       className='animate-fade-in absolute inset-0 z-30 flex flex-col rounded-[inherit] bg-black/60 p-[inherit]'
-      onKeyDown={(e) => {
-        // "Got it" is its only control, so focus stays on it
-        if (e.key === 'Tab') {
-          e.preventDefault()
-        }
-      }}
     >
       <div className='relative flex flex-1 text-center'>
         <div className='flex w-1/3 flex-col items-center justify-center gap-4 px-2'>
@@ -82,6 +78,12 @@ export default function StoriesIntro({ buttonRef, onDismiss }: Props) {
           type='button'
           className='button w-full max-w-sm py-3'
           onClick={onDismiss}
+          onKeyDown={(e) => {
+            // "Got it" is the only control, so focus stays on it
+            if (e.key === 'Tab') {
+              e.preventDefault()
+            }
+          }}
         >
           {t('introDismiss')}
         </button>

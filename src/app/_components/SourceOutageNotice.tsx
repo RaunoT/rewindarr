@@ -38,8 +38,7 @@ export default function SourceOutageNotice({ source }: Props) {
   const name = STATS_SOURCE_NAMES[source]
 
   return (
-    <div
-      role='status'
+    <output
       className={clsx(
         'glass animate-fade-in mb-4 flex items-start gap-3 rounded-2xl px-4 py-3 text-sm text-neutral-200',
         isWide ? 'page-width-wide' : 'page-width',
@@ -49,14 +48,14 @@ export default function SourceOutageNotice({ source }: Props) {
         className='text-warning size-5 shrink-0'
         aria-hidden='true'
       />
-      <p>
+      <span>
         {outage.updatedAt
           ? t('sourceOutage', {
               source: name,
               time: format.relativeTime(outage.updatedAt, now),
             })
           : t('sourceOutageNoTime', { source: name })}
-      </p>
-    </div>
+      </span>
+    </output>
   )
 }

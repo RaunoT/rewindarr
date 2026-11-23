@@ -65,6 +65,8 @@ export default function HistoryRequestItem({
       // Tells it apart from the plays, like a stream's pause on the activity
       posterOverlay={
         <span
+          // An <img> can't hold the icon
+          // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
           role='img'
           aria-label={t('History.request')}
           className='poster-overlay'
