@@ -8,7 +8,7 @@ import {
   SEERR_MEDIA_TYPES,
 } from './constants'
 import { fetchSeerrStats, fetchSeerrUserId } from './fetchSeerr'
-import { bytesToSize, secondsToTime } from './formatting'
+import { bytesToSize } from './formatting'
 import { getStatsSource } from './statsSource'
 
 export async function getItems(library: Library, query: TopItemsQuery) {
@@ -43,14 +43,11 @@ export async function getTotalDuration(
   userId?: string,
 ) {
   if (settings.dashboard.activeTotalStatistics.includes('duration')) {
-    const t = await getTranslations()
-    const totalDuration = await getStatsSource(settings).getTotalDuration({
+    return getStatsSource(settings).getTotalDuration({
       since: period,
       userId: userId || undefined,
       libraries: [library],
     })
-
-    return secondsToTime(totalDuration, t)
   }
 
   return undefined

@@ -3,11 +3,17 @@ export type TranslateFunction = (key: string, params?: any) => string
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
-export function secondsToTime(seconds: number, t: TranslateFunction): string {
+// Short is for tight spaces, such as "45d 3h"
+export function secondsToTime(
+  seconds: number,
+  t: TranslateFunction,
+  short = false,
+): string {
   const totalSeconds = Math.round(seconds)
+  const keys = short ? 'Common.timeShort' : 'Common.time'
 
   if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) {
-    return t('Common.time.zero')
+    return t(`${keys}.zero`)
   }
 
   // Days are the largest unit, so long durations stay exact and easy to
@@ -37,7 +43,7 @@ export function secondsToTime(seconds: number, t: TranslateFunction): string {
     remainingSeconds %= duration
 
     if (value > 0) {
-      result.push(t(`Common.time.${label}`, { count: value }))
+      result.push(t(`${keys}.${label}`, { count: value }))
       unitCount++
     }
   }

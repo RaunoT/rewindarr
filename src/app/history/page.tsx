@@ -192,6 +192,7 @@ async function HistoryTotalsRow({ totals, filter, hasRequests }: TotalsProps) {
       // Music counts too, so neither watched nor listened
       label: t('Totals.playTime'),
       value: secondsToTime(totals.watchTime, t),
+      shortValue: secondsToTime(totals.watchTime, t, true),
     },
     plays: {
       key: 'plays',

@@ -6,6 +6,7 @@ import StatusMessage from '@/components/StatusMessage'
 import Totals, { Total } from '@/components/Totals'
 import { PublicSettings } from '@/types/settings'
 import { ItemRow, MediaServer } from '@/types/statsSource'
+import { secondsToTime } from '@/utils/formatting'
 import { MoonIcon } from '@heroicons/react/24/outline'
 import { getFormatter, getTranslations } from 'next-intl/server'
 import { ReactNode, Suspense } from 'react'
@@ -14,7 +15,8 @@ import ShowMore from './ShowMore'
 
 type Props = {
   items?: ItemRow[] | null
-  totalDuration?: string
+  // In seconds
+  totalDuration?: number
   totalRequests?: number
   totalSize?: string | number
   type: 'movie' | 'show' | 'artist' | 'users'
@@ -43,7 +45,7 @@ export default async function Dashboard({
   const format = await getFormatter()
   const totals: Total[] = []
 
-  if (totalDuration) {
+  if (totalDuration !== undefined) {
     totals.push({
       key: 'duration',
       icon: <STAT_ICONS.duration />,
@@ -54,7 +56,8 @@ export default async function Dashboard({
           : type === 'artist'
             ? t('Totals.listenTime')
             : t('Common.duration'),
-      value: totalDuration,
+      value: secondsToTime(totalDuration, t),
+      shortValue: secondsToTime(totalDuration, t, true),
     })
   }
 

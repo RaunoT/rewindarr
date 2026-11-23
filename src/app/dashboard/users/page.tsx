@@ -2,7 +2,6 @@ import HistoryReading from '@/components/HistoryReading'
 import { authOptions } from '@/lib/auth'
 import { DashboardSearchParams } from '@/types/dashboard'
 import { Settings } from '@/types/settings'
-import { secondsToTime, TranslateFunction } from '@/utils/formatting'
 import {
   getItemsLimit,
   getNextItemsLimit,
@@ -36,19 +35,13 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-async function getTotalDuration(
-  period: string,
-  settings: Settings,
-  t: TranslateFunction,
-) {
+async function getTotalDuration(period: string, settings: Settings) {
   if (settings.dashboard.activeTotalStatistics.includes('duration')) {
     // The same libraries as each user's watch time
-    const totalDuration = await getStatsSource(settings).getTotalDuration({
+    return getStatsSource(settings).getTotalDuration({
       since: period,
       libraries: await getLibraries(),
     })
-
-    return secondsToTime(totalDuration, t)
   }
 
   return undefined
@@ -62,7 +55,6 @@ async function DashboardUsersContent({
   limit: number
 }) {
   const settings = getSettings()
-  const t = await getTranslations()
   const session = await getServerSession(authOptions)
 
   if (
@@ -94,7 +86,7 @@ async function DashboardUsersContent({
         withRequestsWatched:
           settings.general.activeItemStatistics.includes('requestsWatched'),
       }),
-      getTotalDuration(period.string, settings, t),
+      getTotalDuration(period.string, settings),
       getUsersCount(settings),
       // The same start as each user's request count
       getTotalRequests(period.string, settings),
