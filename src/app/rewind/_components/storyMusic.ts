@@ -6,8 +6,8 @@ export type StepMusic = {
   music: string[]
 }
 
-// The step of the shows and movies stories that names the top title, so its
-// theme song waits for it
+// The step of the shows, movies and music stories that names the top title,
+// so its music waits for it
 export const TOP_TITLE_STEP = 3
 
 // The music of the latest step shown that has its own, or the story's

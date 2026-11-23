@@ -4,6 +4,7 @@ import {
   RewindPeriod,
   RewindTotals,
   RewindUser,
+  TopTrack,
   UserRewind,
 } from '@/types/rewind'
 import { ItemRow, Library } from '@/types/statsSource'
@@ -14,6 +15,7 @@ import {
   secondsToTime,
 } from '@/utils/formatting'
 import {
+  getArtistTopTracks,
   getGenres,
   getPlaybackHabits,
   getRequestsTotals,
@@ -408,6 +410,11 @@ async function getRewind(
           (url) => url !== null,
         )
       : []
+  const getTrackMusic = (track: TopTrack | null | undefined) =>
+    [getPlexTrackUrl(settings, track?.ratingKey)].filter((url) => url !== null)
+  const artistTracks = isThemeMusicActive
+    ? await getArtistTopTracks(user.id, libraries, period, topMediaItems.audio)
+    : []
 
   return {
     userRewind,
@@ -415,9 +422,8 @@ async function getRewind(
       showThemes: topMediaItems.shows.map((show) => getShowThemes(show)),
       bingeThemes: getShowThemes(userRewind.moments.binge?.item),
       movieThemes: topMediaItems.movies.map(getMovieThemes),
-      topTrack: isThemeMusicActive
-        ? getPlexTrackUrl(settings, topTrack?.ratingKey)
-        : null,
+      topTrack: isThemeMusicActive ? getTrackMusic(topTrack) : [],
+      artistTracks: artistTracks.map(getTrackMusic),
     },
   }
 }

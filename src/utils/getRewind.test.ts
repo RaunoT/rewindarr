@@ -4,7 +4,12 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
 import { fetchSeerrStats } from './fetchSeerr'
-import { getRequestsTotals, getTopMediaStats, getTopTrack } from './getRewind'
+import {
+  getArtistTopTracks,
+  getRequestsTotals,
+  getTopMediaStats,
+  getTopTrack,
+} from './getRewind'
 import getSettings from './getSettings'
 import { getStatsSource } from './statsSource'
 
@@ -321,5 +326,64 @@ describe('getTopTrack', () => {
     mockPlays([track('Partial', 10, 40)])
 
     await expect(getTopTrack('1', LIBRARIES, PERIOD)).resolves.toBeNull()
+  })
+})
+
+describe('getArtistTopTracks', () => {
+  const LIBRARIES = [{ section_type: 'artist' }] as Library[]
+
+  function track(title: string, artistName: string) {
+    return {
+      mediaType: 'track',
+      ratingKey: title,
+      mediaId: null,
+      title,
+      artistName,
+      durationMs: 3 * 60 * 1000,
+      lengthMs: null,
+      percentComplete: 100,
+    }
+  }
+
+  function artist(title: string) {
+    return { title, media_id: null, year: null }
+  }
+
+  it("picks each artist's most played track, in the artists' order", async () => {
+    vi.mocked(getStatsSource).mockReturnValue({
+      getHistoryPlays: vi
+        .fn()
+        .mockResolvedValue([
+          track('Hit', 'First'),
+          track('Hit', 'First'),
+          track('Deep cut', 'First'),
+          track('Single', 'second'),
+        ]),
+    } as unknown as ReturnType<typeof getStatsSource>)
+
+    const tracks = await getArtistTopTracks('1', LIBRARIES, PERIOD, [
+      artist('Second'),
+      artist('First'),
+      artist('Unplayed'),
+    ])
+
+    expect(tracks.map((track) => track?.title ?? null)).toEqual([
+      'Single',
+      'Hit',
+      null,
+    ])
+  })
+
+  it('asks for nothing without artists', async () => {
+    const getHistoryPlays = vi.fn()
+
+    vi.mocked(getStatsSource).mockReturnValue({
+      getHistoryPlays,
+    } as unknown as ReturnType<typeof getStatsSource>)
+
+    await expect(
+      getArtistTopTracks('1', LIBRARIES, PERIOD, []),
+    ).resolves.toEqual([])
+    expect(getHistoryPlays).not.toHaveBeenCalled()
   })
 })

@@ -63,7 +63,9 @@ export type RewindThemes = {
   // The binged show's theme songs, best first
   bingeThemes: string[]
   // The viewer's most played track, from the media server
-  topTrack: string | null
+  topTrack: string[]
+  // The top artists' most played tracks, in their order
+  artistTracks: string[][]
 }
 
 // What the stories after the total show, which takes the longest to read
@@ -82,8 +84,6 @@ type Props = {
   totals: Promise<RewindTotals>
   rewind: Promise<RewindData>
 }
-
-const AUDIO_STORIES = ['audio', 'audio_top']
 
 export default function RewindStories({
   user,
@@ -139,12 +139,7 @@ function getStories(
     id: RewindStoryId | 'goodbye',
     Component: FC<StoryComponent>,
   ): Story {
-    const themes =
-      id === 'binge'
-        ? music.bingeThemes
-        : AUDIO_STORIES.includes(id) && music.topTrack
-          ? [music.topTrack]
-          : []
+    const themes = id === 'binge' ? music.bingeThemes : []
 
     return {
       id,
@@ -163,8 +158,8 @@ function getStories(
     return track ? [...themes, track] : themes
   }
 
-  // A title's theme song only plays once the story shows the title, and the
-  // top lists play each one's as its place shows
+  // A title's theme song, or an artist's track, only plays once the story
+  // shows it, and the top lists play each one's as its place shows
   function getTitleMusic(id: RewindStoryId | 'goodbye'): StepMusic[] {
     switch (id) {
       case 'shows':
@@ -180,6 +175,22 @@ function getStories(
       case 'movies_top':
         return getCountdownMusic(
           userRewind.movies.top.map((_, i) => withTrack(music.movieThemes[i])),
+        )
+      case 'audio':
+        return [
+          {
+            step: TOP_TITLE_STEP,
+            // Without a top track, the story names the top artist
+            music: withTrack(
+              userRewind.audio.topTrack
+                ? music.topTrack
+                : music.artistTracks[0],
+            ),
+          },
+        ]
+      case 'audio_top':
+        return getCountdownMusic(
+          userRewind.audio.top.map((_, i) => withTrack(music.artistTracks[i])),
         )
       default:
         return []

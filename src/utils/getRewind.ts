@@ -1,6 +1,7 @@
 import { TopTrack } from '@/types/rewind'
 import {
   HistoryPlay,
+  ItemRow,
   Library,
   MediaStatsType,
   PlayPeriod,
@@ -18,7 +19,7 @@ import {
   isTracearrSource,
 } from './helpers'
 import { LibrariesSize } from './librariesSize'
-import { isCountedPlay } from './playStats'
+import { isCountedPlay, isPlayOfItem } from './playStats'
 import { getRequestsWatched } from './rewindSocial'
 import { getStatsSource } from './statsSource'
 
@@ -136,6 +137,28 @@ export async function getTopPeople(
   return getStatsSource().getTopPeople(userId, libraries, period)
 }
 
+async function getAudioPlays(
+  userId: string,
+  libraries: Library[],
+  period: PlayPeriod,
+): Promise<HistoryPlay[]> {
+  const audioLibraries = libraries.filter(
+    (library) => library.section_type === 'artist',
+  )
+
+  if (!audioLibraries.length) {
+    return []
+  }
+
+  const plays = await getStatsSource().getHistoryPlays({
+    ...period,
+    userId,
+    libraries: audioLibraries,
+  })
+
+  return plays.filter((play) => play.mediaType === 'track')
+}
+
 // The user's most played track, by plays and then listening time. Like the
 // other stats, plays short of the percent in the settings only add their
 // listening time. Without a track played twice, it's the one with the most
@@ -145,27 +168,38 @@ export async function getTopTrack(
   libraries: Library[],
   period: PlayPeriod,
 ): Promise<TopTrack | null> {
-  const settings = getSettings()
-  const audioLibraries = libraries.filter(
-    (library) => library.section_type === 'artist',
-  )
+  const plays = await getAudioPlays(userId, libraries, period)
 
-  if (!audioLibraries.length) {
-    return null
+  return pickTopTrack(plays, getSettings().general.minPlayPercent)
+}
+
+// Each artist's most played track, picked like the top track, in the artists'
+// order. Null for an artist without one.
+export async function getArtistTopTracks(
+  userId: string,
+  libraries: Library[],
+  period: PlayPeriod,
+  artists: Pick<ItemRow, 'media_id' | 'title' | 'year'>[],
+): Promise<(TopTrack | null)[]> {
+  if (!artists.length) {
+    return []
   }
 
-  const plays = await getStatsSource(settings).getHistoryPlays({
-    ...period,
-    userId,
-    libraries: audioLibraries,
-  })
+  const plays = await getAudioPlays(userId, libraries, period)
+  const minPercent = getSettings().general.minPlayPercent
+
+  return artists.map((artist) =>
+    pickTopTrack(
+      plays.filter((play) => isPlayOfItem(play, artist)),
+      minPercent,
+    ),
+  )
+}
+
+function pickTopTrack(plays: HistoryPlay[], minPercent: number) {
   const tracks = new Map<string, TopTrack>()
 
   for (const play of plays) {
-    if (play.mediaType !== 'track') {
-      continue
-    }
-
     // Jellyfin's plays through Tracearr may have no rating key
     const key =
       play.ratingKey ?? play.mediaId ?? `${play.artistName}|${play.title}`
@@ -178,7 +212,7 @@ export async function getTopTrack(
       isOnly: false,
     }
 
-    if (isCountedPlay(play, settings.general.minPlayPercent)) {
+    if (isCountedPlay(play, minPercent)) {
       track.plays += 1
     }
 
