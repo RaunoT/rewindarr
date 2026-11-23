@@ -7,7 +7,6 @@ type Props = {
   isOwnOnly: boolean
   isOwnOnlyForAdmin: boolean
   label: string
-  description: string
   adminLabel: string
   adminDescription: string
 }
@@ -17,7 +16,6 @@ export default function OwnOnlySwitches({
   isOwnOnly: initialIsOwnOnly,
   isOwnOnlyForAdmin: initialIsOwnOnlyForAdmin,
   label,
-  description,
   adminLabel,
   adminDescription,
 }: Props) {
@@ -30,7 +28,7 @@ export default function OwnOnlySwitches({
   return (
     <>
       <Switch
-        className='switch items-start'
+        className='switch'
         name='isOwnOnly'
         isSelected={isOwnOnly}
         onChange={setIsOwnOnly}
@@ -38,7 +36,6 @@ export default function OwnOnlySwitches({
         <div className='indicator'></div>
         <span className='label'>
           <span className='label-wrapper'>{label}</span>
-          <small>{description}</small>
         </span>
       </Switch>
       {isOwnOnly && (

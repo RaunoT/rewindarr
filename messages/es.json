@@ -240,12 +240,10 @@
       "startDateHelperText": "Inicio personalizado de “Desde siempre”"
     },
     "Activity": {
-      "title": "Ajustes de actividad",
-      "ownOnlyDescription": "Sus propias transmisiones, tras iniciar sesión"
+      "title": "Ajustes de actividad"
     },
     "History": {
-      "title": "Ajustes del historial",
-      "ownOnlyDescription": "Sus propias reproducciones y solicitudes, tras iniciar sesión"
+      "title": "Ajustes del historial"
     },
     "General": {
       "title": "Ajustes generales",

@@ -240,12 +240,10 @@
       "startDateHelperText": "Custom start for “All time”"
     },
     "Activity": {
-      "title": "Activity settings",
-      "ownOnlyDescription": "Their own streams, after signing in"
+      "title": "Activity settings"
     },
     "History": {
-      "title": "History settings",
-      "ownOnlyDescription": "Their own plays and requests, after signing in"
+      "title": "History settings"
     },
     "General": {
       "title": "General settings",

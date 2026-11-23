@@ -240,12 +240,10 @@
       "startDateHelperText": "Eigener Beginn für „Gesamte Zeit“"
     },
     "Activity": {
-      "title": "Aktivität Einstellungen",
-      "ownOnlyDescription": "Eigene Streams, nach der Anmeldung"
+      "title": "Aktivität Einstellungen"
     },
     "History": {
-      "title": "Verlaufseinstellungen",
-      "ownOnlyDescription": "Eigene Wiedergaben und Anfragen, nach der Anmeldung"
+      "title": "Verlaufseinstellungen"
     },
     "General": {
       "title": "Allgemeine Einstellungen",

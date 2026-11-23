@@ -21,7 +21,6 @@ type HistoryFormState = SettingsFormInitialState<Partial<HistorySettings>>
 export default function HistorySettingsForm({ settings }: Props) {
   const [isActive, setIsActive] = useState<boolean>(settings.history.isActive)
   const tCommon = useTranslations('Common')
-  const t = useTranslations('Settings.History')
   const initialState: HistoryFormState = {
     message: '',
     status: '',
@@ -75,7 +74,6 @@ export default function HistorySettingsForm({ settings }: Props) {
             isOwnOnly={historySettings.isOwnOnly}
             isOwnOnlyForAdmin={historySettings.isOwnOnlyForAdmin}
             label={tCommon('ownOnly')}
-            description={t('ownOnlyDescription')}
             adminLabel={tCommon('ownOnlyForAdmin')}
             adminDescription={tCommon('ownOnlyForAdminDescription')}
           />

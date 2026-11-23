@@ -240,12 +240,10 @@
       "startDateHelperText": "Début personnalisé de « Tout le temps »"
     },
     "Activity": {
-      "title": "Paramètres d'activité",
-      "ownOnlyDescription": "Leurs propres diffusions, une fois connectés"
+      "title": "Paramètres d'activité"
     },
     "History": {
-      "title": "Paramètres de l'historique",
-      "ownOnlyDescription": "Leurs propres lectures et demandes, une fois connectés"
+      "title": "Paramètres de l'historique"
     },
     "General": {
       "title": "Paramètres généraux",

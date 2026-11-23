@@ -21,7 +21,6 @@ type ActivityFormState = SettingsFormInitialState<Partial<ActivitySettings>>
 export default function ActivitySettingsForm({ settings }: Props) {
   const [isActive, setIsActive] = useState<boolean>(settings.activity.isActive)
   const tCommon = useTranslations('Common')
-  const t = useTranslations('Settings.Activity')
   const initialState: ActivityFormState = {
     message: '',
     status: '',
@@ -75,7 +74,6 @@ export default function ActivitySettingsForm({ settings }: Props) {
             isOwnOnly={activitySettings.isOwnOnly}
             isOwnOnlyForAdmin={activitySettings.isOwnOnlyForAdmin}
             label={tCommon('ownOnly')}
-            description={t('ownOnlyDescription')}
             adminLabel={tCommon('ownOnlyForAdmin')}
             adminDescription={tCommon('ownOnlyForAdminDescription')}
           />

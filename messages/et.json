@@ -240,12 +240,10 @@
       "startDateHelperText": "Perioodi „Kokku“ kohandatud algus"
     },
     "Activity": {
-      "title": "Tegevuse seaded",
-      "ownOnlyDescription": "Enda voogedastused, pärast sisselogimist"
+      "title": "Tegevuse seaded"
     },
     "History": {
-      "title": "Ajaloo seaded",
-      "ownOnlyDescription": "Enda esitused ja soovid, pärast sisselogimist"
+      "title": "Ajaloo seaded"
     },
     "General": {
       "title": "Üldseaded",

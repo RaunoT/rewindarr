@@ -240,12 +240,10 @@
       "startDateHelperText": "Inizio personalizzato di «Da sempre»"
     },
     "Activity": {
-      "title": "Impostazioni dell'attività",
-      "ownOnlyDescription": "I propri stream, dopo l'accesso"
+      "title": "Impostazioni dell'attività"
     },
     "History": {
-      "title": "Impostazioni della cronologia",
-      "ownOnlyDescription": "Le proprie riproduzioni e richieste, dopo l'accesso"
+      "title": "Impostazioni della cronologia"
     },
     "General": {
       "title": "Impostazioni generali",
