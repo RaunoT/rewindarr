@@ -394,8 +394,6 @@ async function getRewind(
   }
 
   const { isThemeMusicActive } = settings.rewind
-  const topShow = topMediaItems.shows[0]
-  const topMovie = topMediaItems.movies[0]
   // From the library first, then Plex's own theme songs
   const getShowThemes = (show: ItemRow | null | undefined) =>
     isThemeMusicActive
@@ -404,17 +402,19 @@ async function getRewind(
           getThemeSongUrl(show?.tvdb_id),
         ].filter((url) => url !== null)
       : []
+  const getMovieThemes = (movie: ItemRow) =>
+    isThemeMusicActive
+      ? [getPlexThemeUrl(settings, movie.rating_key)].filter(
+          (url) => url !== null,
+        )
+      : []
 
   return {
     userRewind,
     themes: {
-      showThemes: getShowThemes(topShow),
+      showThemes: topMediaItems.shows.map((show) => getShowThemes(show)),
       bingeThemes: getShowThemes(userRewind.moments.binge?.item),
-      movieThemes: isThemeMusicActive
-        ? [getPlexThemeUrl(settings, topMovie?.rating_key)].filter(
-            (url) => url !== null,
-          )
-        : [],
+      movieThemes: topMediaItems.movies.map(getMovieThemes),
       topTrack: isThemeMusicActive
         ? getPlexTrackUrl(settings, topTrack?.ratingKey)
         : null,

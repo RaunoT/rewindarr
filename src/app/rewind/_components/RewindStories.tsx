@@ -47,6 +47,7 @@ import StoryUsersTop from './Stories/UsersTop'
 import StoryWelcome from './Stories/Welcome'
 import StoryYearOverYear from './Stories/YearOverYear'
 import { getStoryArt } from './storyArt'
+import { getCountdownMusic, StepMusic, TOP_TITLE_STEP } from './storyMusic'
 import { joinStorySections, removeHiddenStories } from './storySections'
 
 type StoryComponent = {
@@ -55,9 +56,10 @@ type StoryComponent = {
 }
 
 export type RewindThemes = {
-  // The top show's and top movie's theme songs, best first
-  showThemes: string[]
-  movieThemes: string[]
+  // The top shows' and top movies' theme songs, in their order, each best
+  // first
+  showThemes: string[][]
+  movieThemes: string[][]
   // The binged show's theme songs, best first
   bingeThemes: string[]
   // The viewer's most played track, from the media server
@@ -81,10 +83,6 @@ type Props = {
   rewind: Promise<RewindData>
 }
 
-// Where the top show's and top movie's theme songs play: the stories that
-// show the title, not the people and genres after them
-const SHOW_STORIES = ['shows', 'shows_top']
-const MOVIE_STORIES = ['movies', 'movies_top']
 const AUDIO_STORIES = ['audio', 'audio_top']
 
 export default function RewindStories({
@@ -141,17 +139,12 @@ function getStories(
     id: RewindStoryId | 'goodbye',
     Component: FC<StoryComponent>,
   ): Story {
-    // The track also stands in for a title without a theme song
-    const themes = SHOW_STORIES.includes(id)
-      ? music.showThemes
-      : MOVIE_STORIES.includes(id)
-        ? music.movieThemes
-        : id === 'binge'
-          ? music.bingeThemes
-          : AUDIO_STORIES.includes(id) && music.topTrack
-            ? [music.topTrack]
-            : []
-    const sources = [...themes, track]
+    const themes =
+      id === 'binge'
+        ? music.bingeThemes
+        : AUDIO_STORIES.includes(id) && music.topTrack
+          ? [music.topTrack]
+          : []
 
     return {
       id,
@@ -159,8 +152,37 @@ function getStories(
       component: () => (
         <Component userRewind={userRewind} settings={settings} />
       ),
-      music: sources.filter((url) => url !== null),
+      music: withTrack(themes),
+      stepMusic: getTitleMusic(id),
       art: getStoryArt(id, userRewind),
+    }
+  }
+
+  // The track also stands in for a title without a theme song
+  function withTrack(themes: string[] = []): string[] {
+    return track ? [...themes, track] : themes
+  }
+
+  // A title's theme song only plays once the story shows the title, and the
+  // top lists play each one's as its place shows
+  function getTitleMusic(id: RewindStoryId | 'goodbye'): StepMusic[] {
+    switch (id) {
+      case 'shows':
+        return [{ step: TOP_TITLE_STEP, music: withTrack(music.showThemes[0]) }]
+      case 'movies':
+        return [
+          { step: TOP_TITLE_STEP, music: withTrack(music.movieThemes[0]) },
+        ]
+      case 'shows_top':
+        return getCountdownMusic(
+          userRewind.shows.top.map((_, i) => withTrack(music.showThemes[i])),
+        )
+      case 'movies_top':
+        return getCountdownMusic(
+          userRewind.movies.top.map((_, i) => withTrack(music.movieThemes[i])),
+        )
+      default:
+        return []
     }
   }
 
