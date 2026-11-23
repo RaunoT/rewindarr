@@ -42,6 +42,16 @@ jobs:
       - name: Lint code and check formatting
         run: pnpm lint:all
 
+      # Turbopack picks up where the last build left off. The runs on develop
+      # and main save caches that pull requests can restore.
+      - name: Cache Next.js build
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**', 'messages/**', 'public/**', '*.ts', '*.js', '*.json') }}
+          restore-keys: |
+            nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+
       - name: Build
         run: pnpm build
 

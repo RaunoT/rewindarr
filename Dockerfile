@@ -11,7 +11,11 @@ WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc* ./
 ENV HUSKY=0
-RUN pnpm i --frozen-lockfile
+# Cache mounts keep corepack's pnpm and pnpm's package store between builds,
+# so a lockfile change only downloads what changed
+RUN --mount=type=cache,id=corepack,target=/root/.cache/node/corepack \
+    --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+    pnpm i --frozen-lockfile --store-dir /pnpm/store
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -27,7 +31,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_VERSION_TAG
 ENV NEXT_PUBLIC_VERSION_TAG=${NEXT_PUBLIC_VERSION_TAG}
 
-RUN pnpm run build
+# Turbopack's build cache, kept per architecture so the two builds don't share it
+ARG TARGETARCH
+RUN --mount=type=cache,id=corepack,target=/root/.cache/node/corepack \
+    --mount=type=cache,id=next-cache-${TARGETARCH},target=/app/.next/cache \
+    pnpm run build
 
 # Production image, copy all the files and run next
 FROM base AS runner
