@@ -33,6 +33,7 @@ import {
   getAverage,
   getAverageShares,
   getDifference,
+  getOwnOnlyUserId,
   getViewer,
 } from '@/utils/helpers'
 import { getPlexThemeUrl, getPlexTrackUrl } from '@/utils/plexAudio'
@@ -145,6 +146,7 @@ async function RewindContent({
   const rewind = getRewind(user, libraries, period, timeZone, {
     viewersRequest,
     totals,
+    isOthersHidden: !!getOwnOnlyUserId(settings, 'dashboard', session),
   })
 
   return (
@@ -246,6 +248,9 @@ async function getTotals(
 type SharedRequests = {
   viewersRequest: Promise<ItemRow[] | null>
   totals: Promise<RewindTotals>
+  // The viewer sees only their own stats on the dashboard, so the stories
+  // that name other users are left out too
+  isOthersHidden: boolean
 }
 
 // What the stories after the total show, with the totals
@@ -254,7 +259,7 @@ async function getRewind(
   libraries: Library[],
   period: RewindPeriod,
   timeZone: string | undefined,
-  { viewersRequest, totals: totalsRequest }: SharedRequests,
+  { viewersRequest, totals: totalsRequest, isOthersHidden }: SharedRequests,
 ): Promise<RewindData> {
   const settings = getSettings()
   const { since, until } = period
@@ -285,9 +290,11 @@ async function getRewind(
     getTopMediaItems(user.id, libraries, period),
     getlibrariesTotalSize(libraries),
     getMediaServer(),
-    viewersRequest.then((users) =>
-      getUsersTop(user.id, since, { users, until }),
-    ),
+    isOthersHidden
+      ? null
+      : viewersRequest.then((users) =>
+          getUsersTop(user.id, since, { users, until }),
+        ),
     getPlaybackHabits(user.id, libraries, period, timeZone),
     // A user who joined after an edition has no first play in it
     getStatsSource(settings)
@@ -298,7 +305,7 @@ async function getRewind(
           : null,
       ),
     getTopPeople(user.id, libraries, period),
-    getGenres(user.id, libraries, period),
+    getGenres(user.id, libraries, period, !isOthersHidden),
     getTopTrack(user.id, libraries, period),
     getRewindSocial(user.id, libraries, period),
     userPlaysRequest.then((plays) =>
