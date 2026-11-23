@@ -386,6 +386,13 @@
       "min": "{count, plural, one {# Min.} other {# Min.}}",
       "sec": "{count, plural, one {# Sek.} other {# Sek.}}"
     },
+    "timeShort": {
+      "zero": "0min",
+      "day": "{count}T",
+      "hr": "{count}h",
+      "min": "{count}min",
+      "sec": "{count}s"
+    },
     "fileSize": "{value, number} {unit}"
   },
   "DatePicker": {

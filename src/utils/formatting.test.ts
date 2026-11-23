@@ -67,6 +67,13 @@ describe('secondsToTime', () => {
     expect(secondsToTime(45 * DAY + 3 * HOUR, t)).toBe('45 days 3 hrs')
     expect(secondsToTime(400 * DAY + 59 * MINUTE + 50, t)).toBe('400 days 1 hr')
   })
+
+  it('abbreviates the units when short', () => {
+    expect(secondsToTime(0, t, true)).toBe('0m')
+    expect(secondsToTime(45, t, true)).toBe('45s')
+    expect(secondsToTime(2 * HOUR + 5 * MINUTE, t, true)).toBe('2h 5m')
+    expect(secondsToTime(25 * DAY + 9 * HOUR, t, true)).toBe('25d 9h')
+  })
 })
 
 describe('millisecondsToTimeString', () => {

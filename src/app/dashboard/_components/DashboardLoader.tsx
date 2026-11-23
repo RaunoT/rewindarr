@@ -1,11 +1,13 @@
 import CardWrapper from '@/app/_components/CardWrapper'
 import SkeletonLine from '@/components/SkeletonLine'
-import { TotalsSkeleton } from '@/components/Totals'
+import { TotalSkeleton, TotalsSkeleton } from '@/components/Totals'
 import { PublicSettings } from '@/types/settings'
 import { LibraryType } from '@/types/statsSource'
 import { DASHBOARD_PAGE_SIZE, RATING_STATISTICS } from '@/utils/constants'
 import { getLinkButtonCount } from '@/utils/externalLinks'
+import { TranslateFunction } from '@/utils/formatting'
 import clsx from 'clsx'
+import { useTranslations } from 'next-intl'
 
 type Props = {
   type: LibraryType | 'users'
@@ -20,26 +22,73 @@ export default function DashboardLoader({
   settings,
   rows = DASHBOARD_PAGE_SIZE,
 }: Props) {
+  const t = useTranslations()
   const { activeTotalStatistics } = settings.dashboard
-  // The same totals as the dashboard shows for this library
-  const totalsCount = [
-    activeTotalStatistics.includes('duration'),
+  // The same totals as the dashboard shows for this library. Users have a
+  // count of users instead of a library's count and size.
+  const totalKeys = [
+    activeTotalStatistics.includes('duration') && 'duration',
     activeTotalStatistics.includes('requests') &&
       settings.connection.isSeerrActive &&
-      type !== 'artist',
-    activeTotalStatistics.includes('count'),
-    activeTotalStatistics.includes('size') && type !== 'users',
-  ].filter(Boolean).length
+      type !== 'artist' &&
+      'requests',
+    activeTotalStatistics.includes('count') &&
+      (type === 'users' ? 'users' : 'count'),
+    activeTotalStatistics.includes('size') && type !== 'users' && 'size',
+  ].filter((key): key is TotalKey => !!key)
 
   return (
     <div className='flex flex-1 flex-col'>
-      <TotalsSkeleton count={totalsCount} />
+      <TotalsSkeleton
+        totals={totalKeys.map((key) => ({
+          label: getTotalLabel(key, type, t),
+          kind: SKELETON_KINDS[key],
+        }))}
+      />
 
       <CardWrapper>
         <DashboardListSkeleton type={type} settings={settings} rows={rows} />
       </CardWrapper>
     </div>
   )
+}
+
+type TotalKey = 'duration' | 'requests' | 'count' | 'size' | 'users'
+
+const SKELETON_KINDS: Record<TotalKey, TotalSkeleton['kind']> = {
+  duration: 'duration',
+  requests: 'smallCount',
+  count: 'count',
+  size: 'size',
+  users: 'smallCount',
+}
+
+export function getTotalLabel(
+  key: TotalKey,
+  type: Props['type'],
+  t: TranslateFunction,
+) {
+  switch (key) {
+    case 'duration':
+      // Users count music too, so neither watched nor listened
+      return type === 'users'
+        ? t('Totals.playTime')
+        : type === 'artist'
+          ? t('Totals.listenTime')
+          : t('Common.duration')
+    case 'requests':
+      return t('Common.requests')
+    case 'count':
+      return type === 'movie'
+        ? t('Totals.movies')
+        : type === 'show'
+          ? t('Totals.episodes')
+          : t('Totals.tracks')
+    case 'size':
+      return t('Common.size')
+    case 'users':
+      return t('Common.users')
+  }
 }
 
 // The rows alone, which also size the card for messages shown instead
