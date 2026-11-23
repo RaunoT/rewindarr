@@ -3,6 +3,7 @@ import { ClockIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
+import { TITLE_STEPS } from '../storyMusic'
 import TitleMomentCard from '../TitleMomentCard'
 
 export default function StoryTimeTravel({ userRewind, settings }: RewindStory) {
@@ -28,7 +29,7 @@ export default function StoryTimeTravel({ userRewind, settings }: RewindStory) {
         </p>
       </RewindStat>
 
-      <RewindStat step={1} noScale>
+      <RewindStat step={TITLE_STEPS.timeTravel} noScale>
         <p className='mb-2'>
           {t.rich('oldest', {
             yearValue: timeTravel.oldest.year,

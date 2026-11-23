@@ -4,6 +4,7 @@ import getSettings from '@/utils/getSettings'
 import {
   canViewFeature,
   getViewer,
+  isUsersPageVisible,
   sortByActiveLibraries,
 } from '@/utils/helpers'
 import { getLibraries } from '@/utils/statsSource'
@@ -28,6 +29,7 @@ export default async function DashboardLayout({ children }: Props) {
   const libraries = await getLibraries()
   const activeLibraries = sortByActiveLibraries(libraries, settings)
   const t = await getTranslations('Dashboard')
+  const isUsersPageActive = isUsersPageVisible(settings, session)
 
   return (
     <div className='page-width flex flex-1 flex-col lg:flex-none'>
@@ -37,14 +39,14 @@ export default async function DashboardLayout({ children }: Props) {
         titleMenu={
           <DashboardNav
             libraries={activeLibraries}
-            isUsersPageActive={settings.dashboard.isUsersPageActive}
+            isUsersPageActive={isUsersPageActive}
             isMenu
           />
         }
       >
         <DashboardNav
           libraries={activeLibraries}
-          isUsersPageActive={settings.dashboard.isUsersPageActive}
+          isUsersPageActive={isUsersPageActive}
         />
       </PageTitle>
       {children}

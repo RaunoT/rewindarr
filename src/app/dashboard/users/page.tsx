@@ -2,7 +2,6 @@ import HistoryReading from '@/components/HistoryReading'
 import { authOptions } from '@/lib/auth'
 import { DashboardSearchParams } from '@/types/dashboard'
 import { Settings } from '@/types/settings'
-import { secondsToTime, TranslateFunction } from '@/utils/formatting'
 import {
   getItemsLimit,
   getNextItemsLimit,
@@ -11,7 +10,7 @@ import {
 import getPeriod from '@/utils/getPeriod'
 import getSettings from '@/utils/getSettings'
 import getUsersTop from '@/utils/getUsersTop'
-import { canViewFeature, getViewer } from '@/utils/helpers'
+import { canViewFeature, getViewer, isUsersPageVisible } from '@/utils/helpers'
 import { toPublicSettings } from '@/utils/publicSettings'
 import {
   getHistoryProgress,
@@ -36,19 +35,13 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-async function getTotalDuration(
-  period: string,
-  settings: Settings,
-  t: TranslateFunction,
-) {
+async function getTotalDuration(period: string, settings: Settings) {
   if (settings.dashboard.activeTotalStatistics.includes('duration')) {
     // The same libraries as each user's watch time
-    const totalDuration = await getStatsSource(settings).getTotalDuration({
+    return getStatsSource(settings).getTotalDuration({
       since: period,
       libraries: await getLibraries(),
     })
-
-    return secondsToTime(totalDuration, t)
   }
 
   return undefined
@@ -62,11 +55,10 @@ async function DashboardUsersContent({
   limit: number
 }) {
   const settings = getSettings()
-  const t = await getTranslations()
   const session = await getServerSession(authOptions)
 
   if (
-    !settings.dashboard.isUsersPageActive ||
+    !isUsersPageVisible(settings, session) ||
     !canViewFeature(settings, 'dashboard', getViewer(session))
   ) {
     return notFound()
@@ -94,7 +86,7 @@ async function DashboardUsersContent({
         withRequestsWatched:
           settings.general.activeItemStatistics.includes('requestsWatched'),
       }),
-      getTotalDuration(period.string, settings, t),
+      getTotalDuration(period.string, settings),
       getUsersCount(settings),
       // The same start as each user's request count
       getTotalRequests(period.string, settings),
@@ -119,8 +111,19 @@ type Props = {
 
 export default async function DashboardUsersPage({ searchParams }: Props) {
   const { period, limit } = await searchParams
+  const fullSettings = getSettings()
+  const session = await getServerSession(authOptions)
+
+  // Before the toolbar and loader, so a viewer it's hidden from gets nothing
+  if (
+    !isUsersPageVisible(fullSettings, session) ||
+    !canViewFeature(fullSettings, 'dashboard', getViewer(session))
+  ) {
+    return notFound()
+  }
+
   const itemsLimit = getItemsLimit(limit)
-  const settings = toPublicSettings(getSettings())
+  const settings = toPublicSettings(fullSettings)
 
   return (
     <>

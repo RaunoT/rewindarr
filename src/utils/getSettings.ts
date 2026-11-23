@@ -227,12 +227,8 @@ function fallBackToLastKnownGood(problem: string, remedy: string): Settings {
 
 function mergeWithDefaults(saved: Partial<Settings>): Settings {
   // Arrays are replaced, not merged by index, so a shorter saved list is kept
-  return mergeWith(
-    {},
-    DEFAULT_SETTINGS,
-    saved,
-    (_: unknown, source: unknown) =>
-      Array.isArray(source) ? [...source] : undefined,
+  return mergeWith({}, DEFAULT_SETTINGS, saved, (_: unknown, source: unknown) =>
+    Array.isArray(source) ? [...source] : undefined,
   )
 }
 

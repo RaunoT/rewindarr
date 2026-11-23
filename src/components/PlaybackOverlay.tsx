@@ -24,6 +24,8 @@ export default function PlaybackOverlay({ state, className }: Props) {
 
   return (
     <span
+      // An <img> can't hold the icon
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
       role='img'
       aria-label={isBuffering ? t('buffering') : t('paused')}
       className='poster-overlay'

@@ -508,13 +508,13 @@ async function refreshPlays(store: PlayStore): Promise<void> {
   rebuildInBackground(store)
 }
 
-// Every play since `since` in the histories. A shorter period is answered as
-// soon as the reads get back to its start, without waiting for a longer one.
-// A history that can't be read adds no plays.
-export async function readPlays(
+// Every play since `since` in each history, in the order of the readers. A
+// shorter period is answered as soon as the reads get back to its start,
+// without waiting for a longer one. A history that can't be read has no plays.
+export async function readHistories(
   readers: HistoryReader[],
   since: number,
-): Promise<Play[]> {
+): Promise<Play[][]> {
   const stores = await Promise.all(readers.map(getStore))
   const hasPlays = await Promise.all(
     stores.map((store) => waitForPlays(store, since)),
@@ -526,14 +526,20 @@ export async function readPlays(
     )
   }
 
-  const readStores = stores.filter((_, i) => hasPlays[i])
-
-  await Promise.all(readStores.map(refreshPlays))
+  await Promise.all(stores.filter((_, i) => hasPlays[i]).map(refreshPlays))
 
   // A play counts in the period it started in.
-  return readStores.flatMap((store) =>
-    store.plays.filter((play) => play.startedAt >= since),
+  return stores.map((store, i) =>
+    hasPlays[i] ? store.plays.filter((play) => play.startedAt >= since) : [],
   )
+}
+
+// Every play since `since` in the histories together
+export async function readPlays(
+  readers: HistoryReader[],
+  since: number,
+): Promise<Play[]> {
+  return (await readHistories(readers, since)).flat()
 }
 
 // How far back a read has got, from 0 to 1, by the time between now and the
@@ -715,14 +721,22 @@ export async function readAgain(readers: HistoryReader[]): Promise<void> {
   }
 }
 
-// Forgets the source's histories from before its URL changed, which stops
-// their reads. Another source's histories stay, so switching back to it
-// doesn't read its history again.
-export async function dropStaleHistories(keyPrefix: string): Promise<void> {
-  const source = `${keyPrefix.split('|')[0]}|`
+// Forgets the source's histories other than the current ones, such as those
+// from before its URL changed, which stops their reads. `current` is the prefix
+// the current histories' keys start with, or the keys themselves. Another
+// source's histories stay, so switching back to it doesn't read its history
+// again.
+export async function dropStaleHistories(
+  current: string | string[],
+): Promise<void> {
+  const isCurrent =
+    typeof current === 'string'
+      ? (key: string) => key.startsWith(current)
+      : (key: string) => current.includes(key)
+  const source = `${[current].flat()[0]?.split('|')[0] ?? ''}|`
 
   function isStale(key: string) {
-    return key.startsWith(source) && !key.startsWith(keyPrefix)
+    return key.startsWith(source) && !isCurrent(key)
   }
 
   for (const key of [
@@ -746,10 +760,7 @@ export async function dropStaleHistories(keyPrefix: string): Promise<void> {
   }
 }
 
-// The plays in memory of the histories starting with `keyPrefix`, without
-// waiting for any read
-export function getStoredPlays(keyPrefix: string): Play[] {
-  return [...state.stores.values()]
-    .filter((store) => store.key.startsWith(keyPrefix))
-    .flatMap((store) => store.plays)
+// The plays in memory of the histories, without waiting for any read
+export function getStoredPlays(keys: string[]): Play[] {
+  return keys.flatMap((key) => state.stores.get(key)?.plays ?? [])
 }

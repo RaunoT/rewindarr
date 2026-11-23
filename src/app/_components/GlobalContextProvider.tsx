@@ -84,7 +84,7 @@ export default function GlobalContextProvider({
     ) as DashboardSearchParams['period']
     const savedSortBy = getDashboardSort(readStorage('dashboardSort'))
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // oxlint-disable-next-line react-hooks/set-state-in-effect
     setIsPersonal((prev) => prev ?? savedIsPersonal)
     setPeriod((prev) => prev ?? savedPeriod)
     setSortBy((prev) => prev ?? savedSortBy)

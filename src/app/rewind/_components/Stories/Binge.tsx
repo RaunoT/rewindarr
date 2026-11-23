@@ -7,6 +7,7 @@ import { useFormatter, useTranslations } from 'next-intl'
 import { DAY_FORMAT, formatMomentDate } from '../momentDate'
 import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
+import { BINGE_SHOW_STEP } from '../storyMusic'
 
 export default function StoryBinge({ userRewind, settings }: RewindStory) {
   const t = useTranslations('Rewind.Moments')
@@ -43,7 +44,7 @@ export default function StoryBinge({ userRewind, settings }: RewindStory) {
         </p>
       </RewindStat>
 
-      <RewindStat step={2} noScale>
+      <RewindStat step={BINGE_SHOW_STEP} noScale>
         <p className={binge.item ? 'mb-2' : undefined}>
           {t.rich('bingeShow', {
             showValue: binge.title,

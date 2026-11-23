@@ -1,5 +1,6 @@
 'use client'
 
+import MultiSelect from '@/components/MultiSelect'
 import { HistoryStatus } from '@/types/playHistory'
 import {
   ConnectionSettings,
@@ -37,6 +38,7 @@ export default function ConnectionSettingsForm({
   historyStatus,
 }: Props) {
   const t = useTranslations('Settings')
+  const tCommon = useTranslations('Common')
   const initialState: ConnectionFormState = {
     message: '',
     status: '',
@@ -81,6 +83,12 @@ export default function ConnectionSettingsForm({
     : 'plex'
   const isJellyfin = mediaServerType === 'jellyfin'
   const mediaServerName = getMediaServerName(mediaServerType)
+  const otherServerOptions = tracearrServers
+    .filter((server) => server.server_id !== tracearrServerId)
+    .map((server) => ({
+      value: server.server_id,
+      label: `${server.server_name} (${getMediaServerName(server.server_type)})`,
+    }))
 
   return (
     <SettingsForm
@@ -101,9 +109,9 @@ export default function ConnectionSettingsForm({
                 setStatisticsSource(e.target.value as StatisticsSource)
               }
             >
-              {/* eslint-disable-next-line react/jsx-no-literals */}
+              {/* oxlint-disable-next-line react/jsx-no-literals */}
               <option value='tautulli'>Tautulli</option>
-              {/* eslint-disable-next-line react/jsx-no-literals */}
+              {/* oxlint-disable-next-line react/jsx-no-literals */}
               <option value='tracearr'>Tracearr</option>
             </select>
           </span>
@@ -125,7 +133,7 @@ export default function ConnectionSettingsForm({
         )}
       </section>
       <section className={clsx('group-settings group', { hidden: isTracearr })}>
-        {/* eslint-disable-next-line react/jsx-no-literals */}
+        {/* oxlint-disable-next-line react/jsx-no-literals */}
         <h2 className='heading-settings'>Tautulli</h2>
         <label className='input-wrapper'>
           <input
@@ -138,7 +146,7 @@ export default function ConnectionSettingsForm({
             defaultValue={connectionSettings.tautulliUrl}
           />
           <span className='label'>
-            {/* eslint-disable-next-line react/jsx-no-literals */}
+            {/* oxlint-disable-next-line react/jsx-no-literals */}
             <span className='label-wrapper'>URL</span>
           </span>
         </label>
@@ -159,7 +167,7 @@ export default function ConnectionSettingsForm({
       <section
         className={clsx('group-settings group', { hidden: !isTracearr })}
       >
-        {/* eslint-disable-next-line react/jsx-no-literals */}
+        {/* oxlint-disable-next-line react/jsx-no-literals */}
         <h2 className='heading-settings'>Tracearr</h2>
         <label className='input-wrapper'>
           <input
@@ -172,7 +180,7 @@ export default function ConnectionSettingsForm({
             defaultValue={connectionSettings.tracearrUrl}
           />
           <span className='label'>
-            {/* eslint-disable-next-line react/jsx-no-literals */}
+            {/* oxlint-disable-next-line react/jsx-no-literals */}
             <span className='label-wrapper'>URL</span>
           </span>
         </label>
@@ -215,6 +223,28 @@ export default function ConnectionSettingsForm({
             </span>
           </label>
         )}
+        {tracearrServers.length > 1 ? (
+          <MultiSelect
+            key={`tracearr-other-servers-${connectionSettings.tracearrOtherServerIds.join(',')}`}
+            label={t('Connection.otherServers')}
+            description={t('Connection.otherServersHelp')}
+            name='tracearrOtherServerIds'
+            options={otherServerOptions}
+            defaultValue={connectionSettings.tracearrOtherServerIds}
+            placeholder={tCommon('none')}
+          />
+        ) : (
+          // Kept while Tracearr's servers can't be listed, so saving doesn't
+          // drop them
+          connectionSettings.tracearrOtherServerIds.map((serverId) => (
+            <input
+              key={`tracearr-other-server-${serverId}`}
+              type='hidden'
+              name='tracearrOtherServerIds'
+              value={serverId}
+            />
+          ))
+        )}
       </section>
       {/* Tautulli finds Plex itself, so its URL is only for the token */}
       <section className='group-settings group'>
@@ -234,7 +264,7 @@ export default function ConnectionSettingsForm({
             defaultValue={connectionSettings.plexUrl}
           />
           <span className='label'>
-            {/* eslint-disable-next-line react/jsx-no-literals */}
+            {/* oxlint-disable-next-line react/jsx-no-literals */}
             <span className='label-wrapper'>URL</span>
             {isTracearr && <small>{t('Connection.plexUrlHelp')}</small>}
           </span>
@@ -250,7 +280,7 @@ export default function ConnectionSettingsForm({
             defaultValue={connectionSettings.jellyfinUrl}
           />
           <span className='label'>
-            {/* eslint-disable-next-line react/jsx-no-literals */}
+            {/* oxlint-disable-next-line react/jsx-no-literals */}
             <span className='label-wrapper'>URL</span>
             <small>{t('Connection.jellyfinUrlHelp')}</small>
           </span>
@@ -297,7 +327,7 @@ export default function ConnectionSettingsForm({
             defaultValue={connectionSettings.seerrUrl}
           />
           <span className='label'>
-            {/* eslint-disable-next-line react/jsx-no-literals */}
+            {/* oxlint-disable-next-line react/jsx-no-literals */}
             <span className='label-wrapper'>URL</span>
           </span>
         </label>

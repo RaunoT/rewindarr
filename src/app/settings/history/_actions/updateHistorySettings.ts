@@ -8,6 +8,8 @@ import updateSettings from '../../_actions/updateSettings'
 const schema = z.object({
   isActive: z.boolean(),
   isAdminOnly: z.boolean().optional(),
+  isOwnOnly: z.boolean().optional(),
+  isOwnOnlyForAdmin: z.boolean().optional(),
   complete: z.boolean(),
 })
 
@@ -29,6 +31,11 @@ export default async function saveHistorySettings(
 
   if (isActive) {
     data.isAdminOnly = formData.get('isAdminOnly') === 'on'
+    data.isOwnOnly = formData.get('isOwnOnly') === 'on'
+
+    if (data.isOwnOnly) {
+      data.isOwnOnlyForAdmin = formData.get('isOwnOnlyForAdmin') === 'on'
+    }
   }
 
   return await updateSettings(schema, data, 'history')

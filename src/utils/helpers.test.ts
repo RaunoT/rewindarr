@@ -1,5 +1,6 @@
 import { Settings } from '@/types/settings'
 import { cloneDeep } from 'lodash'
+import { Session } from 'next-auth'
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
 import {
@@ -9,6 +10,7 @@ import {
   getAverageShares,
   getDifference,
   getHomeTiles,
+  getOwnOnlyUserId,
   getRequestsBreakdown,
   getRewindBreakdown,
   getSettingsPage,
@@ -16,7 +18,9 @@ import {
   isInitialSetup,
   isLoginRequired,
   isPostUpdateMissingSettings,
+  isRewindOnly,
   isSettingsPageLocked,
+  isUsersPageVisible,
   Viewer,
 } from './helpers'
 
@@ -392,6 +396,69 @@ describe('canViewFeature', () => {
   })
 })
 
+describe('own-only sections', () => {
+  function session(isAdmin: boolean): Session {
+    return { user: { id: '7', isAdmin }, expires: '' } as Session
+  }
+
+  it('closes them to visitors, even with outside access', () => {
+    const settings = cloneDeep(DEFAULT_SETTINGS)
+
+    settings.general.isOutsideAccess = true
+    settings.history.isOwnOnly = true
+
+    expect(canViewFeature(settings, 'history', visitor)).toBe(false)
+    expect(canViewFeature(settings, 'history', user)).toBe(true)
+    expect(canViewFeature(settings, 'activity', visitor)).toBe(true)
+    expect(isLoginRequired(completeOwnOnly(), '/history')).toBe(true)
+  })
+
+  it("narrows them down to the user's own, and the admin's when asked", () => {
+    const settings = cloneDeep(DEFAULT_SETTINGS)
+
+    expect(getOwnOnlyUserId(settings, 'history', session(false))).toBe(
+      undefined,
+    )
+
+    settings.history.isOwnOnly = true
+
+    expect(getOwnOnlyUserId(settings, 'history', session(false))).toBe('7')
+    expect(getOwnOnlyUserId(settings, 'history', session(true))).toBe(undefined)
+    expect(getOwnOnlyUserId(settings, 'activity', session(false))).toBe(
+      undefined,
+    )
+
+    settings.history.isOwnOnlyForAdmin = true
+
+    expect(getOwnOnlyUserId(settings, 'history', session(true))).toBe('7')
+  })
+
+  it('hides the users page from those who see only their own stats', () => {
+    const settings = cloneDeep(DEFAULT_SETTINGS)
+
+    expect(isUsersPageVisible(settings, session(false))).toBe(true)
+
+    settings.dashboard.isOwnOnly = true
+
+    expect(isUsersPageVisible(settings, session(false))).toBe(false)
+    expect(isUsersPageVisible(settings, session(true))).toBe(true)
+    expect(getOwnOnlyUserId(settings, 'dashboard', session(false))).toBe('7')
+
+    settings.dashboard.isUsersPageActive = false
+
+    expect(isUsersPageVisible(settings, session(true))).toBe(false)
+  })
+
+  function completeOwnOnly() {
+    const settings = completeSettings()
+
+    settings.general.isOutsideAccess = true
+    settings.history.isOwnOnly = true
+
+    return settings
+  }
+})
+
 describe('isLoginRequired', () => {
   it('asks a visitor to log in for the sections they can only see logged in', () => {
     const settings = completeSettings()
@@ -497,6 +564,65 @@ describe('getHomeTiles', () => {
 
     expect(getHomeTiles(settings, user, 2).rewind).toBe(false)
     expect(getHomeTiles(settings, admin, 2).rewind).toBe(true)
+  })
+})
+
+describe('isRewindOnly', () => {
+  function rewindOnly() {
+    const settings = cloneDeep(DEFAULT_SETTINGS)
+
+    settings.activity.isActive = false
+    settings.dashboard.isActive = false
+    settings.history.isActive = false
+
+    return settings
+  }
+
+  it('is true when Rewind is all a user can see', () => {
+    expect(isRewindOnly(rewindOnly(), user)).toBe(true)
+    expect(isRewindOnly(rewindOnly(), admin)).toBe(true)
+  })
+
+  it('is false while another section is open to the viewer', () => {
+    const settings = rewindOnly()
+
+    settings.history.isActive = true
+
+    expect(isRewindOnly(settings, user)).toBe(false)
+  })
+
+  it('leaves out a dashboard with nothing in it', () => {
+    const settings = rewindOnly()
+
+    settings.dashboard.isActive = true
+    settings.dashboard.isUsersPageActive = false
+    settings.general.activeLibraries = []
+
+    expect(isRewindOnly(settings, user)).toBe(true)
+
+    settings.dashboard.isUsersPageActive = true
+
+    expect(isRewindOnly(settings, user)).toBe(false)
+  })
+
+  it('goes by what each viewer can see', () => {
+    const settings = rewindOnly()
+
+    settings.activity.isActive = true
+    settings.activity.isAdminOnly = true
+
+    expect(isRewindOnly(settings, user)).toBe(true)
+    expect(isRewindOnly(settings, admin)).toBe(false)
+  })
+
+  it('is false without Rewind, or for visitors who are not logged in', () => {
+    const settings = rewindOnly()
+
+    expect(isRewindOnly(settings, visitor)).toBe(false)
+
+    settings.rewind.isActive = false
+
+    expect(isRewindOnly(settings, user)).toBe(false)
   })
 })
 

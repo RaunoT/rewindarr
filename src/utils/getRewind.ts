@@ -1,6 +1,7 @@
 import { TopTrack } from '@/types/rewind'
 import {
   HistoryPlay,
+  ItemRow,
   Library,
   MediaStatsType,
   PlayPeriod,
@@ -18,7 +19,7 @@ import {
   isTracearrSource,
 } from './helpers'
 import { LibrariesSize } from './librariesSize'
-import { isCountedPlay } from './playStats'
+import { isCountedPlay, isPlayOfItem } from './playStats'
 import { getRequestsWatched } from './rewindSocial'
 import { getStatsSource } from './statsSource'
 
@@ -136,6 +137,28 @@ export async function getTopPeople(
   return getStatsSource().getTopPeople(userId, libraries, period)
 }
 
+async function getAudioPlays(
+  userId: string,
+  libraries: Library[],
+  period: PlayPeriod,
+): Promise<HistoryPlay[]> {
+  const audioLibraries = libraries.filter(
+    (library) => library.section_type === 'artist',
+  )
+
+  if (!audioLibraries.length) {
+    return []
+  }
+
+  const plays = await getStatsSource().getHistoryPlays({
+    ...period,
+    userId,
+    libraries: audioLibraries,
+  })
+
+  return plays.filter((play) => play.mediaType === 'track')
+}
+
 // The user's most played track, by plays and then listening time. Like the
 // other stats, plays short of the percent in the settings only add their
 // listening time. Without a track played twice, it's the one with the most
@@ -145,27 +168,40 @@ export async function getTopTrack(
   libraries: Library[],
   period: PlayPeriod,
 ): Promise<TopTrack | null> {
-  const settings = getSettings()
-  const audioLibraries = libraries.filter(
-    (library) => library.section_type === 'artist',
-  )
+  const plays = await getAudioPlays(userId, libraries, period)
 
-  if (!audioLibraries.length) {
-    return null
-  }
+  return pickTopTrack(plays, getSettings().general.minPlayPercent)
+}
 
-  const plays = await getStatsSource(settings).getHistoryPlays({
-    ...period,
-    userId,
-    libraries: audioLibraries,
+// Each artist's most played track, picked like the top track, in the artists'
+// order. An artist ranks by listening time too, so without a play that counts
+// it's the track with the most. Null for an artist without plays.
+export function getArtistTopTracks(
+  plays: HistoryPlay[],
+  artists: Pick<ItemRow, 'media_id' | 'title' | 'year'>[],
+  minPercent: number,
+): (TopTrack | null)[] {
+  const tracks = plays.filter((play) => play.mediaType === 'track')
+
+  return artists.map((artist) => {
+    const artistTracks = tracks.filter((play) => isPlayOfItem(play, artist))
+
+    return (
+      pickTopTrack(artistTracks, minPercent) ??
+      maxBy([...sumTracks(artistTracks, minPercent).values()], 'durationMs') ??
+      null
+    )
   })
+}
+
+// The plays of each track and its listening time
+function sumTracks(
+  plays: HistoryPlay[],
+  minPercent: number,
+): Map<string, TopTrack> {
   const tracks = new Map<string, TopTrack>()
 
   for (const play of plays) {
-    if (play.mediaType !== 'track') {
-      continue
-    }
-
     // Jellyfin's plays through Tracearr may have no rating key
     const key =
       play.ratingKey ?? play.mediaId ?? `${play.artistName}|${play.title}`
@@ -178,13 +214,22 @@ export async function getTopTrack(
       isOnly: false,
     }
 
-    if (isCountedPlay(play, settings.general.minPlayPercent)) {
+    if (isCountedPlay(play, minPercent)) {
       track.plays += 1
     }
 
     track.durationMs += play.durationMs
     tracks.set(key, track)
   }
+
+  return tracks
+}
+
+function pickTopTrack(
+  plays: HistoryPlay[],
+  minPercent: number,
+): TopTrack | null {
+  const tracks = sumTracks(plays, minPercent)
 
   let top: TopTrack | null = null
   let countedTracks = 0
@@ -218,11 +263,13 @@ export async function getTopTrack(
   return { ...top, isOnly }
 }
 
-// Anonymizing hides who the match would name, so it isn't looked for
+// Anonymizing hides who the match would name, so it isn't looked for, and
+// neither is it when the viewer may only see their own stats
 export async function getGenres(
   userId: string,
   libraries: Library[],
   period: PlayPeriod,
+  isMatchShown = true,
 ) {
   const settings = getSettings()
 
@@ -230,7 +277,7 @@ export async function getGenres(
     userId,
     libraries,
     period,
-    !settings.general.isAnonymized,
+    isMatchShown && !settings.general.isAnonymized,
   )
 }
 

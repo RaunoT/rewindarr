@@ -269,9 +269,7 @@ export default function GeneralSettingsForm({
                 />
               ))}
             </Reorder.Group>
-            <p aria-live='polite' role='status' className='sr-only'>
-              {moveAnnouncement}
-            </p>
+            <output className='sr-only'>{moveAnnouncement}</output>
             <Label className='label label--start'>
               <span className='label-wrapper'>{t('activeLibraries')}</span>
             </Label>
@@ -401,7 +399,7 @@ export default function GeneralSettingsForm({
                 placeholder='G-XXXXXXXXXX'
               />
               <span className='label'>
-                {/* eslint-disable-next-line react/jsx-no-literals */}
+                {/* oxlint-disable-next-line react/jsx-no-literals */}
                 <span className='label-wrapper'>Google Analytics ID</span>
               </span>
             </label>

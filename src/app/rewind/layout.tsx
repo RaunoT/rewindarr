@@ -1,10 +1,11 @@
 import CardWrapper from '@/app/_components/CardWrapper'
+import HeaderControls from '@/app/_components/HeaderControls'
 import PageTitle from '@/app/_components/PageTitle'
 import { authOptions } from '@/lib/auth'
 import { TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
 import getRewindEditions from '@/utils/getRewindEditions'
 import getSettings from '@/utils/getSettings'
-import { canViewFeature, getViewer } from '@/utils/helpers'
+import { canViewFeature, getViewer, isRewindOnly } from '@/utils/helpers'
 import { getLatestEditionYear, getRewindPeriodType } from '@/utils/rewindPeriod'
 import { getActiveUsers } from '@/utils/statsSource'
 import { toTimeZone } from '@/utils/timeZone'
@@ -41,6 +42,8 @@ export default async function RewindLayout({ children }: Props) {
 
   const t = await getTranslations('Rewind')
   const isAdmin = !!session?.user.isAdmin
+  // Rewind is then the home page, so there's no home to go back to
+  const isHome = isRewindOnly(settings, getViewer(session))
   const hasEditions = getRewindPeriodType(settings) === 'calendarYear'
   const selects = session && (isAdmin || hasEditions) && (
     <Suspense>
@@ -55,14 +58,28 @@ export default async function RewindLayout({ children }: Props) {
   return (
     <div className='page-width flex flex-1 flex-col sm:flex-none'>
       {/* On phones the stories fill the screen in place of these */}
-      <div className='max-sm:hidden'>
-        <PageTitle title={t('title')} />
-        {selects && (
-          <div className='mb-4 flex min-h-10 items-center justify-end gap-3'>
-            {selects}
-          </div>
-        )}
-      </div>
+      {isHome ? (
+        // With nothing to go back to, the pickers and the account menu share
+        // one row over the stories, as on phones, in place of the page
+        // corner's controls
+        <div
+          data-own-controls
+          className='mb-4 flex min-h-10 items-center gap-3 max-sm:hidden'
+        >
+          <h1 className='sr-only'>{t('title')}</h1>
+          {selects}
+          <HeaderControls className='ml-auto shrink-0' />
+        </div>
+      ) : (
+        <div className='max-sm:hidden'>
+          <PageTitle title={t('title')} />
+          {selects && (
+            <div className='mb-4 flex min-h-10 items-center gap-3'>
+              {selects}
+            </div>
+          )}
+        </div>
+      )}
       <CardWrapper className='rewind-player sm:min-h-[80vh]'>
         {/* The page header's place on phones, clear of the progress bar's tap
             areas, which reach above it. It stays above the touch intro, so
@@ -70,13 +87,17 @@ export default async function RewindLayout({ children }: Props) {
         <div className='relative z-40 mb-6 flex min-h-10 items-center gap-3 sm:hidden'>
           <h1 className='sr-only'>{t('title')}</h1>
           {selects}
-          <Link
-            href='/'
-            className='icon-button icon-button--glass ml-auto shrink-0'
-            aria-label={t('close')}
-          >
-            <XMarkIcon />
-          </Link>
+          {isHome ? (
+            <HeaderControls className='ml-auto shrink-0' />
+          ) : (
+            <Link
+              href='/'
+              className='icon-button icon-button--glass ml-auto shrink-0'
+              aria-label={t('close')}
+            >
+              <XMarkIcon />
+            </Link>
+          )}
         </div>
         {children}
       </CardWrapper>

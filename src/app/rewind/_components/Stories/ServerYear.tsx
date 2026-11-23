@@ -8,6 +8,7 @@ import { UsersIcon } from '@heroicons/react/24/outline'
 import { useFormatter, useTranslations } from 'next-intl'
 import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
+import { TITLE_STEPS } from '../storyMusic'
 
 export default function StoryServerYear({ userRewind, settings }: RewindStory) {
   const t = useTranslations('Rewind.ServerYear')
@@ -67,7 +68,7 @@ export default function StoryServerYear({ userRewind, settings }: RewindStory) {
       )}
 
       {serverYear.movie && (
-        <RewindStat step={2} noScale>
+        <RewindStat step={TITLE_STEPS.serverMovie} noScale>
           <p className='mb-2'>
             {t.rich('movie', {
               titleValue: serverYear.movie.data.title,
@@ -83,7 +84,7 @@ export default function StoryServerYear({ userRewind, settings }: RewindStory) {
       )}
 
       {serverYear.show && (
-        <RewindStat step={3} noScale>
+        <RewindStat step={TITLE_STEPS.serverShow} noScale>
           <p className='mb-2'>
             {t.rich('show', {
               titleValue: serverYear.show.data.title,

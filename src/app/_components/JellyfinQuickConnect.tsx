@@ -127,9 +127,9 @@ export default function JellyfinQuickConnect({ onCancel }: Props) {
           >
             {status.code}
           </p>
-          <p role='status' className='text-sm text-neutral-400'>
+          <output className='block text-sm text-neutral-400'>
             {t('quickConnectWaiting')}
-          </p>
+          </output>
         </>
       )}
       {status.step === 'failed' && (

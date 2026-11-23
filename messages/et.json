@@ -206,6 +206,8 @@
       "source": "Allikas",
       "server": "Server",
       "chooseServer": "Vali server",
+      "otherServers": "Arvesta ka mängimisi serveritest",
+      "otherServersHelp": "Sisselogimine, kasutajad, teegid ja lingid jäävad valitud serveri omaks. Seo Tracearris iga inimese kontod, et tema mängimised kokku loetaks.",
       "token": "Token (valikuline)",
       "tokenDescription": "Laseb Rewind'il mängida muusikat sinu kogust. <link>Kuidas seda leida?</link>",
       "optionalService": "{service} (valikuline)",
@@ -276,6 +278,8 @@
     },
     "Rewind": {
       "title": "Rewind seaded",
+      "startsOnRewind": "Kasutajad jõuavad otse Rewindi, sest see on ainus neile avatud leht.",
+      "startsOnHome": "Kasutajad alustavad avalehelt. Et nad jõuaksid otse Rewindi, lülita välja või tee ainult administraatoritele: <pages></pages>.",
       "cards": "Lood",
       "hiddenStories": "Peidetud lood",
       "stories": {
@@ -361,6 +365,9 @@
     "clear": "Tühjenda",
     "enabled": "Aktiveeritud",
     "adminOnly": "Ainult administraatoritele",
+    "ownOnly": "Kasutajad näevad ainult enda oma",
+    "ownOnlyForAdmin": "Ka administraatorid",
+    "ownOnlyForAdminDescription": "Muidu näevad administraatorid kõigi oma",
     "status": "Olek",
     "year": "Aasta",
     "ratingBy": "{provider} hinnang",
@@ -382,6 +389,13 @@
       "hr": "{count, plural, one {# t} other {# t}}",
       "min": "{count, plural, one {# min} other {# min}}",
       "sec": "{count, plural, one {# sek} other {# sek}}"
+    },
+    "timeShort": {
+      "zero": "0min",
+      "day": "{count}p",
+      "hr": "{count}t",
+      "min": "{count}min",
+      "sec": "{count}s"
     },
     "fileSize": "{value, number} {unit}"
   },

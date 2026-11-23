@@ -16,7 +16,12 @@ import {
 import { getItems } from '@/utils/getDashboard'
 import getPeriod, { parseCustomPeriod } from '@/utils/getPeriod'
 import getRewindEditions from '@/utils/getRewindEditions'
-import { getHomeTiles, getLibrarySlug, getViewer } from '@/utils/helpers'
+import {
+  getHomeTiles,
+  getLibrarySlug,
+  getOwnOnlyUserId,
+  getViewer,
+} from '@/utils/helpers'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import { toPublicSettings } from '@/utils/publicSettings'
 import { getNewEditionYear, getRewindPeriodType } from '@/utils/rewindPeriod'
@@ -126,6 +131,7 @@ export default async function Overview({
                 <LibraryTile
                   library={library}
                   settings={settings}
+                  session={session}
                   period={period}
                   periodLabel={periodLabel}
                 />
@@ -175,11 +181,15 @@ async function OverviewHeader({ settings, session }: OverviewSkeletonProps) {
   const firstName = session?.user.name?.split(' ')[0]
 
   return (
+    // Its own controls, so the app's corner copy doesn't show beside them on
+    // large screens without the sidebar
     <header
       data-page-header
-      className='mb-4 flex min-h-10 items-center justify-between gap-3'
+      data-own-controls
+      className='mb-4 flex min-h-10 items-center justify-between gap-3 sm:mb-6 lg:mt-2 lg:mb-8'
     >
-      <h1 className='truncate text-2xl font-bold tracking-tight sm:text-3xl'>
+      {/* On phones the same size as the other pages' titles */}
+      <h1 className='truncate text-xl font-semibold tracking-tight sm:text-3xl sm:font-bold lg:text-4xl'>
         {firstName
           ? t('greeting', { name: firstName })
           : settings.general.serverName || t('title')}
@@ -262,6 +272,7 @@ async function EarlierRewindsMenu({
 type LibraryTileProps = {
   library: Library
   settings: Settings
+  session: Session | null
   period: DashboardSearchParams['period']
   periodLabel: string
 }
@@ -277,6 +288,7 @@ function getDashboardPeriod(value?: string): DashboardSearchParams['period'] {
 async function LibraryTile({
   library,
   settings,
+  session,
   period,
   periodLabel,
 }: LibraryTileProps) {
@@ -288,6 +300,7 @@ async function LibraryTile({
     : (
         await getItems(library, {
           period: daysAgo,
+          userId: getOwnOnlyUserId(settings, 'dashboard', session),
           sortBy: 'plays',
           count: TILE_ITEM_COUNT,
         })

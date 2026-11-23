@@ -34,7 +34,7 @@ export default function TitleMenu({ label, items }: Props) {
 
   return (
     <MenuTrigger>
-      <Button className='focus-visible:focus-ring -mx-1.5 flex min-w-0 items-center gap-1 rounded-md px-1.5 text-lg font-semibold tracking-tight sm:text-xl'>
+      <Button className='focus-visible:focus-ring -mx-1.5 flex min-w-0 items-center gap-1 rounded-md px-1.5 text-xl font-semibold tracking-tight'>
         <span className='truncate'>{current?.label}</span>
         <ChevronDownIcon className='size-4 shrink-0 text-neutral-400' />
       </Button>

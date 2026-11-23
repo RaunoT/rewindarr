@@ -68,13 +68,53 @@ export function canViewFeature(
     return viewer.isAdmin
   }
 
+  // A visitor has nothing of their own to show
+  if (isOwnOnlyFeature(feature) && settings[feature].isOwnOnly) {
+    return viewer.isLoggedIn
+  }
+
   return (
     viewer.isLoggedIn ||
     (feature !== 'rewind' && settings.general.isOutsideAccess)
   )
 }
 
+// A rewind is always the viewer's own
+export type OwnOnlyFeature = Exclude<Feature, 'rewind'>
+
+function isOwnOnlyFeature(feature: Feature): feature is OwnOnlyFeature {
+  return feature !== 'rewind'
+}
+
+// The user whose own stats, streams or plays alone the page shows, or none
+// for everyone's
+export function getOwnOnlyUserId<F extends OwnOnlyFeature>(
+  settings: Pick<Settings, F>,
+  feature: F,
+  session: Session | null | undefined,
+): string | undefined {
+  const { isOwnOnly, isOwnOnlyForAdmin } = settings[feature]
+
+  if (!session || !isOwnOnly || (session.user.isAdmin && !isOwnOnlyForAdmin)) {
+    return undefined
+  }
+
+  return String(session.user.id)
+}
+
 const FEATURES: Feature[] = ['rewind', 'dashboard', 'activity', 'history']
+
+// The users page is all about everyone else, so a viewer who only sees their
+// own stats doesn't get it
+export function isUsersPageVisible(
+  settings: Pick<Settings, 'dashboard'>,
+  session: Session | null | undefined,
+): boolean {
+  return (
+    settings.dashboard.isUsersPageActive &&
+    !getOwnOnlyUserId(settings, 'dashboard', session)
+  )
+}
 
 // A page a logged-out visitor can't open but a login could, so the proxy
 // sends them to log in instead of to a missing page
@@ -107,6 +147,32 @@ export function getHomeTiles(
     libraries:
       canViewFeature(settings, 'dashboard', viewer) && libraryCount > 0,
   }
+}
+
+// The pages a viewer can open. A dashboard with no libraries and no users
+// page has nothing in it.
+export function getOpenPages(
+  settings: Pick<Settings, 'general' | Feature>,
+  viewer: Viewer,
+): Feature[] {
+  return FEATURES.filter(
+    (feature) =>
+      canViewFeature(settings, feature, viewer) &&
+      (feature !== 'dashboard' ||
+        settings.general.activeLibraries.length > 0 ||
+        settings.dashboard.isUsersPageActive),
+  )
+}
+
+// With nothing else to show, the home page would only lead to Rewind, so
+// Rewind takes its place
+export function isRewindOnly(
+  settings: Pick<Settings, 'general' | Feature>,
+  viewer: Viewer,
+): boolean {
+  const pages = getOpenPages(settings, viewer)
+
+  return pages.length === 1 && pages[0] === 'rewind'
 }
 
 export function checkRequiredSettings(settings: Settings): string | null {

@@ -5,6 +5,7 @@ import { DashboardSearchParams } from '@/types/dashboard'
 import { Settings } from '@/types/settings'
 import { Library } from '@/types/statsSource'
 import { getRecentPlays } from '@/utils/getHistory'
+import { getOwnOnlyUserId } from '@/utils/helpers'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import { ChevronRightIcon, ClockIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
@@ -29,7 +30,10 @@ export default async function HistoryTile({
   period,
 }: Props) {
   const t = await getTranslations()
-  const { plays, progress } = await getRecentPlays(TILE_ITEM_COUNT, libraries)
+  const { plays, progress } = await getRecentPlays(TILE_ITEM_COUNT, {
+    libraries,
+    userId: getOwnOnlyUserId(settings, 'history', session),
+  })
   const locale = await getLocale()
   const now = await getNow()
 

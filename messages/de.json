@@ -206,6 +206,8 @@
       "source": "Quelle",
       "server": "Server",
       "chooseServer": "Server auswählen",
+      "otherServers": "Auch Wiedergaben zählen von",
+      "otherServersHelp": "Anmeldung, Benutzer, Bibliotheken und Links bleiben die des gewählten Servers. Verknüpfe in Tracearr die Konten jeder Person, damit ihre Wiedergaben zusammengezählt werden.",
       "token": "Token (optional)",
       "tokenDescription": "Damit Rewind Musik aus deiner Bibliothek abspielt. <link>Wie findest du es?</link>",
       "optionalService": "{service} (optional)",
@@ -276,6 +278,8 @@
     },
     "Rewind": {
       "title": "Rewind Einstellungen",
+      "startsOnRewind": "Benutzer landen direkt in Rewind, da es die einzige Seite ist, die ihnen offensteht.",
+      "startsOnHome": "Benutzer starten auf der Startseite. Damit sie direkt in Rewind landen, schalte aus oder beschränke auf Admins: <pages></pages>.",
       "cards": "Stories",
       "hiddenStories": "Ausgeblendete Stories",
       "stories": {
@@ -361,6 +365,9 @@
     "clear": "Leeren",
     "enabled": "Aktiv",
     "adminOnly": "Nur für Admins",
+    "ownOnly": "Benutzer sehen nur ihre eigenen",
+    "ownOnlyForAdmin": "Auch für Admins",
+    "ownOnlyForAdminDescription": "Sonst sehen Admins die aller Benutzer",
     "status": "Status",
     "year": "Jahr",
     "ratingBy": "{provider}-Bewertung",
@@ -382,6 +389,13 @@
       "hr": "{count, plural, one {# Std.} other {# Std.}}",
       "min": "{count, plural, one {# Min.} other {# Min.}}",
       "sec": "{count, plural, one {# Sek.} other {# Sek.}}"
+    },
+    "timeShort": {
+      "zero": "0min",
+      "day": "{count}T",
+      "hr": "{count}h",
+      "min": "{count}min",
+      "sec": "{count}s"
     },
     "fileSize": "{value, number} {unit}"
   },

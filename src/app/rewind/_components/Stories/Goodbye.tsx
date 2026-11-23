@@ -1,5 +1,5 @@
 import { RewindStory } from '@/types/rewind'
-import { hasRewindPlays } from '@/utils/helpers'
+import { getViewer, hasRewindPlays, isRewindOnly } from '@/utils/helpers'
 import { getServerName } from '@/utils/mediaServerName'
 import {
   ArrowPathIcon,
@@ -8,6 +8,7 @@ import {
   MusicalNoteIcon,
   PlayCircleIcon,
 } from '@heroicons/react/24/outline'
+import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useContext } from 'react'
@@ -55,6 +56,9 @@ export default function StoryGoodbye({ userRewind, settings }: RewindStory) {
   const t = useTranslations('Rewind.Goodbye')
   const restart = useContext(StoryRestartContext)
   const hasPlays = hasRewindPlays(userRewind)
+  const { data: session } = useSession()
+  // Home would only lead back here
+  const isHome = isRewindOnly(settings, getViewer(session ?? null))
 
   return (
     <>
@@ -114,10 +118,12 @@ export default function StoryGoodbye({ userRewind, settings }: RewindStory) {
             <ArrowPathIcon className='size-5' />
             {t('watchAgain')}
           </button>
-          <Link href='/' className='button button--glass'>
-            <HomeIcon className='size-5' />
-            {t('backToHome')}
-          </Link>
+          {!isHome && (
+            <Link href='/' className='button button--glass'>
+              <HomeIcon className='size-5' />
+              {t('backToHome')}
+            </Link>
+          )}
         </div>
       </RewindStat>
     </>

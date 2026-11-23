@@ -36,6 +36,7 @@ import {
 } from 'react'
 import StoriesIntro from './StoriesIntro'
 import StoryBackdrop from './StoryBackdrop'
+import { getStepMusic, StepMusic } from './storyMusic'
 import useAutoplay from './useAutoplay'
 
 type StoryStep = {
@@ -59,6 +60,9 @@ export type Story = {
   id: string
   // What plays during the story, in order of preference
   music?: string[]
+  // What plays instead from a statement on, such as a title's theme song
+  // once the title shows
+  stepMusic?: StepMusic[]
   // The art behind the story, tried in turn
   art?: string[]
 } & (
@@ -84,6 +88,7 @@ const INTRO_SEEN_KEY = 'rewindIntroSeen'
 const SOUND_KEY = 'rewindSound'
 const AUTOPLAY_KEY = 'rewindAutoplay'
 const NO_MUSIC: string[] = []
+const NO_STEP_MUSIC: StepMusic[] = []
 const NO_ART: string[] = []
 // A longer press or a drag doesn't count as a tap
 const TAP_MAX_DURATION = 500
@@ -146,6 +151,9 @@ export default function Stories({ stories }: Props) {
   const [heldStatement, setHeldStatement] = useState<string | null>(null)
   const [announcement, setAnnouncement] = useState('')
   const [step, setStep] = useState(0)
+  // Going back starts the previous story on its first statement until its
+  // statements have registered, so its music waits for the last one
+  const [isSeekingToEnd, setIsSeekingToEnd] = useState(false)
   // The steps of the current story's statements
   const [steps, setSteps] = useState<number[]>([])
   const isHidden = useSyncExternalStore(
@@ -182,15 +190,27 @@ export default function Stories({ stories }: Props) {
   )
   const fullscreen = useFullscreen(getPlayer)
   const musicUrls = useMemo(
-    () => [...new Set(stories.flatMap((story) => story.music ?? []))],
+    () => [
+      ...new Set(
+        stories.flatMap((story) => [
+          ...(story.music ?? []),
+          ...(story.stepMusic ?? []).flatMap(({ music }) => music),
+        ]),
+      ),
+    ],
     [stories],
   )
   const hasLockedMusic =
     !!unlockedMusic && musicUrls.some((url) => !unlockedMusic.includes(url))
   const waitForInteraction = useCallback(() => setIsSoundBlocked(true), [])
   const { unlock } = useStoryMusic({
-    sources: currentStory?.music ?? NO_MUSIC,
-    isPlaying: isSoundOn && !isHidden && isIntroShown === false,
+    sources: getStepMusic(
+      currentStory?.music ?? NO_MUSIC,
+      currentStory?.stepMusic ?? NO_STEP_MUSIC,
+      step,
+    ),
+    isPlaying:
+      isSoundOn && !isHidden && isIntroShown === false && !isSeekingToEnd,
     onBlocked: waitForInteraction,
   })
   const unlockMusic = useCallback(() => {
@@ -240,6 +260,7 @@ export default function Stories({ stories }: Props) {
 
       // Going back lands on the previous story's last statement
       shouldSeekToEndRef.current = isAtEnd
+      setIsSeekingToEnd(isAtEnd)
       setStep(0)
       setCurrentIndex(index)
       setAnnouncement(getPositionLabel(index))
@@ -401,11 +422,12 @@ export default function Stories({ stories }: Props) {
     if (shouldSeekToEndRef.current) {
       shouldSeekToEndRef.current = false
       setStep(Math.max(0, ...steps))
+      setIsSeekingToEnd(false)
     }
   }, [steps])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // oxlint-disable-next-line react-hooks/set-state-in-effect
     setIsIntroShown(
       window.matchMedia(TOUCH_QUERY).matches && !readStorage(INTRO_SEEN_KEY),
     )
@@ -630,9 +652,12 @@ export default function Stories({ stories }: Props) {
             ))}
         </div>
 
-        {/* Story content with tap navigation */}
+        {/* Story content with tap navigation. A carousel slide, and the taps
+            do what the previous and next buttons below do. */}
+        {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
         <div
           ref={slideRef}
+          // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
           role='group'
           aria-roledescription='slide'
           aria-label={getPositionLabel(currentIndex)}

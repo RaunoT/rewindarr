@@ -206,6 +206,8 @@
       "source": "Source",
       "server": "Server",
       "chooseServer": "Choose a server",
+      "otherServers": "Also count plays from",
+      "otherServersHelp": "Sign-in, users, libraries and links stay the chosen server's. Link each person's accounts in Tracearr so their plays add up.",
       "token": "Token (optional)",
       "tokenDescription": "Lets Rewind play music from your library. <link>How to find it?</link>",
       "optionalService": "{service} (optional)",
@@ -276,6 +278,8 @@
     },
     "Rewind": {
       "title": "Rewind settings",
+      "startsOnRewind": "Users go straight to Rewind, as it's the only page open to them.",
+      "startsOnHome": "Users start on the home page. To send them straight to Rewind, turn off or set to admins only: <pages></pages>.",
       "cards": "Stories",
       "hiddenStories": "Hidden stories",
       "stories": {
@@ -361,6 +365,9 @@
     "clear": "Clear",
     "enabled": "Enabled",
     "adminOnly": "Admins only",
+    "ownOnly": "Users see only their own",
+    "ownOnlyForAdmin": "Admins too",
+    "ownOnlyForAdminDescription": "Otherwise admins see everyone's",
     "status": "Status",
     "year": "Year",
     "ratingBy": "{provider} rating",
@@ -382,6 +389,13 @@
       "hr": "{count, plural, one {# hr} other {# hrs}}",
       "min": "{count, plural, one {# min} other {# mins}}",
       "sec": "{count, plural, one {# sec} other {# secs}}"
+    },
+    "timeShort": {
+      "zero": "0m",
+      "day": "{count}d",
+      "hr": "{count}h",
+      "min": "{count}m",
+      "sec": "{count}s"
     },
     "fileSize": "{value, number} {unit}"
   },

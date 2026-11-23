@@ -1,10 +1,16 @@
-import { Library } from '@/types/statsSource'
+import { HistoryPlay, Library } from '@/types/statsSource'
 import { cloneDeep } from 'lodash'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
 import { fetchSeerrStats } from './fetchSeerr'
-import { getRequestsTotals, getTopMediaStats, getTopTrack } from './getRewind'
+import {
+  getArtistTopTracks,
+  getGenres,
+  getRequestsTotals,
+  getTopMediaStats,
+  getTopTrack,
+} from './getRewind'
 import getSettings from './getSettings'
 import { getStatsSource } from './statsSource'
 
@@ -321,5 +327,85 @@ describe('getTopTrack', () => {
     mockPlays([track('Partial', 10, 40)])
 
     await expect(getTopTrack('1', LIBRARIES, PERIOD)).resolves.toBeNull()
+  })
+})
+
+describe('getArtistTopTracks', () => {
+  function track(title: string, artistName: string, percentComplete = 100) {
+    return {
+      mediaType: 'track',
+      ratingKey: title,
+      mediaId: null,
+      title,
+      artistName,
+      durationMs: 3 * 60 * 1000,
+      lengthMs: null,
+      percentComplete,
+    } as HistoryPlay
+  }
+
+  function artist(title: string) {
+    return { title, media_id: null, year: null }
+  }
+
+  it("picks each artist's most played track, in the artists' order", () => {
+    const plays = [
+      track('Hit', 'First'),
+      track('Hit', 'First'),
+      track('Deep cut', 'First'),
+      track('Single', 'second'),
+    ]
+    const tracks = getArtistTopTracks(
+      plays,
+      [artist('Second'), artist('First'), artist('Unplayed')],
+      50,
+    )
+
+    expect(tracks.map((track) => track?.title ?? null)).toEqual([
+      'Single',
+      'Hit',
+      null,
+    ])
+  })
+
+  it('goes by listening time without a play that counts', () => {
+    const plays = [
+      track('Skipped', 'Artist', 10),
+      track('Half', 'Artist', 40),
+      track('Half', 'Artist', 40),
+    ]
+
+    expect(getArtistTopTracks(plays, [artist('Artist')], 50)).toEqual([
+      expect.objectContaining({ title: 'Half', plays: 0 }),
+    ])
+  })
+})
+
+describe('getGenres', () => {
+  const getGenresFromSource = vi.fn()
+  const period = { since: '2026-01-01' }
+
+  beforeEach(() => {
+    getGenresFromSource.mockReset()
+    vi.mocked(getStatsSource).mockReturnValue({
+      getGenres: getGenresFromSource,
+    } as unknown as ReturnType<typeof getStatsSource>)
+  })
+
+  it('looks for a taste match unless it is hidden or anonymized', async () => {
+    await getGenres('1', [], period)
+    await getGenres('1', [], period, false)
+
+    const settings = cloneDeep(DEFAULT_SETTINGS)
+
+    settings.general.isAnonymized = true
+    vi.mocked(getSettings).mockReturnValue(settings)
+    await getGenres('1', [], period)
+
+    expect(getGenresFromSource.mock.calls.map((call) => call[3])).toEqual([
+      true,
+      false,
+      false,
+    ])
   })
 })

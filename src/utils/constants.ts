@@ -71,6 +71,7 @@ export const DEFAULT_SETTINGS: Settings = {
     tracearrUrl: '',
     tracearrApiKey: '',
     tracearrServerId: '',
+    tracearrOtherServerIds: [],
     mediaServerType: 'plex',
     plexUrl: '',
     plexToken: '',
@@ -116,6 +117,8 @@ export const DEFAULT_SETTINGS: Settings = {
   dashboard: {
     isActive: true,
     isAdminOnly: false,
+    isOwnOnly: false,
+    isOwnOnlyForAdmin: false,
     isUsersPageActive: true,
     activeTotalStatistics: ['size', 'duration', 'count', 'requests'],
     customPeriod: '30',
@@ -125,11 +128,15 @@ export const DEFAULT_SETTINGS: Settings = {
   activity: {
     isActive: true,
     isAdminOnly: false,
+    isOwnOnly: false,
+    isOwnOnlyForAdmin: false,
     complete: false,
   },
   history: {
     isActive: true,
     isAdminOnly: false,
+    isOwnOnly: false,
+    isOwnOnlyForAdmin: false,
     complete: false,
   },
   setupComplete: false,

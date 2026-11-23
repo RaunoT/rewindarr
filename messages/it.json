@@ -206,6 +206,8 @@
       "source": "Sorgente",
       "server": "Server",
       "chooseServer": "Scegli un server",
+      "otherServers": "Conta anche le riproduzioni di",
+      "otherServersHelp": "Accesso, utenti, librerie e link restano quelli del server scelto. Collega gli account di ogni persona in Tracearr perché le sue riproduzioni si sommino.",
       "token": "Token (facoltativo)",
       "tokenDescription": "Permette al Rewind di riprodurre musica dalla tua libreria. <link>Come trovarlo?</link>",
       "optionalService": "{service} (facoltativo)",
@@ -276,6 +278,8 @@
     },
     "Rewind": {
       "title": "Impostazioni del Rewind",
+      "startsOnRewind": "Gli utenti arrivano direttamente a Rewind, perché è l'unica pagina aperta a loro.",
+      "startsOnHome": "Gli utenti partono dalla Home. Per mandarli direttamente a Rewind, disattiva o riserva agli amministratori: <pages></pages>.",
       "cards": "Storie",
       "hiddenStories": "Storie nascoste",
       "stories": {
@@ -361,6 +365,9 @@
     "clear": "Cancella",
     "enabled": "Attivo",
     "adminOnly": "Solo amministratori",
+    "ownOnly": "Gli utenti vedono solo i propri",
+    "ownOnlyForAdmin": "Anche gli amministratori",
+    "ownOnlyForAdminDescription": "Altrimenti gli amministratori vedono quelli di tutti",
     "status": "Stato",
     "year": "Anno",
     "ratingBy": "Voto {provider}",
@@ -382,6 +389,13 @@
       "hr": "{count, plural, one {# h} other {# h}}",
       "min": "{count, plural, one {# min} other {# min}}",
       "sec": "{count, plural, one {# s} other {# s}}"
+    },
+    "timeShort": {
+      "zero": "0min",
+      "day": "{count}g",
+      "hr": "{count}h",
+      "min": "{count}min",
+      "sec": "{count}s"
     },
     "fileSize": "{value, number} {unit}"
   },

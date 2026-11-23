@@ -18,6 +18,8 @@ import PeriodFilter from './PeriodFilter'
 type Props = {
   settings: PublicSettings
   personalFilter: boolean
+  // Only the viewer's own stats, whatever the URL asks for
+  isOwnOnly?: boolean
 }
 
 // Saved filters are applied once per page load, when a dashboard is opened
@@ -35,14 +37,18 @@ function getAvailableSort(
 
 // The period stays in sight. On wider screens the other filters sit across
 // from it, on phones they're in a sheet.
-export default function DashboardFilters({ settings, personalFilter }: Props) {
+export default function DashboardFilters({
+  settings,
+  personalFilter,
+  isOwnOnly = false,
+}: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const isPersonal: DashboardSearchParams['personal'] =
     searchParams.get('personal') === 'true' ? 'true' : undefined
   const sortBy = getAvailableSort(
-    isPersonal,
+    isOwnOnly ? 'true' : isPersonal,
     getDashboardSort(searchParams.get('sortBy')),
   )
   const hasUrlFilters =
@@ -52,7 +58,7 @@ export default function DashboardFilters({ settings, personalFilter }: Props) {
   } = useContext(GlobalContext)
   const t = useTranslations('DashboardFilters')
 
-  // eslint-disable-next-line @stylistic/padding-line-between-statements
+  // oxlint-disable-next-line @stylistic/padding-line-between-statements
   const getUrl = useCallback(
     (
       personal: DashboardSearchParams['personal'],
@@ -137,7 +143,7 @@ export default function DashboardFilters({ settings, personalFilter }: Props) {
   ])
 
   const tCommon = useTranslations('Common')
-  const activeCount = Number(!!isPersonal) + Number(!!sortBy)
+  const activeCount = Number(personalFilter && !!isPersonal) + Number(!!sortBy)
   const canClear = activeCount > 0 || searchParams.has('period')
 
   function getAudience() {
@@ -163,7 +169,9 @@ export default function DashboardFilters({ settings, personalFilter }: Props) {
         options={[
           { value: 'plays', label: tCommon('plays') },
           { value: 'duration', label: tCommon('duration') },
-          ...(isPersonal ? [] : [{ value: 'users', label: tCommon('users') }]),
+          ...(isPersonal || isOwnOnly
+            ? []
+            : [{ value: 'users', label: tCommon('users') }]),
         ]}
         value={sortBy ?? 'plays'}
         onChange={handleSortChange}

@@ -12,6 +12,7 @@ import { HashtagIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import { useActionState, useState } from 'react'
 import { Switch } from 'react-aria-components'
+import OwnOnlySwitches from '../../_components/OwnOnlySwitches'
 import SettingsForm from '../../_components/SettingsForm'
 import saveDashboardSettings from '../_actions/updateDashboardSettings'
 
@@ -104,6 +105,13 @@ export default function DashboardSettingsForm({ settings }: Props) {
                 <span className='label-wrapper'>{tCommon('adminOnly')}</span>
               </span>
             </Switch>
+            <OwnOnlySwitches
+              isOwnOnly={dashboardSettings.isOwnOnly}
+              isOwnOnlyForAdmin={dashboardSettings.isOwnOnlyForAdmin}
+              label={tCommon('ownOnly')}
+              adminLabel={tCommon('ownOnlyForAdmin')}
+              adminDescription={tCommon('ownOnlyForAdminDescription')}
+            />
           </>
         )}
       </section>

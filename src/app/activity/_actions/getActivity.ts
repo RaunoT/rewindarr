@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { Settings } from '@/types/settings'
 import { Activity, ActivitySession } from '@/types/statsSource'
 import getSettings from '@/utils/getSettings'
-import { canViewFeature, getViewer } from '@/utils/helpers'
+import { canViewFeature, getOwnOnlyUserId, getViewer } from '@/utils/helpers'
 import { getActivity as fetchActivity } from '@/utils/statsSource'
 import { getServerSession, Session } from 'next-auth'
 
@@ -109,9 +109,16 @@ export default async function getActivity(): Promise<Activity | null> {
     return null
   }
 
+  const ownUserId = getOwnOnlyUserId(settings, 'activity', viewer)
+  const sessions = ownUserId
+    ? activity.sessions.filter(
+        (session) => String(session.user_id) === ownUserId,
+      )
+    : activity.sessions
+
   return {
-    stream_count: activity.stream_count,
-    sessions: activity.sessions.map((session) =>
+    stream_count: ownUserId ? sessions.length : activity.stream_count,
+    sessions: sessions.map((session) =>
       toPublicSession(session, settings, viewer),
     ),
   }

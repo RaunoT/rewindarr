@@ -4,7 +4,11 @@ import { STAT_ICONS } from '@/components/icons'
 import SkeletonSized from '@/components/SkeletonSized'
 import SourceUnreachable from '@/components/SourceUnreachable'
 import StatusMessage from '@/components/StatusMessage'
-import Totals, { Total, TotalsSkeleton } from '@/components/Totals'
+import Totals, {
+  Total,
+  TotalSkeleton,
+  TotalsSkeleton,
+} from '@/components/Totals'
 import { authOptions } from '@/lib/auth'
 import { DashboardSearchParams } from '@/types/dashboard'
 import { HistoryEntry, HistoryKind, HistoryTotals } from '@/types/history'
@@ -22,6 +26,7 @@ import getSettings from '@/utils/getSettings'
 import {
   canViewFeature,
   getLibrarySlug,
+  getOwnOnlyUserId,
   getViewer,
   sortByActiveLibraries,
 } from '@/utils/helpers'
@@ -42,6 +47,7 @@ import {
 import { sortBy, upperFirst } from 'lodash'
 import { Metadata } from 'next'
 import { getServerSession, Session } from 'next-auth'
+import { useTranslations } from 'next-intl'
 import {
   getFormatter,
   getLocale,
@@ -80,12 +86,18 @@ type SearchParams = {
 const KINDS: HistoryKind[] = ['play', 'request']
 
 // The users the history can be narrowed down to. Picking another user would
-// give them away when the server is anonymized, so then only your own.
+// give them away when the server is anonymized, so then only your own, and
+// none when it's only ever your own.
 async function getUserOptions(
   settings: Settings,
   session: Session | null,
+  ownUserId: string | undefined,
 ): Promise<FilterOption[]> {
   const t = await getTranslations('History')
+
+  if (ownUserId) {
+    return []
+  }
 
   if (settings.general.isAnonymized) {
     return session ? [{ value: session.user.id, label: t('onlyMine') }] : []
@@ -174,34 +186,50 @@ function getTotalKeys(filter: HistoryFilter, hasRequests: boolean) {
   ]
 }
 
+type TotalKey = ReturnType<typeof getTotalKeys>[number]
+
+const TOTAL_LABELS: Record<TotalKey, string> = {
+  // Music counts too, so neither watched nor listened
+  watchTime: 'Totals.playTime',
+  plays: 'Common.plays',
+  requests: 'Common.requests',
+  users: 'Common.users',
+}
+const SKELETON_KINDS: Record<TotalKey, TotalSkeleton['kind']> = {
+  watchTime: 'duration',
+  plays: 'count',
+  requests: 'smallCount',
+  users: 'smallCount',
+}
+
 // What the period adds up to with the filters, like the dashboard's
 async function HistoryTotalsRow({ totals, filter, hasRequests }: TotalsProps) {
   const t = await getTranslations()
   const format = await getFormatter()
-  const items: Record<ReturnType<typeof getTotalKeys>[number], Total> = {
+  const items: Record<TotalKey, Total> = {
     watchTime: {
       key: 'watchTime',
       icon: <STAT_ICONS.duration />,
-      // Music counts too, so neither watched nor listened
-      label: t('Totals.playTime'),
+      label: t(TOTAL_LABELS.watchTime),
       value: secondsToTime(totals.watchTime, t),
+      shortValue: secondsToTime(totals.watchTime, t, true),
     },
     plays: {
       key: 'plays',
       icon: <PlayIcon />,
-      label: t('Common.plays'),
+      label: t(TOTAL_LABELS.plays),
       value: format.number(totals.plays),
     },
     requests: {
       key: 'requests',
       icon: <STAT_ICONS.requests />,
-      label: t('Common.requests'),
+      label: t(TOTAL_LABELS.requests),
       value: format.number(totals.requests),
     },
     users: {
       key: 'users',
       icon: <STAT_ICONS.users />,
-      label: t('Common.users'),
+      label: t(TOTAL_LABELS.users),
       value: format.number(totals.users),
     },
   }
@@ -215,18 +243,25 @@ async function HistoryTotalsRow({ totals, filter, hasRequests }: TotalsProps) {
 
 function HistoryLoader({
   rows,
-  totalsCount,
+  totalKeys,
   general,
   isSeerrActive,
 }: {
   rows: number
-  totalsCount: number
+  totalKeys: TotalKey[]
   general: ComponentProps<typeof HistorySkeleton>['general']
   isSeerrActive: boolean
 }) {
+  const t = useTranslations()
+
   return (
     <>
-      <TotalsSkeleton count={totalsCount} />
+      <TotalsSkeleton
+        totals={totalKeys.map((key) => ({
+          label: t(TOTAL_LABELS[key]),
+          kind: SKELETON_KINDS[key],
+        }))}
+      />
       <CardWrapper>
         <HistorySkeleton
           rows={rows}
@@ -247,6 +282,8 @@ type ContentProps = {
   settings: Settings
   session: Session | null
   hasRequests: boolean
+  // Only the viewer's own history, which isn't a filter they picked
+  isOwnOnly: boolean
 }
 
 async function HistoryContent({
@@ -257,6 +294,7 @@ async function HistoryContent({
   settings,
   session,
   hasRequests,
+  isOwnOnly,
 }: ContentProps) {
   const t = await getTranslations('History')
   const [
@@ -268,7 +306,7 @@ async function HistoryContent({
   ])
   // Without Seerr, the plays are all there is, which isn't a filter
   const isFiltered = !!(
-    filter.userIds?.length ||
+    (!isOwnOnly && filter.userIds?.length) ||
     filter.search ||
     (hasRequests && filter.kind)
   )
@@ -428,9 +466,10 @@ export default async function HistoryPage({ searchParams }: Props) {
     (await cookies()).get(HISTORY_PAGE_SIZE_COOKIE_NAME)?.value,
   )
   const hasRequests = isSeerrActive(settings)
+  const ownUserId = getOwnOnlyUserId(settings, 'history', session)
   const [reachableLibraries, users] = await Promise.all([
     getReachableLibraries(),
-    getUserOptions(settings, session),
+    getUserOptions(settings, session, ownUserId),
   ])
   const filters = (libraries: FilterOption[] = []) => (
     <Suspense>
@@ -477,7 +516,7 @@ export default async function HistoryPage({ searchParams }: Props) {
     libraryParams.includes(getLibrarySlug(library)),
   )
   // Only the users the filter offers, so the URL can't pick an excluded one
-  const userIds = [user ?? []]
+  const pickedUserIds = [user ?? []]
     .flat()
     .filter((userId) => users.some((option) => option.value === userId))
   const kind = hasRequests ? KINDS.find((value) => value === kindParam) : 'play'
@@ -487,14 +526,14 @@ export default async function HistoryPage({ searchParams }: Props) {
   const filter: HistoryFilter = {
     since: period.date,
     libraries: pickedLibraries.length ? pickedLibraries : libraries,
-    userIds,
+    userIds: ownUserId ? [ownUserId] : pickedUserIds,
     search,
     kind,
   }
   const params = new URLSearchParams([
     ...(periodParam ? [['period', periodParam]] : []),
     ...pickedLibraries.map((library) => ['library', getLibrarySlug(library)]),
-    ...userIds.map((userId) => ['user', userId]),
+    ...pickedUserIds.map((userId) => ['user', userId]),
     ...(hasRequests && kind ? [['kind', kind]] : []),
     ...(search ? [['q', search]] : []),
     ...(rows ? [['rows', String(pageSize)]] : []),
@@ -515,7 +554,7 @@ export default async function HistoryPage({ searchParams }: Props) {
             rows={pageSize}
             general={settings.general}
             isSeerrActive={hasRequests}
-            totalsCount={getTotalKeys(filter, hasRequests).length}
+            totalKeys={getTotalKeys(filter, hasRequests)}
           />
         }
         // Without the page, so the list stays up while the next one loads
@@ -529,6 +568,7 @@ export default async function HistoryPage({ searchParams }: Props) {
           settings={settings}
           session={session}
           hasRequests={hasRequests}
+          isOwnOnly={!!ownUserId}
         />
       </Suspense>
     </>

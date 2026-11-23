@@ -15,7 +15,7 @@ export default function Loader({ size = 8 }: Props) {
   const t = useTranslations('Loader')
 
   return (
-    <div role='status'>
+    <output className='block'>
       <svg
         aria-hidden='true'
         className={clsx('animate-spin fill-current', SIZES[size])}
@@ -42,6 +42,6 @@ export default function Loader({ size = 8 }: Props) {
         />
       </svg>
       <span className='sr-only'>{t('loading')}</span>
-    </div>
+    </output>
   )
 }

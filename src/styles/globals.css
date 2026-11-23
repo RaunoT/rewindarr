@@ -100,7 +100,7 @@
   @apply animate-pulse rounded-full bg-white/10;
 }
 
-/* prettier-ignore */
+/* oxfmt-ignore */
 @utility animation-delay-* {
   animation-delay: --value(integer)ms;
 }

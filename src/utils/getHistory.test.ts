@@ -95,7 +95,7 @@ describe('getRecentPlays', () => {
   })
 
   it('looks no further back than the plays it needs', async () => {
-    const { plays, hasMore } = await getRecentPlays(5, undefined, NOW)
+    const { plays, hasMore } = await getRecentPlays(5, {}, NOW)
 
     expect(plays.map((play) => play.id)).toEqual(['0', '1', '2', '3', '4'])
     expect(hasMore).toBe(true)
@@ -103,7 +103,7 @@ describe('getRecentPlays', () => {
   })
 
   it('looks further back until it has enough plays', async () => {
-    const { plays, hasMore } = await getRecentPlays(50, undefined, NOW)
+    const { plays, hasMore } = await getRecentPlays(50, {}, NOW)
 
     expect(plays).toHaveLength(50)
     expect(hasMore).toBe(true)
@@ -112,7 +112,7 @@ describe('getRecentPlays', () => {
   })
 
   it('ends with the whole history', async () => {
-    const { plays, hasMore } = await getRecentPlays(200, undefined, NOW)
+    const { plays, hasMore } = await getRecentPlays(200, {}, NOW)
 
     expect(plays).toHaveLength(100)
     expect(hasMore).toBe(false)
@@ -141,11 +141,27 @@ describe('getRecentPlays', () => {
   it('shows how far the read has got before any plays are read', async () => {
     vi.mocked(getHistoryProgress).mockResolvedValue(status)
 
-    const { plays, progress } = await getRecentPlays(50, undefined, NOW)
+    const { plays, progress } = await getRecentPlays(50, {}, NOW)
 
     expect(plays).toEqual([])
     expect(progress).toBe(status)
     expect(getHistoryPlays).not.toHaveBeenCalled()
+  })
+
+  it("keeps only the user's plays when asked for one user's", async () => {
+    getHistoryPlays.mockResolvedValueOnce([
+      play('a', NOW, { userId: '1' }),
+      play('b', NOW - DAY, { userId: '2' }),
+      play('c', NOW - 2 * DAY, { userId: '2' }),
+    ])
+
+    const { plays, hasMore } = await getRecentPlays(1, { userId: '2' }, NOW)
+
+    expect(plays.map((play) => play.id)).toEqual(['b'])
+    expect(hasMore).toBe(true)
+    expect(getHistoryPlays).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: '2' }),
+    )
   })
 })
 
