@@ -6,6 +6,7 @@ import { CalendarIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
+import { TITLE_STEPS } from '../storyMusic'
 
 export default function StoryFirstPlay({ userRewind, settings }: RewindStory) {
   const t = useTranslations('Rewind.FirstPlay')
@@ -43,7 +44,7 @@ export default function StoryFirstPlay({ userRewind, settings }: RewindStory) {
       )}
 
       {firstPlay.title && (
-        <RewindStat step={2} noScale>
+        <RewindStat step={TITLE_STEPS.firstPlay} noScale>
           <p className={firstPlay.item ? 'mb-2' : undefined}>
             {t.rich('title', {
               titleValue: firstPlay.title,

@@ -8,6 +8,7 @@ import { isFavorite } from '../favorite'
 import PlaytimeShare from '../PlaytimeShare'
 import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
+import { TOP_TITLE_STEP } from '../storyMusic'
 
 export default function StoryAudio({ userRewind, settings }: RewindStory) {
   const t = useTranslations('Rewind.Audio')
@@ -59,7 +60,7 @@ export default function StoryAudio({ userRewind, settings }: RewindStory) {
 
           {topTrack ? (
             <>
-              <RewindStat step={3}>
+              <RewindStat step={TOP_TITLE_STEP}>
                 <p>
                   {t.rich(
                     topTrack.isOnly
@@ -89,7 +90,7 @@ export default function StoryAudio({ userRewind, settings }: RewindStory) {
 
               {/* Its plays aren't what picked it otherwise */}
               {isTopTrackFavorite && (
-                <RewindStat step={4}>
+                <RewindStat step={TOP_TITLE_STEP + 1}>
                   <p>
                     {t.rich('topTrackPlays', {
                       countValue: topTrack.plays,
@@ -102,7 +103,7 @@ export default function StoryAudio({ userRewind, settings }: RewindStory) {
               )}
             </>
           ) : (
-            <RewindStat step={3} noScale>
+            <RewindStat step={TOP_TITLE_STEP} noScale>
               <p className='mb-2'>
                 {t(
                   isOnlyArtist

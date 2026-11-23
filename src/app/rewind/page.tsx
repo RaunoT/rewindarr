@@ -4,9 +4,12 @@ import {
   RewindPeriod,
   RewindTotals,
   RewindUser,
+  TopTrack,
   UserRewind,
 } from '@/types/rewind'
-import { ItemRow, Library } from '@/types/statsSource'
+import { SocialItem } from '@/types/rewindSocial'
+import { ItemRow, Library, TopPerson } from '@/types/statsSource'
+import { TitleCard } from '@/types/titleMoments'
 import { PLAY_LIBRARY_TYPES, TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
 import {
   formatMonthYear,
@@ -14,6 +17,7 @@ import {
   secondsToTime,
 } from '@/utils/formatting'
 import {
+  getArtistTopTracks,
   getGenres,
   getPlaybackHabits,
   getRequestsTotals,
@@ -36,7 +40,11 @@ import {
   getOwnOnlyUserId,
   getViewer,
 } from '@/utils/helpers'
-import { getPlexThemeUrl, getPlexTrackUrl } from '@/utils/plexAudio'
+import {
+  canStreamFromPlex,
+  getPlexThemeUrl,
+  getPlexTrackUrl,
+} from '@/utils/plexAudio'
 import { toPublicSettings } from '@/utils/publicSettings'
 import { getRewindMoments } from '@/utils/rewindMoments'
 import { getMusicUrl, getThemeSongUrl } from '@/utils/rewindMusic'
@@ -401,30 +409,99 @@ async function getRewind(
   }
 
   const { isThemeMusicActive } = settings.rewind
-  const topShow = topMediaItems.shows[0]
-  const topMovie = topMediaItems.movies[0]
   // From the library first, then Plex's own theme songs
-  const getShowThemes = (show: ItemRow | null | undefined) =>
+  const getShowThemes = (
+    show: Pick<ItemRow, 'rating_key' | 'tvdb_id'> | null | undefined,
+  ) =>
     isThemeMusicActive
       ? [
           getPlexThemeUrl(settings, show?.rating_key),
           getThemeSongUrl(show?.tvdb_id),
         ].filter((url) => url !== null)
       : []
+  const getMovieThemes = (movie: Pick<ItemRow, 'rating_key'>) =>
+    isThemeMusicActive
+      ? [getPlexThemeUrl(settings, movie.rating_key)].filter(
+          (url) => url !== null,
+        )
+      : []
+  // A person's most watched titles stand in for them, each tried in turn
+  const getPersonThemes = (
+    people: TopPerson[],
+    getThemes: (title: Pick<ItemRow, 'rating_key' | 'tvdb_id'>) => string[],
+  ) =>
+    people.map(({ themeTitles }) =>
+      themeTitles.flatMap((title) =>
+        getThemes({ rating_key: title.ratingKey, tvdb_id: title.tvdbId }),
+      ),
+    )
+  const getTrackMusic = (track: TopTrack | null | undefined) =>
+    [getPlexTrackUrl(settings, track?.ratingKey)].filter((url) => url !== null)
+  // Only Plex streams the tracks
+  const artistTracks =
+    isThemeMusicActive && canStreamFromPlex(settings)
+      ? getArtistTopTracks(
+          plays,
+          topMediaItems.audio,
+          settings.general.minPlayPercent,
+        )
+      : []
+  // A title card's theme song, or an artist's most played track
+  const getCardMusic = (
+    card: { type: TitleCard['type']; item: ItemRow } | null | undefined,
+    cardPlays = plays,
+  ): string[] => {
+    if (!card || !isThemeMusicActive) {
+      return []
+    }
+
+    switch (card.type) {
+      case 'show':
+        return getShowThemes(card.item)
+      case 'movie':
+        return getMovieThemes(card.item)
+      default:
+        return canStreamFromPlex(settings)
+          ? getArtistTopTracks(
+              cardPlays,
+              [card.item],
+              settings.general.minPlayPercent,
+            ).flatMap(getTrackMusic)
+          : []
+    }
+  }
+  const toCard = (social: SocialItem | null | undefined) =>
+    social && { type: social.type, item: social.data }
+  const { titleMoments: titles, social: socialMoments } = userRewind
 
   return {
     userRewind,
     themes: {
-      showThemes: getShowThemes(topShow),
+      showThemes: topMediaItems.shows.map((show) => getShowThemes(show)),
       bingeThemes: getShowThemes(userRewind.moments.binge?.item),
-      movieThemes: isThemeMusicActive
-        ? [getPlexThemeUrl(settings, topMovie?.rating_key)].filter(
-            (url) => url !== null,
-          )
-        : [],
-      topTrack: isThemeMusicActive
-        ? getPlexTrackUrl(settings, topTrack?.ratingKey)
-        : null,
+      movieThemes: topMediaItems.movies.map(getMovieThemes),
+      showActorThemes: getPersonThemes(people.showActors, getShowThemes),
+      movieActorThemes: getPersonThemes(people.movieActors, getMovieThemes),
+      directorThemes: getPersonThemes(people.directors, getMovieThemes),
+      topTrack: isThemeMusicActive ? getTrackMusic(topTrack) : [],
+      artistTracks: artistTracks.map(getTrackMusic),
+      titleThemes: {
+        comfortWatch: getCardMusic(titles.comfortWatch),
+        timeTravel: getCardMusic(titles.timeTravel?.oldest),
+        discovery: getCardMusic(titles.discoveries?.top),
+        onlyYou: getCardMusic(toCard(socialMoments.onlyYou?.item)),
+        requestsReach: getCardMusic(toCard(socialMoments.requestsReach?.item)),
+        serverMovie: getCardMusic(toCard(socialMoments.serverYear?.movie)),
+        serverShow: getCardMusic(toCard(socialMoments.serverYear?.show)),
+        firstPlay: getCardMusic(
+          userRewind.firstPlay?.item && {
+            type: userRewind.firstPlay.item.type,
+            item: userRewind.firstPlay.item.data,
+          },
+          // The first play can be from before the period
+          allPlays ?? plays,
+        ),
+      },
     },
   }
 }

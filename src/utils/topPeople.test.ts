@@ -1,3 +1,4 @@
+import { Settings } from '@/types/settings'
 import { ItemRow } from '@/types/statsSource'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import fetchTmdb from './fetchTmdb'
@@ -6,6 +7,7 @@ import {
   SourceMediaData,
   TmdbMediaType,
 } from './getMediaAdditionalData'
+import getSettings from './getSettings'
 import { EMPTY_ROW } from './playStats'
 import {
   CreditedTitle,
@@ -38,6 +40,7 @@ function credited(
     item: title(name, duration),
     type,
     tmdbId,
+    tvdbId: null,
     credits: { directors: [], actors: [], ...credits },
   }
 }
@@ -50,6 +53,9 @@ function mockTmdb(responses: Record<string, unknown>) {
 
 beforeEach(() => {
   vi.resetAllMocks()
+  vi.mocked(getSettings).mockReturnValue({
+    rewind: { isThemeMusicActive: false },
+  } as Settings)
 })
 
 describe('rankPeople', () => {
@@ -71,6 +77,11 @@ describe('rankPeople', () => {
         count: 3,
         duration: 450,
         titles: ['Tenet', 'Inception', 'Oppenheimer'],
+        themeTitles: [
+          { ratingKey: 0, tvdbId: null, tmdbId: 577922 },
+          { ratingKey: 0, tvdbId: null, tmdbId: 27205 },
+          { ratingKey: 0, tvdbId: null, tmdbId: null },
+        ],
         together: [],
         tmdbIds: [577922, 27205],
       },
@@ -79,6 +90,10 @@ describe('rankPeople', () => {
         count: 2,
         duration: 450,
         titles: ['Arrival', 'Dune'],
+        themeTitles: [
+          { ratingKey: 0, tvdbId: null, tmdbId: null },
+          { ratingKey: 0, tvdbId: null, tmdbId: null },
+        ],
         together: [],
         tmdbIds: [],
       },
@@ -222,9 +237,36 @@ describe('rankPeople', () => {
         count: 2,
         duration: 200,
         titles: ['One', 'Two'],
+        themeTitles: [
+          { ratingKey: 0, tvdbId: null, tmdbId: null },
+          { ratingKey: 0, tvdbId: null, tmdbId: null },
+        ],
         together: [],
         tmdbIds: [],
       },
+    ])
+  })
+
+  it("keeps the most watched titles' IDs for a theme song", () => {
+    const [actor] = rankPeople(
+      [
+        {
+          ...credited('Short', 100, { actors: ['Bryan Cranston'] }),
+          item: title('Short', 100, { rating_key: 1 }),
+          tvdbId: 1,
+        },
+        {
+          ...credited('Long', 300, { actors: ['Bryan Cranston'] }),
+          item: title('Long', 300, { rating_key: 2 }),
+          tvdbId: 2,
+        },
+      ],
+      'actors',
+    )
+
+    expect(actor.themeTitles).toEqual([
+      { ratingKey: 2, tvdbId: 2, tmdbId: null },
+      { ratingKey: 1, tvdbId: 1, tmdbId: null },
     ])
   })
 })
@@ -254,9 +296,27 @@ describe('getCredits', () => {
       item,
       type: 'movie',
       tmdbId: 155,
+      tvdbId: null,
       credits: nolanCredits,
     })
     expect(getSourceData).not.toHaveBeenCalled()
+  })
+
+  it("keeps the source's new rating key for a re-added title", async () => {
+    getSourceData.mockResolvedValue({
+      thumb: '',
+      isDeleted: false,
+      ratingKey: 20,
+      credits: { directors: ['Greta Gerwig'], actors: [] },
+    })
+
+    await expect(
+      getCredits(
+        title('Barbie', 1, { rating_key: 10 }),
+        'movie',
+        getSourceData,
+      ),
+    ).resolves.toMatchObject({ item: { rating_key: 20 } })
   })
 
   it("prefers the source's own credits, keeping its TMDB ID", async () => {
@@ -273,6 +333,7 @@ describe('getCredits', () => {
       item,
       type: 'movie',
       tmdbId: 346698,
+      tvdbId: null,
       credits: { directors: ['Greta Gerwig'], actors: ['Margot Robbie'] },
     })
     expect(fetchTmdb).not.toHaveBeenCalled()
@@ -295,7 +356,7 @@ describe('getCredits', () => {
     getSourceData.mockResolvedValue({
       thumb: '',
       isDeleted: false,
-      ids: { tmdb: 1396, imdb: null, tvdb: null },
+      ids: { tmdb: 1396, imdb: null, tvdb: 81189 },
     })
     mockTmdb({
       'tv/1396/aggregate_credits': {
@@ -311,6 +372,8 @@ describe('getCredits', () => {
     ).resolves.toMatchObject({
       type: 'tv',
       tmdbId: 1396,
+      // For the show's theme song
+      tvdbId: 81189,
       credits: { directors: [], actors: ['Bryan Cranston', 'Aaron Paul'] },
     })
   })
@@ -342,6 +405,39 @@ describe('getCredits', () => {
 })
 
 describe('getTopPeople', () => {
+  it("looks up a show actor's top show's TVDB ID on TMDB", async () => {
+    vi.mocked(getSettings).mockReturnValue({
+      rewind: { isThemeMusicActive: true },
+    } as Settings)
+    getSourceData.mockImplementation(async (item) => ({
+      thumb: '',
+      isDeleted: false,
+      ids: {
+        tmdb: item.title === 'Breaking Bad' ? 1396 : 60059,
+        imdb: null,
+        tvdb: null,
+      },
+      credits: { directors: [], actors: ['Bob Odenkirk'] },
+    }))
+    mockTmdb({ 'tv/1396': { external_ids: { tvdb_id: 81189 } } })
+
+    const { showActors } = await getTopPeople(
+      {
+        movies: [],
+        shows: [
+          title('Breaking Bad', 300, { rating_key: 1 }),
+          title('Better Call Saul', 100, { rating_key: 2 }),
+        ],
+      },
+      getSourceData,
+    )
+
+    expect(showActors[0].themeTitles).toEqual([
+      { ratingKey: 1, tvdbId: 81189 },
+      { ratingKey: 2, tvdbId: null },
+    ])
+  })
+
   it('ranks the titles whose credits were found', async () => {
     getSourceData.mockImplementation(async (item) =>
       item.title === 'Lost'
@@ -372,6 +468,10 @@ describe('getTopPeople', () => {
         count: 2,
         duration: 300,
         titles: ['Tenet', 'Inception'],
+        themeTitles: [
+          { ratingKey: 0, tvdbId: null },
+          { ratingKey: 0, tvdbId: null },
+        ],
         together: [],
         image: null,
       },

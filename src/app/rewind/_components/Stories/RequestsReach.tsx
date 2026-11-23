@@ -1,10 +1,10 @@
 import { STAT_ICONS } from '@/components/icons'
 import MediaItems from '@/components/MediaItem/MediaItems'
 import { RewindStory } from '@/types/rewind'
-import { RATING_STATISTICS } from '@/utils/constants'
 import { useTranslations } from 'next-intl'
 import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
+import { TITLE_STEPS } from '../storyMusic'
 
 export default function StoryRequestsReach({
   userRewind,
@@ -42,7 +42,7 @@ export default function StoryRequestsReach({
         </p>
       </RewindStat>
 
-      <RewindStat step={2} noScale>
+      <RewindStat step={TITLE_STEPS.requestsReach} noScale>
         <p className='mb-2'>
           {t.rich('top', {
             requestsValue: reach.requests,
@@ -58,15 +58,9 @@ export default function StoryRequestsReach({
             mediaServer={userRewind.media_server}
             rows
             settings={settings}
+            // Its people, plays and time are the other people's, like the
+            // time the story has just told
             isRanked={false}
-            // Its year, ratings and how many other people watched it. Its
-            // plays and time are theirs, which would read as everyone's.
-            activeStats={settings.general.activeItemStatistics.filter(
-              (stat) =>
-                stat === 'year' ||
-                stat === 'users' ||
-                (RATING_STATISTICS as readonly string[]).includes(stat),
-            )}
           />
         </div>
       </RewindStat>

@@ -9,6 +9,7 @@ import PlaytimeShare from '../PlaytimeShare'
 import PreviousFavorite from '../PreviousFavorite'
 import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
+import { TOP_TITLE_STEP } from '../storyMusic'
 
 export default function StoryMovies({ userRewind, settings }: RewindStory) {
   const t = useTranslations('Rewind.Movies')
@@ -58,7 +59,7 @@ export default function StoryMovies({ userRewind, settings }: RewindStory) {
             </RewindStat>
           )}
 
-          <RewindStat step={3} noScale>
+          <RewindStat step={TOP_TITLE_STEP} noScale>
             <p className='mb-2'>
               {t(isOnly ? 'only' : isTopFavorite ? 'favorite' : 'mostTime')}{' '}
               <span className='rewind-cat'>{top.title}</span>
@@ -80,7 +81,7 @@ export default function StoryMovies({ userRewind, settings }: RewindStory) {
             <PreviousFavorite
               yearOverYear={userRewind.yearOverYear}
               type='movies'
-              step={4}
+              step={TOP_TITLE_STEP + 1}
             />
           )}
         </>

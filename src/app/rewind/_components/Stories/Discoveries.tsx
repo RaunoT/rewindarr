@@ -3,6 +3,7 @@ import { BookmarkIcon, SparklesIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
+import { TITLE_STEPS } from '../storyMusic'
 import TitleMomentCard from '../TitleMomentCard'
 
 export default function StoryDiscoveries({
@@ -44,7 +45,7 @@ export default function StoryDiscoveries({
             </p>
           </RewindStat>
 
-          <RewindStat step={1} noScale>
+          <RewindStat step={TITLE_STEPS.discovery} noScale>
             <p className='mb-2'>
               {t.rich(
                 discoveries.shows + discoveries.artists > 1 ? 'top' : 'only',

@@ -1,12 +1,14 @@
-import { ItemRow, TopPeople, TopPerson } from '@/types/statsSource'
+import { ItemRow, ThemeTitle, TopPeople, TopPerson } from '@/types/statsSource'
 import { omit, orderBy, sumBy } from 'lodash'
 import fetchTmdb from './fetchTmdb'
 import {
   Credits,
+  fetchTmdbDetails,
   GetSourceData,
   searchTmdbId,
   TmdbMediaType,
 } from './getMediaAdditionalData'
+import getSettings from './getSettings'
 
 // Bit parts and cameos would otherwise rank alongside the leads.
 const BILLED_ACTORS = 10
@@ -20,6 +22,8 @@ export const LOOKUP_CONCURRENCY = 8
 
 // Someone TMDB has no picture of would otherwise cost a lookup per title.
 const PORTRAIT_TITLES = 3
+// A title without a theme song falls back to the next one
+const THEME_TITLES = 3
 const TMDB_PROFILE_URL = 'https://image.tmdb.org/t/p/w185'
 // A show's plain credits only cover its latest season.
 const CREDITS_ENDPOINTS: Record<TmdbMediaType, string> = {
@@ -44,11 +48,17 @@ export type CreditedTitle = {
   type: TmdbMediaType
   // Where the portraits are looked up, null when TMDB doesn't know the title
   tmdbId: number | null
+  // For a show's theme song, null when unknown
+  tvdbId: number | null
   credits: Credits
 }
 
-// With the titles to look their portrait up in, most watched first
-type RankedPerson = Omit<TopPerson, 'image'> & { tmdbIds: number[] }
+// With the titles to look their portrait up in, most watched first, and the
+// theme titles' TMDB IDs to look their TVDB IDs up with
+type RankedPerson = Omit<TopPerson, 'image' | 'themeTitles'> & {
+  tmdbIds: number[]
+  themeTitles: (ThemeTitle & { tmdbId: number | null })[]
+}
 
 function toKey(name: string): string {
   return name.trim().toLowerCase()
@@ -71,6 +81,7 @@ async function getTmdbCredits(
   item: ItemRow,
   type: TmdbMediaType,
   tmdbId: number,
+  tvdbId: number | null,
 ): Promise<CreditedTitle | null> {
   const credits = await fetchTmdbCredits(type, tmdbId)
 
@@ -82,6 +93,7 @@ async function getTmdbCredits(
     item,
     type,
     tmdbId,
+    tvdbId,
     credits: {
       directors: getTmdbPeople(credits, 'directors').map(({ name }) => name),
       actors: getTmdbPeople(credits, 'actors').map(({ name }) => name),
@@ -98,16 +110,23 @@ export async function getCredits(
   getSourceData: GetSourceData,
 ): Promise<CreditedTitle | null> {
   if (item.tmdb_id) {
-    return getTmdbCredits(item, type, item.tmdb_id)
+    return getTmdbCredits(item, type, item.tmdb_id, item.tvdb_id ?? null)
   }
 
   const source = await getSourceData(item, type)
+  // A title re-added on the server plays its theme song under its new key
+  const sourcedItem = {
+    ...item,
+    rating_key: source.ratingKey ?? item.rating_key,
+  }
+  const tvdbId = item.tvdb_id || source.ids?.tvdb || null
 
   if (source.credits) {
     return {
-      item,
+      item: sourcedItem,
       type,
       tmdbId: source.ids?.tmdb ?? null,
+      tvdbId,
       credits: source.credits,
     }
   }
@@ -119,7 +138,7 @@ export async function getCredits(
       type,
     ))
 
-  return tmdbId ? getTmdbCredits(item, type, tmdbId) : null
+  return tmdbId ? getTmdbCredits(sourcedItem, type, tmdbId, tvdbId) : null
 }
 
 export async function mapWithLimit<T, R>(
@@ -228,6 +247,11 @@ export function rankPeople(
       count: titles.length,
       duration: person.duration,
       titles: titles.map((title) => title.item.title),
+      themeTitles: titles.slice(0, THEME_TITLES).map((title) => ({
+        ratingKey: title.item.rating_key,
+        tvdbId: title.tvdbId,
+        tmdbId: title.tmdbId,
+      })),
       together: person.together,
       tmdbIds: titles.flatMap((title) => (title.tmdbId ? [title.tmdbId] : [])),
     }
@@ -258,6 +282,26 @@ async function findPortrait(
   return null
 }
 
+// A show's theme song goes by its TVDB ID, which TMDB has when the source
+// doesn't. Movies have none.
+async function findTvdbId(
+  title: RankedPerson['themeTitles'][number],
+  type: TmdbMediaType,
+): Promise<number | null> {
+  if (
+    title.tvdbId ||
+    type !== 'tv' ||
+    !title.tmdbId ||
+    !getSettings().rewind.isThemeMusicActive
+  ) {
+    return title.tvdbId
+  }
+
+  const details = await fetchTmdbDetails('tv', title.tmdbId)
+
+  return details?.external_ids?.tvdb_id ?? null
+}
+
 async function getRanking(
   titles: CreditedTitle[],
   role: Role,
@@ -269,10 +313,19 @@ async function getRanking(
   )
 
   return Promise.all(
-    people.map(async (person) => ({
-      ...omit(person, 'tmdbIds'),
-      image: await findPortrait(person, role, type),
-    })),
+    people.map(async (person) => {
+      const [image, themeTitles] = await Promise.all([
+        findPortrait(person, role, type),
+        Promise.all(
+          person.themeTitles.map(async (title) => ({
+            ratingKey: title.ratingKey,
+            tvdbId: await findTvdbId(title, type),
+          })),
+        ),
+      ])
+
+      return { ...omit(person, 'tmdbIds'), themeTitles, image }
+    }),
   )
 }
 

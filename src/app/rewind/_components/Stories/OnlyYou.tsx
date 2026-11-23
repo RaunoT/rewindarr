@@ -6,6 +6,7 @@ import { useFormatter, useTranslations } from 'next-intl'
 import { isFavorite } from '../favorite'
 import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
+import { TITLE_STEPS } from '../storyMusic'
 
 export default function StoryOnlyYou({ userRewind, settings }: RewindStory) {
   const t = useTranslations('Rewind.OnlyYou')
@@ -44,7 +45,7 @@ export default function StoryOnlyYou({ userRewind, settings }: RewindStory) {
         </p>
       </RewindStat>
 
-      <RewindStat step={2} noScale>
+      <RewindStat step={TITLE_STEPS.onlyYou} noScale>
         <p className='mb-2'>
           {t.rich(
             // Without a rewatch, it's only the one with the most watch time
