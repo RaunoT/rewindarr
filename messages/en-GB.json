@@ -276,6 +276,8 @@
     },
     "Rewind": {
       "title": "Rewind settings",
+      "startsOnRewind": "Users go straight to Rewind, as it's the only page open to them.",
+      "startsOnHome": "Users start on the home page. To send them straight to Rewind, turn off or set to admins only: <pages></pages>.",
       "cards": "Stories",
       "hiddenStories": "Hidden stories",
       "stories": {

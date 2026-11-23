@@ -276,6 +276,8 @@
     },
     "Rewind": {
       "title": "Paramètres Rewind",
+      "startsOnRewind": "Les utilisateurs arrivent directement sur Rewind, la seule page qui leur est ouverte.",
+      "startsOnHome": "Les utilisateurs arrivent sur l'accueil. Pour les envoyer directement sur Rewind, désactivez ou réservez aux administrateurs : <pages></pages>.",
       "cards": "Histoires",
       "hiddenStories": "Histoires masquées",
       "stories": {

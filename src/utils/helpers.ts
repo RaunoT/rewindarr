@@ -149,6 +149,18 @@ export function getHomeTiles(
   }
 }
 
+// With nothing else to show, the home page would only lead to Rewind, so
+// Rewind takes its place
+export function isRewindOnly(
+  settings: Pick<Settings, 'general' | Feature>,
+  viewer: Viewer,
+): boolean {
+  return FEATURES.every(
+    (feature) =>
+      canViewFeature(settings, feature, viewer) === (feature === 'rewind'),
+  )
+}
+
 export function checkRequiredSettings(settings: Settings): string | null {
   const sourceRequiredSettings = isTracearrSource(settings)
     ? SOURCE_REQUIRED_SETTINGS.tracearr

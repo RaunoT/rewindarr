@@ -9,6 +9,7 @@ import { APP_NAME, SETTINGS_HREF, STATS_SOURCE_NAMES } from '@/utils/constants'
 import {
   canViewFeature,
   getLibrarySlug,
+  isRewindOnly,
   isUsersPageVisible,
   Viewer,
 } from '@/utils/helpers'
@@ -78,9 +79,16 @@ export default function Sidebar({ libraries, settings }: Props) {
 
       <nav aria-label={t('Sidebar.label')}>
         <ul className='flex flex-col gap-0.5'>
-          <SidebarLink href='/' icon={<HomeIcon />} isActive={pathname === '/'}>
-            {t('Home.title')}
-          </SidebarLink>
+          {/* Home would only lead to Rewind */}
+          {!isRewindOnly(settings, viewer) && (
+            <SidebarLink
+              href='/'
+              icon={<HomeIcon />}
+              isActive={pathname === '/'}
+            >
+              {t('Home.title')}
+            </SidebarLink>
+          )}
           {canViewFeature(settings, 'rewind', viewer) && (
             <SidebarLink
               href='/rewind'
