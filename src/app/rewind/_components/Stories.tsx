@@ -652,9 +652,12 @@ export default function Stories({ stories }: Props) {
             ))}
         </div>
 
-        {/* Story content with tap navigation */}
+        {/* Story content with tap navigation. A carousel slide, and the taps
+            do what the previous and next buttons below do. */}
+        {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
         <div
           ref={slideRef}
+          // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
           role='group'
           aria-roledescription='slide'
           aria-label={getPositionLabel(currentIndex)}

@@ -109,6 +109,8 @@ export default function RewindBarChart({
   return (
     <div
       className={clsx('w-full not-italic', className)}
+      // Read as one image with its label, not bar by bar
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
       role='img'
       aria-label={ariaLabel}
       // Autoplay stays longer on a chart

@@ -307,14 +307,14 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
           </div>
 
           {/* Always there, so screen readers hear what's added to it */}
-          <p role='status' className='text-danger text-sm'>
+          <output className='text-danger block text-sm'>
             {status === 'failed' && (
               <span className='mt-2 block'>{t('failed')}</span>
             )}
             {status === 'saving' && (
               <span className='sr-only'>{t('saving')}</span>
             )}
-          </p>
+          </output>
         </div>
       </div>
 
