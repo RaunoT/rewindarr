@@ -7,7 +7,9 @@ import {
   TopTrack,
   UserRewind,
 } from '@/types/rewind'
+import { SocialItem } from '@/types/rewindSocial'
 import { ItemRow, Library, TopPerson } from '@/types/statsSource'
+import { TitleCard } from '@/types/titleMoments'
 import { PLAY_LIBRARY_TYPES, TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
 import {
   formatMonthYear,
@@ -416,13 +418,15 @@ async function getRewind(
           (url) => url !== null,
         )
       : []
-  // A person's most watched title stands in for them
+  // A person's most watched titles stand in for them, each tried in turn
   const getPersonThemes = (
     people: TopPerson[],
     getThemes: (title: Pick<ItemRow, 'rating_key' | 'tvdb_id'>) => string[],
   ) =>
-    people.map(({ topTitle }) =>
-      getThemes({ rating_key: topTitle.ratingKey, tvdb_id: topTitle.tvdbId }),
+    people.map(({ themeTitles }) =>
+      themeTitles.flatMap((title) =>
+        getThemes({ rating_key: title.ratingKey, tvdb_id: title.tvdbId }),
+      ),
     )
   const getTrackMusic = (track: TopTrack | null | undefined) =>
     [getPlexTrackUrl(settings, track?.ratingKey)].filter((url) => url !== null)
@@ -435,6 +439,32 @@ async function getRewind(
           settings.general.minPlayPercent,
         )
       : []
+  // A title card's theme song, or an artist's most played track
+  const getCardMusic = (
+    card: { type: TitleCard['type']; item: ItemRow } | null | undefined,
+  ): string[] => {
+    if (!card || !isThemeMusicActive) {
+      return []
+    }
+
+    switch (card.type) {
+      case 'show':
+        return getShowThemes(card.item)
+      case 'movie':
+        return getMovieThemes(card.item)
+      default:
+        return canStreamFromPlex(settings)
+          ? getArtistTopTracks(
+              plays,
+              [card.item],
+              settings.general.minPlayPercent,
+            ).flatMap(getTrackMusic)
+          : []
+    }
+  }
+  const toCard = (social: SocialItem | null | undefined) =>
+    social && { type: social.type, item: social.data }
+  const { titleMoments: titles, social: socialMoments } = userRewind
 
   return {
     userRewind,
@@ -447,6 +477,21 @@ async function getRewind(
       directorThemes: getPersonThemes(people.directors, getMovieThemes),
       topTrack: isThemeMusicActive ? getTrackMusic(topTrack) : [],
       artistTracks: artistTracks.map(getTrackMusic),
+      titleThemes: {
+        comfortWatch: getCardMusic(titles.comfortWatch),
+        timeTravel: getCardMusic(titles.timeTravel?.oldest),
+        discovery: getCardMusic(titles.discoveries?.top),
+        onlyYou: getCardMusic(toCard(socialMoments.onlyYou?.item)),
+        requestsReach: getCardMusic(toCard(socialMoments.requestsReach?.item)),
+        serverMovie: getCardMusic(toCard(socialMoments.serverYear?.movie)),
+        serverShow: getCardMusic(toCard(socialMoments.serverYear?.show)),
+        firstPlay: getCardMusic(
+          userRewind.firstPlay?.item && {
+            type: userRewind.firstPlay.item.type,
+            item: userRewind.firstPlay.item.data,
+          },
+        ),
+      },
     },
   }
 }

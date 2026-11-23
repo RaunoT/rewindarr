@@ -176,6 +176,12 @@ export type TopMediaItems = Record<MediaStatsType, ItemRow[]>
 
 // A director or actor, ranked by how many of their movies or shows a user
 // watched
+// A title whose theme song can stand in for a person
+export type ThemeTitle = {
+  ratingKey: number | string
+  tvdbId: number | null
+}
+
 export type TopPerson = {
   name: string
   // Each movie or show counts once, however often it was watched
@@ -184,11 +190,8 @@ export type TopPerson = {
   duration: number
   // The most watched first
   titles: string[]
-  // The most watched title's IDs, for its theme song
-  topTitle: {
-    ratingKey: number | string
-    tvdbId: number | null
-  }
+  // The IDs of the most watched titles, for a theme song, tried in turn
+  themeTitles: ThemeTitle[]
   // Who's in exactly the same titles, like the rest of a cast that's always
   // together, the best ranked first
   together: string[]

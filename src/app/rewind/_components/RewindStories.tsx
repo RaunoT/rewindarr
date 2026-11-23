@@ -51,6 +51,9 @@ import {
   BINGE_SHOW_STEP,
   getCountdownMusic,
   StepMusic,
+  STORY_TITLES,
+  TITLE_STEPS,
+  TitleSlot,
   TOP_TITLE_STEP,
 } from './storyMusic'
 import { joinStorySections, removeHiddenStories } from './storySections'
@@ -71,6 +74,9 @@ export type RewindThemes = {
   directorThemes: string[][]
   // The binged show's theme songs, best first
   bingeThemes: string[]
+  // The theme songs of the titles the other stories name, or an artist's
+  // most played track
+  titleThemes: Record<TitleSlot, string[]>
   // The viewer's most played track, from the media server
   topTrack: string[]
   // The top artists' most played tracks, in their order
@@ -214,7 +220,10 @@ function getStories(
           userRewind.audio.top.map((_, i) => withTrack(music.artistTracks[i])),
         )
       default:
-        return []
+        return (STORY_TITLES[id as RewindStoryId] ?? []).map((slot) => ({
+          step: TITLE_STEPS[slot],
+          music: withTrack(music.titleThemes[slot]),
+        }))
     }
   }
 

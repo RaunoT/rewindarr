@@ -3,6 +3,7 @@ import { HeartIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
+import { TITLE_STEPS } from '../storyMusic'
 import TitleMomentCard from '../TitleMomentCard'
 
 export default function StoryComfortWatch({
@@ -33,7 +34,7 @@ export default function StoryComfortWatch({
         </p>
       </RewindStat>
 
-      <RewindStat step={1} noScale>
+      <RewindStat step={TITLE_STEPS.comfortWatch} noScale>
         {/* The card is the show, so the episode is named above it. An episode
             without a title is left to the card. */}
         {episode && (

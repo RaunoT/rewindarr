@@ -5,6 +5,7 @@ import { RATING_STATISTICS } from '@/utils/constants'
 import { useTranslations } from 'next-intl'
 import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
+import { TITLE_STEPS } from '../storyMusic'
 
 export default function StoryRequestsReach({
   userRewind,
@@ -42,7 +43,7 @@ export default function StoryRequestsReach({
         </p>
       </RewindStat>
 
-      <RewindStat step={2} noScale>
+      <RewindStat step={TITLE_STEPS.requestsReach} noScale>
         <p className='mb-2'>
           {t.rich('top', {
             requestsValue: reach.requests,

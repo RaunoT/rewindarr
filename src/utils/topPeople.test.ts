@@ -77,7 +77,11 @@ describe('rankPeople', () => {
         count: 3,
         duration: 450,
         titles: ['Tenet', 'Inception', 'Oppenheimer'],
-        topTitle: { ratingKey: 0, tvdbId: null, tmdbId: 577922 },
+        themeTitles: [
+          { ratingKey: 0, tvdbId: null, tmdbId: 577922 },
+          { ratingKey: 0, tvdbId: null, tmdbId: 27205 },
+          { ratingKey: 0, tvdbId: null, tmdbId: null },
+        ],
         together: [],
         tmdbIds: [577922, 27205],
       },
@@ -86,7 +90,10 @@ describe('rankPeople', () => {
         count: 2,
         duration: 450,
         titles: ['Arrival', 'Dune'],
-        topTitle: { ratingKey: 0, tvdbId: null, tmdbId: null },
+        themeTitles: [
+          { ratingKey: 0, tvdbId: null, tmdbId: null },
+          { ratingKey: 0, tvdbId: null, tmdbId: null },
+        ],
         together: [],
         tmdbIds: [],
       },
@@ -230,14 +237,17 @@ describe('rankPeople', () => {
         count: 2,
         duration: 200,
         titles: ['One', 'Two'],
-        topTitle: { ratingKey: 0, tvdbId: null, tmdbId: null },
+        themeTitles: [
+          { ratingKey: 0, tvdbId: null, tmdbId: null },
+          { ratingKey: 0, tvdbId: null, tmdbId: null },
+        ],
         together: [],
         tmdbIds: [],
       },
     ])
   })
 
-  it("keeps the most watched title's IDs for its theme song", () => {
+  it("keeps the most watched titles' IDs for a theme song", () => {
     const [actor] = rankPeople(
       [
         {
@@ -254,7 +264,10 @@ describe('rankPeople', () => {
       'actors',
     )
 
-    expect(actor.topTitle).toEqual({ ratingKey: 2, tvdbId: 2, tmdbId: null })
+    expect(actor.themeTitles).toEqual([
+      { ratingKey: 2, tvdbId: 2, tmdbId: null },
+      { ratingKey: 1, tvdbId: 1, tmdbId: null },
+    ])
   })
 })
 
@@ -419,7 +432,10 @@ describe('getTopPeople', () => {
       getSourceData,
     )
 
-    expect(showActors[0].topTitle).toEqual({ ratingKey: 1, tvdbId: 81189 })
+    expect(showActors[0].themeTitles).toEqual([
+      { ratingKey: 1, tvdbId: 81189 },
+      { ratingKey: 2, tvdbId: null },
+    ])
   })
 
   it('ranks the titles whose credits were found', async () => {
@@ -452,7 +468,10 @@ describe('getTopPeople', () => {
         count: 2,
         duration: 300,
         titles: ['Tenet', 'Inception'],
-        topTitle: { ratingKey: 0, tvdbId: null },
+        themeTitles: [
+          { ratingKey: 0, tvdbId: null },
+          { ratingKey: 0, tvdbId: null },
+        ],
         together: [],
         image: null,
       },

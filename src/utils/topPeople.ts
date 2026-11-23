@@ -1,4 +1,4 @@
-import { ItemRow, TopPeople, TopPerson } from '@/types/statsSource'
+import { ItemRow, ThemeTitle, TopPeople, TopPerson } from '@/types/statsSource'
 import { omit, orderBy, sumBy } from 'lodash'
 import fetchTmdb from './fetchTmdb'
 import {
@@ -22,6 +22,8 @@ export const LOOKUP_CONCURRENCY = 8
 
 // Someone TMDB has no picture of would otherwise cost a lookup per title.
 const PORTRAIT_TITLES = 3
+// A title without a theme song falls back to the next one
+const THEME_TITLES = 3
 const TMDB_PROFILE_URL = 'https://image.tmdb.org/t/p/w185'
 // A show's plain credits only cover its latest season.
 const CREDITS_ENDPOINTS: Record<TmdbMediaType, string> = {
@@ -52,10 +54,10 @@ export type CreditedTitle = {
 }
 
 // With the titles to look their portrait up in, most watched first, and the
-// top title's TMDB ID to look its TVDB ID up with
-type RankedPerson = Omit<TopPerson, 'image' | 'topTitle'> & {
+// theme titles' TMDB IDs to look their TVDB IDs up with
+type RankedPerson = Omit<TopPerson, 'image' | 'themeTitles'> & {
   tmdbIds: number[]
-  topTitle: TopPerson['topTitle'] & { tmdbId: number | null }
+  themeTitles: (ThemeTitle & { tmdbId: number | null })[]
 }
 
 function toKey(name: string): string {
@@ -245,11 +247,11 @@ export function rankPeople(
       count: titles.length,
       duration: person.duration,
       titles: titles.map((title) => title.item.title),
-      topTitle: {
-        ratingKey: titles[0].item.rating_key,
-        tvdbId: titles[0].tvdbId,
-        tmdbId: titles[0].tmdbId,
-      },
+      themeTitles: titles.slice(0, THEME_TITLES).map((title) => ({
+        ratingKey: title.item.rating_key,
+        tvdbId: title.tvdbId,
+        tmdbId: title.tmdbId,
+      })),
       together: person.together,
       tmdbIds: titles.flatMap((title) => (title.tmdbId ? [title.tmdbId] : [])),
     }
@@ -283,19 +285,19 @@ async function findPortrait(
 // A show's theme song goes by its TVDB ID, which TMDB has when the source
 // doesn't. Movies have none.
 async function findTvdbId(
-  { topTitle }: RankedPerson,
+  title: RankedPerson['themeTitles'][number],
   type: TmdbMediaType,
 ): Promise<number | null> {
   if (
-    topTitle.tvdbId ||
+    title.tvdbId ||
     type !== 'tv' ||
-    !topTitle.tmdbId ||
+    !title.tmdbId ||
     !getSettings().rewind.isThemeMusicActive
   ) {
-    return topTitle.tvdbId
+    return title.tvdbId
   }
 
-  const details = await fetchTmdbDetails('tv', topTitle.tmdbId)
+  const details = await fetchTmdbDetails('tv', title.tmdbId)
 
   return details?.external_ids?.tvdb_id ?? null
 }
@@ -312,16 +314,17 @@ async function getRanking(
 
   return Promise.all(
     people.map(async (person) => {
-      const [image, tvdbId] = await Promise.all([
+      const [image, themeTitles] = await Promise.all([
         findPortrait(person, role, type),
-        findTvdbId(person, type),
+        Promise.all(
+          person.themeTitles.map(async (title) => ({
+            ratingKey: title.ratingKey,
+            tvdbId: await findTvdbId(title, type),
+          })),
+        ),
       ])
 
-      return {
-        ...omit(person, 'tmdbIds'),
-        topTitle: { ratingKey: person.topTitle.ratingKey, tvdbId },
-        image,
-      }
+      return { ...omit(person, 'tmdbIds'), themeTitles, image }
     }),
   )
 }
