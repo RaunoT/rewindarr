@@ -4,7 +4,11 @@ import { STAT_ICONS } from '@/components/icons'
 import SkeletonSized from '@/components/SkeletonSized'
 import SourceUnreachable from '@/components/SourceUnreachable'
 import StatusMessage from '@/components/StatusMessage'
-import Totals, { Total, TotalsSkeleton } from '@/components/Totals'
+import Totals, {
+  Total,
+  TotalSkeleton,
+  TotalsSkeleton,
+} from '@/components/Totals'
 import { authOptions } from '@/lib/auth'
 import { DashboardSearchParams } from '@/types/dashboard'
 import { HistoryEntry, HistoryKind, HistoryTotals } from '@/types/history'
@@ -43,6 +47,7 @@ import {
 import { sortBy, upperFirst } from 'lodash'
 import { Metadata } from 'next'
 import { getServerSession, Session } from 'next-auth'
+import { useTranslations } from 'next-intl'
 import {
   getFormatter,
   getLocale,
@@ -181,35 +186,50 @@ function getTotalKeys(filter: HistoryFilter, hasRequests: boolean) {
   ]
 }
 
+type TotalKey = ReturnType<typeof getTotalKeys>[number]
+
+const TOTAL_LABELS: Record<TotalKey, string> = {
+  // Music counts too, so neither watched nor listened
+  watchTime: 'Totals.playTime',
+  plays: 'Common.plays',
+  requests: 'Common.requests',
+  users: 'Common.users',
+}
+const SKELETON_KINDS: Record<TotalKey, TotalSkeleton['kind']> = {
+  watchTime: 'duration',
+  plays: 'count',
+  requests: 'smallCount',
+  users: 'smallCount',
+}
+
 // What the period adds up to with the filters, like the dashboard's
 async function HistoryTotalsRow({ totals, filter, hasRequests }: TotalsProps) {
   const t = await getTranslations()
   const format = await getFormatter()
-  const items: Record<ReturnType<typeof getTotalKeys>[number], Total> = {
+  const items: Record<TotalKey, Total> = {
     watchTime: {
       key: 'watchTime',
       icon: <STAT_ICONS.duration />,
-      // Music counts too, so neither watched nor listened
-      label: t('Totals.playTime'),
+      label: t(TOTAL_LABELS.watchTime),
       value: secondsToTime(totals.watchTime, t),
       shortValue: secondsToTime(totals.watchTime, t, true),
     },
     plays: {
       key: 'plays',
       icon: <PlayIcon />,
-      label: t('Common.plays'),
+      label: t(TOTAL_LABELS.plays),
       value: format.number(totals.plays),
     },
     requests: {
       key: 'requests',
       icon: <STAT_ICONS.requests />,
-      label: t('Common.requests'),
+      label: t(TOTAL_LABELS.requests),
       value: format.number(totals.requests),
     },
     users: {
       key: 'users',
       icon: <STAT_ICONS.users />,
-      label: t('Common.users'),
+      label: t(TOTAL_LABELS.users),
       value: format.number(totals.users),
     },
   }
@@ -223,18 +243,25 @@ async function HistoryTotalsRow({ totals, filter, hasRequests }: TotalsProps) {
 
 function HistoryLoader({
   rows,
-  totalsCount,
+  totalKeys,
   general,
   isSeerrActive,
 }: {
   rows: number
-  totalsCount: number
+  totalKeys: TotalKey[]
   general: ComponentProps<typeof HistorySkeleton>['general']
   isSeerrActive: boolean
 }) {
+  const t = useTranslations()
+
   return (
     <>
-      <TotalsSkeleton count={totalsCount} />
+      <TotalsSkeleton
+        totals={totalKeys.map((key) => ({
+          label: t(TOTAL_LABELS[key]),
+          kind: SKELETON_KINDS[key],
+        }))}
+      />
       <CardWrapper>
         <HistorySkeleton
           rows={rows}
@@ -527,7 +554,7 @@ export default async function HistoryPage({ searchParams }: Props) {
             rows={pageSize}
             general={settings.general}
             isSeerrActive={hasRequests}
-            totalsCount={getTotalKeys(filter, hasRequests).length}
+            totalKeys={getTotalKeys(filter, hasRequests)}
           />
         }
         // Without the page, so the list stays up while the next one loads

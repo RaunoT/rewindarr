@@ -10,7 +10,7 @@ import { secondsToTime } from '@/utils/formatting'
 import { MoonIcon } from '@heroicons/react/24/outline'
 import { getFormatter, getTranslations } from 'next-intl/server'
 import { ReactNode, Suspense } from 'react'
-import { DashboardListSkeleton } from './DashboardLoader'
+import { DashboardListSkeleton, getTotalLabel } from './DashboardLoader'
 import ShowMore from './ShowMore'
 
 type Props = {
@@ -49,13 +49,7 @@ export default async function Dashboard({
     totals.push({
       key: 'duration',
       icon: <STAT_ICONS.duration />,
-      // Users count music too, so neither watched nor listened
-      label:
-        type === 'users'
-          ? t('Totals.playTime')
-          : type === 'artist'
-            ? t('Totals.listenTime')
-            : t('Common.duration'),
+      label: getTotalLabel('duration', type, t),
       value: secondsToTime(totalDuration, t),
       shortValue: secondsToTime(totalDuration, t, true),
     })
@@ -65,7 +59,7 @@ export default async function Dashboard({
     totals.push({
       key: 'requests',
       icon: <STAT_ICONS.requests />,
-      label: t('Common.requests'),
+      label: getTotalLabel('requests', type, t),
       value: format.number(totalRequests),
     })
   }
@@ -74,12 +68,7 @@ export default async function Dashboard({
     totals.push({
       key: 'count',
       icon: <MediaIcon type={type} />,
-      label:
-        type === 'movie'
-          ? t('Totals.movies')
-          : type === 'show'
-            ? t('Totals.episodes')
-            : t('Totals.tracks'),
+      label: getTotalLabel('count', type, t),
       value: count,
     })
   }
@@ -90,13 +79,13 @@ export default async function Dashboard({
         ? {
             key: 'users',
             icon: <STAT_ICONS.users />,
-            label: t('Common.users'),
+            label: getTotalLabel('users', type, t),
             value: format.number(Number(totalSize)),
           }
         : {
             key: 'size',
             icon: <STAT_ICONS.size />,
-            label: t('Common.size'),
+            label: getTotalLabel('size', type, t),
             value: totalSize,
           },
     )

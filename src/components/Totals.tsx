@@ -1,4 +1,4 @@
-import SkeletonLine from '@/components/SkeletonLine'
+import clsx from 'clsx'
 import { ReactNode } from 'react'
 
 export type Total = {
@@ -21,13 +21,43 @@ const ROWS_CLASS = 'flex flex-wrap gap-y-3 overflow-hidden'
 const PAIR_CLASS = '-ml-px flex border-l border-white/10 sm:basis-0'
 // Shares the pair evenly, but never narrower than its value
 const ITEM_CLASS = 'flex-1 border-white/10 px-2.5 not-first:border-l sm:px-5'
-const LABEL_CLASS = 'text-[0.6875rem] sm:text-sm'
+const LABEL_CLASS =
+  'flex h-[1lh] items-center gap-1 text-[0.6875rem] text-neutral-400 sm:gap-1.5 sm:text-sm [&>svg]:size-3 [&>svg]:shrink-0 sm:[&>svg]:size-4'
 const VALUE_CLASS =
   'mt-0.5 text-base font-semibold tracking-tight whitespace-nowrap sm:mt-1 sm:text-xl'
 
 function toPairs<T>(items: T[]): T[][] {
   return Array.from({ length: Math.ceil(items.length / 2) }, (_, i) =>
     items.slice(i * 2, i * 2 + 2),
+  )
+}
+
+// The whole label counts towards the row's width, so a row that can't show
+// every label wraps. A column is only kept wide enough for the first 6rem of
+// its label, though, so a long one is cut short instead of pushing the row
+// apart when even half a row is too narrow for it.
+function LabelText({
+  label,
+  children = label,
+}: {
+  label: string
+  // What to show instead of the label, such as a skeleton
+  children?: ReactNode
+}) {
+  return (
+    <span className='grid grid-cols-[minmax(min-content,max-content)] *:[grid-area:1/1]'>
+      <span className='w-0 min-w-full truncate'>{children}</span>
+      {/* Only size the column */}
+      <span
+        aria-hidden
+        className='invisible h-0 max-w-24 overflow-hidden whitespace-nowrap sm:max-w-48'
+      >
+        {label}
+      </span>
+      <span aria-hidden className='invisible h-0 overflow-hidden'>
+        {label}
+      </span>
+    </span>
   )
 }
 
@@ -49,15 +79,9 @@ export default function Totals({ totals }: { totals: Total[] }) {
           >
             {pair.map((total) => (
               <div key={total.key} className={ITEM_CLASS}>
-                <dt
-                  className={`${LABEL_CLASS} flex items-center gap-1 text-neutral-400 sm:gap-1.5 [&>svg]:size-3 [&>svg]:shrink-0 sm:[&>svg]:size-4`}
-                >
+                <dt className={LABEL_CLASS}>
                   {total.icon}
-                  {/* Capped, so a long label is cut short instead of
-                      pushing the row apart */}
-                  <span className='max-w-24 truncate sm:max-w-48'>
-                    {total.label}
-                  </span>
+                  <LabelText label={total.label} />
                 </dt>
                 <dd className={`${VALUE_CLASS} tabular-nums`}>
                   {total.shortValue ? (
@@ -78,47 +102,79 @@ export default function Totals({ totals }: { totals: Total[] }) {
   )
 }
 
-// Capped on phones, where four totals share the row
-const LABEL_WIDTHS = ['w-20', 'w-14', 'w-16', 'w-12'].map(
-  (width) => `${width} max-w-full`,
-)
-const VALUE_WIDTHS = [
-  'w-14 sm:w-32',
-  'w-10 sm:w-16',
-  'w-12 sm:w-20',
-  'w-10 sm:w-14',
-]
+// About as wide as a typical value of each kind, short and long, so the
+// skeleton wraps where the totals would
+const SAMPLE_VALUES = {
+  duration: ['00d 00h', '00 days 00 hrs'],
+  count: ['0,000', '0,000'],
+  smallCount: ['000', '000'],
+  size: ['00.00 TB', '00.00 TB'],
+}
 
-// As tall as the totals, so nothing moves once they load
-export function TotalsSkeleton({ count }: { count: number }) {
-  if (!count) {
+export type TotalSkeleton = {
+  label: string
+  kind: keyof typeof SAMPLE_VALUES
+}
+
+// With the real labels, which are known before the totals, so it wraps like
+// they do and nothing moves once they load
+export function TotalsSkeleton({ totals }: { totals: TotalSkeleton[] }) {
+  if (!totals.length) {
     return null
   }
 
   return (
     <div className={SHEET_CLASS}>
-      <div className={ROWS_CLASS}>
-        {toPairs([...Array(count).keys()]).map((pair) => (
+      <div className={ROWS_CLASS} aria-hidden>
+        {toPairs(totals).map((pair) => (
           <div
-            key={pair[0]}
+            key={pair[0].label}
             className={PAIR_CLASS}
             style={{ flexGrow: pair.length }}
           >
-            {pair.map((i) => (
-              <div key={i} className={ITEM_CLASS}>
-                <SkeletonLine
-                  className={LABEL_CLASS}
-                  width={LABEL_WIDTHS[i % LABEL_WIDTHS.length]}
-                />
-                <SkeletonLine
-                  className={VALUE_CLASS}
-                  width={VALUE_WIDTHS[i % VALUE_WIDTHS.length]}
-                />
-              </div>
-            ))}
+            {pair.map(({ label, kind }) => {
+              const [short, long] = SAMPLE_VALUES[kind]
+
+              return (
+                <div key={label} className={ITEM_CLASS}>
+                  {/* One bar for the icon and the label */}
+                  <div className={LABEL_CLASS}>
+                    <SkeletonText className='pl-4 sm:pl-5.5'>
+                      <LabelText label={label}>{label}</LabelText>
+                    </SkeletonText>
+                  </div>
+                  <div className={VALUE_CLASS}>
+                    <SkeletonText className='sm:hidden'>{short}</SkeletonText>
+                    <SkeletonText className='max-sm:hidden'>
+                      {long}
+                    </SkeletonText>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         ))}
       </div>
     </div>
+  )
+}
+
+// A bar as wide as the text it stands in for
+function SkeletonText({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <span
+      className={clsx(
+        'skeleton inline-block h-[0.7em] align-middle leading-[0.7em] text-transparent',
+        className,
+      )}
+    >
+      {children}
+    </span>
   )
 }
