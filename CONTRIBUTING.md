@@ -7,7 +7,7 @@ Contributions are welcome and greatly appreciated! Please follow the guidelines 
 ### Tools
 
 - [Git](https://git-scm.com) for source control
-- [Node.js](https://nodejs.org) 24 or higher (see `.node-version`)
+- [Node.js](https://nodejs.org) 24.15 or higher on the 24 line (see `.node-version`), which Stylelint needs
 - [pnpm](https://pnpm.io) as a package manager. The version is pinned in `package.json`, so enabling it with `corepack enable pnpm` picks the right one.
 - [VS Code](https://code.visualstudio.com) is recommended as an editor. It suggests the extensions in `.vscode/extensions.json` when you open the project.
 - A [Plex](https://plex.tv) or [Jellyfin](https://jellyfin.org) server and either a [Tautulli](https://tautulli.com) or a [Tracearr](https://github.com/connorgallopo/Tracearr) instance (Jellyfin needs Tracearr), if you want to work with real data. [Seerr](https://seerr.dev) is optional. You enter their URLs and API keys under _Settings → Connection_ once the app is running. Without them, you can use the [mock data](#mock-data).
