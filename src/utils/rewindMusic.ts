@@ -61,6 +61,39 @@ export function parseRange(
   return { start, end }
 }
 
+// What another server's audio answers with that the browser needs for seeking
+const PASSED_STATUSES = [200, 206, 416]
+const PASSED_HEADERS = ['Content-Length', 'Content-Range', 'Accept-Ranges']
+
+// Another server's audio, passed on with the parts of it the browser asked
+// for. A 404 when there's none, or it isn't a type browsers can play.
+export async function passAudio(
+  audio: Response | null,
+  type: string | null,
+): Promise<Response> {
+  if (!audio || !type || !PASSED_STATUSES.includes(audio.status)) {
+    await audio?.body?.cancel()
+
+    return new Response(null, { status: 404 })
+  }
+
+  const headers = new Headers({
+    'Content-Type': type,
+    'Cache-Control': 'private, max-age=86400',
+    'Content-Security-Policy': 'sandbox',
+  })
+
+  for (const name of PASSED_HEADERS) {
+    const value = audio.headers.get(name)
+
+    if (value) {
+      headers.set(name, value)
+    }
+  }
+
+  return new Response(audio.body, { status: audio.status, headers })
+}
+
 class TooLargeError extends Error {}
 
 function limitSize(maxBytes: number) {
