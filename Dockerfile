@@ -1,4 +1,7 @@
-FROM node:24-alpine AS base
+FROM node:26-alpine AS base
+
+# Node 25 and later no longer ship corepack, which picks the pinned pnpm
+RUN npm install -g corepack@0.36.0 && corepack enable pnpm
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -8,7 +11,7 @@ WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc* ./
 ENV HUSKY=0
-RUN corepack enable pnpm && pnpm i --frozen-lockfile
+RUN pnpm i --frozen-lockfile
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -24,7 +27,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_VERSION_TAG
 ENV NEXT_PUBLIC_VERSION_TAG=${NEXT_PUBLIC_VERSION_TAG}
 
-RUN corepack enable pnpm && pnpm run build
+RUN pnpm run build
 
 # Production image, copy all the files and run next
 FROM base AS runner
