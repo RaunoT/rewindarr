@@ -218,11 +218,13 @@ export async function getTopTrack(
   return { ...top, isOnly }
 }
 
-// Anonymizing hides who the match would name, so it isn't looked for
+// Anonymizing hides who the match would name, so it isn't looked for, and
+// neither is it when the viewer may only see their own stats
 export async function getGenres(
   userId: string,
   libraries: Library[],
   period: PlayPeriod,
+  isMatchShown = true,
 ) {
   const settings = getSettings()
 
@@ -230,7 +232,7 @@ export async function getGenres(
     userId,
     libraries,
     period,
-    !settings.general.isAnonymized,
+    isMatchShown && !settings.general.isAnonymized,
   )
 }
 

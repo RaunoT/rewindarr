@@ -6,6 +6,7 @@ import PeriodFilter from './PeriodFilter'
 type Props = {
   settings: PublicSettings
   personalFilter?: boolean
+  isOwnOnly?: boolean
   isUsers?: boolean
 }
 
@@ -14,6 +15,7 @@ type Props = {
 export default function DashboardToolbar({
   settings,
   personalFilter = false,
+  isOwnOnly = false,
   isUsers = false,
 }: Props) {
   return (
@@ -26,7 +28,11 @@ export default function DashboardToolbar({
           <PeriodFilter settings={settings} className='max-sm:flex-1' />
         </div>
       ) : (
-        <DashboardFilters settings={settings} personalFilter={personalFilter} />
+        <DashboardFilters
+          settings={settings}
+          personalFilter={personalFilter}
+          isOwnOnly={isOwnOnly}
+        />
       )}
     </Suspense>
   )

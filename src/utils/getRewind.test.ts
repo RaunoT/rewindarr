@@ -4,7 +4,12 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
 import { fetchSeerrStats } from './fetchSeerr'
-import { getRequestsTotals, getTopMediaStats, getTopTrack } from './getRewind'
+import {
+  getGenres,
+  getRequestsTotals,
+  getTopMediaStats,
+  getTopTrack,
+} from './getRewind'
 import getSettings from './getSettings'
 import { getStatsSource } from './statsSource'
 
@@ -321,5 +326,34 @@ describe('getTopTrack', () => {
     mockPlays([track('Partial', 10, 40)])
 
     await expect(getTopTrack('1', LIBRARIES, PERIOD)).resolves.toBeNull()
+  })
+})
+
+describe('getGenres', () => {
+  const getGenresFromSource = vi.fn()
+  const period = { since: '2026-01-01' }
+
+  beforeEach(() => {
+    getGenresFromSource.mockReset()
+    vi.mocked(getStatsSource).mockReturnValue({
+      getGenres: getGenresFromSource,
+    } as unknown as ReturnType<typeof getStatsSource>)
+  })
+
+  it('looks for a taste match unless it is hidden or anonymized', async () => {
+    await getGenres('1', [], period)
+    await getGenres('1', [], period, false)
+
+    const settings = cloneDeep(DEFAULT_SETTINGS)
+
+    settings.general.isAnonymized = true
+    vi.mocked(getSettings).mockReturnValue(settings)
+    await getGenres('1', [], period)
+
+    expect(getGenresFromSource.mock.calls.map((call) => call[3])).toEqual([
+      true,
+      false,
+      false,
+    ])
   })
 })

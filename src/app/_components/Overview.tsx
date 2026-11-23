@@ -16,7 +16,12 @@ import {
 import { getItems } from '@/utils/getDashboard'
 import getPeriod, { parseCustomPeriod } from '@/utils/getPeriod'
 import getRewindEditions from '@/utils/getRewindEditions'
-import { getHomeTiles, getLibrarySlug, getViewer } from '@/utils/helpers'
+import {
+  getHomeTiles,
+  getLibrarySlug,
+  getOwnOnlyUserId,
+  getViewer,
+} from '@/utils/helpers'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import { toPublicSettings } from '@/utils/publicSettings'
 import { getNewEditionYear, getRewindPeriodType } from '@/utils/rewindPeriod'
@@ -126,6 +131,7 @@ export default async function Overview({
                 <LibraryTile
                   library={library}
                   settings={settings}
+                  session={session}
                   period={period}
                   periodLabel={periodLabel}
                 />
@@ -262,6 +268,7 @@ async function EarlierRewindsMenu({
 type LibraryTileProps = {
   library: Library
   settings: Settings
+  session: Session | null
   period: DashboardSearchParams['period']
   periodLabel: string
 }
@@ -277,6 +284,7 @@ function getDashboardPeriod(value?: string): DashboardSearchParams['period'] {
 async function LibraryTile({
   library,
   settings,
+  session,
   period,
   periodLabel,
 }: LibraryTileProps) {
@@ -288,6 +296,7 @@ async function LibraryTile({
     : (
         await getItems(library, {
           period: daysAgo,
+          userId: getOwnOnlyUserId(settings, 'dashboard', session),
           sortBy: 'plays',
           count: TILE_ITEM_COUNT,
         })
