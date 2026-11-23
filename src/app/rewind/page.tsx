@@ -37,7 +37,11 @@ import {
   getDifference,
   getViewer,
 } from '@/utils/helpers'
-import { getPlexThemeUrl, getPlexTrackUrl } from '@/utils/plexAudio'
+import {
+  canStreamFromPlex,
+  getPlexThemeUrl,
+  getPlexTrackUrl,
+} from '@/utils/plexAudio'
 import { toPublicSettings } from '@/utils/publicSettings'
 import { getRewindMoments } from '@/utils/rewindMoments'
 import { getMusicUrl, getThemeSongUrl } from '@/utils/rewindMusic'
@@ -412,9 +416,15 @@ async function getRewind(
       : []
   const getTrackMusic = (track: TopTrack | null | undefined) =>
     [getPlexTrackUrl(settings, track?.ratingKey)].filter((url) => url !== null)
-  const artistTracks = isThemeMusicActive
-    ? await getArtistTopTracks(user.id, libraries, period, topMediaItems.audio)
-    : []
+  // Only Plex streams the tracks
+  const artistTracks =
+    isThemeMusicActive && canStreamFromPlex(settings)
+      ? getArtistTopTracks(
+          plays,
+          topMediaItems.audio,
+          settings.general.minPlayPercent,
+        )
+      : []
 
   return {
     userRewind,

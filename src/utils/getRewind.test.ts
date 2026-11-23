@@ -1,4 +1,4 @@
-import { Library } from '@/types/statsSource'
+import { HistoryPlay, Library } from '@/types/statsSource'
 import { cloneDeep } from 'lodash'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -330,9 +330,7 @@ describe('getTopTrack', () => {
 })
 
 describe('getArtistTopTracks', () => {
-  const LIBRARIES = [{ section_type: 'artist' }] as Library[]
-
-  function track(title: string, artistName: string) {
+  function track(title: string, artistName: string, percentComplete = 100) {
     return {
       mediaType: 'track',
       ratingKey: title,
@@ -341,31 +339,26 @@ describe('getArtistTopTracks', () => {
       artistName,
       durationMs: 3 * 60 * 1000,
       lengthMs: null,
-      percentComplete: 100,
-    }
+      percentComplete,
+    } as HistoryPlay
   }
 
   function artist(title: string) {
     return { title, media_id: null, year: null }
   }
 
-  it("picks each artist's most played track, in the artists' order", async () => {
-    vi.mocked(getStatsSource).mockReturnValue({
-      getHistoryPlays: vi
-        .fn()
-        .mockResolvedValue([
-          track('Hit', 'First'),
-          track('Hit', 'First'),
-          track('Deep cut', 'First'),
-          track('Single', 'second'),
-        ]),
-    } as unknown as ReturnType<typeof getStatsSource>)
-
-    const tracks = await getArtistTopTracks('1', LIBRARIES, PERIOD, [
-      artist('Second'),
-      artist('First'),
-      artist('Unplayed'),
-    ])
+  it("picks each artist's most played track, in the artists' order", () => {
+    const plays = [
+      track('Hit', 'First'),
+      track('Hit', 'First'),
+      track('Deep cut', 'First'),
+      track('Single', 'second'),
+    ]
+    const tracks = getArtistTopTracks(
+      plays,
+      [artist('Second'), artist('First'), artist('Unplayed')],
+      50,
+    )
 
     expect(tracks.map((track) => track?.title ?? null)).toEqual([
       'Single',
@@ -374,16 +367,15 @@ describe('getArtistTopTracks', () => {
     ])
   })
 
-  it('asks for nothing without artists', async () => {
-    const getHistoryPlays = vi.fn()
+  it('goes by listening time without a play that counts', () => {
+    const plays = [
+      track('Skipped', 'Artist', 10),
+      track('Half', 'Artist', 40),
+      track('Half', 'Artist', 40),
+    ]
 
-    vi.mocked(getStatsSource).mockReturnValue({
-      getHistoryPlays,
-    } as unknown as ReturnType<typeof getStatsSource>)
-
-    await expect(
-      getArtistTopTracks('1', LIBRARIES, PERIOD, []),
-    ).resolves.toEqual([])
-    expect(getHistoryPlays).not.toHaveBeenCalled()
+    expect(getArtistTopTracks(plays, [artist('Artist')], 50)).toEqual([
+      expect.objectContaining({ title: 'Half', plays: 0 }),
+    ])
   })
 })

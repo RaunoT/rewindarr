@@ -32,7 +32,7 @@ const PASSED_HEADERS = ['Content-Length', 'Content-Range', 'Accept-Ranges']
 const audioPaths = new Map<string, AudioPath>()
 
 // Plex only serves the library with a token. Jellyfin's items aren't Plex's.
-function canStreamFromPlex({ connection }: Settings): boolean {
+export function canStreamFromPlex({ connection }: Settings): boolean {
   return (
     connection.mediaServerType === 'plex' &&
     !!connection.plexUrl &&

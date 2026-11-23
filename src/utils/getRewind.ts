@@ -174,29 +174,31 @@ export async function getTopTrack(
 }
 
 // Each artist's most played track, picked like the top track, in the artists'
-// order. Null for an artist without one.
-export async function getArtistTopTracks(
-  userId: string,
-  libraries: Library[],
-  period: PlayPeriod,
+// order. An artist ranks by listening time too, so without a play that counts
+// it's the track with the most. Null for an artist without plays.
+export function getArtistTopTracks(
+  plays: HistoryPlay[],
   artists: Pick<ItemRow, 'media_id' | 'title' | 'year'>[],
-): Promise<(TopTrack | null)[]> {
-  if (!artists.length) {
-    return []
-  }
+  minPercent: number,
+): (TopTrack | null)[] {
+  const tracks = plays.filter((play) => play.mediaType === 'track')
 
-  const plays = await getAudioPlays(userId, libraries, period)
-  const minPercent = getSettings().general.minPlayPercent
+  return artists.map((artist) => {
+    const artistTracks = tracks.filter((play) => isPlayOfItem(play, artist))
 
-  return artists.map((artist) =>
-    pickTopTrack(
-      plays.filter((play) => isPlayOfItem(play, artist)),
-      minPercent,
-    ),
-  )
+    return (
+      pickTopTrack(artistTracks, minPercent) ??
+      maxBy([...sumTracks(artistTracks, minPercent).values()], 'durationMs') ??
+      null
+    )
+  })
 }
 
-function pickTopTrack(plays: HistoryPlay[], minPercent: number) {
+// The plays of each track and its listening time
+function sumTracks(
+  plays: HistoryPlay[],
+  minPercent: number,
+): Map<string, TopTrack> {
   const tracks = new Map<string, TopTrack>()
 
   for (const play of plays) {
@@ -219,6 +221,15 @@ function pickTopTrack(plays: HistoryPlay[], minPercent: number) {
     track.durationMs += play.durationMs
     tracks.set(key, track)
   }
+
+  return tracks
+}
+
+function pickTopTrack(
+  plays: HistoryPlay[],
+  minPercent: number,
+): TopTrack | null {
+  const tracks = sumTracks(plays, minPercent)
 
   let top: TopTrack | null = null
   let countedTracks = 0
