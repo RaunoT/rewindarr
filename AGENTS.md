@@ -7,7 +7,7 @@ Contributor setup is in [CONTRIBUTING.md](CONTRIBUTING.md). Use pnpm (pinned in 
 ## Commands
 
 - `pnpm dev`: dev server with Turbopack at `http://localhost:3000`. `.env.local` (from `.env.example`) is optional; without `NEXTAUTH_SECRET` a secret is created in `config/auth-secret`.
-- `pnpm lint:all`: ESLint, `tsc --noEmit`, Stylelint and a Prettier check. `pnpm lint:all:fix` fixes what it can.
+- `pnpm lint:all`: oxlint, `tsc --noEmit` (TypeScript 7), Stylelint and an oxfmt check. `pnpm lint:all:fix` fixes what it can.
 - `pnpm test`: Vitest unit tests, kept next to the code they test as `*.test.ts`.
 - `pnpm build`: `next build` followed by `serwist build`, which generates the service worker in `public/sw.js`.
 - `pnpm commit`: guided Conventional Commits prompt (commitizen).
@@ -49,7 +49,7 @@ Run `pnpm lint:all` and `pnpm test` before every PR. CI also runs `pnpm build`.
 
 ## Code style
 
-Prettier (no semicolons, single quotes) and ESLint decide formatting; ESLint also requires blank lines around `return`, `if` and variable declarations. CSS classes are kebab-case. Run `pnpm lint:all:fix` instead of formatting by hand.
+oxfmt (no semicolons, single quotes, sorted imports and Tailwind classes, `.oxfmtrc.json`) and oxlint (`.oxlintrc.json`) decide formatting; oxlint also requires blank lines around `return`, `if` and variable declarations, through `@stylistic/eslint-plugin` loaded as a JS plugin. Disable a rule for one line with `// oxlint-disable-next-line <rule>`. oxlint does not remove unused imports, it reports them. CSS classes are kebab-case. Run `pnpm lint:all:fix` instead of formatting by hand.
 
 ## Rules
 

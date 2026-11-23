@@ -64,7 +64,13 @@ export type TracearrLibrary = {
 }
 
 export type TracearrMediaType =
-  'movie' | 'episode' | 'track' | 'live' | 'photo' | 'trailer' | 'unknown'
+  | 'movie'
+  | 'episode'
+  | 'track'
+  | 'live'
+  | 'photo'
+  | 'trailer'
+  | 'unknown'
 
 type TracearrMediaFields = {
   server_id: string

@@ -109,9 +109,9 @@ export default function ConnectionSettingsForm({
                 setStatisticsSource(e.target.value as StatisticsSource)
               }
             >
-              {/* eslint-disable-next-line react/jsx-no-literals */}
+              {/* oxlint-disable-next-line react/jsx-no-literals */}
               <option value='tautulli'>Tautulli</option>
-              {/* eslint-disable-next-line react/jsx-no-literals */}
+              {/* oxlint-disable-next-line react/jsx-no-literals */}
               <option value='tracearr'>Tracearr</option>
             </select>
           </span>
@@ -133,7 +133,7 @@ export default function ConnectionSettingsForm({
         )}
       </section>
       <section className={clsx('group-settings group', { hidden: isTracearr })}>
-        {/* eslint-disable-next-line react/jsx-no-literals */}
+        {/* oxlint-disable-next-line react/jsx-no-literals */}
         <h2 className='heading-settings'>Tautulli</h2>
         <label className='input-wrapper'>
           <input
@@ -146,7 +146,7 @@ export default function ConnectionSettingsForm({
             defaultValue={connectionSettings.tautulliUrl}
           />
           <span className='label'>
-            {/* eslint-disable-next-line react/jsx-no-literals */}
+            {/* oxlint-disable-next-line react/jsx-no-literals */}
             <span className='label-wrapper'>URL</span>
           </span>
         </label>
@@ -167,7 +167,7 @@ export default function ConnectionSettingsForm({
       <section
         className={clsx('group-settings group', { hidden: !isTracearr })}
       >
-        {/* eslint-disable-next-line react/jsx-no-literals */}
+        {/* oxlint-disable-next-line react/jsx-no-literals */}
         <h2 className='heading-settings'>Tracearr</h2>
         <label className='input-wrapper'>
           <input
@@ -180,7 +180,7 @@ export default function ConnectionSettingsForm({
             defaultValue={connectionSettings.tracearrUrl}
           />
           <span className='label'>
-            {/* eslint-disable-next-line react/jsx-no-literals */}
+            {/* oxlint-disable-next-line react/jsx-no-literals */}
             <span className='label-wrapper'>URL</span>
           </span>
         </label>
@@ -264,7 +264,7 @@ export default function ConnectionSettingsForm({
             defaultValue={connectionSettings.plexUrl}
           />
           <span className='label'>
-            {/* eslint-disable-next-line react/jsx-no-literals */}
+            {/* oxlint-disable-next-line react/jsx-no-literals */}
             <span className='label-wrapper'>URL</span>
             {isTracearr && <small>{t('Connection.plexUrlHelp')}</small>}
           </span>
@@ -280,7 +280,7 @@ export default function ConnectionSettingsForm({
             defaultValue={connectionSettings.jellyfinUrl}
           />
           <span className='label'>
-            {/* eslint-disable-next-line react/jsx-no-literals */}
+            {/* oxlint-disable-next-line react/jsx-no-literals */}
             <span className='label-wrapper'>URL</span>
             <small>{t('Connection.jellyfinUrlHelp')}</small>
           </span>
@@ -327,7 +327,7 @@ export default function ConnectionSettingsForm({
             defaultValue={connectionSettings.seerrUrl}
           />
           <span className='label'>
-            {/* eslint-disable-next-line react/jsx-no-literals */}
+            {/* oxlint-disable-next-line react/jsx-no-literals */}
             <span className='label-wrapper'>URL</span>
           </span>
         </label>

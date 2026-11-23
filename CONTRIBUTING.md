@@ -131,7 +131,7 @@ pnpm test
 pnpm build
 ```
 
-`pnpm lint:all` runs ESLint, the TypeScript check, Stylelint and a Prettier check, and `pnpm lint:all:fix` fixes what it can.
+`pnpm lint:all` runs oxlint, the TypeScript check, Stylelint and an oxfmt check, and `pnpm lint:all:fix` fixes what it can. In VS Code, the recommended Oxc extension formats on save, and the TypeScript 7 extension gives the editor the same type checker as `tsc`.
 
 Fill in the pull request template. For UI changes, add before and after screenshots, at phone and desktop widths where the layout differs. When the change moves or needs interaction, such as animations, transitions or multi-step flows, add a short recording too (MP4 under 10 MB). Drag the files into the description on GitHub.
 

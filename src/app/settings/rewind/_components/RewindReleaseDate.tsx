@@ -13,6 +13,7 @@ type Props = {
 // show. The picker opens on this year's release.
 export default function RewindReleaseDate({ defaultValue }: Props) {
   const t = useTranslations('Settings.Rewind')
+  // oxlint-disable-next-line react/purity
   const year = new Date().getFullYear()
 
   return (

@@ -430,7 +430,9 @@ async function getRewind(
   // From the library first, then Plex's own theme songs
   const getShowThemes = (
     show:
-      Pick<ItemRow, 'rating_key' | 'tvdb_id' | 'tmdb_id'> | null | undefined,
+      | Pick<ItemRow, 'rating_key' | 'tvdb_id' | 'tmdb_id'>
+      | null
+      | undefined,
   ) =>
     isThemeMusicActive
       ? [

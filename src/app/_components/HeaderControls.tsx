@@ -60,7 +60,7 @@ export default function HeaderControls({ className }: Props) {
   useEffect(() => {
     if (isSettings) {
       // Read after mount so the first client render matches the server HTML
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+      // oxlint-disable-next-line react-hooks/set-state-in-effect
       setSettingsReturn(getSettingsReturn())
     }
   }, [isSettings])
