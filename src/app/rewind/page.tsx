@@ -442,6 +442,7 @@ async function getRewind(
   // A title card's theme song, or an artist's most played track
   const getCardMusic = (
     card: { type: TitleCard['type']; item: ItemRow } | null | undefined,
+    cardPlays = plays,
   ): string[] => {
     if (!card || !isThemeMusicActive) {
       return []
@@ -455,7 +456,7 @@ async function getRewind(
       default:
         return canStreamFromPlex(settings)
           ? getArtistTopTracks(
-              plays,
+              cardPlays,
               [card.item],
               settings.general.minPlayPercent,
             ).flatMap(getTrackMusic)
@@ -490,6 +491,8 @@ async function getRewind(
             type: userRewind.firstPlay.item.type,
             item: userRewind.firstPlay.item.data,
           },
+          // The first play can be from before the period
+          allPlays ?? plays,
         ),
       },
     },
