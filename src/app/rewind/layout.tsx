@@ -74,7 +74,7 @@ export default async function RewindLayout({ children }: Props) {
         <div className='max-sm:hidden'>
           <PageTitle title={t('title')} />
           {selects && (
-            <div className='mb-4 flex min-h-10 items-center justify-end gap-3'>
+            <div className='mb-4 flex min-h-10 items-center gap-3'>
               {selects}
             </div>
           )}
