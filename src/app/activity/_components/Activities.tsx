@@ -24,7 +24,8 @@ export default function Activities({ settings, mediaServer }: Props) {
   const t = useTranslations('Activity')
   const errorT = useTranslations('Error')
   const { data, error, isLoading, refetch } = useQuery({
-    queryKey: ['activity'],
+    // A change to who sees which streams doesn't show the old ones meanwhile
+    queryKey: ['activity', settings.activity],
     queryFn: getActivity,
     refetchInterval: 5000,
     refetchIntervalInBackground: false,

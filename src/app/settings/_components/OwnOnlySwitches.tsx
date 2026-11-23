@@ -15,13 +15,17 @@ type Props = {
 // Signed-in users see only their own, and admins too when they ask for it
 export default function OwnOnlySwitches({
   isOwnOnly: initialIsOwnOnly,
-  isOwnOnlyForAdmin,
+  isOwnOnlyForAdmin: initialIsOwnOnlyForAdmin,
   label,
   description,
   adminLabel,
   adminDescription,
 }: Props) {
   const [isOwnOnly, setIsOwnOnly] = useState<boolean>(initialIsOwnOnly)
+  // Kept while the switch is hidden, so turning it back on brings it back
+  const [isOwnOnlyForAdmin, setIsOwnOnlyForAdmin] = useState<boolean>(
+    initialIsOwnOnlyForAdmin,
+  )
 
   return (
     <>
@@ -39,10 +43,10 @@ export default function OwnOnlySwitches({
       </Switch>
       {isOwnOnly && (
         <Switch
-          key={`own-only-admin-${isOwnOnlyForAdmin}`}
           className='switch items-start'
           name='isOwnOnlyForAdmin'
-          defaultSelected={isOwnOnlyForAdmin}
+          isSelected={isOwnOnlyForAdmin}
+          onChange={setIsOwnOnlyForAdmin}
         >
           <div className='indicator'></div>
           <span className='label'>
