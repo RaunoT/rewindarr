@@ -181,8 +181,11 @@ async function OverviewHeader({ settings, session }: OverviewSkeletonProps) {
   const firstName = session?.user.name?.split(' ')[0]
 
   return (
+    // Its own controls, so the app's corner copy doesn't show beside them on
+    // large screens without the sidebar
     <header
       data-page-header
+      data-own-controls
       className='mb-4 flex min-h-10 items-center justify-between gap-3 sm:mb-6 lg:mt-2 lg:mb-8'
     >
       {/* On phones the same size as the other pages' titles */}
