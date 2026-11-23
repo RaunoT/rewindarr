@@ -8,6 +8,7 @@ import {
 import { useTranslations } from 'next-intl'
 import { useActionState, useState } from 'react'
 import { Switch } from 'react-aria-components'
+import OwnOnlySwitches from '../../_components/OwnOnlySwitches'
 import SettingsForm from '../../_components/SettingsForm'
 import saveActivitySettings from '../_actions/updateActivitySettings'
 
@@ -20,6 +21,7 @@ type ActivityFormState = SettingsFormInitialState<Partial<ActivitySettings>>
 export default function ActivitySettingsForm({ settings }: Props) {
   const [isActive, setIsActive] = useState<boolean>(settings.activity.isActive)
   const tCommon = useTranslations('Common')
+  const t = useTranslations('Settings.Activity')
   const initialState: ActivityFormState = {
     message: '',
     status: '',
@@ -67,6 +69,16 @@ export default function ActivitySettingsForm({ settings }: Props) {
               <span className='label-wrapper'>{tCommon('adminOnly')}</span>
             </span>
           </Switch>
+        )}
+        {isActive && (
+          <OwnOnlySwitches
+            isOwnOnly={activitySettings.isOwnOnly}
+            isOwnOnlyForAdmin={activitySettings.isOwnOnlyForAdmin}
+            label={tCommon('ownOnly')}
+            description={t('ownOnlyDescription')}
+            adminLabel={tCommon('ownOnlyForAdmin')}
+            adminDescription={tCommon('ownOnlyForAdminDescription')}
+          />
         )}
       </section>
     </SettingsForm>

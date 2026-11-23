@@ -240,10 +240,12 @@
       "startDateHelperText": "Inizio personalizzato di «Da sempre»"
     },
     "Activity": {
-      "title": "Impostazioni dell'attività"
+      "title": "Impostazioni dell'attività",
+      "ownOnlyDescription": "I propri stream, dopo l'accesso"
     },
     "History": {
-      "title": "Impostazioni della cronologia"
+      "title": "Impostazioni della cronologia",
+      "ownOnlyDescription": "Le proprie riproduzioni e richieste, dopo l'accesso"
     },
     "General": {
       "title": "Impostazioni generali",
@@ -361,6 +363,9 @@
     "clear": "Cancella",
     "enabled": "Attivo",
     "adminOnly": "Solo amministratori",
+    "ownOnly": "Gli utenti vedono solo i propri",
+    "ownOnlyForAdmin": "Anche gli amministratori",
+    "ownOnlyForAdminDescription": "Altrimenti gli amministratori vedono quelli di tutti",
     "status": "Stato",
     "year": "Anno",
     "ratingBy": "Voto {provider}",

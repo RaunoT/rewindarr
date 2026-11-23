@@ -240,10 +240,12 @@
       "startDateHelperText": "Début personnalisé de « Tout le temps »"
     },
     "Activity": {
-      "title": "Paramètres d'activité"
+      "title": "Paramètres d'activité",
+      "ownOnlyDescription": "Leurs propres diffusions, une fois connectés"
     },
     "History": {
-      "title": "Paramètres de l'historique"
+      "title": "Paramètres de l'historique",
+      "ownOnlyDescription": "Leurs propres lectures et demandes, une fois connectés"
     },
     "General": {
       "title": "Paramètres généraux",
@@ -361,6 +363,9 @@
     "clear": "Effacer",
     "enabled": "Activé",
     "adminOnly": "Administrateurs uniquement",
+    "ownOnly": "Les utilisateurs ne voient que les leurs",
+    "ownOnlyForAdmin": "Administrateurs aussi",
+    "ownOnlyForAdminDescription": "Sinon, les administrateurs voient celles de tous",
     "status": "Statut",
     "year": "Année",
     "ratingBy": "Note {provider}",

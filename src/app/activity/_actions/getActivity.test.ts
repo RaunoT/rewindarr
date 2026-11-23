@@ -94,4 +94,27 @@ describe('getActivity', () => {
       user_id: 1,
     })
   })
+
+  it("shows only the viewer's own streams when it's own-only", async () => {
+    settings.activity.isOwnOnly = true
+
+    const activity = await getActivity()
+
+    expect(activity?.stream_count).toBe(1)
+    expect(activity?.sessions.map((session) => session.user_id)).toEqual([1])
+  })
+
+  it("shows admins everyone's streams unless it's own-only for them too", async () => {
+    settings.activity.isOwnOnly = true
+    vi.mocked(getServerSession).mockResolvedValue({
+      user: { id: '1', isAdmin: true },
+      expires: '',
+    })
+
+    await expect(getActivity()).resolves.toMatchObject({ stream_count: 2 })
+
+    settings.activity.isOwnOnlyForAdmin = true
+
+    await expect(getActivity()).resolves.toMatchObject({ stream_count: 1 })
+  })
 })

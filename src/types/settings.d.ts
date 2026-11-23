@@ -119,13 +119,20 @@ export type DashboardSettings = {
   complete: boolean
 }
 
-export type ActivitySettings = {
+// Signed-in users see only their own streams or plays, and admins too when
+// it's on for them
+type OwnOnlySettings = {
+  isOwnOnly: boolean
+  isOwnOnlyForAdmin: boolean
+}
+
+export type ActivitySettings = OwnOnlySettings & {
   isActive: boolean
   isAdminOnly: boolean
   complete: boolean
 }
 
-export type HistorySettings = {
+export type HistorySettings = OwnOnlySettings & {
   isActive: boolean
   isAdminOnly: boolean
   complete: boolean

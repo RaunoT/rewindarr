@@ -240,10 +240,12 @@
       "startDateHelperText": "Eigener Beginn für „Gesamte Zeit“"
     },
     "Activity": {
-      "title": "Aktivität Einstellungen"
+      "title": "Aktivität Einstellungen",
+      "ownOnlyDescription": "Eigene Streams, nach der Anmeldung"
     },
     "History": {
-      "title": "Verlaufseinstellungen"
+      "title": "Verlaufseinstellungen",
+      "ownOnlyDescription": "Eigene Wiedergaben und Anfragen, nach der Anmeldung"
     },
     "General": {
       "title": "Allgemeine Einstellungen",
@@ -361,6 +363,9 @@
     "clear": "Leeren",
     "enabled": "Aktiv",
     "adminOnly": "Nur für Admins",
+    "ownOnly": "Benutzer sehen nur ihre eigenen",
+    "ownOnlyForAdmin": "Auch für Admins",
+    "ownOnlyForAdminDescription": "Sonst sehen Admins die aller Benutzer",
     "status": "Status",
     "year": "Jahr",
     "ratingBy": "{provider}-Bewertung",

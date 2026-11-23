@@ -53,7 +53,7 @@ export type RecentPlays = {
 // newest plays are enough.
 export async function getRecentPlays(
   count: number,
-  libraries?: Library[],
+  { libraries, userId }: { libraries?: Library[]; userId?: string } = {},
   now = Date.now(),
 ): Promise<RecentPlays> {
   const source = getStatsSource()
@@ -68,7 +68,9 @@ export async function getRecentPlays(
       return { plays, hasMore: false, progress }
     }
 
-    plays = await source.getHistoryPlays({ since, libraries })
+    plays = (await source.getHistoryPlays({ since, libraries, userId })).filter(
+      (play) => !userId || play.userId === userId,
+    )
 
     if (plays.length > count) {
       break

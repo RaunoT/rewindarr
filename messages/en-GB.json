@@ -240,10 +240,12 @@
       "startDateHelperText": "Custom start for “All time”"
     },
     "Activity": {
-      "title": "Activity settings"
+      "title": "Activity settings",
+      "ownOnlyDescription": "Their own streams, after signing in"
     },
     "History": {
-      "title": "History settings"
+      "title": "History settings",
+      "ownOnlyDescription": "Their own plays and requests, after signing in"
     },
     "General": {
       "title": "General settings",
@@ -361,6 +363,9 @@
     "clear": "Clear",
     "enabled": "Enabled",
     "adminOnly": "Admins only",
+    "ownOnly": "Users see only their own",
+    "ownOnlyForAdmin": "Admins too",
+    "ownOnlyForAdminDescription": "Otherwise admins see everyone's",
     "status": "Status",
     "year": "Year",
     "ratingBy": "{provider} rating",

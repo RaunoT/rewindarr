@@ -240,10 +240,12 @@
       "startDateHelperText": "Inicio personalizado de “Desde siempre”"
     },
     "Activity": {
-      "title": "Ajustes de actividad"
+      "title": "Ajustes de actividad",
+      "ownOnlyDescription": "Sus propias transmisiones, tras iniciar sesión"
     },
     "History": {
-      "title": "Ajustes del historial"
+      "title": "Ajustes del historial",
+      "ownOnlyDescription": "Sus propias reproducciones y solicitudes, tras iniciar sesión"
     },
     "General": {
       "title": "Ajustes generales",
@@ -361,6 +363,9 @@
     "clear": "Borrar",
     "enabled": "Activado",
     "adminOnly": "Solo administradores",
+    "ownOnly": "Los usuarios solo ven los suyos",
+    "ownOnlyForAdmin": "También los administradores",
+    "ownOnlyForAdminDescription": "Si no, los administradores ven los de todos",
     "status": "Estado",
     "year": "Año",
     "ratingBy": "Valoración de {provider}",

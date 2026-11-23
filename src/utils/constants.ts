@@ -125,11 +125,15 @@ export const DEFAULT_SETTINGS: Settings = {
   activity: {
     isActive: true,
     isAdminOnly: false,
+    isOwnOnly: false,
+    isOwnOnlyForAdmin: false,
     complete: false,
   },
   history: {
     isActive: true,
     isAdminOnly: false,
+    isOwnOnly: false,
+    isOwnOnlyForAdmin: false,
     complete: false,
   },
   setupComplete: false,

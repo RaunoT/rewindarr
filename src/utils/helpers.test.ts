@@ -1,5 +1,6 @@
 import { Settings } from '@/types/settings'
 import { cloneDeep } from 'lodash'
+import { Session } from 'next-auth'
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
 import {
@@ -9,6 +10,7 @@ import {
   getAverageShares,
   getDifference,
   getHomeTiles,
+  getOwnOnlyUserId,
   getRequestsBreakdown,
   getRewindBreakdown,
   getSettingsPage,
@@ -390,6 +392,53 @@ describe('canViewFeature', () => {
     expect(canViewFeature(settings, 'dashboard', visitor)).toBe(false)
     expect(canViewFeature(settings, 'activity', visitor)).toBe(true)
   })
+})
+
+describe('own-only sections', () => {
+  function session(isAdmin: boolean): Session {
+    return { user: { id: '7', isAdmin }, expires: '' } as Session
+  }
+
+  it('closes them to visitors, even with outside access', () => {
+    const settings = cloneDeep(DEFAULT_SETTINGS)
+
+    settings.general.isOutsideAccess = true
+    settings.history.isOwnOnly = true
+
+    expect(canViewFeature(settings, 'history', visitor)).toBe(false)
+    expect(canViewFeature(settings, 'history', user)).toBe(true)
+    expect(canViewFeature(settings, 'activity', visitor)).toBe(true)
+    expect(isLoginRequired(completeOwnOnly(), '/history')).toBe(true)
+  })
+
+  it("narrows them down to the user's own, and the admin's when asked", () => {
+    const settings = cloneDeep(DEFAULT_SETTINGS)
+
+    expect(getOwnOnlyUserId(settings, 'history', session(false))).toBe(
+      undefined,
+    )
+
+    settings.history.isOwnOnly = true
+
+    expect(getOwnOnlyUserId(settings, 'history', session(false))).toBe('7')
+    expect(getOwnOnlyUserId(settings, 'history', session(true))).toBe(undefined)
+    expect(getOwnOnlyUserId(settings, 'activity', session(false))).toBe(
+      undefined,
+    )
+
+    settings.history.isOwnOnlyForAdmin = true
+
+    expect(getOwnOnlyUserId(settings, 'history', session(true))).toBe('7')
+  })
+
+  function completeOwnOnly() {
+    const settings = completeSettings()
+
+    settings.general.isOutsideAccess = true
+    settings.history.isOwnOnly = true
+
+    return settings
+  }
 })
 
 describe('isLoginRequired', () => {

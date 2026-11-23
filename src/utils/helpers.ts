@@ -68,10 +68,37 @@ export function canViewFeature(
     return viewer.isAdmin
   }
 
+  // A visitor has nothing of their own to show
+  if (isOwnOnlyFeature(feature) && settings[feature].isOwnOnly) {
+    return viewer.isLoggedIn
+  }
+
   return (
     viewer.isLoggedIn ||
     (feature !== 'rewind' && settings.general.isOutsideAccess)
   )
+}
+
+export type OwnOnlyFeature = 'activity' | 'history'
+
+function isOwnOnlyFeature(feature: Feature): feature is OwnOnlyFeature {
+  return feature === 'activity' || feature === 'history'
+}
+
+// The user whose own streams or plays alone the page shows, or none for
+// everyone's
+export function getOwnOnlyUserId(
+  settings: Pick<Settings, OwnOnlyFeature>,
+  feature: OwnOnlyFeature,
+  session: Session | null,
+): string | undefined {
+  const { isOwnOnly, isOwnOnlyForAdmin } = settings[feature]
+
+  if (!session || !isOwnOnly || (session.user.isAdmin && !isOwnOnlyForAdmin)) {
+    return undefined
+  }
+
+  return String(session.user.id)
 }
 
 const FEATURES: Feature[] = ['rewind', 'dashboard', 'activity', 'history']

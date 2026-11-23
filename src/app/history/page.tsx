@@ -22,6 +22,7 @@ import getSettings from '@/utils/getSettings'
 import {
   canViewFeature,
   getLibrarySlug,
+  getOwnOnlyUserId,
   getViewer,
   sortByActiveLibraries,
 } from '@/utils/helpers'
@@ -80,12 +81,18 @@ type SearchParams = {
 const KINDS: HistoryKind[] = ['play', 'request']
 
 // The users the history can be narrowed down to. Picking another user would
-// give them away when the server is anonymized, so then only your own.
+// give them away when the server is anonymized, so then only your own, and
+// none when it's only ever your own.
 async function getUserOptions(
   settings: Settings,
   session: Session | null,
+  ownUserId: string | undefined,
 ): Promise<FilterOption[]> {
   const t = await getTranslations('History')
+
+  if (ownUserId) {
+    return []
+  }
 
   if (settings.general.isAnonymized) {
     return session ? [{ value: session.user.id, label: t('onlyMine') }] : []
@@ -247,6 +254,8 @@ type ContentProps = {
   settings: Settings
   session: Session | null
   hasRequests: boolean
+  // Only the viewer's own history, which isn't a filter they picked
+  isOwnOnly: boolean
 }
 
 async function HistoryContent({
@@ -257,6 +266,7 @@ async function HistoryContent({
   settings,
   session,
   hasRequests,
+  isOwnOnly,
 }: ContentProps) {
   const t = await getTranslations('History')
   const [
@@ -268,7 +278,7 @@ async function HistoryContent({
   ])
   // Without Seerr, the plays are all there is, which isn't a filter
   const isFiltered = !!(
-    filter.userIds?.length ||
+    (!isOwnOnly && filter.userIds?.length) ||
     filter.search ||
     (hasRequests && filter.kind)
   )
@@ -428,9 +438,10 @@ export default async function HistoryPage({ searchParams }: Props) {
     (await cookies()).get(HISTORY_PAGE_SIZE_COOKIE_NAME)?.value,
   )
   const hasRequests = isSeerrActive(settings)
+  const ownUserId = getOwnOnlyUserId(settings, 'history', session)
   const [reachableLibraries, users] = await Promise.all([
     getReachableLibraries(),
-    getUserOptions(settings, session),
+    getUserOptions(settings, session, ownUserId),
   ])
   const filters = (libraries: FilterOption[] = []) => (
     <Suspense>
@@ -477,7 +488,7 @@ export default async function HistoryPage({ searchParams }: Props) {
     libraryParams.includes(getLibrarySlug(library)),
   )
   // Only the users the filter offers, so the URL can't pick an excluded one
-  const userIds = [user ?? []]
+  const pickedUserIds = [user ?? []]
     .flat()
     .filter((userId) => users.some((option) => option.value === userId))
   const kind = hasRequests ? KINDS.find((value) => value === kindParam) : 'play'
@@ -487,14 +498,14 @@ export default async function HistoryPage({ searchParams }: Props) {
   const filter: HistoryFilter = {
     since: period.date,
     libraries: pickedLibraries.length ? pickedLibraries : libraries,
-    userIds,
+    userIds: ownUserId ? [ownUserId] : pickedUserIds,
     search,
     kind,
   }
   const params = new URLSearchParams([
     ...(periodParam ? [['period', periodParam]] : []),
     ...pickedLibraries.map((library) => ['library', getLibrarySlug(library)]),
-    ...userIds.map((userId) => ['user', userId]),
+    ...pickedUserIds.map((userId) => ['user', userId]),
     ...(hasRequests && kind ? [['kind', kind]] : []),
     ...(search ? [['q', search]] : []),
     ...(rows ? [['rows', String(pageSize)]] : []),
@@ -529,6 +540,7 @@ export default async function HistoryPage({ searchParams }: Props) {
           settings={settings}
           session={session}
           hasRequests={hasRequests}
+          isOwnOnly={!!ownUserId}
         />
       </Suspense>
     </>
