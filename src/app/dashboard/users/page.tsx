@@ -119,8 +119,19 @@ type Props = {
 
 export default async function DashboardUsersPage({ searchParams }: Props) {
   const { period, limit } = await searchParams
+  const fullSettings = getSettings()
+  const session = await getServerSession(authOptions)
+
+  // Before the toolbar and loader, so a viewer it's hidden from gets nothing
+  if (
+    !isUsersPageVisible(fullSettings, session) ||
+    !canViewFeature(fullSettings, 'dashboard', getViewer(session))
+  ) {
+    return notFound()
+  }
+
   const itemsLimit = getItemsLimit(limit)
-  const settings = toPublicSettings(getSettings())
+  const settings = toPublicSettings(fullSettings)
 
   return (
     <>
