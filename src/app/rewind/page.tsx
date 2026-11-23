@@ -7,7 +7,7 @@ import {
   TopTrack,
   UserRewind,
 } from '@/types/rewind'
-import { ItemRow, Library } from '@/types/statsSource'
+import { ItemRow, Library, TopPerson } from '@/types/statsSource'
 import { PLAY_LIBRARY_TYPES, TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
 import {
   formatMonthYear,
@@ -401,19 +401,29 @@ async function getRewind(
 
   const { isThemeMusicActive } = settings.rewind
   // From the library first, then Plex's own theme songs
-  const getShowThemes = (show: ItemRow | null | undefined) =>
+  const getShowThemes = (
+    show: Pick<ItemRow, 'rating_key' | 'tvdb_id'> | null | undefined,
+  ) =>
     isThemeMusicActive
       ? [
           getPlexThemeUrl(settings, show?.rating_key),
           getThemeSongUrl(show?.tvdb_id),
         ].filter((url) => url !== null)
       : []
-  const getMovieThemes = (movie: ItemRow) =>
+  const getMovieThemes = (movie: Pick<ItemRow, 'rating_key'>) =>
     isThemeMusicActive
       ? [getPlexThemeUrl(settings, movie.rating_key)].filter(
           (url) => url !== null,
         )
       : []
+  // A person's most watched title stands in for them
+  const getPersonThemes = (
+    people: TopPerson[],
+    getThemes: (title: Pick<ItemRow, 'rating_key' | 'tvdb_id'>) => string[],
+  ) =>
+    people.map(({ topTitle }) =>
+      getThemes({ rating_key: topTitle.ratingKey, tvdb_id: topTitle.tvdbId }),
+    )
   const getTrackMusic = (track: TopTrack | null | undefined) =>
     [getPlexTrackUrl(settings, track?.ratingKey)].filter((url) => url !== null)
   // Only Plex streams the tracks
@@ -432,6 +442,9 @@ async function getRewind(
       showThemes: topMediaItems.shows.map((show) => getShowThemes(show)),
       bingeThemes: getShowThemes(userRewind.moments.binge?.item),
       movieThemes: topMediaItems.movies.map(getMovieThemes),
+      showActorThemes: getPersonThemes(people.showActors, getShowThemes),
+      movieActorThemes: getPersonThemes(people.movieActors, getMovieThemes),
+      directorThemes: getPersonThemes(people.directors, getMovieThemes),
       topTrack: isThemeMusicActive ? getTrackMusic(topTrack) : [],
       artistTracks: artistTracks.map(getTrackMusic),
     },

@@ -9,6 +9,8 @@ export type StepMusic = {
 // The step of the shows, movies and music stories that names the top title,
 // so its music waits for it
 export const TOP_TITLE_STEP = 3
+// The binge story's step that names the show
+export const BINGE_SHOW_STEP = 2
 
 // The music of the latest step shown that has its own, or the story's
 export function getStepMusic(

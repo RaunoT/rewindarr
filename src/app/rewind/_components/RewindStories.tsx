@@ -47,7 +47,12 @@ import StoryUsersTop from './Stories/UsersTop'
 import StoryWelcome from './Stories/Welcome'
 import StoryYearOverYear from './Stories/YearOverYear'
 import { getStoryArt } from './storyArt'
-import { getCountdownMusic, StepMusic, TOP_TITLE_STEP } from './storyMusic'
+import {
+  BINGE_SHOW_STEP,
+  getCountdownMusic,
+  StepMusic,
+  TOP_TITLE_STEP,
+} from './storyMusic'
 import { joinStorySections, removeHiddenStories } from './storySections'
 
 type StoryComponent = {
@@ -60,6 +65,10 @@ export type RewindThemes = {
   // first
   showThemes: string[][]
   movieThemes: string[][]
+  // The theme songs of each top person's most watched title, in their order
+  showActorThemes: string[][]
+  movieActorThemes: string[][]
+  directorThemes: string[][]
   // The binged show's theme songs, best first
   bingeThemes: string[]
   // The viewer's most played track, from the media server
@@ -139,15 +148,13 @@ function getStories(
     id: RewindStoryId | 'goodbye',
     Component: FC<StoryComponent>,
   ): Story {
-    const themes = id === 'binge' ? music.bingeThemes : []
-
     return {
       id,
       type: 'component',
       component: () => (
         <Component userRewind={userRewind} settings={settings} />
       ),
-      music: withTrack(themes),
+      music: withTrack(),
       stepMusic: getTitleMusic(id),
       art: getStoryArt(id, userRewind),
     }
@@ -176,6 +183,20 @@ function getStories(
         return getCountdownMusic(
           userRewind.movies.top.map((_, i) => withTrack(music.movieThemes[i])),
         )
+      case 'shows_actors':
+        return getPeopleMusic(
+          userRewind.people.showActors,
+          music.showActorThemes,
+        )
+      case 'movies_actors':
+        return getPeopleMusic(
+          userRewind.people.movieActors,
+          music.movieActorThemes,
+        )
+      case 'movies_directors':
+        return getPeopleMusic(userRewind.people.directors, music.directorThemes)
+      case 'binge':
+        return [{ step: BINGE_SHOW_STEP, music: withTrack(music.bingeThemes) }]
       case 'audio':
         return [
           {
@@ -195,6 +216,11 @@ function getStories(
       default:
         return []
     }
+  }
+
+  // Each person plays their most watched title's theme song as they show
+  function getPeopleMusic(people: unknown[], themes: string[][]): StepMusic[] {
+    return getCountdownMusic(people.map((_, i) => withTrack(themes[i])))
   }
 
   const isSeerrActive = settings.connection.isSeerrActive

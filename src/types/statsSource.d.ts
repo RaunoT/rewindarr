@@ -184,6 +184,11 @@ export type TopPerson = {
   duration: number
   // The most watched first
   titles: string[]
+  // The most watched title's IDs, for its theme song
+  topTitle: {
+    ratingKey: number | string
+    tvdbId: number | null
+  }
   // Who's in exactly the same titles, like the rest of a cast that's always
   // together, the best ranked first
   together: string[]
