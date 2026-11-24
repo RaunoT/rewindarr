@@ -330,6 +330,8 @@
       "musicFileDetails": "{format} · {size}",
       "musicUpload": "Importer",
       "musicReplace": "Remplacer",
+      "musicPlay": "Écouter la piste",
+      "musicStop": "Arrêter la piste",
       "musicDownload": "Télécharger",
       "musicRemove": "Supprimer",
       "musicSaving": "Enregistrement…",

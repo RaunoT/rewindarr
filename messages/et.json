@@ -330,6 +330,8 @@
       "musicFileDetails": "{format} · {size}",
       "musicUpload": "Laadi üles",
       "musicReplace": "Asenda",
+      "musicPlay": "Mängi lugu",
+      "musicStop": "Peata lugu",
       "musicDownload": "Laadi alla",
       "musicRemove": "Eemalda",
       "musicSaving": "Salvestan…",

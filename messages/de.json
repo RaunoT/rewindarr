@@ -330,6 +330,8 @@
       "musicFileDetails": "{format} · {size}",
       "musicUpload": "Hochladen",
       "musicReplace": "Ersetzen",
+      "musicPlay": "Titel abspielen",
+      "musicStop": "Titel stoppen",
       "musicDownload": "Herunterladen",
       "musicRemove": "Entfernen",
       "musicSaving": "Wird gespeichert…",

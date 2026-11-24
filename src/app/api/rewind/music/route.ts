@@ -27,15 +27,14 @@ function getContentDisposition(name: string) {
   return `attachment; filename="${fallback}"; filename*=UTF-8''${encoded}`
 }
 
-// The track plays wherever Rewind can be seen. Admins can also download it
-// from the settings while Rewind is hidden.
+// The track plays wherever Rewind can be seen. Admins can also play and
+// download it from the settings while Rewind is hidden.
 export async function GET(request: Request) {
   const settings = getSettings()
   const music = settings.rewind.music
   const isDownload = new URL(request.url).searchParams.has('download')
   const canGet =
-    (await canPlayRewind(settings)) ||
-    (isDownload && (await canManageSettings(settings)))
+    (await canPlayRewind(settings)) || (await canManageSettings(settings))
 
   if (!canGet || !music || !getMusicUrl(settings)) {
     return new Response(null, { status: 404 })
