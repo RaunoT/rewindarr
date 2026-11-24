@@ -330,6 +330,8 @@
       "musicFileDetails": "{format} · {size}",
       "musicUpload": "Carica",
       "musicReplace": "Sostituisci",
+      "musicPlay": "Riproduci la traccia",
+      "musicStop": "Ferma la traccia",
       "musicDownload": "Scarica",
       "musicRemove": "Rimuovi",
       "musicSaving": "Salvataggio…",

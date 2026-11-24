@@ -3,9 +3,9 @@
 import { RewindMusic } from '@/types/settings'
 import { REWIND_MUSIC_MAX_BYTES, REWIND_MUSIC_TYPES } from '@/utils/constants'
 import { bytesToSize } from '@/utils/formatting'
-import { MusicalNoteIcon } from '@heroicons/react/24/outline'
+import { PlayIcon, StopIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
-import { ChangeEvent, useRef, useState } from 'react'
+import { ChangeEvent, useEffect, useRef, useState } from 'react'
 
 type Props = {
   initialMusic: RewindMusic | null
@@ -32,7 +32,9 @@ export default function RewindMusicUpload({ initialMusic }: Props) {
   const [music, setMusic] = useState(initialMusic)
   const [error, setError] = useState('')
   const [isBusy, setIsBusy] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
   const maxSize = bytesToSize(REWIND_MUSIC_MAX_BYTES, 0, translations) ?? ''
   const fileName = music ? getFileName(music.name) : null
 
@@ -48,7 +50,36 @@ export default function RewindMusicUpload({ initialMusic }: Props) {
     return t('musicError')
   }
 
+  // A detached player keeps playing after the page is left
+  useEffect(() => () => audioRef.current?.pause(), [])
+
+  function stop() {
+    audioRef.current?.pause()
+    audioRef.current = null
+    setIsPlaying(false)
+  }
+
+  function togglePlay() {
+    if (isPlaying || !music) {
+      stop()
+
+      return
+    }
+
+    const audio = new Audio(`${MUSIC_URL}?v=${music.updatedAt}`)
+    // Only the player still in use may reset the button
+    const end = () => audioRef.current === audio && stop()
+
+    audio.addEventListener('ended', end)
+    audio.addEventListener('error', end)
+    audioRef.current = audio
+    setIsPlaying(true)
+    audio.play().catch(end)
+  }
+
   async function send(init: RequestInit) {
+    // The track it played is about to change
+    stop()
     setIsBusy(true)
     setError('')
 
@@ -109,7 +140,16 @@ export default function RewindMusicUpload({ initialMusic }: Props) {
           // A grid column that can shrink to nothing, as the settings' grid
           // would otherwise widen to fit a long name
           <div className='grid w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-2'>
-            <MusicalNoteIcon className='size-5' />
+            <button
+              type='button'
+              className='icon-button'
+              onClick={togglePlay}
+              // The track may be on its way out
+              disabled={isBusy}
+              aria-label={isPlaying ? t('musicStop') : t('musicPlay')}
+            >
+              {isPlaying ? <StopIcon /> : <PlayIcon />}
+            </button>
             <div>
               <p className='truncate text-sm font-medium'>{fileName.name}</p>
               <p className='text-xs text-neutral-400'>
