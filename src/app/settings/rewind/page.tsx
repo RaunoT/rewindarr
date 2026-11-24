@@ -1,9 +1,14 @@
 import { requireSettingsAccess } from '@/lib/access'
 import getSettings from '@/utils/getSettings'
+import { checkRequiredSettings } from '@/utils/helpers'
 import { toPublicSettings } from '@/utils/publicSettings'
+import { canShareRewind, getRewindSharePath } from '@/utils/rewindShare'
+import { getActiveUsers } from '@/utils/statsSource'
 import { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
+import { Suspense } from 'react'
 import RewindSettingsForm from './_components/RewindSettingsForm'
+import RewindShareLinks, { ShareUser } from './_components/RewindShareLinks'
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('Settings.Rewind')
@@ -13,10 +18,59 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
+async function getShareUsers(): Promise<ShareUser[] | null> {
+  const settings = getSettings()
+
+  try {
+    const users = await getActiveUsers(settings)
+
+    return users
+      .flatMap((user) => {
+        const id = String(user.user_id)
+        const path = getRewindSharePath(settings, id)
+
+        return path
+          ? [
+              {
+                id,
+                name: user.friendly_name,
+                thumb: user.user_thumb || user.thumb || null,
+                path,
+              },
+            ]
+          : []
+      })
+      .sort((a, b) => a.name.localeCompare(b.name))
+  } catch (error) {
+    console.error('[REWIND] - Error reading the users to share with!', error)
+
+    return null
+  }
+}
+
+// Each user's link, while users can see their own Rewind
+async function ShareLinks() {
+  const users = await getShareUsers()
+
+  return <RewindShareLinks users={users} />
+}
+
 export default async function RewindSettingsPage() {
   await requireSettingsAccess()
 
   const settings = getSettings()
+  // Not during the setup, when there's no one to share with yet
+  const canShare = !checkRequiredSettings(settings) && canShareRewind(settings)
 
-  return <RewindSettingsForm settings={toPublicSettings(settings)} />
+  return (
+    <>
+      <RewindSettingsForm settings={toPublicSettings(settings)} />
+      {canShare && (
+        // Below the form, so it doesn't hold it up
+        <Suspense>
+          <ShareLinks />
+        </Suspense>
+      )}
+    </>
+  )
 }

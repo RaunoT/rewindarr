@@ -362,7 +362,22 @@
       "releaseDate": "Avaldamise kuupäev",
       "releaseDateDescription": "Millal {year}. aasta väljaanne ilmub",
       "releaseDateError": "Kontrolli avaldamise kuupäeva.",
-      "yearError": "Kontrolli aastat."
+      "yearError": "Kontrolli aastat.",
+      "shareLinks": "Jagatud lingid",
+      "shareLinksDescription": "Iga link avab selle kasutaja Rewindi ilma sisse logimata, nii et seda näeb ka igaüks, kellele link edasi saadetakse.",
+      "shareLinksSearch": "Otsi kasutajaid",
+      "shareLinksNoUsers": "Kasutajaid ei leitud",
+      "shareLinksError": "Kasutajaid ei õnnestunud lugeda",
+      "copyLink": "Kopeeri link",
+      "copyLinkLabel": "Kopeeri kasutaja {name} Rewindi link",
+      "share": "Jaga",
+      "shareLabel": "Jaga kasutaja {name} Rewindi",
+      "copied": "Kopeeritud",
+      "copyError": "Linki ei õnnestunud kopeerida: {url}",
+      "shareLinksReset": "Lähtesta lingid",
+      "shareLinksResetDescription": "Kõik seni jagatud lingid lakkavad töötamast",
+      "shareLinksResetDone": "Varem jagatud lingid enam ei tööta",
+      "shareLinksResetError": "Linke ei õnnestunud lähtestada"
     }
   },
   "LocaleSelect": {

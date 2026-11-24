@@ -7,13 +7,14 @@ import getRewindEditions from '@/utils/getRewindEditions'
 import getSettings from '@/utils/getSettings'
 import { canViewFeature, getViewer, isRewindOnly } from '@/utils/helpers'
 import { getLatestEditionYear, getRewindPeriodType } from '@/utils/rewindPeriod'
+import { REWIND_SHARE_HEADER } from '@/utils/rewindShare'
 import { getActiveUsers } from '@/utils/statsSource'
 import { toTimeZone } from '@/utils/timeZone'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Viewport } from 'next'
 import { getServerSession } from 'next-auth'
 import { getTranslations } from 'next-intl/server'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { cache, ReactNode, Suspense } from 'react'
@@ -35,8 +36,13 @@ const getEditions = cache(getRewindEditions)
 export default async function RewindLayout({ children }: Props) {
   const settings = getSettings()
   const session = await getServerSession(authOptions)
+  // Checked by the proxy, from the link's key
+  const sharedUserId = (await headers()).get(REWIND_SHARE_HEADER)
 
-  if (!canViewFeature(settings, 'rewind', getViewer(session))) {
+  if (
+    !sharedUserId &&
+    !canViewFeature(settings, 'rewind', getViewer(session))
+  ) {
     return notFound()
   }
 
@@ -45,10 +51,12 @@ export default async function RewindLayout({ children }: Props) {
   // Rewind is then the home page, so there's no home to go back to
   const isHome = isRewindOnly(settings, getViewer(session))
   const hasEditions = getRewindPeriodType(settings) === 'calendarYear'
-  const selects = session && (isAdmin || hasEditions) && (
+  // A shared Rewind's years are the user's, whoever opens it
+  const userId = (!isAdmin && sharedUserId) || session?.user.id
+  const selects = userId && (isAdmin || hasEditions) && (
     <Suspense>
       <RewindSelects
-        userId={session.user.id}
+        userId={userId}
         isAdmin={isAdmin}
         hasEditions={hasEditions}
       />

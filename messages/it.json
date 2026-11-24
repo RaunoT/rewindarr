@@ -362,7 +362,22 @@
       "releaseDate": "Data di uscita",
       "releaseDateDescription": "Quando esce l'edizione {year}",
       "releaseDateError": "Controlla la data di uscita.",
-      "yearError": "Controlla l'anno."
+      "yearError": "Controlla l'anno.",
+      "shareLinks": "Link condivisi",
+      "shareLinksDescription": "Ogni link apre il Rewind di quell'utente senza accedere, quindi può vederlo anche chiunque lo riceva.",
+      "shareLinksSearch": "Cerca utenti",
+      "shareLinksNoUsers": "Nessun utente trovato",
+      "shareLinksError": "Impossibile leggere gli utenti",
+      "copyLink": "Copia link",
+      "copyLinkLabel": "Copia il link al Rewind di {name}",
+      "share": "Condividi",
+      "shareLabel": "Condividi il Rewind di {name}",
+      "copied": "Copiato",
+      "copyError": "Impossibile copiare il link: {url}",
+      "shareLinksReset": "Reimposta i link",
+      "shareLinksResetDescription": "Tutti i link condivisi finora smettono di funzionare",
+      "shareLinksResetDone": "I link condivisi prima non funzionano più",
+      "shareLinksResetError": "Impossibile reimpostare i link"
     }
   },
   "LocaleSelect": {

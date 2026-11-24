@@ -13,6 +13,12 @@ import {
   isPostUpdateMissingSettings,
   isRewindOnly,
 } from './utils/helpers'
+import {
+  isRewindShareKey,
+  REWIND_SHARE_COOKIE,
+  REWIND_SHARE_HEADER,
+  toShareCookie,
+} from './utils/rewindShare'
 
 // The proxy runs on the Node.js runtime, so it reads the settings file
 // directly instead of going through an HTTP round trip.
@@ -28,7 +34,9 @@ function readSettings(): Settings | null {
 
 // Next.js reads the nonce from the request's CSP header and adds it to the
 // scripts it renders, so the request and the response carry the same policy.
-function nextWithCsp(req: NextRequest): NextResponse {
+// The Rewind layout can't read the URL, so it's told whose shared Rewind it
+// is, and never by the browser.
+function nextWithCsp(req: NextRequest, sharedUserId?: string): NextResponse {
   const nonce = createNonce()
   const policy = getContentSecurityPolicy(
     nonce,
@@ -38,6 +46,11 @@ function nextWithCsp(req: NextRequest): NextResponse {
 
   headers.set('x-nonce', nonce)
   headers.set('Content-Security-Policy', policy)
+  headers.delete(REWIND_SHARE_HEADER)
+
+  if (sharedUserId) {
+    headers.set(REWIND_SHARE_HEADER, sharedUserId)
+  }
 
   const response = NextResponse.next({ request: { headers } })
 
@@ -90,6 +103,25 @@ function getSessionToken(req: NextRequest) {
       return token && recheckServerUser(token)
     },
   })
+}
+
+// The user and key of a shared Rewind's link, when it's a valid one
+function getRewindShare(req: NextRequest, settings: Settings | null) {
+  const { pathname, searchParams } = req.nextUrl
+  const userId = searchParams.get('userId')
+  const key = searchParams.get('key')
+
+  if (
+    pathname !== '/rewind' ||
+    !settings ||
+    !userId ||
+    !key ||
+    !isRewindShareKey(settings, userId, key)
+  ) {
+    return null
+  }
+
+  return { userId, key }
 }
 
 export default async function proxy(req: NextRequest) {
@@ -147,13 +179,35 @@ export default async function proxy(req: NextRequest) {
     }
   }
 
+  const rewindShare = getRewindShare(req, settings)
+
+  // A shared Rewind opens without signing in
   if (
     !token &&
+    !rewindShare &&
     req.method === 'GET' &&
     settings &&
     isLoginRequired(settings, pathname)
   ) {
     return redirectToLogin(req)
+  }
+
+  // The music the shared Rewind plays checks it too
+  if (rewindShare) {
+    const response = nextWithCsp(req, rewindShare.userId)
+
+    response.cookies.set(
+      REWIND_SHARE_COOKIE,
+      toShareCookie(rewindShare.userId, rewindShare.key),
+      {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: hasSecureCookie(req),
+        path: '/api/rewind',
+      },
+    )
+
+    return response
   }
 
   // Here rather than in the home page, so its loading state doesn't show first

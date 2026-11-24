@@ -6,6 +6,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import proxy from './proxy'
 import { DEFAULT_SETTINGS } from './utils/constants'
 import getSettings from './utils/getSettings'
+import {
+  getRewindSharePath,
+  REWIND_SHARE_COOKIE,
+  REWIND_SHARE_HEADER,
+} from './utils/rewindShare'
 import { getServerUser } from './utils/statsSource'
 
 vi.mock('./utils/getSettings', () => ({ default: vi.fn() }))
@@ -223,6 +228,39 @@ describe('proxy', () => {
       expect((await request('', '/rewind'))?.headers.get('location')).toBe(
         'http://localhost:3000/?callbackUrl=%2Frewind',
       )
+    })
+
+    it("opens a user's shared Rewind without a login", async () => {
+      const res = await request('', getRewindSharePath(getSettings(), '42')!)
+
+      expect(res?.headers.get('location')).toBeNull()
+      // Passed on to the layout, which can't read the URL
+      expect(
+        res?.headers.get(`x-middleware-request-${REWIND_SHARE_HEADER}`),
+      ).toBe('42')
+      expect(res?.cookies.get(REWIND_SHARE_COOKIE)?.value).toMatch(/^42:/)
+    })
+
+    it("sends a link with another user's key to log in", async () => {
+      const key = new URLSearchParams(
+        getRewindSharePath(getSettings(), '42')!.split('?')[1],
+      ).get('key')
+      const res = await request('', `/rewind?userId=43&key=${key}`)
+
+      expect(res?.headers.get('location')).toContain('callbackUrl=')
+    })
+
+    it("doesn't take the shared user from the browser", async () => {
+      getSettings().general.isOutsideAccess = true
+
+      const res = await request('', '/dashboard', {
+        headers: { [REWIND_SHARE_HEADER]: '42' },
+      })
+
+      expect(res?.headers.get('location')).toBeNull()
+      expect(
+        res?.headers.get(`x-middleware-request-${REWIND_SHARE_HEADER}`),
+      ).toBeNull()
     })
   })
 
