@@ -113,4 +113,17 @@ describe('restoreApiKeys', () => {
 
     expect(needsKey).toBe('Tracearr')
   })
+
+  it('only restores the keys of the services asked for', () => {
+    const { connection, needsKey } = restoreApiKeys(
+      { ...maskApiKeys(saved), tautulliUrl: 'http://attacker.example' },
+      saved,
+      ['Seerr'],
+    )
+
+    expect(needsKey).toBeUndefined()
+    expect(connection.seerrApiKey).toBe('seerr-key')
+    expect(connection.tautulliApiKey).toBe(SAVED_API_KEY)
+    expect(connection.plexToken).toBe(SAVED_API_KEY)
+  })
 })

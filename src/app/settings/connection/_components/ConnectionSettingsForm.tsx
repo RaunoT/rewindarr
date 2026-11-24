@@ -10,12 +10,13 @@ import {
   StatisticsSource,
 } from '@/types/settings'
 import { TracearrServerOption } from '@/types/tracearr'
-import { getMediaServerName } from '@/utils/mediaServerName'
+import { getMediaServerName, getMediaServerUrl } from '@/utils/mediaServerName'
 import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
 import { useActionState, useState } from 'react'
 import SettingsForm from '../../_components/SettingsForm'
 import saveConnectionSettings from '../_actions/updateConnectionSettings'
+import ConnectionTest from './ConnectionTest'
 import PlayHistory from './PlayHistory'
 
 const PLEX_TOKEN_HELP_URL =
@@ -68,6 +69,8 @@ export default function ConnectionSettingsForm({
   const hasSavedConnection = isTracearr
     ? !!(savedConnection.tracearrUrl && savedConnection.tracearrApiKey)
     : !!(savedConnection.tautulliUrl && savedConnection.tautulliApiKey)
+  // Saved connections are tested when the page opens and after each save
+  const isSaved = (isFilled: unknown) => savedConnection.complete && !!isFilled
   // Saving returns the servers when several need a choice.
   const tracearrServers = formState.tracearrServers ?? initialTracearrServers
   // Until another is picked, the saved one
@@ -83,6 +86,7 @@ export default function ConnectionSettingsForm({
     : 'plex'
   const isJellyfin = mediaServerType === 'jellyfin'
   const mediaServerName = getMediaServerName(mediaServerType)
+  const testProps = { mediaServerType, checkOn: formState }
   const otherServerOptions = tracearrServers
     .filter((server) => server.server_id !== tracearrServerId)
     .map((server) => ({
@@ -163,6 +167,16 @@ export default function ConnectionSettingsForm({
             <span className='label-wrapper'>{t('apiKey')}</span>
           </span>
         </label>
+        <ConnectionTest
+          service='tautulli'
+          serviceName='Tautulli'
+          isSaved={isSaved(
+            savedConnection.statisticsSource === 'tautulli' &&
+              savedConnection.tautulliUrl &&
+              savedConnection.tautulliApiKey,
+          )}
+          {...testProps}
+        />
       </section>
       <section
         className={clsx('group-settings group', { hidden: !isTracearr })}
@@ -245,6 +259,16 @@ export default function ConnectionSettingsForm({
             />
           ))
         )}
+        <ConnectionTest
+          service='tracearr'
+          serviceName='Tracearr'
+          isSaved={isSaved(
+            savedConnection.statisticsSource === 'tracearr' &&
+              savedConnection.tracearrUrl &&
+              savedConnection.tracearrApiKey,
+          )}
+          {...testProps}
+        />
       </section>
       {/* Tautulli finds Plex itself, so its URL is only for the token */}
       <section className='group-settings group'>
@@ -312,6 +336,12 @@ export default function ConnectionSettingsForm({
             </small>
           </span>
         </label>
+        <ConnectionTest
+          service='mediaServer'
+          serviceName={mediaServerName}
+          isSaved={isSaved(getMediaServerUrl(savedConnection))}
+          {...testProps}
+        />
       </section>
       <section className='group-settings group'>
         <h2 className='heading-settings'>
@@ -343,6 +373,14 @@ export default function ConnectionSettingsForm({
             <span className='label-wrapper'>{t('apiKey')}</span>
           </span>
         </label>
+        <ConnectionTest
+          service='seerr'
+          serviceName='Seerr'
+          isSaved={isSaved(
+            savedConnection.seerrUrl && savedConnection.seerrApiKey,
+          )}
+          {...testProps}
+        />
       </section>
     </SettingsForm>
   )

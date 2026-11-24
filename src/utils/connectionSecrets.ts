@@ -1,10 +1,10 @@
 import { ConnectionSettings } from '@/types/settings'
 import { normalizeUrl } from './url'
 
-type Service = 'Tautulli' | 'Tracearr' | 'Seerr' | 'Plex'
+export type SecretService = 'Tautulli' | 'Tracearr' | 'Seerr' | 'Plex'
 
 type ApiKey = {
-  service: Service
+  service: SecretService
   key: (keyof ConnectionSettings & `${string}ApiKey`) | 'plexToken'
   url: keyof ConnectionSettings & `${string}Url`
 }
@@ -38,15 +38,20 @@ export function maskApiKeys<T extends Partial<ConnectionSettings>>(
 }
 
 // A stored key is only reused with the URL it was saved for, so that changing
-// the URL can't send it to another server.
+// the URL can't send it to another server. A test of one service only needs
+// that service's key.
 export function restoreApiKeys(
   submitted: ConnectionSettings,
   saved: ConnectionSettings,
-): { connection: ConnectionSettings; needsKey?: Service } {
+  services?: SecretService[],
+): { connection: ConnectionSettings; needsKey?: SecretService } {
   const connection = { ...submitted }
 
   for (const { service, key, url } of API_KEYS) {
-    if (connection[key] !== SAVED_API_KEY) {
+    if (
+      connection[key] !== SAVED_API_KEY ||
+      (services && !services.includes(service))
+    ) {
       continue
     }
 
