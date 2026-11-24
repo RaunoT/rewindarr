@@ -56,6 +56,13 @@ beforeEach(() => {
   settings.general.excludedUsers = ['3']
   vi.resetAllMocks()
   vi.mocked(getSettings).mockReturnValue(settings)
+
+  const { rewindarrDownServices } = globalThis as {
+    rewindarrDownServices?: Map<string, unknown>
+  }
+
+  // A host marked down by another test would otherwise fail reachability checks
+  rewindarrDownServices?.clear()
   // The libraries are kept on globalThis, which would leak between tests
   delete (globalThis as { rewindarrTautulliLibraries?: unknown })
     .rewindarrTautulliLibraries
@@ -418,6 +425,22 @@ describe('getLibraries', () => {
       library('5', 'artist'),
     ])
     expect(countRequests()).toBe(2)
+  })
+
+  it('is unreachable immediately when the host is backed off, even with cached libraries', async () => {
+    vi.mocked(getSettings)().connection.tautulliUrl = 'http://tautulli:8181'
+
+    const { markHostDown } = await import('./hostBackoff')
+
+    fetchMock.mockResolvedValue(tautulliData(libraries))
+    await tautulliSource.getLibraries()
+
+    await expect(tautulliSource.isReachable()).resolves.toBe(true)
+
+    markHostDown('http://tautulli:8181')
+
+    await expect(tautulliSource.isReachable()).resolves.toBe(false)
+    expect(countRequests()).toBe(1)
   })
 })
 

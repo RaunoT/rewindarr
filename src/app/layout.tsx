@@ -102,7 +102,7 @@ type Props = {
 
 export default async function RootLayout({ children }: Props) {
   const settings = getSettings()
-  const version = await getVersion()
+  const version = await getVersion({ wait: false })
   const locale = await getLocale()
   const missingSetting = checkRequiredSettings(settings)
   const session = await getServerSession(authOptions)

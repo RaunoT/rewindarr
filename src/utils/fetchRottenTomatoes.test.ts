@@ -5,6 +5,7 @@ type Fetch = typeof fetch
 
 type Hit = {
   title: string
+  type?: string
   releaseYear: number
   vanity: string
   rottenTomatoes?: { criticsScore?: number | null; audienceScore?: number }
@@ -26,6 +27,9 @@ function stubSearch(hits: Hit[], init?: ResponseInit) {
 
 beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation(() => {})
+  ;(
+    globalThis as { rewindarrDownServices?: Map<string, unknown> }
+  ).rewindarrDownServices?.clear()
 })
 
 afterEach(() => {
@@ -108,5 +112,50 @@ describe('fetchRottenTomatoes', () => {
 
     expect(await fetchRottenTomatoes('Dune', 2021, 'movie')).toBeNull()
     expect(console.error).toHaveBeenCalled()
+  })
+
+  it('matches case-insensitively, filters by media type, and rejects unrelated same-year titles', async () => {
+    stubSearch([
+      {
+        title: 'Dark',
+        type: 'tvSeries',
+        releaseYear: 2017,
+        vanity: 'dark_tv',
+      },
+      {
+        title: 'Unrelated Movie',
+        type: 'movie',
+        releaseYear: 2017,
+        vanity: 'unrelated',
+      },
+    ])
+
+    // Does not match a TV hit or an unrelated same-year movie for a movie lookup
+    expect(await fetchRottenTomatoes('dark', 2017, 'movie')).toBeNull()
+    expect((await fetchRottenTomatoes('dark', 2017, 'tv'))?.url).toBe(
+      'https://www.rottentomatoes.com/tv/dark_tv',
+    )
+
+    // Allows ±1 year difference on an exact title match
+    stubSearch([{ title: 'Dune', releaseYear: 2020, vanity: 'dune_2021' }])
+    expect((await fetchRottenTomatoes('dune', 2021, 'movie'))?.url).toBe(
+      'https://www.rottentomatoes.com/m/dune_2021',
+    )
+  })
+
+  it('backs off after gateway errors', async () => {
+    const stub = stubSearch([], { status: 503 })
+
+    expect(await fetchRottenTomatoes('Dune', 2021, 'movie')).toBeNull()
+    expect(await fetchRottenTomatoes('Heat', 1995, 'movie')).toBeNull()
+    expect(stub).toHaveBeenCalledTimes(1)
+  })
+
+  it('rejects short same-year hit titles for a longer search query', async () => {
+    stubSearch([
+      { title: 'It', type: 'movie', releaseYear: 2014, vanity: 'it' },
+    ])
+
+    expect(await fetchRottenTomatoes('It Follows', 2014, 'movie')).toBeNull()
   })
 })

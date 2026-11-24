@@ -1,11 +1,17 @@
 import { ItemRow, TopItems } from '@/types/statsSource'
 import { groupBy } from 'lodash'
 import { DASHBOARD_PAGE_SIZE } from './constants'
-import { fetchSeerrStats, fetchSeerrUserId } from './fetchSeerr'
+import {
+  fetchSeerrStats,
+  getMediaUserIds,
+  SeerrRequestItem,
+} from './fetchSeerr'
 import getSettings from './getSettings'
 import { isTracearrSource } from './helpers'
+import { normalizeJellyfinId } from './mediaServer'
 import { getRequestsWatched } from './rewindSocial'
 import { getLibraries, getStatsSource } from './statsSource'
+import { LOOKUP_CONCURRENCY, mapWithLimit } from './topPeople'
 
 type UserRequestCounts =
   | {
@@ -70,63 +76,72 @@ export default async function getUsersTop(
   let usersRequestsCounts: UserRequestCounts[] = []
 
   if (isSeerrActive) {
-    const [seerrUserIds, plays] = await Promise.all([
-      Promise.all(
-        listedUsers.map(
-          async (user) => await fetchSeerrUserId(String(user.user_id)),
-        ),
-      ),
+    const [allRequests, plays] = await Promise.all([
+      fetchSeerrStats('request', after, until),
       // The same plays as each user's watch time
       withRequestsWatched
-        ? source.getHistoryPlays({
-            since: after,
-            until,
-            libraries: await getLibraries(),
-          })
+        ? getLibraries().then((libraries) =>
+            source.getHistoryPlays({
+              since: after,
+              until,
+              libraries,
+            }),
+          )
         : [],
     ])
+    const requestsByUser = new Map<string, SeerrRequestItem[]>()
+
+    for (const request of allRequests ?? []) {
+      for (const id of getMediaUserIds(request.requestedBy)) {
+        const list = requestsByUser.get(id)
+
+        if (list) {
+          list.push(request)
+        } else {
+          requestsByUser.set(id, [request])
+        }
+      }
+    }
+
     const playsByUser = groupBy(plays, 'userId')
 
-    usersRequestsCounts = await Promise.all(
-      seerrUserIds.map(async (seerrId, i) => {
-        if (seerrId) {
-          const userId = String(listedUsers[i].user_id)
-          const userTotal = await fetchSeerrStats(
-            `user/${seerrId}/requests`,
-            after,
-            until,
-          )
-          const watched =
-            withRequestsWatched && userTotal
-              ? getRequestsWatched(
-                  userTotal,
-                  playsByUser[userId] ?? [],
-                  userId,
-                  settings.general.minPlayPercent,
-                  // Tautulli's plays carry no TMDB ID
-                  isTracearrSource(settings),
-                )
-              : null
+    usersRequestsCounts = listedUsers.map((user) => {
+      if (!allRequests) {
+        return undefined
+      }
 
-          return {
-            requests: userTotal?.length ?? 0,
-            watchedShare: watched ? watched.watched / watched.added : undefined,
-          }
-        }
-      }),
-    )
+      const userId = String(user.user_id)
+      const userRequests =
+        requestsByUser.get(userId) ??
+        requestsByUser.get(normalizeJellyfinId(userId)) ??
+        []
+      const watched =
+        withRequestsWatched && userRequests.length
+          ? getRequestsWatched(
+              userRequests,
+              playsByUser[userId] ?? [],
+              userId,
+              settings.general.minPlayPercent,
+              // Tautulli's plays carry no TMDB ID
+              isTracearrSource(settings),
+            )
+          : null
+
+      return {
+        requests: userRequests.length,
+        watchedShare: watched ? watched.watched / watched.added : undefined,
+      }
+    })
   }
 
   // Anonymizing hides the first plays of other users, so they aren't looked up
   const isFirstPlayShown = (user: ItemRow) =>
     !settings.general.isAnonymized || String(user.user_id) === loggedInUserId
   const firstPlays = withFirstPlay
-    ? await Promise.all(
-        listedUsers.map((user) =>
-          isFirstPlayShown(user)
-            ? source.getFirstPlay(String(user.user_id))
-            : null,
-        ),
+    ? await mapWithLimit(listedUsers, LOOKUP_CONCURRENCY, async (user) =>
+        isFirstPlayShown(user)
+          ? source.getFirstPlay(String(user.user_id))
+          : null,
       )
     : []
 

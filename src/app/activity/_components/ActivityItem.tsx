@@ -25,7 +25,6 @@ import {
 import { ArrowRightIcon } from '@heroicons/react/16/solid'
 import { ChevronDownIcon, DeviceTabletIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
-import { capitalize, toUpper } from 'lodash'
 import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { ReactNode, useContext, useId, useState } from 'react'
@@ -383,6 +382,14 @@ export default function ActivityItem({
 
 function isPresent(value?: number | string | null): value is number | string {
   return value != null && value !== ''
+}
+
+function capitalize(value?: string): string {
+  return value ? `${value[0].toUpperCase()}${value.slice(1).toLowerCase()}` : ''
+}
+
+function toUpper(value?: string): string {
+  return value ? value.toUpperCase() : ''
 }
 
 // Tautulli sends 0 or 1, Tracearr a boolean

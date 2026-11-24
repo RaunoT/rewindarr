@@ -133,6 +133,10 @@ async function fetchService<T>(service: Service, path: string): Promise<T> {
 
   await waitTurn(service)
 
+  if (isHostDown(service.url)) {
+    throw new MusicPreviewError(`${service.name} can't be reached`)
+  }
+
   let res: Response
 
   try {

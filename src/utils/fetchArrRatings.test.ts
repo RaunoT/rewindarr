@@ -17,6 +17,9 @@ function stubFetch(handler: (url: string) => Response) {
 
 beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation(() => {})
+  ;(
+    globalThis as { rewindarrDownServices?: Map<string, unknown> }
+  ).rewindarrDownServices?.clear()
 })
 
 afterEach(() => {
@@ -94,6 +97,43 @@ describe('getMovieRatings', () => {
       rottenTomatoes: null,
     })
     expect(stub).not.toHaveBeenCalled()
+  })
+
+  it('backs off after gateway or network failures and cancels non-OK bodies', async () => {
+    const cancel = vi.fn(async () => {})
+    const badGateway = new Response('bad gateway', { status: 502 })
+
+    Object.defineProperty(badGateway, 'body', { value: { cancel } })
+
+    const stub = stubFetch(() => badGateway)
+
+    await expect(getMovieRatings(1, null)).resolves.toEqual({
+      imdb: null,
+      rottenTomatoes: null,
+    })
+    expect(cancel).toHaveBeenCalledTimes(1)
+
+    // Backed off: next call returns immediately without fetching
+    await expect(getMovieRatings(2, null)).resolves.toEqual({
+      imdb: null,
+      rottenTomatoes: null,
+    })
+    expect(stub).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not back off after malformed JSON on a 200 response', async () => {
+    const stub = stubFetch(() => new Response('<html>', { status: 200 }))
+
+    await expect(getMovieRatings(1, null)).resolves.toEqual({
+      imdb: null,
+      rottenTomatoes: null,
+    })
+
+    await expect(getMovieRatings(2, null)).resolves.toEqual({
+      imdb: null,
+      rottenTomatoes: null,
+    })
+    expect(stub).toHaveBeenCalledTimes(2)
   })
 })
 

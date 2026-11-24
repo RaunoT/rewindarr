@@ -569,4 +569,74 @@ describe('streamPreview', () => {
     await expect(findPreview(inception)).resolves.toEqual(itunes)
     expect(searchSoundtrack).toHaveBeenCalledTimes(1)
   })
+
+  it('sweeps expired Deezer link entries on subsequent lookups', async () => {
+    const link = (expiry: number) =>
+      `https://cdnt-preview.dzcdn.net/a.mp3?hdnea=exp=${expiry / 1000}~acl=/a`
+    const matrix = { kind: 'movie', tmdbId: 603 } as const
+
+    writeFile({
+      'movie:27205': { preview: deezer, checkedAt: NOW },
+      'movie:603': { preview: { source: 'deezer', id: 12 }, checkedAt: NOW },
+    })
+    fetchMock.mockImplementation(async () => new Response('audio'))
+
+    const { streamPreview, fetchDeezerPreview } = await load()
+
+    fetchDeezerPreview.mockResolvedValue(link(NOW + 15 * 60 * 1000))
+
+    const stateLinks = () =>
+      (
+        globalThis as {
+          rewindarrMusicPreviews?: { links: Map<number, unknown> }
+        }
+      ).rewindarrMusicPreviews?.links
+
+    await streamPreview(inception, request())
+    expect(stateLinks()?.has(11)).toBe(true)
+
+    // After track 11 expires, looking up track 12 sweeps track 11 from state.links
+    vi.setSystemTime(NOW + 15 * 60 * 1000)
+    await streamPreview(matrix, request())
+
+    expect(stateLinks()?.has(11)).toBe(false)
+    expect(stateLinks()?.has(12)).toBe(true)
+  })
+
+  it('evicts failed Deezer link lookups and caps state.links at 500 entries', async () => {
+    writeFile({ 'movie:27205': { preview: deezer, checkedAt: NOW } })
+
+    const { streamPreview, fetchDeezerPreview } = await load()
+    const stateLinks = () =>
+      (
+        globalThis as {
+          rewindarrMusicPreviews?: { links: Map<number, unknown> }
+        }
+      ).rewindarrMusicPreviews?.links
+
+    fetchDeezerPreview.mockRejectedValueOnce(new Error('offline'))
+    await streamPreview(inception, request())
+    expect(stateLinks()?.has(11)).toBe(false)
+
+    // Pre-populate 500 future entries in state.links, then stream a 501st track
+    for (let id = 1000; id < 1500; id++) {
+      stateLinks()?.set(id, {
+        promise: Promise.resolve({
+          url: `https://cdnt-preview.dzcdn.net/${id}.mp3`,
+          expiresAt: NOW + 15 * 60 * 1000,
+        }),
+        expiresAt: NOW + 15 * 60 * 1000,
+      })
+    }
+
+    fetchMock.mockImplementation(async () => new Response('audio'))
+    fetchDeezerPreview.mockResolvedValue(
+      `https://cdnt-preview.dzcdn.net/11.mp3?hdnea=exp=${(NOW + 15 * 60 * 1000) / 1000}~acl=/a`,
+    )
+    await streamPreview(inception, request())
+
+    expect(stateLinks()?.size).toBe(500)
+    expect(stateLinks()?.has(1000)).toBe(false)
+    expect(stateLinks()?.has(11)).toBe(true)
+  })
 })

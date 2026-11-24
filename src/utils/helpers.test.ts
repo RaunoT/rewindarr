@@ -1,5 +1,6 @@
 import { Settings } from '@/types/settings'
-import { cloneDeep } from 'lodash'
+import { Library } from '@/types/statsSource'
+import { cloneDeep, kebabCase as lodashKebabCase } from 'lodash'
 import { Session } from 'next-auth'
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
@@ -11,6 +12,7 @@ import {
   getDifference,
   getFirstHeaderValue,
   getHomeTiles,
+  getLibrarySlug,
   getOwnOnlyUserId,
   getRequestsBreakdown,
   getRewindBreakdown,
@@ -661,5 +663,43 @@ describe('getFirstHeaderValue', () => {
     )
     expect(getFirstHeaderValue('  , https')).toBeUndefined()
     expect(getFirstHeaderValue(null)).toBeUndefined()
+  })
+})
+
+describe('getLibrarySlug', () => {
+  it.each([
+    'TV Shows',
+    '4K Movies',
+    'Movies 4K',
+    'Sci-Fi & Fantasy',
+    "Kids' Movies",
+    'Café Music',
+    'TVShows',
+    'myMovies',
+    'Anime (Subbed)',
+    '2024_Movies',
+    'Foo--Bar',
+    'HDMovies2',
+    '1080p Movies',
+    'Über Movies',
+    'Æon',
+    '2nd Edition',
+    '映画 2024',
+    'Кино',
+    'Мой сериалы',
+    'Ёлки',
+    'Phim Việt',
+    'Ταινίες',
+    'ドラマ',
+    'हिन्दी फ़िल्में',
+    'Musik ♫',
+    'Vidéos 😀',
+    'Ⅳ Movies',
+    '한국 드라마',
+    '',
+  ])('matches lodash kebabCase for %j', (name) => {
+    expect(getLibrarySlug({ section_name: name } as Library)).toBe(
+      lodashKebabCase(name),
+    )
   })
 })

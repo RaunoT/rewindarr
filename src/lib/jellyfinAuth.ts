@@ -37,12 +37,14 @@ function getAuthorization(token?: string): string {
 // away rather than left in its devices list.
 async function logOut(url: string, token: string): Promise<void> {
   try {
-    await fetch(`${url}/Sessions/Logout`, {
+    const res = await fetch(`${url}/Sessions/Logout`, {
       method: 'POST',
       headers: { Authorization: getAuthorization(token) },
       cache: 'no-store',
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     })
+
+    await res.body?.cancel()
   } catch (error) {
     console.warn("[AUTH] - Couldn't end the Jellyfin session!", error)
   }
@@ -129,6 +131,10 @@ export async function authenticateJellyfinUser(
     body: JSON.stringify({ Username: username, Pw: password }),
   })
 
+  if (!res.ok) {
+    await res.body?.cancel()
+  }
+
   // Jellyfin answers a wrong password with 401, and a disabled user with 403
   if (res.status === 401 || res.status === 403) {
     throw new LoginError('jellyfinCredentials')
@@ -147,6 +153,10 @@ export async function startQuickConnect(
   url: string,
 ): Promise<QuickConnectRequest> {
   const res = await request(url, '/QuickConnect/Initiate', { method: 'POST' })
+
+  if (!res.ok) {
+    await res.body?.cancel()
+  }
 
   if (res.status === 401) {
     throw new LoginError('jellyfinQuickConnectDisabled')
@@ -178,6 +188,10 @@ export async function getQuickConnectState(
     { method: 'GET' },
   )
 
+  if (!res.ok) {
+    await res.body?.cancel()
+  }
+
   if (res.status === 404) {
     return 'expired'
   }
@@ -204,6 +218,10 @@ export async function authenticateJellyfinQuickConnect(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ Secret: secret }),
   })
+
+  if (!res.ok) {
+    await res.body?.cancel()
+  }
 
   // An unknown or expired secret is a 404, one that isn't authorized yet too
   if (res.status === 400 || res.status === 404) {

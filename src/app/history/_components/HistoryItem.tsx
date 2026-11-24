@@ -10,7 +10,6 @@ import { getRequestUrl, getSeerrUrl } from '@/utils/deeplink'
 import { formatPercent, secondsToTime } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
 import clsx from 'clsx'
-import { sumBy } from 'lodash'
 import { useLocale, useTranslations } from 'next-intl'
 import HistoryBingeCard from './HistoryBingeCard'
 import HistoryTime from './HistoryTime'
@@ -212,7 +211,10 @@ export default function HistoryItem({
       <>
         <li className={STAT_PILL}>
           <STAT_ICONS.duration />
-          {secondsToTime(sumBy(plays, 'durationMs') / 1000, t)}
+          {secondsToTime(
+            plays.reduce((sum, play) => sum + play.durationMs, 0) / 1000,
+            t,
+          )}
         </li>
         {/* A binge's plays each have their own, so it has none. Phones have
             it under the poster. */}

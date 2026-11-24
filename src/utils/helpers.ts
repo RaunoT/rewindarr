@@ -2,9 +2,23 @@ import { DashboardSearchParams } from '@/types/dashboard'
 import { RewindTotals, UserRewind } from '@/types/rewind'
 import { Settings, StatisticsSource } from '@/types/settings'
 import { Library } from '@/types/statsSource'
-import { get, kebabCase } from 'lodash'
+import kebabCase from 'lodash/kebabCase'
 import { Session } from 'next-auth'
 import { SETTINGS_PAGES } from './constants'
+
+function getSettingValue(settings: Settings, keyPath: string): unknown {
+  let current: unknown = settings
+
+  for (const segment of keyPath.split('.')) {
+    if (current === null || typeof current !== 'object') {
+      return undefined
+    }
+
+    current = (current as Record<string, unknown>)[segment]
+  }
+
+  return current
+}
 
 const SOURCE_REQUIRED_SETTINGS: Record<StatisticsSource, string[]> = {
   tautulli: ['connection.tautulliUrl', 'connection.tautulliApiKey'],
@@ -190,7 +204,7 @@ export function checkRequiredSettings(settings: Settings): string | null {
     ...serverRequiredSettings,
     ...REQUIRED_SETTINGS,
   ]) {
-    if (!get(settings, key)) {
+    if (!getSettingValue(settings, key)) {
       return key
     }
   }

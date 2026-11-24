@@ -354,6 +354,24 @@ describe('getRequestsReach', () => {
 
     expect(getRequestsReach(requests, plays, '1', MIN_PERCENT)).toBeNull()
   })
+
+  it('deduplicates plays when a request carries multiple media keys', () => {
+    const requests = [
+      request(1, {
+        media: { tmdbId: 1, ratingKey: '100', jellyfinMediaId: 'ab12-cd34' },
+      }),
+    ]
+    const plays = [
+      play('plex-bob', BOB, { ratingKey: '100' }),
+      play('jf-carol', CAROL, { ratingKey: 'ab12cd34' }),
+    ]
+
+    expect(getRequestsReach(requests, plays, '1', MIN_PERCENT)).toMatchObject({
+      users: 2,
+      requests: 1,
+      top: { plays: 2, users: 2 },
+    })
+  })
 })
 
 describe('getRequestsWatched', () => {
@@ -486,6 +504,24 @@ describe('getRequestsWatched', () => {
     const requests = [request(1, { media: { tmdbId: 1, status: 2 } })]
 
     expect(getRequestsWatched(requests, [], '1', MIN_PERCENT, true)).toBeNull()
+  })
+
+  it('matches requests carrying both Plex and Jellyfin media IDs once', () => {
+    const requests = [
+      request(1, {
+        media: {
+          tmdbId: 1,
+          status: 5,
+          ratingKey: '100',
+          jellyfinMediaId: 'AB12-CD34',
+        },
+      }),
+    ]
+    const plays = [play('plex', ALICE, { ratingKey: '100' })]
+
+    expect(
+      getRequestsWatched(requests, plays, '1', MIN_PERCENT, false),
+    ).toEqual({ added: 1, watched: 1 })
   })
 })
 

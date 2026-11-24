@@ -41,6 +41,11 @@ type PreviewLink = {
   expiresAt: number
 }
 
+type CachedLink = {
+  promise: Promise<PreviewLink | null>
+  expiresAt: number
+}
+
 type PreviewState = {
   saved: Promise<Map<string, SavedPreview>> | null
   saveTimer: ReturnType<typeof setTimeout> | null
@@ -52,7 +57,7 @@ type PreviewState = {
   reading: number
   waiting: (() => void)[]
   // Deezer's links by track
-  links: Map<number, Promise<PreviewLink | null>>
+  links: Map<number, CachedLink>
   warnedAt: number
 }
 
@@ -102,6 +107,7 @@ const PREVIEW_TIMEOUT_MS = 10 * 1000
 const LINK_MARGIN_MS = 60 * 1000
 // For a link that doesn't say when it stops working
 const LINK_TTL_MS = 5 * 60 * 1000
+const MAX_LINKS = 500
 const WARN_INTERVAL_MS = 60 * 1000
 const COMPOSER_JOBS = [
   'Original Music Composer',
@@ -126,6 +132,8 @@ const state: PreviewState = (globalForPreviews.rewindarrMusicPreviews ??= {
   links: new Map(),
   warnedAt: 0,
 })
+
+state.links ??= new Map()
 
 export function getPreviewFilePath(): string {
   return path.join(process.cwd(), 'config/music-previews.json')
@@ -538,38 +546,78 @@ async function fetchDeezerLink(
   return { url, expiresAt: getExpiry(url) }
 }
 
+function pruneLinks(now: number): void {
+  for (const [id, entry] of state.links) {
+    if (entry.expiresAt <= now) {
+      state.links.delete(id)
+    }
+  }
+
+  for (const id of state.links.keys()) {
+    if (state.links.size <= MAX_LINKS) {
+      break
+    }
+
+    state.links.delete(id)
+  }
+}
+
 // The browser asks for parts of a preview at a time, which share one request
 // for the link
 async function getDeezerLink(
   item: PreviewItem,
   id: number,
 ): Promise<string | null> {
+  pruneLinks(Date.now())
+
   const cached = state.links.get(id)
-  const link = cached && (await cached)
+  const link = cached && (await cached.promise)
 
   if (link && link.expiresAt > Date.now()) {
+    if (state.links.get(id) === cached) {
+      state.links.delete(id)
+      state.links.set(id, cached)
+    }
+
     return link.url
   }
 
-  let request = state.links.get(id)
+  const current = state.links.get(id)
 
   // Another part may have asked for a new link meanwhile
-  if (!request || request === cached) {
-    const refresh: Promise<PreviewLink | null> = fetchDeezerLink(item, id).then(
+  if (!current || current === cached) {
+    const entry: CachedLink = {
+      expiresAt: Infinity,
+      promise: Promise.resolve(null),
+    }
+
+    entry.promise = fetchDeezerLink(item, id).then(
       (fresh) => {
-        if (!fresh && state.links.get(id) === refresh) {
-          state.links.delete(id)
+        if (state.links.get(id) === entry) {
+          if (fresh) {
+            entry.expiresAt = fresh.expiresAt
+          } else {
+            state.links.delete(id)
+          }
         }
 
         return fresh
       },
+      (error) => {
+        if (state.links.get(id) === entry) {
+          state.links.delete(id)
+        }
+
+        throw error
+      },
     )
 
-    request = refresh
-    state.links.set(id, request)
+    state.links.delete(id)
+    state.links.set(id, entry)
+    pruneLinks(Date.now())
   }
 
-  return (await request)?.url ?? null
+  return (await state.links.get(id)?.promise)?.url ?? null
 }
 
 // A redirect isn't followed, as only the services' own hosts are fetched

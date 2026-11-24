@@ -24,6 +24,7 @@ import {
   TmdbMediaType,
 } from './getMediaAdditionalData'
 import getSettings from './getSettings'
+import { isHostDown } from './hostBackoff'
 import { LibrariesSize, sumLibrariesSize } from './librariesSize'
 import {
   createPlayStats,
@@ -206,6 +207,12 @@ async function getLibraries({ fresh }: LibrariesQuery = {}): Promise<
 
 // Shares the libraries request, so asking costs no extra call
 async function isTautulliReachable(): Promise<boolean> {
+  const { tautulliUrl } = getSettings().connection
+
+  if (tautulliUrl && isHostDown(tautulliUrl)) {
+    return false
+  }
+
   return (await fetchLibraries()) !== null
 }
 

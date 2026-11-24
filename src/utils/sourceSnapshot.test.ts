@@ -125,6 +125,98 @@ describe('sourceSnapshot', () => {
     // Still answered from memory
     await expect(getSnapshot(`${KEY}|serverId`, isString)).resolves.toBe('abc')
   })
+
+  it('caps saved media entries with LRU eviction while keeping structural keys', async () => {
+    const { getSnapshot, isObject, saveSnapshot } = await load()
+
+    await saveSnapshot(`${KEY}|users`, users)
+    await saveSnapshot(`${KEY}|serverId`, 'abc')
+
+    for (let i = 0; i < 5005; i++) {
+      if (i === 5000) {
+        // Keep the oldest media entry hot once the cap is full so later writes
+        // evict the least recently used entries instead of it.
+        await expect(getSnapshot(`${KEY}|media|0`, isObject)).resolves.toEqual({
+          id: 0,
+        })
+      }
+
+      await saveSnapshot(`${KEY}|media|${i}`, { id: i })
+    }
+
+    await waitForSave()
+
+    const saved = JSON.parse(fs.readFileSync(filePath(), 'utf8')).answers
+
+    // Structural keys stay untouched even though they were saved first
+    expect(saved[`${KEY}|users`]).toEqual(users)
+    expect(saved[`${KEY}|serverId`]).toBe('abc')
+    // Promoted media|0 stays while oldest unreferenced media entries are evicted
+    expect(saved[`${KEY}|media|0`]).toEqual({ id: 0 })
+    expect(saved[`${KEY}|media|1`]).toBeUndefined()
+    expect(saved[`${KEY}|media|5`]).toBeUndefined()
+    expect(saved[`${KEY}|media|6`]).toEqual({ id: 6 })
+    expect(saved[`${KEY}|media|5004`]).toEqual({ id: 5004 })
+    expect(
+      Object.keys(saved).filter((key) => key.includes('|media|')),
+    ).toHaveLength(5000)
+  })
+
+  it('prunes oversized media entries when loading a snapshot file from disk', async () => {
+    const answers: Record<string, unknown> = { [`${KEY}|users`]: users }
+
+    for (let i = 0; i < 5003; i++) {
+      answers[`${KEY}|media|${i}`] = { id: i }
+    }
+
+    writeFile({ version: 1, answers })
+
+    const { getSnapshot, isListOf, isObject } = await load()
+
+    await expect(getSnapshot(`${KEY}|users`, isListOf)).resolves.toEqual(users)
+    await expect(getSnapshot(`${KEY}|media|0`, isObject)).resolves.toBeNull()
+    await expect(getSnapshot(`${KEY}|media|2`, isObject)).resolves.toBeNull()
+    await expect(getSnapshot(`${KEY}|media|3`, isObject)).resolves.toEqual({
+      id: 3,
+    })
+
+    // The oversized file on disk is scheduled to be shrunk
+    await vi.advanceTimersByTimeAsync(1000)
+    await vi.waitFor(() => {
+      const saved = JSON.parse(fs.readFileSync(filePath(), 'utf8')).answers
+
+      expect(
+        Object.keys(saved).filter((key) => key.includes('|media|')),
+      ).toHaveLength(5000)
+    })
+  })
+
+  it('drops stale snapshots from the same source while keeping other sources', async () => {
+    writeFile({
+      version: 1,
+      answers: {
+        [`${KEY}|users`]: users,
+        'tracearr|http://old-tracearr:3000|s1|users': users,
+        'tracearr|http://tracearr:3000|s2|libraries': [],
+        'tautulli|http://tautulli:8181|users': users,
+        'plex|http://plex:32400|serverId': 'plex-1',
+      },
+    })
+
+    const { dropStaleSnapshots } = await load()
+
+    await dropStaleSnapshots(`${KEY}|`)
+    await vi.advanceTimersByTimeAsync(1000)
+    await vi.waitFor(() =>
+      expect(
+        Object.keys(JSON.parse(fs.readFileSync(filePath(), 'utf8')).answers),
+      ).toEqual([
+        `${KEY}|users`,
+        'tautulli|http://tautulli:8181|users',
+        'plex|http://plex:32400|serverId',
+      ]),
+    )
+  })
 })
 
 describe('validators', () => {

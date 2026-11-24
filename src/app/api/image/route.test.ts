@@ -121,6 +121,35 @@ describe('GET /api/image', () => {
     expect(res.status).toBe(404)
   })
 
+  it('returns 400 without backing off on a malformed redirect Location header', async () => {
+    const cancel = vi.fn(async () => {})
+    const badRedirect = redirect('http://[invalid')
+
+    Object.defineProperty(badRedirect, 'body', { value: { cancel } })
+    fetchMock.mockResolvedValueOnce(badRedirect)
+
+    const res = await GET(request({ url: 'https://plex.tv/users/abc/avatar' }))
+
+    expect(res.status).toBe(400)
+    expect(cancel).toHaveBeenCalledTimes(1)
+    expect(isHostDown('https://plex.tv (images)')).toBe(false)
+  })
+
+  it('cancels the upstream body on non-OK and rejected responses', async () => {
+    const cancel = vi.fn(async () => {})
+    const html = new Response('<html>', {
+      headers: { 'content-type': 'text/html' },
+    })
+
+    Object.defineProperty(html, 'body', { value: { cancel } })
+    fetchMock.mockResolvedValueOnce(html)
+
+    expect(
+      (await GET(request({ img: '/library/metadata/1/thumb' }))).status,
+    ).toBe(502)
+    expect(cancel).toHaveBeenCalledTimes(1)
+  })
+
   it('refuses responses that are not images or are too large', async () => {
     fetchMock.mockResolvedValueOnce(
       new Response('<html>', { headers: { 'content-type': 'text/html' } }),

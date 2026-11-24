@@ -1,7 +1,6 @@
 import { UserRewind } from '@/types/rewind'
 import { ItemRow } from '@/types/statsSource'
 import { getImageProxyUrl } from '@/utils/imageProxy'
-import { uniq } from 'lodash'
 
 function toLinear(channel: number) {
   const value = channel / 255
@@ -154,9 +153,11 @@ export function getStoryArt(id: string, userRewind: UserRewind): string[] {
     return []
   }
 
-  return uniq(
-    [item.tmdb_backdrop, getPoster(item), item.tmdb_poster].filter(
-      (src): src is string => !!src,
+  return [
+    ...new Set(
+      [item.tmdb_backdrop, getPoster(item), item.tmdb_poster].filter(
+        (src): src is string => !!src,
+      ),
     ),
-  )
+  ]
 }

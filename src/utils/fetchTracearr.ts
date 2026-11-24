@@ -33,13 +33,20 @@ import { normalizeJellyfinId } from './mediaServer'
 import { isMediaServerType } from './mediaServerName'
 import {
   dropStaleHistories,
+  getCompleteStoredPlays,
   getStoredPlays,
   HistoryReader,
   PlaysPage,
   readHistories,
 } from './playHistory'
 import { PLAY_MEDIA_TYPES, toSourceId } from './playStats'
-import { getSnapshot, isListOf, isObject, saveSnapshot } from './sourceSnapshot'
+import {
+  dropStaleSnapshots,
+  getSnapshot,
+  isListOf,
+  isObject,
+  saveSnapshot,
+} from './sourceSnapshot'
 
 type QueryParams = {
   [key: string]: string | number | undefined
@@ -84,6 +91,7 @@ type RateLimit = {
 type TracearrState = {
   cachedValues: Map<string, CachedValue>
   firstPlays: Map<string, { firstPlay: FirstPlay | null; expiresAt: number }>
+  firstPlayPending: Map<string, Promise<FirstPlay | null>>
   media: Map<string, CachedMedia>
   rateLimit: RateLimit | null
   nextPacedRequestAt: number
@@ -131,6 +139,7 @@ const globalForTracearr = globalThis as unknown as {
 const state = (globalForTracearr.rewindarrTracearr ??= {
   cachedValues: new Map(),
   firstPlays: new Map(),
+  firstPlayPending: new Map(),
   media: new Map(),
   rateLimit: null,
   nextPacedRequestAt: 0,
@@ -140,6 +149,7 @@ const state = (globalForTracearr.rewindarrTracearr ??= {
 // The dev server keeps the state across a hot reload, so it can be older
 // than the media cache
 state.media ??= new Map()
+state.firstPlayPending ??= new Map()
 
 export function getTracearrUrl(settings: Settings = getSettings()): string {
   return settings.connection.tracearrUrl.replace(/\/+$/, '')
@@ -386,6 +396,7 @@ export default async function fetchTracearr<T>(
       if (res.status === 429 && attempt < MAX_RATE_LIMIT_RETRIES) {
         const retryAfter = Number(res.headers.get('Retry-After')) || 5
 
+        await res.body?.cancel()
         console.warn(
           `[TRACEARR] - Rate limited! Retrying '${path}' in ${retryAfter}s.`,
         )
@@ -395,6 +406,8 @@ export default async function fetchTracearr<T>(
       }
 
       if (!res.ok) {
+        await res.body?.cancel()
+
         if (isGatewayError(res.status)) {
           markHostDown(tracearrUrl)
         }
@@ -906,8 +919,12 @@ function createHistoryReader(
 export function getTracearrHistoryReaders(): HistoryReader[] {
   const settings = getSettings()
   const keys = getHistoryKeys(settings)
+  const snapshotPrefix = settings.connection.tracearrServerId
+    ? `${getHistoryKey(settings, settings.connection.tracearrServerId)}|`
+    : `tracearr|${getTracearrUrl(settings)}|`
 
   void dropStaleHistories(keys)
+  void dropStaleSnapshots(snapshotPrefix)
 
   return [
     createHistoryReader(keys[0], getServerId),
@@ -1095,42 +1112,126 @@ export async function getTracearrFirstPlay(
   const now = Date.now()
   const cache = state.firstPlays.get(key)
 
+  if (cache?.firstPlay && now < cache.expiresAt) {
+    return cache.firstPlay
+  }
+
+  // When every counted server's play history is already complete in memory,
+  // find the user's earliest play without paging Tracearr over HTTP.
+  const settings = getSettings()
+  const chosenKey = getHistoryKey(
+    settings,
+    settings.connection.tracearrServerId,
+  )
+  const otherIds = getOtherServerIds(settings).filter((id) =>
+    serverIds.slice(1).includes(id),
+  )
+  const historyKeys = [
+    chosenKey,
+    ...otherIds.map((id) => getHistoryKey(settings, id)),
+  ]
+
+  if (historyKeys.length === serverIds.length) {
+    const stored = getCompleteStoredPlays(historyKeys)
+
+    if (stored) {
+      let earliest: { play: Play; isChosenServer: boolean } | null = null
+
+      for (let i = 0; i < stored.length; i++) {
+        for (const play of stored[i]) {
+          if (
+            play.identityId === user.identityId &&
+            (!earliest || play.startedAt < earliest.play.startedAt)
+          ) {
+            earliest = { play, isChosenServer: i === 0 }
+          }
+        }
+      }
+
+      if (!earliest) {
+        state.firstPlays.set(key, {
+          firstPlay: null,
+          expiresAt: now + CACHE_TTL,
+        })
+
+        return null
+      }
+
+      const firstPlay: FirstPlay = {
+        date: new Date(earliest.play.startedAt).toISOString(),
+        title:
+          earliest.play.showTitle ||
+          earliest.play.artistName ||
+          earliest.play.title,
+        play: earliest.isChosenServer
+          ? earliest.play
+          : withoutRatingKeys(earliest.play),
+      }
+
+      state.firstPlays.set(key, {
+        firstPlay,
+        expiresAt: now + FIRST_PLAY_CACHE_TTL,
+      })
+
+      return firstPlay
+    }
+  }
+
   if (cache && now < cache.expiresAt) {
     return cache.firstPlay
   }
 
-  for (const [cacheKey, { expiresAt }] of state.firstPlays) {
-    if (now >= expiresAt) {
-      state.firstPlays.delete(cacheKey)
+  const pending = state.firstPlayPending.get(key)
+
+  if (pending) {
+    return pending
+  }
+
+  const load = (async (): Promise<FirstPlay | null> => {
+    const currentNow = Date.now()
+
+    for (const [cacheKey, { expiresAt }] of state.firstPlays) {
+      if (currentNow >= expiresAt) {
+        state.firstPlays.delete(cacheKey)
+      }
     }
-  }
 
-  const record = await findUserFirstPlay(user.identityId, serverIds)
+    const record = await findUserFirstPlay(user.identityId, serverIds)
 
-  if (record === undefined) {
-    return cache?.firstPlay ?? null
-  }
+    if (record === undefined) {
+      return cache?.firstPlay ?? null
+    }
 
-  const play = record && toPlay(record, getTracearrUrl())
-  const firstPlay =
-    record && Number.isFinite(getStartedAt(record))
-      ? {
-          date: new Date(record.started_at).toISOString(),
-          title: record.show_title || record.artist_name || record.media_title,
-          play:
-            play && record.server_id !== serverIds[0]
-              ? withoutRatingKeys(play)
-              : (play ?? null),
-        }
-      : null
+    const play = record && toPlay(record, getTracearrUrl())
+    const firstPlay =
+      record && Number.isFinite(getStartedAt(record))
+        ? {
+            date: new Date(record.started_at).toISOString(),
+            title:
+              record.show_title || record.artist_name || record.media_title,
+            play:
+              play && record.server_id !== serverIds[0]
+                ? withoutRatingKeys(play)
+                : (play ?? null),
+          }
+        : null
 
-  // The first play only changes once a user without plays starts watching
-  state.firstPlays.set(key, {
-    firstPlay,
-    expiresAt: now + (firstPlay ? FIRST_PLAY_CACHE_TTL : CACHE_TTL),
+    // The first play only changes once a user without plays starts watching
+    state.firstPlays.set(key, {
+      firstPlay,
+      expiresAt: currentNow + (firstPlay ? FIRST_PLAY_CACHE_TTL : CACHE_TTL),
+    })
+
+    return firstPlay
+  })().finally(() => {
+    if (state.firstPlayPending.get(key) === load) {
+      state.firstPlayPending.delete(key)
+    }
   })
 
-  return firstPlay
+  state.firstPlayPending.set(key, load)
+
+  return load
 }
 
 const getAllLibraries = cached<TracearrLibrary[]>('libraries', async () => {
@@ -1164,6 +1265,12 @@ async function getLibraryRollups(): Promise<TracearrLibrary[] | null> {
 // reachable never disagrees with the libraries shown. A missing server
 // choice is a setup problem, not an outage. Costs no extra call.
 export async function isTracearrReachable(): Promise<boolean> {
+  const url = getTracearrUrl()
+
+  if (url && isHostDown(url)) {
+    return false
+  }
+
   const [libraries, servers] = await Promise.all([
     getAllLibraries(),
     getServers(),
