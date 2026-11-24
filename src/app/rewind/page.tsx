@@ -71,7 +71,7 @@ import {
   getMediaServer,
   getStatsSource,
 } from '@/utils/statsSource'
-import { toTimeZone } from '@/utils/timeZone'
+import { toDateKey, toTimeZone } from '@/utils/timeZone'
 import { getTitleMoments } from '@/utils/titleMoments'
 import { getYearOverYear } from '@/utils/yearOverYear'
 import { sumBy } from 'lodash'
@@ -355,6 +355,7 @@ async function getRewind(
         firstPlay.play,
         hasFirstPlayTotals ? user.id : undefined,
         until,
+        libraries,
       )
     : null
   // The viewer's plays in the period, and all of them up to its end once the
@@ -409,13 +410,23 @@ async function getRewind(
     user: user,
     period,
   }
+  const asOf = Math.min(Date.now(), until ? Date.parse(until) : Infinity)
+  const personalityYear =
+    period.year ??
+    Number(
+      toDateKey(
+        until ? Math.min(Date.now(), Date.parse(until) - 1) : Date.now(),
+        timeZone,
+      ).slice(0, 4),
+    )
 
   // Read from the stats above, once they're all in
   userRewind.personality = getPersonality(
     getPersonalitySignals(
       userRewind,
-      getPlaySignals(plays, settings.general.minPlayPercent),
+      getPlaySignals(plays, settings.general.minPlayPercent, asOf),
     ),
+    personalityYear,
   )
 
   const isSeerrActive =

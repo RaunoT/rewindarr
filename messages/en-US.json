@@ -361,6 +361,7 @@
       "releaseDateDescription": "When the {year} edition comes out",
       "releaseDateError": "Check the release date.",
       "yearError": "Check the year.",
+      "startDateError": "Check the start date.",
       "shareLinks": "Shared links",
       "shareLinksDescription": "Each link opens that user's Rewind without signing in, so anyone it's passed on to can see it too.",
       "shareLinksSearch": "Search users",

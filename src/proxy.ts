@@ -7,11 +7,13 @@ import { createNonce, getContentSecurityPolicy } from './utils/csp'
 import getSettings from './utils/getSettings'
 import {
   checkRequiredSettings,
+  getFirstHeaderValue,
   getSettingsPage,
   isInitialSetup,
   isLoginRequired,
   isPostUpdateMissingSettings,
   isRewindOnly,
+  isSettingsPath,
 } from './utils/helpers'
 import {
   isRewindShareKey,
@@ -85,7 +87,8 @@ function hasSecureCookie(req: NextRequest): boolean {
   }
 
   const protocol =
-    req.headers.get('x-forwarded-proto') ?? req.nextUrl.protocol.slice(0, -1)
+    getFirstHeaderValue(req.headers.get('x-forwarded-proto'))?.toLowerCase() ||
+    req.nextUrl.protocol.slice(0, -1)
 
   return protocol !== 'http'
 }
@@ -147,13 +150,22 @@ export default async function proxy(req: NextRequest) {
   }
 
   if (missingSetting && settings) {
-    const isSettingsPage = pathname.includes('settings')
+    const isSettingsPage = isSettingsPath(pathname)
     const isAdmin = token?.isAdmin
     const isInitialSetupMode = isInitialSetup(settings)
     const isPostUpdateMode = isPostUpdateMissingSettings(settings)
 
     // During initial setup, allow access to settings pages for any user (including unauthenticated)
     if (isInitialSetupMode && isSettingsPage) {
+      if (
+        !settings.connection.complete &&
+        pathname !== '/settings/connection'
+      ) {
+        return NextResponse.redirect(
+          new URL('/settings/connection', req.nextUrl),
+        )
+      }
+
       return nextWithCsp(req)
     }
 
@@ -173,12 +185,16 @@ export default async function proxy(req: NextRequest) {
       redirectPage = getSettingsPage('connection')
     }
 
-    if (
-      redirectPage &&
-      pathname !== redirectPage &&
-      !pathname.includes('settings')
-    ) {
+    if (redirectPage && pathname !== redirectPage && !isSettingsPage) {
       return NextResponse.redirect(new URL(redirectPage, req.nextUrl))
+    }
+
+    if (
+      !settings.connection.complete &&
+      isSettingsPage &&
+      pathname !== '/settings/connection'
+    ) {
+      return NextResponse.redirect(new URL('/settings/connection', req.nextUrl))
     }
   }
 

@@ -27,6 +27,7 @@ type Props = {
   isAnonymous: boolean
   // Left out of one user's history, where it's the same on every card
   isUserShown: boolean
+  timeZone?: string
 }
 
 // A deleted item has nothing left to open in the media server. A re-added one
@@ -142,6 +143,7 @@ export default function HistoryItem({
   settings,
   isAnonymous,
   isUserShown,
+  timeZone,
 }: Props) {
   const t = useTranslations()
   const locale = useLocale()
@@ -244,7 +246,7 @@ export default function HistoryItem({
           ? { requestUrl }
           : null,
     // A binge's newest play, which is where it's in the history
-    aside: <HistoryTime time={new Date(play.startedAt)} />,
+    aside: <HistoryTime time={new Date(play.startedAt)} timeZone={timeZone} />,
     settings,
   }
 
@@ -289,7 +291,10 @@ export default function HistoryItem({
                   {secondsToTime(entry.durationMs / 1000, t)}
                 </span>
                 <span className='shrink-0 text-neutral-400'>
-                  <HistoryTime time={new Date(entry.startedAt)} />
+                  <HistoryTime
+                    time={new Date(entry.startedAt)}
+                    timeZone={timeZone}
+                  />
                 </span>
               </li>
             )

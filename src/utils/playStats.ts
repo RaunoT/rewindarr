@@ -382,11 +382,11 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
 
   async function getTopItems(
     library: Library,
-    { period, userId, sortBy, count }: TopItemsQuery,
+    { since, userId, sortBy, count }: TopItemsQuery,
   ): Promise<TopItems> {
     const mediaType = LIBRARY_PLAY_TYPES[library.section_type]
     const plays = await getPlays({
-      since: new Date(Date.now() - period * 24 * 60 * 60 * 1000),
+      since,
       userId,
       libraries: [library],
     })
@@ -615,11 +615,12 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
     play: Play,
     userId?: string,
     until?: string,
+    libraries?: Library[],
   ): Promise<ItemRow> {
     const userPlays = userId
-      ? (await getPlays({ since: new Date(0), until, userId })).filter(
-          (other) => other.mediaType === play.mediaType,
-        )
+      ? (
+          await getPlays({ since: new Date(0), until, userId, libraries })
+        ).filter((other) => other.mediaType === play.mediaType)
       : []
     const plays = userPlays.some((other) => other.id === play.id)
       ? userPlays

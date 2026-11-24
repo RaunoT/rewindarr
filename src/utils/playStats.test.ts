@@ -202,16 +202,22 @@ describe('getPlayItem', () => {
     }),
   ]
 
-  function getPlayItem(plays: Play[], userId?: string, until?: string) {
+  function getPlayItem(
+    plays: Play[],
+    userId?: string,
+    until?: string,
+    libraries?: Library[],
+  ) {
     vi.mocked(getSettings).mockReturnValue({
       general: { excludedUsers: [] },
     } as unknown as ReturnType<typeof getSettings>)
 
     return createPlayStats({
-      getPlays: async () => plays,
+      getPlays: async (_, requestedLibraries) =>
+        requestedLibraries ? [] : plays,
       getUsers: async () => [user('1', 'alice'), user('2', 'bob')],
       getMediaData: async () => ({ thumb: '', isDeleted: false }),
-    }).getPlayItem(firstPlay, userId, until)
+    }).getPlayItem(firstPlay, userId, until, libraries)
   }
 
   it("counts the user's plays of the item since their first play", async () => {
@@ -243,6 +249,23 @@ describe('getPlayItem', () => {
     expect(item.total_plays).toBe(1)
     expect(item.total_duration).toBe(6000)
   })
+
+  it('scopes user plays to the given libraries', async () => {
+    const shows = { section_type: 'show' } as Library
+    const getPlays = vi.fn(async () => history)
+
+    vi.mocked(getSettings).mockReturnValue({
+      general: { excludedUsers: [] },
+    } as unknown as ReturnType<typeof getSettings>)
+
+    await createPlayStats({
+      getPlays,
+      getUsers: async () => [user('1', 'alice')],
+      getMediaData: async () => ({ thumb: '', isDeleted: false }),
+    }).getPlayItem(firstPlay, '1', undefined, [shows])
+
+    expect(getPlays).toHaveBeenCalledWith(new Date(0), [shows])
+  })
 })
 
 describe('getTopItems', () => {
@@ -263,7 +286,7 @@ describe('getTopItems', () => {
     ),
   ]
 
-  async function rank(sortBy?: TopItemsSort) {
+  async function rank(sortBy?: TopItemsSort, since = '2026-01-01') {
     vi.mocked(getSettings).mockReturnValue({
       general: { excludedUsers: [] },
     } as unknown as ReturnType<typeof getSettings>)
@@ -273,7 +296,7 @@ describe('getTopItems', () => {
       getUsers: async () => [],
       getMediaData: async () => ({ thumb: '', isDeleted: false }),
     }).getTopItems({ section_type: 'movie' } as Library, {
-      period: 3650,
+      since,
       sortBy,
       count: 5,
     })
@@ -291,6 +314,10 @@ describe('getTopItems', () => {
 
   it('ranks by users, then by plays', async () => {
     expect(await rank('users')).toEqual(['Alien', 'Heat', 'Dune'])
+  })
+
+  it('leaves out plays before the exact period start date', async () => {
+    expect(await rank('duration', '2026-03-02')).toEqual(['Heat', 'Alien'])
   })
 })
 
@@ -411,7 +438,7 @@ describe('plays short of the percent in the settings', () => {
 
   it('count every play with the percent at 0', async () => {
     const { items } = await getStats(0).getTopItems(movies, {
-      period: 3650,
+      since: '2026-01-01',
       sortBy: 'plays',
       count: 5,
     })
@@ -424,7 +451,7 @@ describe('plays short of the percent in the settings', () => {
 
   it('add their watch time to an item, but not a play or a user', async () => {
     const { items } = await getStats().getTopItems(movies, {
-      period: 3650,
+      since: '2026-01-01',
       sortBy: 'plays',
       count: 5,
     })
@@ -441,7 +468,7 @@ describe('plays short of the percent in the settings', () => {
 
   it('keep an item without a counted play in the watch time ranking', async () => {
     const { items } = await getStats().getTopItems(movies, {
-      period: 3650,
+      since: '2026-01-01',
       sortBy: 'duration',
       count: 5,
     })

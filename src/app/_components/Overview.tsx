@@ -293,13 +293,13 @@ async function LibraryTile({
   periodLabel,
 }: LibraryTileProps) {
   const t = await getTranslations()
-  const { daysAgo, string: since } = getPeriod(period, settings)
+  const { string: since } = getPeriod(period, settings)
   const progress = await getHistoryProgress(since, [library])
   const items = progress
     ? []
     : (
         await getItems(library, {
-          period: daysAgo,
+          since,
           userId: getOwnOnlyUserId(settings, 'dashboard', session),
           sortBy: 'plays',
           count: TILE_ITEM_COUNT,

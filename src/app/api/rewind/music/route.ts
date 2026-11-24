@@ -1,6 +1,7 @@
 import { canManageSettings, canPlayRewind } from '@/lib/access'
 import { REWIND_MUSIC_MAX_BYTES } from '@/utils/constants'
 import getSettings, { writeSettings } from '@/utils/getSettings'
+import { isSettingsPageLocked } from '@/utils/helpers'
 import {
   getMusicType,
   getMusicUrl,
@@ -98,7 +99,12 @@ export async function GET(request: Request) {
 // The file is the body, its name in a header. PUT and DELETE can't be sent
 // from another site without CORS allowing them.
 export async function PUT(request: Request) {
-  if (!(await canManageSettings())) {
+  const initialSettings = getSettings()
+
+  if (
+    !(await canManageSettings(initialSettings)) ||
+    isSettingsPageLocked('rewind', initialSettings)
+  ) {
     return Response.json({ error: 'forbidden' }, { status: 403 })
   }
 
@@ -161,13 +167,16 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE() {
-  if (!(await canManageSettings())) {
+  const settings = getSettings()
+
+  if (
+    !(await canManageSettings(settings)) ||
+    isSettingsPageLocked('rewind', settings)
+  ) {
     return Response.json({ error: 'forbidden' }, { status: 403 })
   }
 
   try {
-    const settings = getSettings()
-
     settings.rewind.music = null
     writeSettings(settings)
     removeMusic()

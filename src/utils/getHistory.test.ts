@@ -227,6 +227,36 @@ describe('groupBinges', () => {
 
     expect(result).toHaveLength(3)
   })
+
+  it('groups episodes by calendar day in the given timezone', () => {
+    const midnightCross = [
+      // 2 Nov 01:00 UTC = 1 Nov 20:00 America/New_York
+      play('2', Date.parse('2026-11-02T01:00:00Z'), {
+        mediaType: 'episode',
+        showTitle: 'Severance',
+        grandparentRatingKey: '7',
+      }),
+      // 1 Nov 23:00 UTC = 1 Nov 18:00 America/New_York
+      play('1', Date.parse('2026-11-01T23:00:00Z'), {
+        mediaType: 'episode',
+        showTitle: 'Severance',
+        grandparentRatingKey: '7',
+      }),
+    ].map((item) => ({
+      kind: 'play' as const,
+      time: item.startedAt,
+      play: item,
+    }))
+
+    expect(groupBinges(midnightCross, 'UTC')).toHaveLength(2)
+
+    const ny = groupBinges(midnightCross, 'America/New_York')
+
+    expect(ny).toHaveLength(1)
+    expect(
+      ny[0].kind === 'play' && ny[0].binge?.map((item) => item.id),
+    ).toEqual(['2', '1'])
+  })
 })
 
 describe('getHistoryPage', () => {
@@ -426,6 +456,7 @@ describe('getHistoryPage', () => {
       libraries: undefined,
       userId: '1',
     })
+    expect(getHistoryRequests).toHaveBeenLastCalledWith(SINCE, '1')
     expect(one.totals).toMatchObject({ plays: 100, requests: 2 })
 
     const several = await getHistoryPage(
@@ -440,6 +471,7 @@ describe('getHistoryPage', () => {
       libraries: undefined,
       userId: undefined,
     })
+    expect(getHistoryRequests).toHaveBeenLastCalledWith(SINCE, undefined)
     // Only Bob's request, as the plays are all Alice's
     expect(ids(several)).toEqual(['request 2'])
   })

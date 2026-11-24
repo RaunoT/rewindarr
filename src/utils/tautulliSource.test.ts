@@ -470,7 +470,7 @@ describe('getTopItems', () => {
     ])
 
     const { items } = await tautulliSource.getTopItems(library('1', 'movie'), {
-      period: 3650,
+      since: '2026-01-01',
       count: 5,
     })
 
@@ -481,7 +481,7 @@ describe('getTopItems', () => {
     mockServer([play('1'), play('5'), play('5')])
 
     const { items } = await tautulliSource.getTopItems(library('1', 'movie'), {
-      period: 3650,
+      since: '2026-01-01',
       count: 5,
     })
 
@@ -493,10 +493,10 @@ describe('getTopItems', () => {
 
     const twoOfThree = await tautulliSource.getTopItems(
       library('3', 'artist'),
-      { period: 3650, count: 2 },
+      { since: '2026-01-01', count: 2 },
     )
     const all = await tautulliSource.getTopItems(library('3', 'artist'), {
-      period: 3650,
+      since: '2026-01-01',
       count: 3,
     })
 

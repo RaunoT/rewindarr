@@ -106,7 +106,7 @@ async function DashboardContent({
     mediaServer,
   ] = await Promise.all([
     getItems(library, {
-      period: period.daysAgo,
+      since: period.string,
       userId: personalUserId,
       sortBy,
       count: limit,

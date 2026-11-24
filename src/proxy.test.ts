@@ -155,6 +155,33 @@ describe('proxy', () => {
       )
     })
 
+    it('reads the first protocol from comma-separated X-Forwarded-Proto headers', async () => {
+      const secureRes = await request(await staleAdminCookie(), '/dashboard', {
+        cookieName: '__Secure-next-auth.session-token',
+        headers: { 'x-forwarded-proto': 'HTTPS, http' },
+      })
+      const plainRes = await request(await staleAdminCookie(), '/dashboard', {
+        headers: { 'x-forwarded-proto': 'http, http' },
+      })
+      const plainOverHttpsRes = await request(
+        await staleAdminCookie(),
+        '/dashboard',
+        {
+          headers: { 'x-forwarded-proto': 'https, http' },
+        },
+      )
+
+      expect(secureRes?.headers.get('location')).toBe(
+        'http://localhost:3000/settings/connection',
+      )
+      expect(plainRes?.headers.get('location')).toBe(
+        'http://localhost:3000/settings/connection',
+      )
+      expect(plainOverHttpsRes?.headers.get('location')).toBe(
+        'http://localhost:3000/',
+      )
+    })
+
     it('ignores the plain cookie of a request over HTTPS', async () => {
       const res = await request(await staleAdminCookie(), '/dashboard', {
         headers: https,
@@ -291,5 +318,49 @@ describe('proxy', () => {
     const res = await request('', '/dashboard/tv-shows')
 
     expect(res?.headers.get('location')).not.toContain('/dashboard/shows')
+  })
+
+  describe('settings setup redirects', () => {
+    beforeEach(() => {
+      vi.mocked(getServerUser).mockResolvedValue({
+        status: 'member',
+        isAdmin: true,
+      })
+    })
+
+    it('does not treat non-settings paths containing "settings" as settings pages', async () => {
+      const settings: Settings = cloneDeep(DEFAULT_SETTINGS)
+
+      vi.mocked(getSettings).mockReturnValue(settings)
+
+      const res = await request('', '/dashboard/settings')
+
+      expect(res?.headers.get('location')).toBe(
+        'http://localhost:3000/settings/connection',
+      )
+    })
+
+    it('redirects locked settings subpages to /settings/connection during setup and admin post-update', async () => {
+      const initialSettings: Settings = cloneDeep(DEFAULT_SETTINGS)
+
+      vi.mocked(getSettings).mockReturnValue(initialSettings)
+
+      const initialRes = await request('', '/settings/general')
+
+      expect(initialRes?.headers.get('location')).toBe(
+        'http://localhost:3000/settings/connection',
+      )
+
+      const postUpdateSettings: Settings = cloneDeep(DEFAULT_SETTINGS)
+
+      postUpdateSettings.setupComplete = true
+      vi.mocked(getSettings).mockReturnValue(postUpdateSettings)
+
+      const adminRes = await requestAsAdmin('/settings/general')
+
+      expect(adminRes?.headers.get('location')).toBe(
+        'http://localhost:3000/settings/connection',
+      )
+    })
   })
 })

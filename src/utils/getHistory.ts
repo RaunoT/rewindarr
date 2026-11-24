@@ -95,6 +95,8 @@ export type HistoryFilter = {
   search?: string
   // Both without one
   kind?: HistoryKind
+  // The viewer's timezone, for day grouping and binge boundaries
+  timeZone?: string
 }
 
 export type HistoryPage = {
@@ -163,7 +165,8 @@ async function getMatchingRequests({
   libraries,
   userIds,
 }: HistoryFilter): Promise<HistoryRequest[] | null> {
-  const requests = await getHistoryRequests(since)
+  const onlyUserId = userIds?.length === 1 ? userIds[0] : undefined
+  const requests = await getHistoryRequests(since, onlyUserId)
   const types = libraries?.map(
     (library) => SEERR_MEDIA_TYPES[library.section_type],
   )
@@ -260,8 +263,11 @@ async function addItems(entries: HistoryEntry[]): Promise<HistoryEntry[]> {
 
 // Episodes of one show, or tracks of one artist, that a user played one after
 // another on the same day, as one entry. A request or another play between
-// them ends the binge. The day is the server's, like the history's dates.
-export function groupBinges(entries: HistoryEntry[]): HistoryEntry[] {
+// them ends the binge. The day is in the timezone, or the server's without one.
+export function groupBinges(
+  entries: HistoryEntry[],
+  timeZone?: string,
+): HistoryEntry[] {
   const grouped: HistoryEntry[] = []
 
   for (const entry of entries) {
@@ -270,7 +276,7 @@ export function groupBinges(entries: HistoryEntry[]): HistoryEntry[] {
     if (entry.kind === 'play' && last?.kind === 'play') {
       const binge = last.binge ?? [last.play]
 
-      if (isSameBinge(entry.play, binge[binge.length - 1])) {
+      if (isSameBinge(entry.play, binge[binge.length - 1], timeZone)) {
         grouped[grouped.length - 1] = { ...last, binge: [...binge, entry.play] }
 
         continue
@@ -351,6 +357,7 @@ export async function getHistoryPage(
       'time',
       'desc',
     ),
+    filter.timeZone,
   )
   const pageCount = Math.max(Math.ceil(entries.length / pageSize), 1)
   const current = clamp(page, 1, pageCount)

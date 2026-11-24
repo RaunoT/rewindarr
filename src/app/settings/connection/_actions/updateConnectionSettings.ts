@@ -29,30 +29,34 @@ import { getTranslations } from 'next-intl/server'
 import { z } from 'zod'
 import updateSettings from '../../_actions/updateSettings'
 
+const httpUrl = z
+  .string()
+  .url()
+  .regex(/^https?:\/\//i)
 // Only the selected statistics source has to be filled in.
 const baseSchema = z.object({
-  tautulliUrl: z.string().url().or(z.literal('')),
+  tautulliUrl: httpUrl.or(z.literal('')),
   tautulliApiKey: z.string(),
-  tracearrUrl: z.string().url().or(z.literal('')),
+  tracearrUrl: httpUrl.or(z.literal('')),
   tracearrApiKey: z.string(),
   tracearrServerId: z.string(),
   tracearrOtherServerIds: z.array(z.string()),
-  seerrUrl: z.string().url().optional().or(z.literal('')),
+  seerrUrl: httpUrl.optional().or(z.literal('')),
   seerrApiKey: z.string().optional(),
   mediaServerType: z.enum(['plex', 'jellyfin']),
-  plexUrl: z.string().url().or(z.literal('')),
-  jellyfinUrl: z.string().url().or(z.literal('')),
+  plexUrl: httpUrl.or(z.literal('')),
+  jellyfinUrl: httpUrl.or(z.literal('')),
   plexToken: z.string().optional(),
   complete: z.boolean(),
 })
 const schema = z.discriminatedUnion('statisticsSource', [
   baseSchema.extend({
     statisticsSource: z.literal('tautulli'),
-    tautulliUrl: z.string().url(),
+    tautulliUrl: httpUrl,
   }),
   baseSchema.extend({
     statisticsSource: z.literal('tracearr'),
-    tracearrUrl: z.string().url(),
+    tracearrUrl: httpUrl,
     tracearrApiKey: z.string().min(1),
   }),
 ])
@@ -145,8 +149,8 @@ async function testAndSave(
       }
     }
 
-    if (data.seerrUrl && data.seerrApiKey) {
-      const error = await testSeerr(data.seerrUrl, data.seerrApiKey)
+    if (data.seerrUrl || data.seerrApiKey) {
+      const error = await testSeerr(data.seerrUrl ?? '', data.seerrApiKey ?? '')
 
       if (error) {
         return fail('Seerr', error)

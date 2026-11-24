@@ -21,11 +21,17 @@ type HistoryResponse = {
 // no rate limit, so pages are large.
 const PAGE_SIZE = 5000
 const FIRST_PLAY_CACHE_TTL = 24 * 60 * 60 * 1000
-const firstPlays = new Map<
-  string,
-  { firstPlayAt: number | null; expiresAt: number }
->()
 const UNKNOWN_LENGTH_PLAY_MS = 60 * 1000
+const globalForTautulliHistory = globalThis as unknown as {
+  rewindarrTautulliFirstPlays?: Map<
+    string,
+    { firstPlayAt: number | null; expiresAt: number }
+  >
+}
+
+function getFirstPlayCache() {
+  return (globalForTautulliHistory.rewindarrTautulliFirstPlays ??= new Map())
+}
 
 function toKey(value: number | string | null | undefined): string | null {
   return value ? String(value) : null
@@ -40,6 +46,7 @@ function getPercentComplete(
 ): number | null {
   if (
     row.percent_complete === null ||
+    !Number.isFinite(row.percent_complete) ||
     (row.percent_complete === 0 && durationMs >= UNKNOWN_LENGTH_PLAY_MS)
   ) {
     return null
@@ -50,20 +57,31 @@ function getPercentComplete(
 
 export function toTautulliPlay(row: TautulliHistoryRow): Play | null {
   const mediaType = row.media_type as PlayMediaType
+  const startedAt = Number(row.started) * 1000
 
-  if (!PLAY_MEDIA_TYPES.includes(mediaType) || !row.reference_id) {
+  if (
+    !PLAY_MEDIA_TYPES.includes(mediaType) ||
+    !row.reference_id ||
+    !Number.isFinite(startedAt) ||
+    startedAt <= 0
+  ) {
     return null
   }
 
+  const orderedAt = Number(row.date) * 1000
   const grandparentRatingKey = toKey(row.grandparent_rating_key)
   const parentTitle = mediaType === 'movie' ? null : row.grandparent_title
-  const durationMs = (row.play_duration ?? row.duration ?? 0) * 1000
+  const rawDuration = Number(row.play_duration ?? row.duration ?? 0) * 1000
+  const durationMs =
+    Number.isFinite(rawDuration) && rawDuration >= 0 ? rawDuration : 0
 
   return {
     // The same for every session of the play, unlike `id`
     id: String(row.reference_id),
-    startedAt: row.started * 1000,
-    ...(row.date !== row.started && { orderedAt: row.date * 1000 }),
+    startedAt,
+    ...(Number.isFinite(orderedAt) &&
+      orderedAt > 0 &&
+      orderedAt !== startedAt && { orderedAt }),
     mediaType,
     durationMs,
     percentComplete: getPercentComplete(row, durationMs),
@@ -127,16 +145,21 @@ async function fetchPlaysPage(
   return {
     plays: rows.flatMap((row) => toTautulliPlay(row) ?? []),
     oldest: Math.min(
-      ...rows.map((row) => row.date * 1000).filter(Number.isFinite),
+      ...rows
+        .map((row) => Number(row.date) * 1000)
+        .filter((time) => Number.isFinite(time) && time > 0),
     ),
     cursor: rows.length === PAGE_SIZE && end < total ? String(end) : undefined,
   }
 }
 
 async function getFirstPlayAt(sectionId: string): Promise<number | null> {
-  const cached = firstPlays.get(sectionId)
+  const firstPlays = getFirstPlayCache()
+  const cacheKey = `${getTautulliKey()}|${sectionId}`
+  const now = Date.now()
+  const cached = firstPlays.get(cacheKey)
 
-  if (cached && Date.now() < cached.expiresAt) {
+  if (cached && now < cached.expiresAt) {
     return cached.firstPlayAt
   }
 
@@ -148,12 +171,22 @@ async function getFirstPlayAt(sectionId: string): Promise<number | null> {
     length: 1,
   })
   const row = res?.response?.data?.data?.[0]
-  const firstPlayAt = row ? row.started * 1000 : null
+  const rawStarted = row ? Number(row.started) * 1000 : NaN
+  const firstPlayAt =
+    row && Number.isFinite(rawStarted) && rawStarted > 0 ? rawStarted : null
 
   if (res) {
-    firstPlays.set(sectionId, {
+    const savedAt = Date.now()
+
+    for (const [key, entry] of firstPlays) {
+      if (savedAt >= entry.expiresAt) {
+        firstPlays.delete(key)
+      }
+    }
+
+    firstPlays.set(cacheKey, {
       firstPlayAt,
-      expiresAt: Date.now() + FIRST_PLAY_CACHE_TTL,
+      expiresAt: savedAt + FIRST_PLAY_CACHE_TTL,
     })
   }
 

@@ -361,6 +361,7 @@
       "releaseDateDescription": "Wann die Ausgabe {year} erscheint",
       "releaseDateError": "Prüfe das Erscheinungsdatum.",
       "yearError": "Prüfe das Jahr.",
+      "startDateError": "Prüfe das Startdatum.",
       "shareLinks": "Geteilte Links",
       "shareLinksDescription": "Jeder Link öffnet den Rewind dieses Benutzers ohne Anmeldung, also kann ihn auch jeder sehen, an den er weitergegeben wird.",
       "shareLinksSearch": "Benutzer suchen",

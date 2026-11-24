@@ -1,6 +1,11 @@
 import { Settings, SettingsFormInitialState } from '@/types/settings'
 import getSettings from '@/utils/getSettings'
-import { canViewFeature, getViewer, isInitialSetup } from '@/utils/helpers'
+import {
+  canViewFeature,
+  getViewer,
+  isInitialSetup,
+  isSettingsPageLocked,
+} from '@/utils/helpers'
 import { isRewindShareCookie, REWIND_SHARE_COOKIE } from '@/utils/rewindShare'
 import { getServerSession } from 'next-auth'
 import { getTranslations } from 'next-intl/server'
@@ -21,9 +26,15 @@ export async function canManageSettings(
   return !!session?.user?.isAdmin
 }
 
-export async function requireSettingsAccess(): Promise<void> {
-  if (!(await canManageSettings())) {
+export async function requireSettingsAccess(pageKey?: string): Promise<void> {
+  const settings = getSettings()
+
+  if (!(await canManageSettings(settings))) {
     redirect('/')
+  }
+
+  if (pageKey && isSettingsPageLocked(pageKey, settings)) {
+    redirect('/settings/connection')
   }
 }
 
@@ -31,8 +42,14 @@ export async function requireSettingsAccess(): Promise<void> {
 // before doing anything else.
 export async function denySettingsAccess<T>(
   prevState: SettingsFormInitialState<T>,
+  pageKey?: string,
 ): Promise<SettingsFormInitialState<T> | null> {
-  if (await canManageSettings()) {
+  const settings = getSettings()
+
+  if (
+    (await canManageSettings(settings)) &&
+    (!pageKey || !isSettingsPageLocked(pageKey, settings))
+  ) {
     return null
   }
 

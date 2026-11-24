@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function GeneralSettingsPage() {
-  await requireSettingsAccess()
+  await requireSettingsAccess('general')
 
   const [libraries, users] = await Promise.all([
     // Fresh, so a library that was just added can be picked straight away

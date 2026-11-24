@@ -293,4 +293,127 @@ describe('playHistory', () => {
 
     await expect(getUpdatedAt([movies.reader])).resolves.toBeNull()
   })
+
+  it('purges stale histories from disk even before any history is read', async () => {
+    const staleKey = 'tracearr|http://old:3000|'
+    const keptKey = `${TAUTULLI_PREFIX}1`
+    const { dropStaleHistories, readHistoryFile, writeHistoryFile } =
+      await load()
+
+    vi.mocked(readHistoryFile).mockResolvedValue(
+      new Map([
+        [staleKey, snapshot([play('a', 1)])],
+        [keptKey, snapshot([play('t', 1)])],
+      ]),
+    )
+
+    await dropStaleHistories(TRACEARR_KEY)
+
+    expect(writeHistoryFile).toHaveBeenCalledTimes(1)
+    expect(
+      vi.mocked(writeHistoryFile).mock.calls[0][0].map(([key]) => key),
+    ).toEqual([keptKey])
+  })
+
+  it('does not resurrect a store dropped while its saved snapshot is loading', async () => {
+    let resolveFile!: (value: Map<string, PlaysSnapshot>) => void
+
+    const old = reader('tracearr|http://old:3000|', () => [play('a', 1)])
+    const { dropStaleHistories, getStoredPlays, readHistoryFile, readPlays } =
+      await load()
+
+    vi.mocked(readHistoryFile).mockReturnValue(
+      new Promise((resolve) => {
+        resolveFile = resolve
+      }),
+    )
+
+    const readPromise = readPlays([old.reader], 0)
+    const dropPromise = dropStaleHistories(TRACEARR_KEY)
+
+    resolveFile(new Map([[old.reader.key, snapshot([play('a', 1)])]]))
+    await Promise.all([readPromise, dropPromise])
+
+    expect(getStoredPlays([old.reader.key])).toEqual([])
+    expect(old.cursors).toEqual([])
+  })
+
+  it('keeps current histories in the saved file when dropStaleHistories saves while they are loading', async () => {
+    let resolveFile!: (value: Map<string, PlaysSnapshot>) => void
+
+    const staleKey = 'tracearr|http://old:3000|'
+    const currentReader = reader(`${TRACEARR_KEY}s1`, () => [play('b', 1)])
+    const { dropStaleHistories, readHistoryFile, readPlays, writeHistoryFile } =
+      await load()
+
+    vi.mocked(readHistoryFile).mockReturnValue(
+      new Promise((resolve) => {
+        resolveFile = resolve
+      }),
+    )
+
+    const readPromise = readPlays([currentReader.reader], 0)
+    const dropPromise = dropStaleHistories(`${TRACEARR_KEY}s1`)
+
+    resolveFile(
+      new Map([
+        [staleKey, snapshot([play('old', 2)])],
+        [currentReader.reader.key, snapshot([play('b', 1)])],
+      ]),
+    )
+    await Promise.all([readPromise, dropPromise])
+
+    expect(writeHistoryFile).toHaveBeenCalledTimes(1)
+    expect(
+      vi.mocked(writeHistoryFile).mock.calls[0][0].map(([key]) => key),
+    ).toEqual([currentReader.reader.key])
+  })
+
+  it('retries a failed rebuild page without losing already-read pages, and backs off after repeated failures', async () => {
+    const allPlays = [play('a', 1), play('b', 2), play('c', 3), play('d', 4)]
+    const base = reader(`${TAUTULLI_PREFIX}1`, () => allPlays)
+    const baseReadPage = base.reader.readPage
+
+    let failSecondPage = true
+
+    const { readAgain, readPlays } = await load()
+
+    await readPlays([base.reader], 0)
+    allPlays.push(play('e', 5))
+
+    base.cursors.length = 0
+    base.reader.readPage = async (cursor) => {
+      if (cursor === '2' && failSecondPage) {
+        failSecondPage = false
+        base.cursors.push(cursor)
+
+        return null
+      }
+
+      return baseReadPage(cursor)
+    }
+
+    await readAgain([base.reader])
+    // Let the first page read and the second page fail
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(base.cursors).toEqual([undefined, '2'])
+
+    // After RETRY_DELAY, the rebuild resumes from cursor '2' without re-reading page 1
+    await vi.advanceTimersByTimeAsync(60 * 1000)
+    await expect(readPlays([base.reader], 0)).resolves.toHaveLength(5)
+    expect(base.cursors).toEqual([undefined, '2', '2', '4'])
+
+    // Always-failing page stops after MAX_REBUILD_RETRIES and postpones rebuild
+    base.cursors.length = 0
+    base.reader.readPage = async (cursor) => {
+      base.cursors.push(cursor)
+
+      return null
+    }
+
+    await readAgain([base.reader])
+    await vi.advanceTimersByTimeAsync(4 * 60 * 1000)
+    // Initial attempt + 3 retries = 4 attempts
+    expect(base.cursors).toEqual([undefined, undefined, undefined, undefined])
+  })
 })

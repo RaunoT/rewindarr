@@ -8,7 +8,11 @@ import {
   Settings,
 } from '@/types/settings'
 import getSettings, { writeSettings } from '@/utils/getSettings'
-import { checkRequiredSettings, getSettingsPage } from '@/utils/helpers'
+import {
+  checkRequiredSettings,
+  getSettingsPage,
+  isSettingsPageLocked,
+} from '@/utils/helpers'
 import { getTranslations } from 'next-intl/server'
 import { revalidatePath } from 'next/cache'
 import { ZodError, ZodSchema } from 'zod'
@@ -32,6 +36,15 @@ export default async function updateSettings<K extends keyof SettingsTypeMap>(
   try {
     const parsed = schema.parse(data)
     const settings = getSettings()
+
+    if (isSettingsPageLocked(key, settings)) {
+      return {
+        message: t('genericError'),
+        status: 'error',
+        fields: data,
+      }
+    }
+
     const isSetup = checkRequiredSettings(settings) !== null
 
     settings[key] = {

@@ -13,7 +13,10 @@ import { authOptions } from '@/lib/auth'
 import { DashboardSearchParams } from '@/types/dashboard'
 import { HistoryEntry, HistoryKind, HistoryTotals } from '@/types/history'
 import { Settings } from '@/types/settings'
-import { HISTORY_PAGE_SIZE_COOKIE_NAME } from '@/utils/constants'
+import {
+  HISTORY_PAGE_SIZE_COOKIE_NAME,
+  TIME_ZONE_COOKIE_NAME,
+} from '@/utils/constants'
 import { secondsToTime } from '@/utils/formatting'
 import {
   getHistoryPage,
@@ -38,6 +41,7 @@ import {
   getMediaServer,
   getReachableLibraries,
 } from '@/utils/statsSource'
+import { toDateKey, toDayNumber, toTimeZone } from '@/utils/timeZone'
 import {
   ArrowPathIcon,
   ExclamationTriangleIcon,
@@ -73,17 +77,27 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 type SearchParams = {
-  period?: DashboardSearchParams['period']
+  period?: string | string[]
   // Repeated for each library and user picked
   library?: string | string[]
   user?: string | string[]
-  kind?: string
-  q?: string
-  page?: string
-  rows?: string
+  kind?: string | string[]
+  q?: string | string[]
+  page?: string | string[]
+  rows?: string | string[]
 }
 
 const KINDS: HistoryKind[] = ['play', 'request']
+const PERIODS: NonNullable<DashboardSearchParams['period']>[] = [
+  '7days',
+  'custom',
+  'pastYear',
+  'allTime',
+]
+
+function firstParam(value?: string | string[]): string | undefined {
+  return Array.isArray(value) ? value[0] : value
+}
 
 // The users the history can be narrowed down to. Picking another user would
 // give them away when the server is anonymized, so then only your own, and
@@ -122,14 +136,15 @@ type HistoryDay = {
   entries: HistoryEntry[]
 }
 
-// The entries under a heading for each day, in the server's timezone like
-// their times. A day split between pages gets one on each.
-function groupByDay(entries: HistoryEntry[]): HistoryDay[] {
+// The entries under a heading for each day, in the viewer's timezone like
+// their times, or the server's without one. A day split between pages gets one
+// on each.
+function groupByDay(entries: HistoryEntry[], timeZone?: string): HistoryDay[] {
   const days: HistoryDay[] = []
 
   for (const entry of entries) {
     const date = new Date(entry.time)
-    const key = date.toDateString()
+    const key = toDateKey(entry.time, timeZone)
     const day = days.at(-1)
 
     if (day?.key === key) {
@@ -142,16 +157,17 @@ function groupByDay(entries: HistoryEntry[]): HistoryDay[] {
   return days
 }
 
-function startOfDay(date: Date): number {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
-}
-
 // Today and yesterday by name, other days by their date, with the year when
 // it isn't this one's
-function getDayLabel(date: Date, now: Date, locale: string): string {
-  const daysAgo = Math.round(
-    (startOfDay(now) - startOfDay(date)) / (24 * 60 * 60 * 1000),
-  )
+function getDayLabel(
+  dayKey: string,
+  date: Date,
+  now: Date,
+  locale: string,
+  timeZone?: string,
+): string {
+  const todayKey = toDateKey(now.getTime(), timeZone)
+  const daysAgo = toDayNumber(todayKey) - toDayNumber(dayKey)
 
   if (daysAgo === 0 || daysAgo === 1) {
     return upperFirst(
@@ -166,7 +182,8 @@ function getDayLabel(date: Date, now: Date, locale: string): string {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
-    year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric',
+    year: dayKey.slice(0, 4) === todayKey.slice(0, 4) ? undefined : 'numeric',
+    timeZone,
   }).format(date)
 }
 
@@ -386,12 +403,12 @@ async function HistoryContent({
           </>
         )}
         <ol className='flex flex-col gap-5'>
-          {groupByDay(entries).map((day) => (
+          {groupByDay(entries, filter.timeZone).map((day) => (
             <li key={day.key}>
               {/* Stays at the top while its day scrolls by, until the next
                   day's pushes it out */}
               <h2 className='glass-pill sticky top-(--page-top) z-20 mb-3 w-fit bg-neutral-900/70 px-3 py-1 text-sm font-medium text-neutral-300'>
-                {getDayLabel(day.date, now, locale)}
+                {getDayLabel(day.key, day.date, now, locale, filter.timeZone)}
               </h2>
               <ul className='flex flex-col text-white'>
                 {day.entries.map((entry) => {
@@ -412,6 +429,7 @@ async function HistoryContent({
                       settings={publicSettings}
                       isAnonymous={isAnonymous}
                       isUserShown={isUserShown}
+                      timeZone={filter.timeZone}
                     />
                   ) : (
                     <HistoryRequestItem
@@ -422,6 +440,7 @@ async function HistoryContent({
                       settings={publicSettings}
                       isAnonymous={isAnonymous}
                       isUserShown={isUserShown}
+                      timeZone={filter.timeZone}
                     />
                   )
                 })}
@@ -446,14 +465,20 @@ type Props = {
 
 export default async function HistoryPage({ searchParams }: Props) {
   const {
-    period: periodParam,
+    period: rawPeriod,
     library: libraryParam,
     user,
-    kind: kindParam,
-    q,
-    page,
-    rows,
+    kind: rawKind,
+    q: rawQuery,
+    page: rawPage,
+    rows: rawRows,
   } = await searchParams
+  const periodParam = firstParam(rawPeriod)
+  const validPeriod = PERIODS.find((value) => value === periodParam)
+  const kindParam = firstParam(rawKind)
+  const q = firstParam(rawQuery)
+  const page = firstParam(rawPage)
+  const rows = firstParam(rawRows)
   const settings = getSettings()
   const session = await getServerSession(authOptions)
 
@@ -461,10 +486,12 @@ export default async function HistoryPage({ searchParams }: Props) {
     return notFound()
   }
 
+  const cookieStore = await cookies()
   const pageSize = parsePageSize(
     rows,
-    (await cookies()).get(HISTORY_PAGE_SIZE_COOKIE_NAME)?.value,
+    cookieStore.get(HISTORY_PAGE_SIZE_COOKIE_NAME)?.value,
   )
+  const timeZone = toTimeZone(cookieStore.get(TIME_ZONE_COOKIE_NAME)?.value)
   const hasRequests = isSeerrActive(settings)
   const ownUserId = getOwnOnlyUserId(settings, 'history', session)
   const [reachableLibraries, users] = await Promise.all([
@@ -521,7 +548,7 @@ export default async function HistoryPage({ searchParams }: Props) {
     .filter((userId) => users.some((option) => option.value === userId))
   const kind = hasRequests ? KINDS.find((value) => value === kindParam) : 'play'
   const search = q?.trim() || undefined
-  const period = getPeriod(periodParam, settings)
+  const period = getPeriod(validPeriod, settings)
   // The filters the URL asked for that apply, which the page links keep
   const filter: HistoryFilter = {
     since: period.date,
@@ -529,9 +556,10 @@ export default async function HistoryPage({ searchParams }: Props) {
     userIds: ownUserId ? [ownUserId] : pickedUserIds,
     search,
     kind,
+    timeZone,
   }
   const params = new URLSearchParams([
-    ...(periodParam ? [['period', periodParam]] : []),
+    ...(validPeriod ? [['period', validPeriod]] : []),
     ...pickedLibraries.map((library) => ['library', getLibrarySlug(library)]),
     ...pickedUserIds.map((userId) => ['user', userId]),
     ...(hasRequests && kind ? [['kind', kind]] : []),
