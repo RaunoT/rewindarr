@@ -699,6 +699,30 @@
     }
   }
 
+  /* A field with a connection test, which goes right under its input however
+     long the field's description is */
+  .input-with-test {
+    @apply relative grid gap-2 sm:grid-cols-[--spacing(48)_minmax(0,1fr)] sm:grid-rows-[auto_auto_1fr];
+
+    > .input-wrapper {
+      @apply contents;
+
+      > :not(.label) {
+        @apply sm:col-start-2 sm:row-start-1;
+      }
+
+      /* Its spare height goes to the last row. The first line lines up with
+         the middle of a single line input. */
+      > .label {
+        @apply order-first sm:col-start-1 sm:row-span-3 sm:row-start-1 sm:self-start sm:pt-2.5;
+      }
+    }
+
+    > .input-test {
+      @apply sm:col-start-2 sm:row-start-2;
+    }
+  }
+
   .select-wrapper {
     @apply relative w-full;
   }

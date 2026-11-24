@@ -12,6 +12,7 @@ import {
 import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
 import {
+  ReactNode,
   useEffect,
   useEffectEvent,
   useRef,
@@ -28,6 +29,8 @@ type Props = {
   // save. A failed save leaves values in the form that weren't saved.
   isSaved: boolean
   checkOn?: { status: string }
+  // The section's last field, which the result goes under
+  children: ReactNode
 }
 
 type Result = ConnectionTestResult & {
@@ -63,16 +66,22 @@ export default function ConnectionTest({
   mediaServerType,
   isSaved,
   checkOn,
+  children,
 }: Props) {
   const t = useTranslations('Settings.Connection')
   const tSettings = useTranslations('Settings')
   const ref = useRef<HTMLDivElement>(null)
   const [result, setResult] = useState<Result | null>(null)
   const [isPending, startTransition] = useTransition()
+  // The button stays hidden while a saved connection is checked, so it doesn't
+  // flash up before the check says it's connected
+  const [isChecking, setIsChecking] = useState(
+    isSaved && checkOn?.status !== 'error',
+  )
   // Only the latest test's result is shown
   const testId = useRef(0)
 
-  function test() {
+  function test(isCheck = false) {
     const form = ref.current?.closest('form')
 
     if (!form) {
@@ -82,6 +91,7 @@ export default function ConnectionTest({
     const id = ++testId.current
     const testedType = mediaServerType
 
+    setIsChecking(isCheck)
     startTransition(async () => {
       const nextResult = await requestTest(service, form, testedType).catch(
         () => ({
@@ -92,13 +102,14 @@ export default function ConnectionTest({
 
       if (id === testId.current) {
         setResult(nextResult && { ...nextResult, mediaServerType: testedType })
+        setIsChecking(false)
       }
     })
   }
 
   const testSaved = useEffectEvent(() => {
     if (isSaved && checkOn?.status !== 'error') {
-      test()
+      test(true)
     }
   })
 
@@ -122,6 +133,7 @@ export default function ConnectionTest({
 
       testId.current++
       setResult(null)
+      setIsChecking(false)
     }
 
     section.addEventListener('input', clear)
@@ -139,43 +151,53 @@ export default function ConnectionTest({
       : result
   const isError = shownResult?.status === 'error'
   const Icon = isError ? ExclamationCircleIcon : CheckCircleIcon
+  // Testing the same values again would say the same, so the button comes
+  // back once one of them changes
+  const hasButton = !isChecking && shownResult?.status !== 'success'
 
   return (
-    <div ref={ref} className='flex flex-col items-start sm:pl-50'>
-      {/* Under the inputs it's about, closer to them than the next row. Kept
-          when empty, so screen readers announce what appears in it. */}
-      <p
-        className={clsx(
-          'flex items-start gap-1.5 text-sm',
-          isError ? 'text-danger' : 'text-neutral-300',
-          (isPending || shownResult) && '-mt-2 mb-3',
+    <div className='input-with-test'>
+      {children}
+      <div ref={ref} className='input-test flex flex-col items-start'>
+        {/* Kept when empty, so screen readers announce what appears in it */}
+        <p
+          className={clsx(
+            'flex items-start gap-1.5 text-sm',
+            isError ? 'text-danger' : 'text-neutral-300',
+            (isPending || shownResult) && hasButton && 'mb-3',
+          )}
+          aria-live='polite'
+        >
+          {isPending ? (
+            t('testing')
+          ) : shownResult ? (
+            <>
+              <Icon
+                className={clsx(
+                  'mt-0.5 size-4 shrink-0',
+                  !isError && 'text-success',
+                )}
+                aria-hidden='true'
+              />
+              {shownResult.message}
+            </>
+          ) : null}
+        </p>
+        {hasButton && (
+          <button
+            type='button'
+            className={clsx(
+              'button button-sm button--glass',
+              !isPending && !shownResult && 'mt-2',
+            )}
+            onClick={() => test()}
+            disabled={isPending}
+            aria-label={t('testService', { service: serviceName })}
+          >
+            {t('test')}
+          </button>
         )}
-        aria-live='polite'
-      >
-        {isPending ? (
-          t('testing')
-        ) : shownResult ? (
-          <>
-            <Icon
-              className={clsx(
-                'mt-0.5 size-4 shrink-0',
-                !isError && 'text-success',
-              )}
-              aria-hidden='true'
-            />
-            {shownResult.message}
-          </>
-        ) : null}
-      </p>
-      <button
-        type='button'
-        className='button button-sm button--glass'
-        onClick={test}
-        disabled={isPending}
-        aria-label={t('testService', { service: serviceName })}
-      >
-        {t('test')}
-      </button>
+      </div>
     </div>
   )
 }

@@ -87,6 +87,32 @@ export default function ConnectionSettingsForm({
   const isJellyfin = mediaServerType === 'jellyfin'
   const mediaServerName = getMediaServerName(mediaServerType)
   const testProps = { mediaServerType, checkOn: formState }
+  const tracearrTestProps = {
+    ...testProps,
+    service: 'tracearr' as const,
+    serviceName: 'Tracearr',
+    isSaved: isSaved(
+      savedConnection.statisticsSource === 'tracearr' &&
+        savedConnection.tracearrUrl &&
+        savedConnection.tracearrApiKey,
+    ),
+  }
+  // The section's last field, unless Tracearr has several servers to pick from
+  const tracearrApiKeyField = (
+    <label className='input-wrapper'>
+      <input
+        key={`tracearr-api-key-${connectionSettings.tracearrApiKey}`}
+        type='password'
+        className='input'
+        name='tracearrApiKey'
+        required={isTracearr}
+        defaultValue={connectionSettings.tracearrApiKey}
+      />
+      <span className='label'>
+        <span className='label-wrapper'>{t('apiKey')}</span>
+      </span>
+    </label>
+  )
   const otherServerOptions = tracearrServers
     .filter((server) => server.server_id !== tracearrServerId)
     .map((server) => ({
@@ -154,19 +180,6 @@ export default function ConnectionSettingsForm({
             <span className='label-wrapper'>URL</span>
           </span>
         </label>
-        <label className='input-wrapper'>
-          <input
-            key={`tautulli-api-key-${connectionSettings.tautulliApiKey}`}
-            type='password'
-            className='input'
-            name='tautulliApiKey'
-            required={!isTracearr}
-            defaultValue={connectionSettings.tautulliApiKey}
-          />
-          <span className='label'>
-            <span className='label-wrapper'>{t('apiKey')}</span>
-          </span>
-        </label>
         <ConnectionTest
           service='tautulli'
           serviceName='Tautulli'
@@ -176,7 +189,21 @@ export default function ConnectionSettingsForm({
               savedConnection.tautulliApiKey,
           )}
           {...testProps}
-        />
+        >
+          <label className='input-wrapper'>
+            <input
+              key={`tautulli-api-key-${connectionSettings.tautulliApiKey}`}
+              type='password'
+              className='input'
+              name='tautulliApiKey'
+              required={!isTracearr}
+              defaultValue={connectionSettings.tautulliApiKey}
+            />
+            <span className='label'>
+              <span className='label-wrapper'>{t('apiKey')}</span>
+            </span>
+          </label>
+        </ConnectionTest>
       </section>
       <section
         className={clsx('group-settings group', { hidden: !isTracearr })}
@@ -198,77 +225,60 @@ export default function ConnectionSettingsForm({
             <span className='label-wrapper'>URL</span>
           </span>
         </label>
-        <label className='input-wrapper'>
-          <input
-            key={`tracearr-api-key-${connectionSettings.tracearrApiKey}`}
-            type='password'
-            className='input'
-            name='tracearrApiKey'
-            required={isTracearr}
-            defaultValue={connectionSettings.tracearrApiKey}
-          />
-          <span className='label'>
-            <span className='label-wrapper'>{t('apiKey')}</span>
-          </span>
-        </label>
-        {tracearrServers.length > 1 && (
-          <label className='input-wrapper'>
-            <span className='select-wrapper'>
-              <select
-                key={`tracearr-server-${tracearrServers.length}-${connectionSettings.tracearrServerId}`}
-                className='input'
-                name='tracearrServerId'
-                required={isTracearr}
-                defaultValue={connectionSettings.tracearrServerId}
-                onChange={(e) => setChosenServerId(e.target.value)}
-              >
-                <option value='' disabled>
-                  {t('Connection.chooseServer')}
-                </option>
-                {tracearrServers.map((server) => (
-                  <option key={server.server_id} value={server.server_id}>
-                    {`${server.server_name} (${getMediaServerName(server.server_type)})`}
-                  </option>
-                ))}
-              </select>
-            </span>
-            <span className='label'>
-              <span className='label-wrapper'>{t('Connection.server')}</span>
-            </span>
-          </label>
-        )}
         {tracearrServers.length > 1 ? (
-          <MultiSelect
-            key={`tracearr-other-servers-${connectionSettings.tracearrOtherServerIds.join(',')}`}
-            label={t('Connection.otherServers')}
-            description={t('Connection.otherServersHelp')}
-            name='tracearrOtherServerIds'
-            options={otherServerOptions}
-            defaultValue={connectionSettings.tracearrOtherServerIds}
-            placeholder={tCommon('none')}
-          />
+          <>
+            {tracearrApiKeyField}
+            <label className='input-wrapper'>
+              <span className='select-wrapper'>
+                <select
+                  key={`tracearr-server-${tracearrServers.length}-${connectionSettings.tracearrServerId}`}
+                  className='input'
+                  name='tracearrServerId'
+                  required={isTracearr}
+                  defaultValue={connectionSettings.tracearrServerId}
+                  onChange={(e) => setChosenServerId(e.target.value)}
+                >
+                  <option value='' disabled>
+                    {t('Connection.chooseServer')}
+                  </option>
+                  {tracearrServers.map((server) => (
+                    <option key={server.server_id} value={server.server_id}>
+                      {`${server.server_name} (${getMediaServerName(server.server_type)})`}
+                    </option>
+                  ))}
+                </select>
+              </span>
+              <span className='label'>
+                <span className='label-wrapper'>{t('Connection.server')}</span>
+              </span>
+            </label>
+            <ConnectionTest {...tracearrTestProps}>
+              <MultiSelect
+                key={`tracearr-other-servers-${connectionSettings.tracearrOtherServerIds.join(',')}`}
+                label={t('Connection.otherServers')}
+                description={t('Connection.otherServersHelp')}
+                name='tracearrOtherServerIds'
+                options={otherServerOptions}
+                defaultValue={connectionSettings.tracearrOtherServerIds}
+                placeholder={tCommon('none')}
+              />
+            </ConnectionTest>
+          </>
         ) : (
-          // Kept while Tracearr's servers can't be listed, so saving doesn't
-          // drop them
-          connectionSettings.tracearrOtherServerIds.map((serverId) => (
-            <input
-              key={`tracearr-other-server-${serverId}`}
-              type='hidden'
-              name='tracearrOtherServerIds'
-              value={serverId}
-            />
-          ))
+          <ConnectionTest {...tracearrTestProps}>
+            {tracearrApiKeyField}
+            {/* Kept while Tracearr's servers can't be listed, so saving
+                doesn't drop them */}
+            {connectionSettings.tracearrOtherServerIds.map((serverId) => (
+              <input
+                key={`tracearr-other-server-${serverId}`}
+                type='hidden'
+                name='tracearrOtherServerIds'
+                value={serverId}
+              />
+            ))}
+          </ConnectionTest>
         )}
-        <ConnectionTest
-          service='tracearr'
-          serviceName='Tracearr'
-          isSaved={isSaved(
-            savedConnection.statisticsSource === 'tracearr' &&
-              savedConnection.tracearrUrl &&
-              savedConnection.tracearrApiKey,
-          )}
-          {...testProps}
-        />
       </section>
       {/* Tautulli finds Plex itself, so its URL is only for the token */}
       <section className='group-settings group'>
@@ -293,55 +303,57 @@ export default function ConnectionSettingsForm({
             {isTracearr && <small>{t('Connection.plexUrlHelp')}</small>}
           </span>
         </label>
-        <label className={clsx('input-wrapper', { hidden: !isJellyfin })}>
-          <input
-            key={`jellyfin-url-${connectionSettings.jellyfinUrl}`}
-            type='url'
-            className='input'
-            placeholder='https://jellyfin.example.com'
-            name='jellyfinUrl'
-            required={isTracearr && isJellyfin}
-            defaultValue={connectionSettings.jellyfinUrl}
-          />
-          <span className='label'>
-            {/* oxlint-disable-next-line react/jsx-no-literals */}
-            <span className='label-wrapper'>URL</span>
-            <small>{t('Connection.jellyfinUrlHelp')}</small>
-          </span>
-        </label>
-        <label className={clsx('input-wrapper', { hidden: isJellyfin })}>
-          <input
-            key={`plex-token-${connectionSettings.plexToken}`}
-            type='password'
-            className='input'
-            name='plexToken'
-            autoComplete='off'
-            defaultValue={connectionSettings.plexToken}
-          />
-          <span className='label'>
-            <span className='label-wrapper'>{t('Connection.token')}</span>
-            <small>
-              {t.rich('Connection.tokenDescription', {
-                link: (chunks) => (
-                  <a
-                    href={PLEX_TOKEN_HELP_URL}
-                    className='link underline'
-                    target='_blank'
-                    rel='noopener noreferrer'
-                  >
-                    {chunks}
-                  </a>
-                ),
-              })}
-            </small>
-          </span>
-        </label>
+        {/* Only one of these shows, for the server in use */}
         <ConnectionTest
           service='mediaServer'
           serviceName={mediaServerName}
           isSaved={isSaved(getMediaServerUrl(savedConnection))}
           {...testProps}
-        />
+        >
+          <label className={clsx('input-wrapper', { hidden: !isJellyfin })}>
+            <input
+              key={`jellyfin-url-${connectionSettings.jellyfinUrl}`}
+              type='url'
+              className='input'
+              placeholder='https://jellyfin.example.com'
+              name='jellyfinUrl'
+              required={isTracearr && isJellyfin}
+              defaultValue={connectionSettings.jellyfinUrl}
+            />
+            <span className='label'>
+              {/* oxlint-disable-next-line react/jsx-no-literals */}
+              <span className='label-wrapper'>URL</span>
+              <small>{t('Connection.jellyfinUrlHelp')}</small>
+            </span>
+          </label>
+          <label className={clsx('input-wrapper', { hidden: isJellyfin })}>
+            <input
+              key={`plex-token-${connectionSettings.plexToken}`}
+              type='password'
+              className='input'
+              name='plexToken'
+              autoComplete='off'
+              defaultValue={connectionSettings.plexToken}
+            />
+            <span className='label'>
+              <span className='label-wrapper'>{t('Connection.token')}</span>
+              <small>
+                {t.rich('Connection.tokenDescription', {
+                  link: (chunks) => (
+                    <a
+                      href={PLEX_TOKEN_HELP_URL}
+                      className='link underline'
+                      target='_blank'
+                      rel='noopener noreferrer'
+                    >
+                      {chunks}
+                    </a>
+                  ),
+                })}
+              </small>
+            </span>
+          </label>
+        </ConnectionTest>
       </section>
       <section className='group-settings group'>
         <h2 className='heading-settings'>
@@ -361,18 +373,6 @@ export default function ConnectionSettingsForm({
             <span className='label-wrapper'>URL</span>
           </span>
         </label>
-        <label className='input-wrapper'>
-          <input
-            key={`seerr-api-key-${connectionSettings.seerrApiKey}`}
-            type='password'
-            className='input'
-            name='seerrApiKey'
-            defaultValue={connectionSettings.seerrApiKey}
-          />
-          <span className='label'>
-            <span className='label-wrapper'>{t('apiKey')}</span>
-          </span>
-        </label>
         <ConnectionTest
           service='seerr'
           serviceName='Seerr'
@@ -380,7 +380,20 @@ export default function ConnectionSettingsForm({
             savedConnection.seerrUrl && savedConnection.seerrApiKey,
           )}
           {...testProps}
-        />
+        >
+          <label className='input-wrapper'>
+            <input
+              key={`seerr-api-key-${connectionSettings.seerrApiKey}`}
+              type='password'
+              className='input'
+              name='seerrApiKey'
+              defaultValue={connectionSettings.seerrApiKey}
+            />
+            <span className='label'>
+              <span className='label-wrapper'>{t('apiKey')}</span>
+            </span>
+          </label>
+        </ConnectionTest>
       </section>
     </SettingsForm>
   )
