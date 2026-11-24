@@ -1,3 +1,4 @@
+import { AutoplaySpeed } from '@/utils/constants'
 import { describe, expect, it } from 'vitest'
 import { getStatementDuration, StatementContent } from './autoplay'
 
@@ -56,6 +57,18 @@ describe('getStatementDuration', () => {
     expect(getStatementDuration({ ...NOTHING, headline: 5 }, true)).toBe(3500)
     expect(getStatementDuration({ ...NOTHING, headline: 500 }, true)).toBe(
       10000,
+    )
+  })
+
+  it("scales each statement's time by the speed", () => {
+    expect(getStatementDuration(null, true, 'slow')).toBe(5250)
+    expect(getStatementDuration(null, true, 'normal')).toBe(3500)
+    expect(getStatementDuration(null, true, 'fast')).toBe(2625)
+  })
+
+  it('plays an unknown speed at the normal one', () => {
+    expect(getStatementDuration(null, true, 'rapid' as AutoplaySpeed)).toBe(
+      3500,
     )
   })
 })

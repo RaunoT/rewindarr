@@ -8,6 +8,7 @@ import Loader from '@/components/Loader'
 import useFullscreen from '@/hooks/useFullscreen'
 import useStoryMusic from '@/hooks/useStoryMusic'
 import { trackEvent } from '@/utils/analytics'
+import { AutoplaySpeed } from '@/utils/constants'
 import {
   ArrowsPointingInIcon,
   ArrowsPointingOutIcon,
@@ -78,6 +79,9 @@ type StoryView = {
 
 type Props = {
   stories: Story[]
+  // The admin's, until the viewer turns autoplay on or off themselves
+  isAutoplayDefault?: boolean
+  autoplaySpeed?: AutoplaySpeed
   classNames?: {
     main?: string
     storyContainer?: string
@@ -132,7 +136,11 @@ function getServerIsHidden() {
   return true
 }
 
-export default function Stories({ stories }: Props) {
+export default function Stories({
+  stories,
+  isAutoplayDefault = false,
+  autoplaySpeed = 'normal',
+}: Props) {
   const t = useTranslations('Rewind.Stories')
   const [currentIndex, setCurrentIndex] = useState(0)
   // Unknown until mounted, so the first story waits for it
@@ -313,6 +321,7 @@ export default function Stories({ stories }: Props) {
       !isHidden &&
       !isPressed &&
       heldStatement !== statement,
+    speed: autoplaySpeed,
     from: storySteps.length
       ? Math.max(shownSteps.length - 1, 0) / storySteps.length
       : 0,
@@ -433,9 +442,16 @@ export default function Stories({ stories }: Props) {
     )
     // On unless the visitor turned it off
     setIsSoundOn(readStorage(SOUND_KEY) !== 'off')
-    // Off unless the visitor turned it on
-    setIsAutoplayOn(readStorage(AUTOPLAY_KEY) === 'on')
-  }, [])
+
+    // As the admin set it, unless the visitor turned it on or off
+    const autoplay = readStorage(AUTOPLAY_KEY)
+
+    setIsAutoplayOn(
+      autoplay === 'on' || autoplay === 'off'
+        ? autoplay === 'on'
+        : isAutoplayDefault,
+    )
+  }, [isAutoplayDefault])
 
   // The press can be let go anywhere, or end in a scroll
   useEffect(() => {

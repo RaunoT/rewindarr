@@ -329,6 +329,14 @@
       "musicSizeError": "El archivo supera {size}.",
       "musicError": "No se pudo actualizar la música. Inténtalo de nuevo.",
       "snow": "Nieve",
+      "autoplay": "Reproducción automática",
+      "autoplayDefault": "Activada por defecto",
+      "autoplaySpeed": "Velocidad",
+      "autoplaySpeeds": {
+        "slow": "Lenta",
+        "normal": "Normal",
+        "fast": "Rápida"
+      },
       "period": "Periodo",
       "covers": "Abarca",
       "periods": {

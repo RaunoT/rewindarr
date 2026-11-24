@@ -1,4 +1,4 @@
-import { RewindStoryId } from '@/utils/constants'
+import { AutoplaySpeed, RewindStoryId } from '@/utils/constants'
 
 export type SettingsFormInitialState<T> = {
   message: string
@@ -85,6 +85,10 @@ export type RewindSettings = {
   isThemeMusicActive: boolean
   music: RewindMusic | null
   isSnowActive: boolean
+  // Whether the stories move on by themselves until the viewer pauses them.
+  // A viewer's own choice, kept in their browser, comes first.
+  isAutoplayActive: boolean
+  autoplaySpeed: AutoplaySpeed
   period: RewindPeriodType
   // MM-DD, when each calendar year's edition comes out. A date before July is
   // in the year after.

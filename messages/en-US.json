@@ -329,6 +329,14 @@
       "musicSizeError": "The file is larger than {size}.",
       "musicError": "The track couldn't be updated. Try again.",
       "snow": "Snow",
+      "autoplay": "Autoplay",
+      "autoplayDefault": "On by default",
+      "autoplaySpeed": "Speed",
+      "autoplaySpeeds": {
+        "slow": "Slow",
+        "normal": "Normal",
+        "fast": "Fast"
+      },
       "period": "Period",
       "covers": "Covers",
       "periods": {

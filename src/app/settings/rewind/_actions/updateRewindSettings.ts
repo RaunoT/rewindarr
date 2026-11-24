@@ -6,7 +6,12 @@ import {
   RewindSettings,
   SettingsFormInitialState,
 } from '@/types/settings'
-import { REWIND_STORIES, RewindStoryId } from '@/utils/constants'
+import {
+  AUTOPLAY_SPEEDS,
+  AutoplaySpeed,
+  REWIND_STORIES,
+  RewindStoryId,
+} from '@/utils/constants'
 import { FIRST_YEAR, isReleaseDate } from '@/utils/rewindPeriod'
 import { getTranslations } from 'next-intl/server'
 import { z } from 'zod'
@@ -29,6 +34,8 @@ export default async function saveRewindSettings(
     hiddenStories: z.array(z.enum(REWIND_STORIES)).optional(),
     isThemeMusicActive: z.boolean().optional(),
     isSnowActive: z.boolean().optional(),
+    isAutoplayActive: z.boolean().optional(),
+    autoplaySpeed: z.enum(AUTOPLAY_SPEEDS).optional(),
     period: z
       .enum(['calendarYear', 'pastYear', 'specificYear', 'custom'])
       .optional(),
@@ -60,6 +67,8 @@ export default async function saveRewindSettings(
     data.hiddenStories = formData.getAll('hiddenStories') as RewindStoryId[]
     data.isThemeMusicActive = formData.get('isThemeMusicActive') === 'on'
     data.isSnowActive = formData.get('isSnowActive') === 'on'
+    data.isAutoplayActive = formData.get('isAutoplayActive') === 'on'
+    data.autoplaySpeed = formData.get('autoplaySpeed') as AutoplaySpeed
     data.period = formData.get('period') as RewindPeriodType
     // Only the custom period has a start date, so the others don't keep one
     data.startDate =
