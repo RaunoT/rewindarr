@@ -201,31 +201,41 @@ function cached<T>(
 
     let entry = state.cachedValues.get(name)
 
+    if (entry && entry.key !== key) {
+      entry = undefined
+    }
+
     if (!entry) {
-      entry = { value: null, key: '', expiresAt: 0, pending: null }
+      entry = { value: null, key, expiresAt: 0, pending: null }
       state.cachedValues.set(name, entry)
     }
 
-    if (entry.value && entry.key === key && Date.now() < entry.expiresAt) {
+    if (entry.value && Date.now() < entry.expiresAt) {
       return entry.value as T
     }
 
     if (!entry.pending) {
       const current = entry
-
-      current.pending = load()
+      const pending = load()
         .then((result) => {
-          if (result) {
+          if (
+            result &&
+            state.cachedValues.get(name) === current &&
+            getCacheKey() === key
+          ) {
             current.value = result
-            current.key = key
             current.expiresAt = Date.now() + ttl
           }
 
           return result
         })
         .finally(() => {
-          current.pending = null
+          if (current.pending === pending) {
+            current.pending = null
+          }
         })
+
+      current.pending = pending
     }
 
     return entry.pending as Promise<T | null>
@@ -775,18 +785,41 @@ export async function getTracearrUsers(): Promise<SourceUser[]> {
 
 function toPlay(record: TracearrHistoryRecord, baseUrl: string): Play | null {
   const mediaType = record.media_type as PlayMediaType
+  const startedAt = getStartedAt(record)
 
-  if (!PLAY_MEDIA_TYPES.includes(mediaType)) {
+  if (
+    !PLAY_MEDIA_TYPES.includes(mediaType) ||
+    !Number.isFinite(startedAt) ||
+    startedAt <= 0
+  ) {
     return null
   }
 
+  const durationMs =
+    typeof record.duration_ms === 'number' &&
+    Number.isFinite(record.duration_ms) &&
+    record.duration_ms >= 0
+      ? record.duration_ms
+      : 0
+  const lengthMs =
+    typeof record.total_duration_ms === 'number' &&
+    Number.isFinite(record.total_duration_ms) &&
+    record.total_duration_ms > 0
+      ? record.total_duration_ms
+      : null
+  const percentComplete =
+    typeof record.percent_complete === 'number' &&
+    Number.isFinite(record.percent_complete)
+      ? record.percent_complete
+      : null
+
   return {
     id: record.id,
-    startedAt: new Date(record.started_at).getTime(),
+    startedAt,
     mediaType,
-    durationMs: record.duration_ms ?? 0,
-    lengthMs: record.total_duration_ms || null,
-    percentComplete: record.percent_complete ?? null,
+    durationMs,
+    lengthMs,
+    percentComplete,
     title: record.media_title,
     showTitle: record.show_title,
     artistName: record.artist_name,
@@ -838,7 +871,11 @@ async function fetchPlaysPage(
 
       return play ? [play] : []
     }),
-    oldest: Math.min(...page.data.map(getStartedAt).filter(Number.isFinite)),
+    oldest: Math.min(
+      ...page.data
+        .map(getStartedAt)
+        .filter((time) => Number.isFinite(time) && time > 0),
+    ),
     cursor: page.meta?.nextCursor ?? undefined,
   }
 }
@@ -917,7 +954,7 @@ export async function getTracearrPlays(since: string | Date): Promise<Play[]> {
 }
 
 function getStartedAt(record: TracearrHistoryRecord): number {
-  return new Date(record.started_at).getTime()
+  return record.started_at ? new Date(record.started_at).getTime() : Number.NaN
 }
 
 type PlaysUntil = {

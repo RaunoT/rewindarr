@@ -84,6 +84,7 @@ const SAVE_DELAY = 60 * 1000
 const PAGE_WAIT = 5 * 1000
 // How long a read waits after a failed page before it tries again
 const RETRY_DELAY = 60 * 1000
+const MAX_REBUILD_RETRIES = 3
 // Next.js can bundle this file into more than one chunk, and each copy would
 // otherwise read the history on its own.
 const globalForHistory = globalThis as unknown as {
@@ -138,26 +139,31 @@ function getSavedHistories(): Promise<Map<string, PlaysSnapshot>> {
   return state.saved
 }
 
-async function takeSavedHistory(
-  key: string,
-): Promise<PlaysSnapshot | undefined> {
-  const saved = await getSavedHistories()
-  const snapshot = saved.get(key)
-
-  saved.delete(key)
-
-  return snapshot
-}
-
-async function loadStore(reader: HistoryReader): Promise<PlayStore> {
-  const snapshot = await takeSavedHistory(reader.key).catch(() => undefined)
+async function loadStore(
+  reader: HistoryReader,
+  isCurrent: () => boolean,
+): Promise<PlayStore> {
+  const saved = await getSavedHistories().catch(() => undefined)
+  const current = isCurrent()
   const existing = state.stores.get(reader.key)
 
-  state.loading.delete(reader.key)
+  if (current) {
+    state.loading.delete(reader.key)
+  }
 
   if (existing) {
     return existing
   }
+
+  // Dropped or replaced while reading the saved file, so don't take the
+  // snapshot or put it back into `state.stores`.
+  if (!current) {
+    return state.loading.get(reader.key) ?? createPlayStore(reader)
+  }
+
+  const snapshot = saved?.get(reader.key)
+
+  saved?.delete(reader.key)
 
   if (snapshot) {
     console.log(`[HISTORY] - Loaded ${snapshot.plays.length} saved plays.`)
@@ -183,24 +189,31 @@ function getStore(reader: HistoryReader): Promise<PlayStore> {
   let loading = state.loading.get(reader.key)
 
   if (!loading) {
-    loading = loadStore(reader)
-    state.loading.set(reader.key, loading)
+    const promise: Promise<PlayStore> = loadStore(
+      reader,
+      () => state.loading.get(reader.key) === promise,
+    )
+
+    loading = promise
+    state.loading.set(reader.key, promise)
   }
 
   return loading
 }
 
-async function saveHistories(): Promise<void> {
-  const stores = [...state.stores.values()].filter(
-    (store) => store.readTo !== Infinity,
-  )
-
-  if (!stores.length) {
+async function saveHistories(force = false): Promise<void> {
+  if (
+    !force &&
+    ![...state.stores.values()].some((store) => store.readTo !== Infinity)
+  ) {
     return
   }
 
   try {
     const saved = await getSavedHistories()
+    const stores = [...state.stores.values()].filter(
+      (store) => store.readTo !== Infinity,
+    )
 
     // The histories nothing has read since the start stay in the file
     await writeHistoryFile([
@@ -228,7 +241,7 @@ function saveSoon(store: PlayStore): void {
 
   state.saveTimer = setTimeout(() => {
     state.saveTimer = null
-    state.saving = state.saving.then(saveHistories)
+    state.saving = state.saving.then(() => saveHistories())
   }, SAVE_DELAY)
 }
 
@@ -419,6 +432,10 @@ async function topUp(store: PlayStore): Promise<void> {
   let cursor: string | undefined
 
   for (let pageCount = 0; readTo >= refreshFrom; pageCount++) {
+    if (!isActive(store)) {
+      return
+    }
+
     const page =
       pageCount < MAX_PAGES ? await store.reader.readPage(cursor) : null
 
@@ -454,27 +471,76 @@ async function topUp(store: PlayStore): Promise<void> {
   saveSoon(store)
 }
 
+function isRebuildActive(current: PlayStore, next: PlayStore): boolean {
+  return (
+    state.stores.get(current.key) === current &&
+    state.rebuilds.get(current.key)?.store === next
+  )
+}
+
 // Reads the whole history again into a new store, which takes over once it
 // goes back as far as the current one. Until then the current one answers.
 async function rebuild(current: PlayStore, next: PlayStore): Promise<void> {
+  let retries = 0
+
   try {
     do {
-      if (!(await waitForPlays(next, current.readTo, Infinity))) {
-        current.rebuildAt = Date.now() + DAY
+      const beforeCount = next.plays.length
+      const beforeCursor = next.cursor
+      const reached = await waitForPlays(next, current.readTo, Infinity)
 
+      if (!isRebuildActive(current, next)) {
         return
       }
 
+      if (!reached) {
+        const progressed =
+          next.plays.length > beforeCount || next.cursor !== beforeCursor
+
+        if (next.readFailedAt === null) {
+          if (!progressed) {
+            current.rebuildAt = Date.now() + DAY
+
+            return
+          }
+
+          retries = 0
+          continue
+        }
+
+        if (progressed) {
+          retries = 0
+        }
+
+        if (++retries > MAX_REBUILD_RETRIES) {
+          current.rebuildAt = Date.now() + DAY
+
+          return
+        }
+
+        await new Promise<void>((resolve) => setTimeout(resolve, RETRY_DELAY))
+
+        if (!isRebuildActive(current, next)) {
+          return
+        }
+
+        next.readFailedAt = null
+        continue
+      }
+
+      retries = 0
       // A period may be taking the current store further back meanwhile
       await current.read
     } while (!hasPlaysSince(next, current.readTo))
   } catch {
-    current.rebuildAt = Date.now() + DAY
+    if (isRebuildActive(current, next)) {
+      current.rebuildAt = Date.now() + DAY
+    }
 
     return
   }
 
-  if (state.stores.get(current.key) === current) {
+  if (isRebuildActive(current, next)) {
     state.stores.set(current.key, next)
     saveSoon(next)
   }
@@ -487,7 +553,9 @@ function rebuildInBackground(store: PlayStore): void {
     state.rebuilds.set(store.key, {
       store: next,
       done: rebuild(store, next).finally(() => {
-        state.rebuilds.delete(store.key)
+        if (state.rebuilds.get(store.key)?.store === next) {
+          state.rebuilds.delete(store.key)
+        }
       }),
     })
   }
@@ -739,24 +807,35 @@ export async function dropStaleHistories(
     return key.startsWith(source) && !isCurrent(key)
   }
 
+  let shouldSave = false
+
   for (const key of [
     ...state.stores.keys(),
     ...state.loading.keys(),
     ...state.rebuilds.keys(),
   ]) {
     if (isStale(key)) {
-      state.stores.delete(key)
+      if (state.stores.delete(key)) {
+        shouldSave = true
+      }
+
       state.loading.delete(key)
       state.rebuilds.delete(key)
     }
   }
 
-  const saved = await state.saved
+  const saved = await getSavedHistories()
 
-  for (const key of saved?.keys() ?? []) {
+  for (const key of saved.keys()) {
     if (isStale(key)) {
-      saved?.delete(key)
+      saved.delete(key)
+      shouldSave = true
     }
+  }
+
+  if (shouldSave) {
+    state.saving = state.saving.then(() => saveHistories(true))
+    await state.saving
   }
 }
 

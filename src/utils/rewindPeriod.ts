@@ -8,7 +8,7 @@ import {
   toCalendarDate,
 } from '@internationalized/date'
 import { DEFAULT_SETTINGS, getPeriods } from './constants'
-import { toDateKey } from './timeZone'
+import { isCalendarDate, toDateKey } from './timeZone'
 
 type RewindSettings = Pick<Settings, 'rewind'>
 
@@ -33,7 +33,9 @@ export function getRewindPeriodType(
     case 'specificYear':
       return year ? period : DEFAULT_SETTINGS.rewind.period
     case 'custom':
-      return startDate ? period : DEFAULT_SETTINGS.rewind.period
+      return typeof startDate === 'string' && isCalendarDate(startDate)
+        ? period
+        : DEFAULT_SETTINGS.rewind.period
     default:
       return DEFAULT_SETTINGS.rewind.period
   }

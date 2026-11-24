@@ -17,7 +17,7 @@ export default async function saveHistorySettings(
   prevState: SettingsFormInitialState<Partial<HistorySettings>>,
   formData: FormData,
 ) {
-  const denied = await denySettingsAccess(prevState)
+  const denied = await denySettingsAccess(prevState, 'history')
 
   if (denied) {
     return denied

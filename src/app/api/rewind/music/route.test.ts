@@ -28,6 +28,7 @@ let route: typeof import('./route')
 function settingsWithMusic(): Settings {
   const settings = cloneDeep(DEFAULT_SETTINGS)
 
+  settings.connection.complete = true
   settings.rewind.music = {
     name: 'theme.mp3',
     type: 'audio/mpeg',
@@ -52,10 +53,13 @@ beforeEach(async () => {
     cwd.mockRestore()
   }
 
+  const readySettings = cloneDeep(DEFAULT_SETTINGS)
+
+  readySettings.connection.complete = true
   vi.spyOn(console, 'error').mockImplementation(() => {})
   canManageSettingsMock.mockResolvedValue(true)
   canPlayRewindMock.mockResolvedValue(true)
-  getSettingsMock.mockReturnValue(cloneDeep(DEFAULT_SETTINGS))
+  getSettingsMock.mockReturnValue(readySettings)
   writeSettingsMock.mockReset()
 })
 
@@ -166,14 +170,25 @@ describe('/api/rewind/music', () => {
   })
 
   describe('PUT', () => {
-    it('rejects unauthorized requests', async () => {
-      canManageSettingsMock.mockResolvedValue(false)
+    it('rejects unauthorized or locked requests', async () => {
+      canManageSettingsMock.mockResolvedValueOnce(false)
 
-      const res = await route.PUT(
+      const forbidden = await route.PUT(
         new Request('http://localhost/api/rewind/music', { method: 'PUT' }),
       )
 
-      expect(res.status).toBe(403)
+      expect(forbidden.status).toBe(403)
+
+      const lockedSettings = cloneDeep(DEFAULT_SETTINGS)
+
+      lockedSettings.connection.complete = false
+      getSettingsMock.mockReturnValueOnce(lockedSettings)
+
+      const locked = await route.PUT(
+        new Request('http://localhost/api/rewind/music', { method: 'PUT' }),
+      )
+
+      expect(locked.status).toBe(403)
     })
 
     it('returns 400 on malformed x-file-name encoding', async () => {
@@ -271,11 +286,18 @@ describe('/api/rewind/music', () => {
   })
 
   describe('DELETE', () => {
-    it('enforces settings access and removes the saved music file', async () => {
+    it('enforces settings access and locks, and removes the saved music file', async () => {
       fs.writeFileSync(musicPath, 'mp3-data')
       getSettingsMock.mockReturnValue(settingsWithMusic())
 
       canManageSettingsMock.mockResolvedValueOnce(false)
+      expect((await route.DELETE()).status).toBe(403)
+      expect(fs.existsSync(musicPath)).toBe(true)
+
+      const lockedSettings = settingsWithMusic()
+
+      lockedSettings.connection.complete = false
+      getSettingsMock.mockReturnValueOnce(lockedSettings)
       expect((await route.DELETE()).status).toBe(403)
       expect(fs.existsSync(musicPath)).toBe(true)
 

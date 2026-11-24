@@ -11,6 +11,7 @@ import getVersion from '@/utils/getVersion'
 import {
   canViewFeature,
   checkRequiredSettings,
+  getFirstHeaderValue,
   getViewer,
   isRewindOnly,
   sortByActiveLibraries,
@@ -35,14 +36,19 @@ async function getMetadataBase(): Promise<URL | null> {
   const siteUrl = getSiteUrl()
 
   if (siteUrl) {
-    return new URL(siteUrl)
+    return URL.parse(siteUrl)
   }
 
   const requestHeaders = await headers()
   const host =
-    requestHeaders.get('x-forwarded-host') ?? requestHeaders.get('host')
+    getFirstHeaderValue(requestHeaders.get('x-forwarded-host')) ||
+    requestHeaders.get('host')?.trim()
   const protocol =
-    requestHeaders.get('x-forwarded-proto') === 'https' ? 'https' : 'http'
+    getFirstHeaderValue(
+      requestHeaders.get('x-forwarded-proto'),
+    )?.toLowerCase() === 'https'
+      ? 'https'
+      : 'http'
 
   return host ? URL.parse(`${protocol}://${host}`) : null
 }

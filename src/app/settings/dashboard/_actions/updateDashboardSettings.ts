@@ -6,6 +6,7 @@ import {
   DashboardTotalStatistics,
   SettingsFormInitialState,
 } from '@/types/settings'
+import { isCalendarDate } from '@/utils/timeZone'
 import { getTranslations } from 'next-intl/server'
 import { z } from 'zod'
 import updateSettings from '../../_actions/updateSettings'
@@ -14,7 +15,7 @@ export default async function saveDashboardSettings(
   prevState: SettingsFormInitialState<Partial<DashboardSettings>>,
   formData: FormData,
 ) {
-  const denied = await denySettingsAccess(prevState)
+  const denied = await denySettingsAccess(prevState, 'dashboard')
 
   if (denied) {
     return denied
@@ -46,7 +47,7 @@ export default async function saveDashboardSettings(
     startDate: z
       .string()
       // Empty starts all time at the first play
-      .refine((val) => !val || !isNaN(Date.parse(val)), {
+      .refine((val) => !val || isCalendarDate(val), {
         message: t('startDateError'),
       })
       .optional(),
@@ -71,7 +72,7 @@ export default async function saveDashboardSettings(
       'activeTotalStatistics',
     ) as DashboardTotalStatistics
     data.customPeriod = formData.get('customPeriod') as string
-    data.startDate = formData.get('startDate') as string
+    data.startDate = String(formData.get('startDate') ?? '')
   }
 
   return await updateSettings(schema, data, 'dashboard')

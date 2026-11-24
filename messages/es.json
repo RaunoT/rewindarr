@@ -361,6 +361,7 @@
       "releaseDateDescription": "Cuándo sale la edición {year}",
       "releaseDateError": "Revisa la fecha de lanzamiento.",
       "yearError": "Revisa el año.",
+      "startDateError": "Revisa la fecha de inicio.",
       "shareLinks": "Enlaces compartidos",
       "shareLinksDescription": "Cada enlace abre el Rewind de ese usuario sin iniciar sesión, así que cualquiera a quien se le reenvíe también puede verlo.",
       "shareLinksSearch": "Buscar usuarios",

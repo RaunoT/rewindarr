@@ -361,6 +361,7 @@
       "releaseDateDescription": "Millal {year}. aasta väljaanne ilmub",
       "releaseDateError": "Kontrolli avaldamise kuupäeva.",
       "yearError": "Kontrolli aastat.",
+      "startDateError": "Kontrolli alguskuupäeva.",
       "shareLinks": "Jagatud lingid",
       "shareLinksDescription": "Iga link avab selle kasutaja Rewindi ilma sisse logimata, nii et seda näeb ka igaüks, kellele link edasi saadetakse.",
       "shareLinksSearch": "Otsi kasutajaid",

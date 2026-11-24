@@ -69,3 +69,31 @@ export function toDateKey(time: number, timeZone?: string): string {
 export function toDayNumber(dateKey: string): number {
   return Date.parse(dateKey) / DAY
 }
+
+const CALENDAR_DATE = /^(\d{4})-(\d{2})-(\d{2})$/
+
+// Whether `value` is a real YYYY-MM-DD calendar date (and past year 99 so
+// JavaScript's 00xx -> 19xx parsing doesn't shift it)
+export function isCalendarDate(value: string): boolean {
+  const match = CALENDAR_DATE.exec(value)
+
+  if (!match) {
+    return false
+  }
+
+  const year = Number(match[1])
+  const month = Number(match[2])
+  const day = Number(match[3])
+
+  if (year < 100 || month < 1 || month > 12 || day < 1) {
+    return false
+  }
+
+  const date = new Date(Date.UTC(year, month - 1, day))
+
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  )
+}

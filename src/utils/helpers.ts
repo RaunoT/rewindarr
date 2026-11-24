@@ -206,6 +206,18 @@ export function isSettingsPageLocked(
   return !settings.connection.complete && key !== 'connection'
 }
 
+export function isSettingsPath(pathname: string): boolean {
+  return pathname === '/settings' || pathname.startsWith('/settings/')
+}
+
+// A reverse proxy chain can join headers like X-Forwarded-Proto with commas,
+// with the client-facing hop first.
+export function getFirstHeaderValue(value: string | null): string | undefined {
+  const first = value?.split(',')[0].trim()
+
+  return first || undefined
+}
+
 export function getSettingsPage(missingSettingKey: string): string | undefined {
   return SETTINGS_PAGES.find((page) => missingSettingKey.startsWith(page.key))
     ?.href

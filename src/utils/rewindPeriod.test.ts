@@ -65,6 +65,19 @@ describe('getRewindPeriodType', () => {
 
     expect(getRewindPeriodType(settings)).toBe('calendarYear')
   })
+
+  it('treats a custom period with an invalid start date as the default', () => {
+    expect(
+      getRewindPeriodType(
+        rewindSettings('custom', { startDate: '2025-02-31' }),
+      ),
+    ).toBe('calendarYear')
+    expect(
+      getRewindPeriodType(
+        rewindSettings('custom', { startDate: 'not-a-date' }),
+      ),
+    ).toBe('calendarYear')
+  })
 })
 
 describe('isReleaseDate', () => {

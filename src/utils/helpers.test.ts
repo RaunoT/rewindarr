@@ -9,6 +9,7 @@ import {
   getAverage,
   getAverageShares,
   getDifference,
+  getFirstHeaderValue,
   getHomeTiles,
   getOwnOnlyUserId,
   getRequestsBreakdown,
@@ -20,6 +21,7 @@ import {
   isPostUpdateMissingSettings,
   isRewindOnly,
   isSettingsPageLocked,
+  isSettingsPath,
   isUsersPageVisible,
   Viewer,
 } from './helpers'
@@ -639,5 +641,25 @@ describe('isSettingsPageLocked', () => {
     const settings = { connection: { complete: true } }
 
     expect(isSettingsPageLocked('general', settings)).toBe(false)
+  })
+})
+
+describe('isSettingsPath', () => {
+  it('matches only /settings and its subpaths', () => {
+    expect(isSettingsPath('/settings')).toBe(true)
+    expect(isSettingsPath('/settings/general')).toBe(true)
+    expect(isSettingsPath('/dashboard/settings')).toBe(false)
+    expect(isSettingsPath('/settings-other')).toBe(false)
+  })
+})
+
+describe('getFirstHeaderValue', () => {
+  it('reads the first trimmed value from a forwarded header list', () => {
+    expect(getFirstHeaderValue('https, http')).toBe('https')
+    expect(getFirstHeaderValue(' example.com , proxy.internal ')).toBe(
+      'example.com',
+    )
+    expect(getFirstHeaderValue('  , https')).toBeUndefined()
+    expect(getFirstHeaderValue(null)).toBeUndefined()
   })
 })

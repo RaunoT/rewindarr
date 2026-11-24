@@ -63,8 +63,9 @@ export default function AppProvider({
       SIDEBAR_ROUTES.some((route) => pathname.startsWith(route)))
   const hasSidebar = isBrowsing && !isRewindOnly
 
-  // Saved on every page, so it's there by the time Rewind is opened. A Rewind
-  // rendered without it, or with an old one, is rendered again once it's saved.
+  // Saved on every page, so it's there by the time a timezone-aware page is
+  // opened. A page rendered without it, or with an old one, is rendered again
+  // once it's saved.
   useEffect(() => {
     const { timeZone } = Intl.DateTimeFormat().resolvedOptions()
 
@@ -74,14 +75,16 @@ export default function AppProvider({
 
     setCookie(TIME_ZONE_COOKIE_NAME, timeZone)
 
+    const usesTimeZone =
+      (pathname === '/' && isBrowsing) ||
+      pathname.startsWith('/history') ||
+      pathname.startsWith('/rewind')
+
     // With cookies blocked, rendering again would change nothing
-    if (
-      pathname.startsWith('/rewind') &&
-      getCookie(TIME_ZONE_COOKIE_NAME) === timeZone
-    ) {
+    if (usesTimeZone && getCookie(TIME_ZONE_COOKIE_NAME) === timeZone) {
       router.refresh()
     }
-  }, [pathname, router])
+  }, [isBrowsing, pathname, router])
 
   useEffect(() => {
     if (!pathname.startsWith('/settings')) {

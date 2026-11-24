@@ -41,6 +41,18 @@ type Props = {
   onChange?: (value: CalendarDate | null) => void
 }
 
+function parseCalendarDate(value?: string): CalendarDate | null {
+  if (!value) {
+    return null
+  }
+
+  try {
+    return parseDate(value)
+  } catch {
+    return null
+  }
+}
+
 export default function DatePicker({
   label,
   helperText,
@@ -51,8 +63,8 @@ export default function DatePicker({
   onChange,
 }: Props) {
   const [isOpen, setIsOpen] = useState<boolean>(false)
-  const [value, setValue] = useState<CalendarDate | null>(
-    defaultValue ? parseDate(defaultValue) : null,
+  const [value, setValue] = useState<CalendarDate | null>(() =>
+    parseCalendarDate(defaultValue),
   )
   const locale = useLocale()
   const t = useTranslations('DatePicker')

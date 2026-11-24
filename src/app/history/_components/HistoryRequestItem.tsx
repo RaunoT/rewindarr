@@ -16,6 +16,7 @@ type Props = {
   isAnonymous: boolean
   // Left out of one user's history, where it's the same on every card
   isUserShown: boolean
+  timeZone?: string
 }
 
 // Built like a play's card, with the request's status in Seerr among its
@@ -28,6 +29,7 @@ export default function HistoryRequestItem({
   settings,
   isAnonymous,
   isUserShown,
+  timeZone,
 }: Props) {
   const t = useTranslations()
   const { mediaType, seasons } = request
@@ -96,7 +98,9 @@ export default function HistoryRequestItem({
         )
       }
       deeplink={serverLink ?? { requestUrl }}
-      aside={<HistoryTime time={new Date(request.createdAt)} />}
+      aside={
+        <HistoryTime time={new Date(request.createdAt)} timeZone={timeZone} />
+      }
       settings={settings}
     />
   )

@@ -48,7 +48,7 @@ async function getShareUsers(): Promise<ShareUser[] | null> {
 }
 
 export default async function RewindSettingsPage() {
-  await requireSettingsAccess()
+  await requireSettingsAccess('rewind')
 
   const settings = getSettings()
   // Not during the setup, when there's no one to share with yet

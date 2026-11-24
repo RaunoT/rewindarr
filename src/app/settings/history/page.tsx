@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HistorySettingsPage() {
-  await requireSettingsAccess()
+  await requireSettingsAccess('history')
 
   const settings = getSettings()
 

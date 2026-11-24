@@ -75,6 +75,23 @@ describe('getRequestStatus', () => {
         seerrRequest({ status: 5, media: { tmdbId: 1, status: 5 } }),
       ),
     ).toBe('available')
+    expect(
+      getRequestStatus(
+        seerrRequest({
+          is4k: true,
+          media: { tmdbId: 1, status: 5, status4k: 3 },
+        }),
+      ),
+    ).toBe('approved')
+    expect(
+      getRequestStatus(
+        seerrRequest({
+          is4k: true,
+          status: 5,
+          media: { tmdbId: 1, status: 3, status4k: 4 },
+        }),
+      ),
+    ).toBe('partiallyAvailable')
   })
 })
 
@@ -130,6 +147,37 @@ describe('getHistoryRequests', () => {
     expect(request.ratingKey).toBe('5f3ab2')
   })
 
+  it('uses the 4K status and media server IDs for 4K requests', async () => {
+    const media = {
+      tmdbId: 1,
+      status: 3,
+      status4k: 5,
+      ratingKey: '100',
+      ratingKey4k: '400',
+      jellyfinMediaId: 'aa-11',
+      jellyfinMediaId4k: 'BB-4K',
+    }
+
+    vi.mocked(fetchSeerrStats).mockResolvedValue([
+      seerrRequest({ is4k: true, status: 2, media }),
+    ])
+
+    const [plex] = (await getHistoryRequests('2026-01-01')) ?? []
+
+    expect(plex).toMatchObject({ status: 'available', ratingKey: '400' })
+
+    withSettings((settings) => {
+      settings.connection.mediaServerType = 'jellyfin'
+    })
+    vi.mocked(fetchSeerrStats).mockResolvedValue([
+      seerrRequest({ is4k: true, status: 2, media }),
+    ])
+
+    const [jellyfin] = (await getHistoryRequests('2026-01-01')) ?? []
+
+    expect(jellyfin.ratingKey).toBe('bb4k')
+  })
+
   it("keeps Seerr's name for a user who isn't on the media server", async () => {
     vi.mocked(fetchSeerrStats).mockResolvedValue([
       seerrRequest({
@@ -157,6 +205,29 @@ describe('getHistoryRequests', () => {
     expect(requests?.map((request) => request.id)).toEqual([1])
   })
 
+  it('keeps an excluded user’s own requests when asked for that user', async () => {
+    withSettings((settings) => {
+      settings.general.excludedUsers = ['200', '300']
+    })
+    vi.mocked(fetchSeerrStats).mockResolvedValue([
+      seerrRequest({ id: 1 }),
+      seerrRequest({ id: 2, requestedBy: { id: 8, plexId: 200 } }),
+      seerrRequest({
+        id: 3,
+        requestedBy: { id: 9, plexId: 300, displayName: 'Removed' },
+      }),
+    ])
+
+    const bobRequests = await getHistoryRequests('2026-01-01', '200')
+    const removedRequests = await getHistoryRequests('2026-01-01', '300')
+
+    expect(bobRequests?.map((request) => request.id)).toEqual([1, 2])
+    expect(removedRequests?.find((request) => request.id === 3)).toMatchObject({
+      userId: '300',
+      userName: 'Removed',
+    })
+  })
+
   it('leaves out an excluded user who is no longer listed', async () => {
     withSettings((settings) => {
       settings.general.excludedUsers = ['300']
@@ -169,6 +240,29 @@ describe('getHistoryRequests', () => {
     const requests = await getHistoryRequests('2026-01-01')
 
     expect(requests?.map((request) => request.id)).toEqual([1])
+  })
+
+  it('keeps an excluded user’s own requests when asked for that user', async () => {
+    withSettings((settings) => {
+      settings.general.excludedUsers = ['200', '300']
+    })
+    vi.mocked(fetchSeerrStats).mockResolvedValue([
+      seerrRequest({ id: 1 }),
+      seerrRequest({ id: 2, requestedBy: { id: 8, plexId: 200 } }),
+      seerrRequest({
+        id: 3,
+        requestedBy: { id: 9, plexId: 300, displayName: 'Removed' },
+      }),
+    ])
+
+    const bobRequests = await getHistoryRequests('2026-01-01', '200')
+    const removedRequests = await getHistoryRequests('2026-01-01', '300')
+
+    expect(bobRequests?.map((request) => request.id)).toEqual([1, 2])
+    expect(removedRequests?.find((request) => request.id === 3)).toMatchObject({
+      userId: '300',
+      userName: 'Removed',
+    })
   })
 
   it("has none when Seerr isn't set up or doesn't answer", async () => {
