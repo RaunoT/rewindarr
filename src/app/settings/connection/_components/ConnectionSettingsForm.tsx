@@ -169,6 +169,7 @@ export default function ConnectionSettingsForm({
         </label>
         <ConnectionTest
           service='tautulli'
+          serviceName='Tautulli'
           isSaved={isSaved(
             savedConnection.statisticsSource === 'tautulli' &&
               savedConnection.tautulliUrl &&
@@ -260,6 +261,7 @@ export default function ConnectionSettingsForm({
         )}
         <ConnectionTest
           service='tracearr'
+          serviceName='Tracearr'
           isSaved={isSaved(
             savedConnection.statisticsSource === 'tracearr' &&
               savedConnection.tracearrUrl &&
@@ -336,6 +338,7 @@ export default function ConnectionSettingsForm({
         </label>
         <ConnectionTest
           service='mediaServer'
+          serviceName={mediaServerName}
           isSaved={isSaved(getMediaServerUrl(savedConnection))}
           {...testProps}
         />
@@ -372,6 +375,7 @@ export default function ConnectionSettingsForm({
         </label>
         <ConnectionTest
           service='seerr'
+          serviceName='Seerr'
           isSaved={isSaved(
             savedConnection.seerrUrl && savedConnection.seerrApiKey,
           )}

@@ -55,6 +55,36 @@ describe('connection tests', () => {
     })
   })
 
+  it("doesn't follow a redirect with Seerr's key", async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const stub = stubFetch(
+      () =>
+        new Response(null, {
+          status: 302,
+          headers: { Location: 'https://elsewhere.example' },
+        }),
+    )
+
+    expect(await testSeerr('http://seerr', 'key')).toEqual({
+      key: 'redirected',
+    })
+    expect(stub.mock.calls[0][1]?.redirect).toBe('manual')
+  })
+
+  it("needs Seerr's own answer, not a proxy's sign-in page", async () => {
+    stubFetch(() => new Response('<html>Sign in</html>', { status: 200 }))
+
+    expect(await testSeerr('http://seerr', 'key')).toEqual({
+      key: 'notMediaServer',
+      values: { server: 'Seerr' },
+    })
+
+    stubFetch(() => json({ pageInfo: {}, results: [] }))
+
+    expect(await testSeerr('http://seerr', 'key')).toBeNull()
+  })
+
   it("reads a bad key from Tautulli's successful answer", async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
     stubFetch(() => json({ response: { result: 'error' } }))

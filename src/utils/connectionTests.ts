@@ -165,11 +165,29 @@ export async function testSeerr(
     return missing
   }
 
+  // Unlike Authorization, fetch keeps a custom header on a redirect to
+  // another host, so a redirect isn't followed
   const { response, error } = await testRequest('Seerr', url, '/api/v1/user', {
     headers: { 'X-API-KEY': apiKey },
+    redirect: 'manual',
   })
 
-  return error ?? getResponseError('Seerr', response)
+  if (error) {
+    return error
+  }
+
+  const responseError = getResponseError('Seerr', response)
+
+  if (responseError) {
+    return responseError
+  }
+
+  // A proxy's sign-in page can answer too, but not with Seerr's users
+  const body = await response.json().catch(() => null)
+
+  return Array.isArray((body as { results?: unknown } | null)?.results)
+    ? null
+    : { key: 'notMediaServer', values: { server: 'Seerr' } }
 }
 
 // Both answer without a token, so this only checks that the URL is the server

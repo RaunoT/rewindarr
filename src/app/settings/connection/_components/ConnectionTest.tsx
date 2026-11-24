@@ -1,6 +1,10 @@
 'use client'
 
-import { MediaServerType } from '@/types/settings'
+import {
+  ConnectionTestResult,
+  MediaServerType,
+  TestedService,
+} from '@/types/settings'
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
@@ -14,31 +18,56 @@ import {
   useState,
   useTransition,
 } from 'react'
-import {
-  ConnectionTestResult,
-  testConnection,
-  TestedService,
-} from '../_actions/testConnection'
 
 type Props = {
   service: TestedService
+  // Tells the buttons apart for screen readers
+  serviceName: string
   mediaServerType: MediaServerType
-  // A saved connection is tested when the page opens, and again whenever
-  // this changes, such as on a save
+  // A saved connection is tested when the page opens, and again after each
+  // save. A failed save leaves values in the form that weren't saved.
   isSaved: boolean
-  checkOn?: unknown
+  checkOn?: { status: string }
+}
+
+type Result = ConnectionTestResult & {
+  // A media server result is only about the server it was tested as
+  mediaServerType: MediaServerType
+}
+
+async function requestTest(
+  service: TestedService,
+  form: HTMLFormElement,
+  mediaServerType: MediaServerType,
+): Promise<ConnectionTestResult | null> {
+  const response = await fetch('/api/settings/connection-test', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      service,
+      mediaServerType,
+      fields: Array.from(new FormData(form), ([name, value]) => [
+        name,
+        String(value),
+      ]),
+    }),
+  })
+
+  return response.ok ? response.json() : null
 }
 
 // Tests a service with what's in its section of the form, without saving it
 export default function ConnectionTest({
   service,
+  serviceName,
   mediaServerType,
   isSaved,
   checkOn,
 }: Props) {
   const t = useTranslations('Settings.Connection')
+  const tSettings = useTranslations('Settings')
   const ref = useRef<HTMLDivElement>(null)
-  const [result, setResult] = useState<ConnectionTestResult | null>(null)
+  const [result, setResult] = useState<Result | null>(null)
   const [isPending, startTransition] = useTransition()
   // Only the latest test's result is shown
   const testId = useRef(0)
@@ -51,23 +80,24 @@ export default function ConnectionTest({
     }
 
     const id = ++testId.current
-    const formData = new FormData(form)
+    const testedType = mediaServerType
 
     startTransition(async () => {
-      const nextResult = await testConnection(
-        service,
-        formData,
-        mediaServerType,
+      const nextResult = await requestTest(service, form, testedType).catch(
+        () => ({
+          status: 'error' as const,
+          message: tSettings('genericError'),
+        }),
       )
 
       if (id === testId.current) {
-        setResult(nextResult)
+        setResult(nextResult && { ...nextResult, mediaServerType: testedType })
       }
     })
   }
 
   const testSaved = useEffectEvent(() => {
-    if (isSaved) {
+    if (isSaved && checkOn?.status !== 'error') {
       test()
     }
   })
@@ -103,7 +133,11 @@ export default function ConnectionTest({
     }
   }, [])
 
-  const isError = result?.status === 'error'
+  const shownResult =
+    service === 'mediaServer' && result?.mediaServerType !== mediaServerType
+      ? null
+      : result
+  const isError = shownResult?.status === 'error'
   const Icon = isError ? ExclamationCircleIcon : CheckCircleIcon
 
   return (
@@ -114,13 +148,13 @@ export default function ConnectionTest({
         className={clsx(
           'flex items-start gap-1.5 text-sm',
           isError ? 'text-danger' : 'text-neutral-300',
-          (isPending || result) && '-mt-2 mb-3',
+          (isPending || shownResult) && '-mt-2 mb-3',
         )}
         aria-live='polite'
       >
         {isPending ? (
           t('testing')
-        ) : result ? (
+        ) : shownResult ? (
           <>
             <Icon
               className={clsx(
@@ -129,7 +163,7 @@ export default function ConnectionTest({
               )}
               aria-hidden='true'
             />
-            {result.message}
+            {shownResult.message}
           </>
         ) : null}
       </p>
@@ -138,6 +172,7 @@ export default function ConnectionTest({
         className='button button-sm button--glass'
         onClick={test}
         disabled={isPending}
+        aria-label={t('testService', { service: serviceName })}
       >
         {t('test')}
       </button>

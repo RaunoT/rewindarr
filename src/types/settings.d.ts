@@ -35,6 +35,14 @@ export type ConnectionSettings = {
   complete: boolean
 }
 
+// What the Test buttons in the connection settings check
+export type TestedService = 'tautulli' | 'tracearr' | 'mediaServer' | 'seerr'
+
+export type ConnectionTestResult = {
+  status: 'success' | 'error'
+  message: string
+}
+
 export type ExternalLink =
   | 'imdb'
   | 'tmdb'

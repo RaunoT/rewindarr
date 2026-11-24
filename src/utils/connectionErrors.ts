@@ -12,6 +12,7 @@ export type ConnectionError = {
     | 'mediaServerUrlRequired'
     | 'enterUrl'
     | 'enterApiKey'
+    | 'redirected'
   values?: Record<string, string | number>
 }
 
@@ -41,6 +42,12 @@ export function getStatusError(status: number): ConnectionError {
 
   if (status === 404) {
     return { key: 'urlNotFound' }
+  }
+
+  // Only from requests that don't follow redirects, as their key would go
+  // with it
+  if (status >= 300 && status < 400) {
+    return { key: 'redirected' }
   }
 
   return unexpectedResponse(status)
