@@ -2,8 +2,8 @@ import { authOptions } from '@/lib/auth'
 import { getSiteUrl, TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
 import getSettings from '@/utils/getSettings'
 import {
-  canViewFeature,
   checkRequiredSettings,
+  getOpenPages,
   sortByActiveLibraries,
 } from '@/utils/helpers'
 import { toPublicSettings } from '@/utils/publicSettings'
@@ -23,10 +23,8 @@ export default async function HomePage() {
 
   if (missingSetting || (!session && !settings.general.isOutsideAccess)) {
     // What signing in leads to, as anyone who isn't an admin will see it
-    const hasRewind = canViewFeature(settings, 'rewind', {
-      isLoggedIn: true,
-      isAdmin: false,
-    })
+    const pages = getOpenPages(settings, { isLoggedIn: true, isAdmin: false })
+    const hasRewind = pages.includes('rewind')
     const timeZone = toTimeZone(
       (await cookies()).get(TIME_ZONE_COOKIE_NAME)?.value,
     )
@@ -38,6 +36,7 @@ export default async function HomePage() {
           missingSetting={missingSetting}
           siteUrl={getSiteUrl()}
           hasRewind={hasRewind}
+          hasStats={pages.some((page) => page !== 'rewind')}
           newRewindYear={
             hasRewind ? getNewEditionYear(settings, timeZone) : null
           }

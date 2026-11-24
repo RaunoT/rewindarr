@@ -16,8 +16,10 @@ type Props = {
   settings: PublicSettings
   missingSetting: string | null
   siteUrl?: string
-  // Whether a signed-in viewer gets a Rewind, and its year while it's new
+  // What a signed-in viewer can open: a Rewind, and its year while it's new,
+  // or the other pages
   hasRewind: boolean
+  hasStats: boolean
   newRewindYear: number | null
 }
 
@@ -28,6 +30,7 @@ export default function Home({
   missingSetting,
   siteUrl,
   hasRewind,
+  hasStats,
   newRewindYear,
 }: Props) {
   const { isLoading, error, handleLogin } = usePlexAuth(siteUrl)
@@ -76,8 +79,9 @@ export default function Home({
               : APP_NAME}
           </h1>
           {/* What signing in is for, as people often arrive from a link. The
-              Rewind tile's own words, which the sign-in leads to. */}
-          {!isLoggedIn && (
+              Rewind tile's own words, which the sign-in leads to. Nothing
+              when signing in opens nothing. */}
+          {!isLoggedIn && (hasRewind || hasStats) && (
             <p className='animate-fade-up animation-delay-500 mb-6 text-balance text-neutral-300'>
               {!hasRewind
                 ? t('loginStats')
