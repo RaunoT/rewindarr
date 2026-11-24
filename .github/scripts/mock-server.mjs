@@ -803,6 +803,9 @@ async function artwork(img) {
 
 function tautulli(params) {
   switch (params.cmd) {
+    // Saving and testing the connection checks this
+    case 'status':
+      return {}
     case 'get_libraries':
       return LIBRARIES.map(({ size: _, ...library }) => ({
         ...library,

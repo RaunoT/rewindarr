@@ -7,7 +7,12 @@ export type ConnectionError = {
     | 'unexpectedResponse'
     | 'certificateError'
     | 'unableToConnect'
-  values?: { status: number }
+    | 'noMediaServer'
+    | 'notMediaServer'
+    | 'mediaServerUrlRequired'
+    | 'enterUrl'
+    | 'enterApiKey'
+  values?: Record<string, string | number>
 }
 
 // Error codes Node reports when a TLS certificate can't be verified.
