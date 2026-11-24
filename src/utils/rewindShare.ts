@@ -10,7 +10,7 @@ export const REWIND_SHARE_HEADER = 'x-rewind-share'
 // 128 bits of the signature, so the links stay short
 const KEY_BYTES = 16
 
-type ShareSettings = Pick<Settings, 'rewind'>
+type ShareSettings = Pick<Settings, 'rewind' | 'general'>
 
 // Signed with the version, so resetting the links stops the old ones working
 function signUser(settings: ShareSettings, userId: string): Buffer | null {
@@ -55,7 +55,9 @@ export function isRewindShareKey(
     typeof userId !== 'string' ||
     typeof key !== 'string' ||
     !userId ||
-    !canShareRewind(settings)
+    !canShareRewind(settings) ||
+    // Their Rewind isn't open to anyone, as it isn't to admins
+    settings.general.excludedUsers.includes(userId)
   ) {
     return false
   }

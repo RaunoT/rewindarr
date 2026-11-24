@@ -9,7 +9,7 @@ import {
   toShareCookie,
 } from './rewindShare'
 
-let settings: Pick<Settings, 'rewind'>
+let settings: Pick<Settings, 'rewind' | 'general'>
 
 function getKey(userId: string) {
   const path = getRewindSharePath(settings, userId)
@@ -18,7 +18,10 @@ function getKey(userId: string) {
 }
 
 beforeEach(() => {
-  settings = { rewind: cloneDeep(DEFAULT_SETTINGS.rewind) }
+  settings = cloneDeep({
+    rewind: DEFAULT_SETTINGS.rewind,
+    general: DEFAULT_SETTINGS.general,
+  })
   vi.stubEnv('NEXTAUTH_SECRET', 'test-secret')
 })
 
@@ -67,6 +70,14 @@ describe('rewind share links', () => {
 
     settings.rewind.isAdminOnly = false
     settings.rewind.isActive = false
+
+    expect(isRewindShareKey(settings, '42', key)).toBe(false)
+  })
+
+  it("doesn't open for a user left out of the stats", () => {
+    const key = getKey('42')
+
+    settings.general.excludedUsers = ['42']
 
     expect(isRewindShareKey(settings, '42', key)).toBe(false)
   })

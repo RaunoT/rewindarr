@@ -250,6 +250,16 @@ describe('proxy', () => {
       expect(res?.headers.get('location')).toContain('callbackUrl=')
     })
 
+    it('sends a link with a repeated user or key to log in', async () => {
+      const path = getRewindSharePath(getSettings(), '42')!
+
+      for (const extra of ['&userId=42', '&key=x']) {
+        const res = await request('', path + extra)
+
+        expect(res?.headers.get('location')).toContain('callbackUrl=')
+      }
+    })
+
     it("doesn't take the shared user from the browser", async () => {
       getSettings().general.isOutsideAccess = true
 

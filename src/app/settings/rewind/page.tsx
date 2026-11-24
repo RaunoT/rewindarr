@@ -6,9 +6,8 @@ import { canShareRewind, getRewindSharePath } from '@/utils/rewindShare'
 import { getActiveUsers } from '@/utils/statsSource'
 import { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
-import { Suspense } from 'react'
 import RewindSettingsForm from './_components/RewindSettingsForm'
-import RewindShareLinks, { ShareUser } from './_components/RewindShareLinks'
+import { ShareUser } from './_components/RewindShareLinks'
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('Settings.Rewind')
@@ -48,13 +47,6 @@ async function getShareUsers(): Promise<ShareUser[] | null> {
   }
 }
 
-// Each user's link, while users can see their own Rewind
-async function ShareLinks() {
-  const users = await getShareUsers()
-
-  return <RewindShareLinks users={users} />
-}
-
 export default async function RewindSettingsPage() {
   await requireSettingsAccess()
 
@@ -63,14 +55,10 @@ export default async function RewindSettingsPage() {
   const canShare = !checkRequiredSettings(settings) && canShareRewind(settings)
 
   return (
-    <>
-      <RewindSettingsForm settings={toPublicSettings(settings)} />
-      {canShare && (
-        // Below the form, so it doesn't hold it up
-        <Suspense>
-          <ShareLinks />
-        </Suspense>
-      )}
-    </>
+    <RewindSettingsForm
+      settings={toPublicSettings(settings)}
+      // Not waited for, so the form shows while they're read
+      shareUsers={canShare ? getShareUsers() : undefined}
+    />
   )
 }

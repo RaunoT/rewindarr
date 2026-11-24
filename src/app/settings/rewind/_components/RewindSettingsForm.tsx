@@ -40,9 +40,12 @@ import SettingsForm from '../../_components/SettingsForm'
 import saveRewindSettings from '../_actions/updateRewindSettings'
 import RewindMusicUpload from './RewindMusicUpload'
 import RewindReleaseDate from './RewindReleaseDate'
+import RewindShareLinks, { ShareUser } from './RewindShareLinks'
 
 type Props = {
   settings: PublicSettings
+  // Each user's shared link, while users can see their own Rewind
+  shareUsers?: Promise<ShareUser[] | null>
 }
 
 type RewindFormState = SettingsFormInitialState<Partial<RewindSettings>>
@@ -95,7 +98,7 @@ const REQUEST_STORIES: RewindStoryId[] = ['requests', 'requests_reach']
 // Where users start depends on what they can open
 const USER: Viewer = { isLoggedIn: true, isAdmin: false }
 
-export default function RewindSettingsForm({ settings }: Props) {
+export default function RewindSettingsForm({ settings, shareUsers }: Props) {
   const [isActive, setIsActive] = useState<boolean>(settings.rewind.isActive)
   const [period, setPeriod] = useState<RewindPeriodType>(
     getRewindPeriodType(settings),
@@ -322,6 +325,10 @@ export default function RewindSettingsForm({ settings }: Props) {
               />
             )}
           </section>
+          {/* As saved, until a save opens or closes Rewind to users */}
+          {!isAdminOnly && shareUsers && (
+            <RewindShareLinks users={shareUsers} />
+          )}
         </>
       )}
     </SettingsForm>

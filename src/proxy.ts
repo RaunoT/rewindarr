@@ -108,14 +108,17 @@ function getSessionToken(req: NextRequest) {
 // The user and key of a shared Rewind's link, when it's a valid one
 function getRewindShare(req: NextRequest, settings: Settings | null) {
   const { pathname, searchParams } = req.nextUrl
-  const userId = searchParams.get('userId')
-  const key = searchParams.get('key')
+  const [userId, ...otherUserIds] = searchParams.getAll('userId')
+  const [key, ...otherKeys] = searchParams.getAll('key')
 
   if (
     pathname !== '/rewind' ||
     !settings ||
     !userId ||
     !key ||
+    // The page reads repeated ones as a list, which it turns away
+    otherUserIds.length > 0 ||
+    otherKeys.length > 0 ||
     !isRewindShareKey(settings, userId, key)
   ) {
     return null

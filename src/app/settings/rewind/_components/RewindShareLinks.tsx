@@ -11,6 +11,8 @@ import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import {
+  Suspense,
+  use,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -29,12 +31,12 @@ export type ShareUser = {
 }
 
 type Props = {
-  // Null when the users couldn't be read
-  users: ShareUser[] | null
+  // Read while the rest of the form shows. Null when they couldn't be read.
+  users: Promise<ShareUser[] | null>
 }
 
 // Up to this many, the list is short enough to scan without a search
-const SEARCH_FROM = 8
+const SEARCH_FROM = 5
 const COPIED_MS = 2000
 
 // Phones and tablets send it on with their share sheet. Desktops copy it, as
@@ -77,7 +79,13 @@ async function copyText(text: string): Promise<void> {
   }
 }
 
-function ShareLinkButton({ user }: { user: ShareUser }) {
+type ButtonProps = {
+  user: ShareUser
+  // While the links are reset, as these would stop working
+  isDisabled: boolean
+}
+
+function ShareLinkButton({ user, isDisabled }: ButtonProps) {
   const t = useTranslations('Settings.Rewind')
   const isSheet = useSyncExternalStore(subscribe, hasShareSheet, () => false)
   const [isCopied, setIsCopied] = useState(false)
@@ -123,8 +131,9 @@ function ShareLinkButton({ user }: { user: ShareUser }) {
     <>
       <button
         type='button'
-        className='button-card'
+        className='button-card disabled:opacity-50'
         onClick={share}
+        disabled={isDisabled}
         aria-label={t(isSheet ? 'shareLabel' : 'copyLinkLabel', {
           name: user.name,
         })}
@@ -152,12 +161,15 @@ function ShareLinkButton({ user }: { user: ShareUser }) {
   )
 }
 
-// Apart from the form, as copying a link or resetting them saves nothing in it
-export default function RewindShareLinks({ users }: Props) {
+type ListProps = {
+  users: Promise<ShareUser[] | null>
+  isDisabled: boolean
+}
+
+function ShareLinkList({ users: usersRequest, isDisabled }: ListProps) {
   const t = useTranslations('Settings.Rewind')
-  const router = useRouter()
+  const users = use(usersRequest)
   const [query, setQuery] = useState('')
-  const [isPending, startTransition] = useTransition()
   const listRef = useRef<HTMLUListElement>(null)
   const [hasMoreBelow, setHasMoreBelow] = useState(false)
   const search = query.trim().toLocaleLowerCase()
@@ -175,6 +187,70 @@ export default function RewindShareLinks({ users }: Props) {
 
   // A search can leave the list too short to scroll
   useLayoutEffect(updateHasMoreBelow, [shownUsers?.length])
+
+  if (!users || !shownUsers) {
+    return (
+      <p className='text-danger text-xs sm:pl-50' role='alert'>
+        {t('shareLinksError')}
+      </p>
+    )
+  }
+
+  return (
+    <div className='grid gap-2 sm:pl-50'>
+      {users.length > SEARCH_FROM && (
+        <input
+          type='search'
+          className='input'
+          placeholder={t('shareLinksSearch')}
+          aria-label={t('shareLinksSearch')}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          // Not a save of the form it's in
+          onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
+        />
+      )}
+      {shownUsers.length ? (
+        // Half a row shows at the end while it scrolls, fading out while
+        // there's more below. The focus rings stay inside the scrolled area.
+        <ul
+          ref={listRef}
+          onScroll={updateHasMoreBelow}
+          className={clsx(
+            '-mx-1 max-h-68 overflow-y-auto px-1',
+            hasMoreBelow && 'mask-b-from-80%',
+          )}
+        >
+          {shownUsers.map((user) => (
+            <li
+              key={user.id}
+              className='flex items-center gap-3 py-2 not-first:border-t not-first:border-white/10'
+            >
+              <div className='relative size-8 shrink-0 overflow-hidden rounded-full'>
+                <Avatar src={user.thumb} name={user.name} sizes='2rem' />
+              </div>
+              <span className='min-w-0 flex-1 truncate text-sm'>
+                {user.name}
+              </span>
+              <ShareLinkButton user={user} isDisabled={isDisabled} />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className='py-2 text-sm text-neutral-400'>
+          {t('shareLinksNoUsers')}
+        </p>
+      )}
+    </div>
+  )
+}
+
+// In the form, though copying a link or resetting them saves nothing in it,
+// like the background track
+export default function RewindShareLinks({ users }: Props) {
+  const t = useTranslations('Settings.Rewind')
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
 
   function reset() {
     startTransition(async () => {
@@ -196,61 +272,14 @@ export default function RewindShareLinks({ users }: Props) {
   }
 
   return (
-    <section className='glass-sheet group-settings group mt-4'>
+    <section className='group-settings group'>
       <h2 className='heading-settings'>{t('shareLinks')}</h2>
       <p className='text-xs text-neutral-400 sm:pl-50'>
         {t('shareLinksDescription')}
       </p>
-      {users && shownUsers ? (
-        <div className='grid gap-2 sm:pl-50'>
-          {users.length > SEARCH_FROM && (
-            <input
-              type='search'
-              className='input'
-              placeholder={t('shareLinksSearch')}
-              aria-label={t('shareLinksSearch')}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-          )}
-          {shownUsers.length ? (
-            // Half a row shows at the end while it scrolls, fading out while
-            // there's more below. The focus rings stay inside the scrolled
-            // area.
-            <ul
-              ref={listRef}
-              onScroll={updateHasMoreBelow}
-              className={clsx(
-                '-mx-1 max-h-104 overflow-y-auto px-1',
-                hasMoreBelow && 'mask-b-from-80%',
-              )}
-            >
-              {shownUsers.map((user) => (
-                <li
-                  key={user.id}
-                  className='flex items-center gap-3 py-2 not-first:border-t not-first:border-white/10'
-                >
-                  <div className='relative size-8 shrink-0 overflow-hidden rounded-full'>
-                    <Avatar src={user.thumb} name={user.name} sizes='2rem' />
-                  </div>
-                  <span className='min-w-0 flex-1 truncate text-sm'>
-                    {user.name}
-                  </span>
-                  <ShareLinkButton user={user} />
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className='py-2 text-sm text-neutral-400'>
-              {t('shareLinksNoUsers')}
-            </p>
-          )}
-        </div>
-      ) : (
-        <p className='text-danger text-xs sm:pl-50' role='alert'>
-          {t('shareLinksError')}
-        </p>
-      )}
+      <Suspense>
+        <ShareLinkList users={users} isDisabled={isPending} />
+      </Suspense>
       <div className='flex flex-wrap items-center gap-x-4 gap-y-2 sm:pl-50'>
         <button
           type='button'
