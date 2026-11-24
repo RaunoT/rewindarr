@@ -5,6 +5,7 @@
     "setupRequiredDescription": "Rakendus vajab seadistamist administraatori poolt.",
     "loginWithPlex": "Logi sisse <plex>Plex</plex> kontoga",
     "loginWithJellyfin": "Logi sisse <jellyfin>Jellyfin</jellyfin> kontoga",
+    "loginStats": "Vaata, mida serveris vaadatud on.",
     "username": "Kasutajanimi",
     "password": "Parool",
     "loginError": {

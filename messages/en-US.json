@@ -5,6 +5,7 @@
     "setupRequiredDescription": "This application needs to be configured by an administrator.",
     "loginWithPlex": "Sign in with <plex>Plex</plex>",
     "loginWithJellyfin": "Sign in with <jellyfin>Jellyfin</jellyfin>",
+    "loginStats": "See what's been playing on the server.",
     "username": "Username",
     "password": "Password",
     "loginError": {

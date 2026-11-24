@@ -5,6 +5,7 @@
     "setupRequiredDescription": "Un administrador debe configurar esta aplicación.",
     "loginWithPlex": "Iniciar sesión con <plex>Plex</plex>",
     "loginWithJellyfin": "Iniciar sesión con <jellyfin>Jellyfin</jellyfin>",
+    "loginStats": "Mira lo que se ha visto en el servidor.",
     "username": "Nombre de usuario",
     "password": "Contraseña",
     "loginError": {
