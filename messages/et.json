@@ -157,10 +157,6 @@
   "Sidebar": {
     "label": "Põhinavigatsioon"
   },
-  "Offline": {
-    "title": "Ühendus puudub",
-    "retry": "Proovi uuesti"
-  },
   "Settings": {
     "title": "Seaded",
     "getStarted": "Teeme algust!",

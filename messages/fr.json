@@ -157,10 +157,6 @@
   "Sidebar": {
     "label": "Navigation principale"
   },
-  "Offline": {
-    "title": "Vous êtes hors ligne",
-    "retry": "Réessayer"
-  },
   "Settings": {
     "title": "Paramètres",
     "getStarted": "Commençons",

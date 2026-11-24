@@ -109,9 +109,7 @@ export default function AppProvider({
                 // container and keep sticky things inside from sticking.
                 'group/main flex h-full min-h-dvh flex-col items-center overflow-x-clip p-4 pt-(--page-top)',
                 {
-                  'justify-center':
-                    (pathname === '/' && !isBrowsing) ||
-                    pathname === '/~offline',
+                  'justify-center': pathname === '/' && !isBrowsing,
                   'lg:pl-68': hasSidebar,
                 },
               )}

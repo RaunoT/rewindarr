@@ -113,12 +113,11 @@ function limitSize(maxBytes: number) {
 }
 
 // Written to a temporary file first, so a failed upload keeps the old track.
-// Returns null when the body is over the limit.
 export async function saveMusic(
   body: ReadableStream<Uint8Array>,
   name: string,
   type: string,
-): Promise<RewindMusic | null> {
+): Promise<RewindMusic | 'tooLarge' | 'empty'> {
   const tempPath = `${REWIND_MUSIC_PATH}.${randomBytes(6).toString('hex')}.tmp`
 
   try {
@@ -130,6 +129,12 @@ export async function saveMusic(
 
     const { size } = fs.statSync(tempPath)
 
+    if (size === 0) {
+      fs.rmSync(tempPath, { force: true })
+
+      return 'empty'
+    }
+
     fs.renameSync(tempPath, REWIND_MUSIC_PATH)
 
     return { name, type, size, updatedAt: Date.now() }
@@ -137,7 +142,7 @@ export async function saveMusic(
     fs.rmSync(tempPath, { force: true })
 
     if (error instanceof TooLargeError) {
-      return null
+      return 'tooLarge'
     }
 
     throw error

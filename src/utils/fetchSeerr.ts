@@ -89,6 +89,7 @@ export default async function fetchSeerr<T>(
       headers: {
         'X-API-KEY': apiKey,
       },
+      redirect: 'manual',
       next: {
         revalidate: cache ? 3600 : 0,
       },
@@ -96,6 +97,16 @@ export default async function fetchSeerr<T>(
     })
 
     if (!res.ok) {
+      await res.body?.cancel()
+
+      if (res.status >= 300 && res.status < 400) {
+        console.error(
+          `[SEERR] - API request was redirected (${res.status}) for '${endpoint}'. Check the configured Seerr URL.`,
+        )
+
+        return null
+      }
+
       if (isGatewayError(res.status)) {
         markHostDown(seerrUrl)
       }

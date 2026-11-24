@@ -706,6 +706,17 @@ describe('writeSettings', () => {
   })
 
   it.skipIf(process.platform === 'win32')(
+    'creates a new settings file readable only by its owner',
+    async () => {
+      const { writeSettings } = await loadModule()
+
+      writeSettings(completeSettings())
+
+      expect(fs.statSync(settingsPath).mode & 0o777).toBe(0o600)
+    },
+  )
+
+  it.skipIf(process.platform === 'win32')(
     'keeps the permissions of the existing file',
     async () => {
       fs.writeFileSync(settingsPath, JSON.stringify(DEFAULT_SETTINGS))

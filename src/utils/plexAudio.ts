@@ -19,6 +19,7 @@ type AudioPath = {
 
 export const PLEX_THEME_URL = '/api/rewind/theme'
 export const PLEX_TRACK_URL = '/api/rewind/track'
+export const MAX_AUDIO_PATHS = 500
 
 // Only how long Plex has to start answering; the song itself can take longer
 const PLEX_TIMEOUT_MS = 10 * 1000
@@ -28,7 +29,13 @@ const AUDIO_PATH_TTL_MS = 60 * 60 * 1000
 const THEME_PATH = /^\/library\/metadata\/\d+\/theme\/\d+$/
 const TRACK_PATH = /^\/library\/parts\/\d+\/\d+\/file\.([a-z0-9]+)$/i
 // Browsers ask for parts of the song, each of which would look the item up
-const audioPaths = new Map<string, AudioPath>()
+const globalForPlexAudio = globalThis as unknown as {
+  rewindarrPlexAudioPaths?: Map<string, AudioPath>
+  rewindarrPendingPlexAudioPaths?: Map<string, Promise<string | null>>
+}
+const audioPaths = (globalForPlexAudio.rewindarrPlexAudioPaths ??= new Map())
+const pendingAudioPaths = (globalForPlexAudio.rewindarrPendingPlexAudioPaths ??=
+  new Map())
 
 // Plex only serves the library with a token. Jellyfin's items aren't Plex's.
 export function canStreamFromPlex({ connection }: Settings): boolean {
@@ -39,19 +46,49 @@ export function canStreamFromPlex({ connection }: Settings): boolean {
   )
 }
 
+function signAudio(kind: PlexAudioKind, ratingKey: string): Buffer {
+  return createHmac('sha256', process.env.NEXTAUTH_SECRET ?? '')
+    .update(`${kind}:${ratingKey}`)
+    .digest()
+}
+
+function isSignedAudio(
+  kind: PlexAudioKind,
+  ratingKey: string,
+  signature: string,
+): boolean {
+  if (!process.env.NEXTAUTH_SECRET) {
+    return false
+  }
+
+  // As UTF-8 text so decoding cannot accept alternate spellings of the last char
+  const expected = Buffer.from(signAudio(kind, ratingKey).toString('base64url'))
+  const given = Buffer.from(signature)
+
+  return given.length === expected.length && timingSafeEqual(given, expected)
+}
+
 export function getPlexThemeUrl(
   settings: Settings,
   ratingKey: string | number | null | undefined,
 ): string | null {
-  return canStreamFromPlex(settings) && ratingKey
-    ? `${PLEX_THEME_URL}?key=${ratingKey}`
-    : null
+  const key = ratingKey ? String(ratingKey) : ''
+
+  if (
+    !canStreamFromPlex(settings) ||
+    !/^\d+$/.test(key) ||
+    !process.env.NEXTAUTH_SECRET
+  ) {
+    return null
+  }
+
+  const signature = signAudio('theme', key).toString('base64url')
+
+  return `${PLEX_THEME_URL}?key=${key}&sig=${signature}`
 }
 
-function signTrack(ratingKey: string): Buffer {
-  return createHmac('sha256', process.env.NEXTAUTH_SECRET ?? '')
-    .update(`track:${ratingKey}`)
-    .digest()
+export function isSignedTheme(ratingKey: string, signature: string): boolean {
+  return isSignedAudio('theme', ratingKey, signature)
 }
 
 // Signed, so viewers can only play the songs their Rewind picked, not any in
@@ -63,25 +100,19 @@ export function getPlexTrackUrl(
   if (
     !canStreamFromPlex(settings) ||
     !ratingKey ||
+    !/^\d+$/.test(ratingKey) ||
     !process.env.NEXTAUTH_SECRET
   ) {
     return null
   }
 
-  const signature = signTrack(ratingKey).toString('base64url')
+  const signature = signAudio('track', ratingKey).toString('base64url')
 
   return `${PLEX_TRACK_URL}?key=${ratingKey}&sig=${signature}`
 }
 
 export function isSignedTrack(ratingKey: string, signature: string): boolean {
-  if (!process.env.NEXTAUTH_SECRET) {
-    return false
-  }
-
-  const expected = signTrack(ratingKey)
-  const given = Buffer.from(signature, 'base64url')
-
-  return given.length === expected.length && timingSafeEqual(given, expected)
+  return isSignedAudio('track', ratingKey, signature)
 }
 
 export function isThemePath(path: unknown): path is string {
@@ -155,18 +186,58 @@ function findAudioPath(
   return isTrackPath(part) ? part : null
 }
 
-async function getAudioPath(
+function getCachedAudioPath(
+  cacheKey: string,
+  now: number,
+): string | null | undefined {
+  const cached = audioPaths.get(cacheKey)
+
+  if (!cached) {
+    return undefined
+  }
+
+  if (cached.expiresAt <= now) {
+    audioPaths.delete(cacheKey)
+
+    return undefined
+  }
+
+  audioPaths.delete(cacheKey)
+  audioPaths.set(cacheKey, cached)
+
+  return cached.path
+}
+
+function setCachedAudioPath(
+  cacheKey: string,
+  path: string | null,
+  now: number,
+): void {
+  for (const [key, entry] of audioPaths) {
+    if (entry.expiresAt <= now) {
+      audioPaths.delete(key)
+    }
+  }
+
+  if (audioPaths.has(cacheKey)) {
+    audioPaths.delete(cacheKey)
+  } else if (audioPaths.size >= MAX_AUDIO_PATHS) {
+    const oldestKey = audioPaths.keys().next().value
+
+    if (oldestKey !== undefined) {
+      audioPaths.delete(oldestKey)
+    }
+  }
+
+  audioPaths.set(cacheKey, { path, expiresAt: now + AUDIO_PATH_TTL_MS })
+}
+
+async function loadAudioPath(
   settings: Settings,
   kind: PlexAudioKind,
   ratingKey: string,
+  cacheKey: string,
 ): Promise<string | null> {
-  const cacheKey = `${settings.connection.plexUrl}|${kind}|${ratingKey}`
-  const cached = audioPaths.get(cacheKey)
-
-  if (cached && cached.expiresAt > Date.now()) {
-    return cached.path
-  }
-
   const response = await fetchPlex(settings, `/library/metadata/${ratingKey}`, {
     Accept: 'application/json',
   })
@@ -180,9 +251,33 @@ async function getAudioPath(
   const data = await response.json().catch(() => null)
   const path = findAudioPath(kind, data?.MediaContainer?.Metadata?.[0])
 
-  audioPaths.set(cacheKey, { path, expiresAt: Date.now() + AUDIO_PATH_TTL_MS })
+  setCachedAudioPath(cacheKey, path, Date.now())
 
   return path
+}
+
+async function getAudioPath(
+  settings: Settings,
+  kind: PlexAudioKind,
+  ratingKey: string,
+): Promise<string | null> {
+  const cacheKey = `${settings.connection.plexUrl}|${kind}|${ratingKey}`
+  const cached = getCachedAudioPath(cacheKey, Date.now())
+
+  if (cached !== undefined) {
+    return cached
+  }
+
+  let pending = pendingAudioPaths.get(cacheKey)
+
+  if (!pending) {
+    pending = loadAudioPath(settings, kind, ratingKey, cacheKey).finally(() => {
+      pendingAudioPaths.delete(cacheKey)
+    })
+    pendingAudioPaths.set(cacheKey, pending)
+  }
+
+  return pending
 }
 
 // A song is served as its file's type. Plex calls a theme's MP3 audio/mpeg3,
