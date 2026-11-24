@@ -106,6 +106,42 @@ describe('/api/rewind/music', () => {
       )
     })
 
+    it('streams the file it opened when the track is replaced or removed', async () => {
+      fs.writeFileSync(musicPath, '0123456789')
+      getSettingsMock.mockReturnValue(settingsWithMusic())
+
+      const replaced = await route.GET(
+        new Request('http://localhost/api/rewind/music'),
+      )
+      const tempPath = `${musicPath}.tmp`
+
+      fs.writeFileSync(tempPath, 'new')
+      fs.renameSync(tempPath, musicPath)
+
+      expect(replaced.headers.get('Content-Length')).toBe('10')
+      expect(await replaced.text()).toBe('0123456789')
+
+      const removed = await route.GET(
+        new Request('http://localhost/api/rewind/music', {
+          headers: { Range: 'bytes=1-2' },
+        }),
+      )
+
+      fs.rmSync(musicPath)
+
+      expect(removed.status).toBe(206)
+      expect(await removed.text()).toBe('ew')
+    })
+
+    it('returns 404 when the file is missing', async () => {
+      getSettingsMock.mockReturnValue(settingsWithMusic())
+
+      expect(
+        (await route.GET(new Request('http://localhost/api/rewind/music')))
+          .status,
+      ).toBe(404)
+    })
+
     it('returns 404 when empty or unauthorized', async () => {
       fs.writeFileSync(musicPath, '')
       getSettingsMock.mockReturnValue(settingsWithMusic())

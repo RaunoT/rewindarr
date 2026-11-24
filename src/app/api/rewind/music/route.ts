@@ -10,6 +10,7 @@ import {
   saveMusic,
 } from '@/utils/rewindMusic'
 import fs from 'fs'
+import { FileHandle } from 'fs/promises'
 import { revalidatePath } from 'next/cache'
 import { Readable } from 'stream'
 
@@ -40,15 +41,21 @@ export async function GET(request: Request) {
     return new Response(null, { status: 404 })
   }
 
-  let size: number
+  // The size and the bytes come from one open file, so an upload or delete
+  // in between can't mix two tracks or end the stream early
+  let file: FileHandle
 
   try {
-    size = fs.statSync(REWIND_MUSIC_PATH).size
+    file = await fs.promises.open(REWIND_MUSIC_PATH, 'r')
   } catch {
     return new Response(null, { status: 404 })
   }
 
+  const { size } = await file.stat()
+
   if (size === 0) {
+    await file.close()
+
     return new Response(null, { status: 404 })
   }
 
@@ -67,6 +74,7 @@ export async function GET(request: Request) {
 
   if (range === 'invalid') {
     headers.set('Content-Range', `bytes */${size}`)
+    await file.close()
 
     return new Response(null, { status: 416, headers })
   }
@@ -79,7 +87,7 @@ export async function GET(request: Request) {
     headers.set('Content-Range', `bytes ${start}-${end}/${size}`)
   }
 
-  const stream = fs.createReadStream(REWIND_MUSIC_PATH, { start, end })
+  const stream = file.createReadStream({ start, end })
 
   return new Response(Readable.toWeb(stream) as ReadableStream, {
     status: range ? 206 : 200,
