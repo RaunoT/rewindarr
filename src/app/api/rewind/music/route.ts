@@ -1,8 +1,6 @@
-import { canManageSettings } from '@/lib/access'
-import { authOptions } from '@/lib/auth'
+import { canManageSettings, canPlayRewind } from '@/lib/access'
 import { REWIND_MUSIC_MAX_BYTES } from '@/utils/constants'
 import getSettings, { writeSettings } from '@/utils/getSettings'
-import { canViewFeature, getViewer } from '@/utils/helpers'
 import {
   getMusicType,
   getMusicUrl,
@@ -12,7 +10,6 @@ import {
   saveMusic,
 } from '@/utils/rewindMusic'
 import fs from 'fs'
-import { getServerSession } from 'next-auth'
 import { revalidatePath } from 'next/cache'
 import { Readable } from 'stream'
 
@@ -34,11 +31,10 @@ function getContentDisposition(name: string) {
 // from the settings while Rewind is hidden.
 export async function GET(request: Request) {
   const settings = getSettings()
-  const session = await getServerSession(authOptions)
   const music = settings.rewind.music
   const isDownload = new URL(request.url).searchParams.has('download')
   const canGet =
-    canViewFeature(settings, 'rewind', getViewer(session)) ||
+    (await canPlayRewind(settings)) ||
     (isDownload && (await canManageSettings(settings)))
 
   if (!canGet || !music || !getMusicUrl(settings)) {

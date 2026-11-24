@@ -114,6 +114,7 @@ export const DEFAULT_SETTINGS: Settings = {
     period: 'calendarYear',
     releaseDate: '12-01',
     startDate: '',
+    shareVersion: 0,
     complete: false,
   },
   dashboard: {

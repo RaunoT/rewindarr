@@ -225,8 +225,8 @@
       @apply size-3.5 shrink-0;
     }
 
-    &:is(a) {
-      @apply focus-visible:focus-ring relative transition-colors hover:bg-white/20;
+    &:is(a, button) {
+      @apply focus-visible:focus-ring relative cursor-pointer transition-colors hover:bg-white/20;
 
       /* A 40px tall tap area. Links sit 6px apart, so their tap areas meet
          without overlapping. */

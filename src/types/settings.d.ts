@@ -105,6 +105,8 @@ export type RewindSettings = {
   year?: number
   // Only used by the custom period
   startDate?: string
+  // Raised to reset the share links, so the ones shared before stop working
+  shareVersion: number
   complete: boolean
 }
 

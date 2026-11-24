@@ -61,6 +61,7 @@ import {
   getPersonalitySignals,
   getPlaySignals,
 } from '@/utils/rewindPersonality'
+import { isRewindShareKey } from '@/utils/rewindShare'
 import { getTopPercent } from '@/utils/rewindTotal'
 import {
   getActiveUsers,
@@ -96,15 +97,19 @@ export async function generateMetadata(): Promise<Metadata> {
 
 async function RewindContent({
   userId,
+  shareKey,
   year,
 }: {
   userId?: string
+  shareKey?: string
   year?: string
 }) {
   const session = await getServerSession(authOptions)
   const settings = getSettings()
+  // A user's shared link opens their Rewind for anyone, signed in or not
+  const isShared = isRewindShareKey(settings, userId, shareKey)
 
-  if (!canViewFeature(settings, 'rewind', getViewer(session))) {
+  if (!isShared && !canViewFeature(settings, 'rewind', getViewer(session))) {
     return notFound()
   }
 
@@ -115,8 +120,8 @@ async function RewindContent({
     isAdmin: session.user.isAdmin,
   }
 
-  // Only admins can open another user's rewind.
-  if (session?.user.isAdmin && userId) {
+  // Only admins can open another user's rewind, or a link the admin shared
+  if ((session?.user.isAdmin || isShared) && userId) {
     const users = await getActiveUsers(settings)
     const queriedUser = users.find((u) => String(u.user_id) === userId)
 
@@ -127,6 +132,9 @@ async function RewindContent({
         id: userId,
         isAdmin: false,
       }
+    } else if (isShared) {
+      // Not whoever happens to be signed in
+      return notFound()
     }
   }
 
@@ -160,7 +168,12 @@ async function RewindContent({
   const rewind = getRewind(user, libraries, period, timeZone, {
     viewersRequest,
     totals,
-    isOthersHidden: !!getOwnOnlyUserId(settings, 'dashboard', session),
+    // A shared Rewind leaves them out as it would for the user, whoever
+    // opens it
+    isOthersHidden:
+      isShared && !session?.user.isAdmin
+        ? settings.dashboard.isOwnOnly
+        : !!getOwnOnlyUserId(settings, 'dashboard', session),
   })
 
   return (
@@ -540,17 +553,19 @@ async function getRewind(
 type Props = {
   searchParams: Promise<{
     userId?: string
+    // Signs a shared link to the user's Rewind
+    key?: string
     // A calendar year's edition, the latest without one
     year?: string
   }>
 }
 
 export default async function RewindPage({ searchParams }: Props) {
-  const { userId, year } = await searchParams
+  const { userId, key, year } = await searchParams
 
   return (
-    <Suspense fallback={<Loading />} key={`${userId}|${year}`}>
-      <RewindContent userId={userId} year={year} />
+    <Suspense fallback={<Loading />} key={`${userId}|${key}|${year}`}>
+      <RewindContent userId={userId} shareKey={key} year={year} />
     </Suspense>
   )
 }

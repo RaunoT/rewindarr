@@ -1,8 +1,10 @@
 import { Settings, SettingsFormInitialState } from '@/types/settings'
 import getSettings from '@/utils/getSettings'
-import { isInitialSetup } from '@/utils/helpers'
+import { canViewFeature, getViewer, isInitialSetup } from '@/utils/helpers'
+import { isRewindShareCookie, REWIND_SHARE_COOKIE } from '@/utils/rewindShare'
 import { getServerSession } from 'next-auth'
 import { getTranslations } from 'next-intl/server'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { authOptions } from './auth'
 
@@ -41,4 +43,20 @@ export async function denySettingsAccess<T>(
     status: 'error',
     fields: prevState?.fields,
   }
+}
+
+// Rewind's music plays for anyone who can see a Rewind, and for a visitor who
+// opened a shared one
+export async function canPlayRewind(
+  settings: Settings = getSettings(),
+): Promise<boolean> {
+  const session = await getServerSession(authOptions)
+
+  if (canViewFeature(settings, 'rewind', getViewer(session))) {
+    return true
+  }
+
+  const cookie = (await cookies()).get(REWIND_SHARE_COOKIE)?.value
+
+  return isRewindShareCookie(settings, cookie)
 }
