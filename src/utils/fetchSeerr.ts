@@ -21,6 +21,8 @@ type SeerrUser = {
   plexId: number | null
   // Null for Seerr users without Jellyfin
   jellyfinUserId?: string | null
+  // Not sent with the users who made requests
+  email?: string | null
 }
 
 export type SeerrRequestItem = {
@@ -288,6 +290,38 @@ export function getMediaUserIds(user: SeerrUser): string[] {
     user.plexId ? String(user.plexId) : null,
     user.jellyfinUserId ? normalizeJellyfinId(user.jellyfinUserId) : null,
   ].filter((id): id is string => !!id)
+}
+
+// Each user's address in Seerr, by the IDs they sign in with. Null when Seerr
+// isn't set up or fails.
+export async function fetchSeerrEmails(): Promise<Map<string, string> | null> {
+  const { seerrUrl, seerrApiKey } = getSettings().connection
+
+  if (!seerrUrl || !seerrApiKey) {
+    return null
+  }
+
+  const users = await fetchSeerrPages<SeerrUser>('user')
+
+  if (!users) {
+    return null
+  }
+
+  const emails = new Map<string, string>()
+
+  for (const user of users) {
+    const email = user.email?.trim()
+
+    if (!email) {
+      continue
+    }
+
+    for (const userId of getMediaUserIds(user)) {
+      emails.set(userId, email)
+    }
+  }
+
+  return emails
 }
 
 export async function fetchSeerrUserId(userId: string): Promise<number | null> {

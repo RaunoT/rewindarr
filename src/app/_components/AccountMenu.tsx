@@ -3,6 +3,7 @@
 import Avatar from '@/components/Avatar'
 import { setUserLocale } from '@/i18n/locale'
 import { Locale, LOCALES } from '@/utils/constants'
+import { getLocaleName } from '@/utils/localeName'
 import { guardLeave } from '@/utils/unsavedChanges'
 import {
   ArrowRightStartOnRectangleIcon,
@@ -46,17 +47,6 @@ function LocaleFlag({ code }: { code: string }) {
   const Flag = LOCALE_FLAGS[code]
 
   return Flag ? <Flag aria-hidden className='rounded-full' /> : null
-}
-
-function getLocaleName(code: string) {
-  // "English (UK)" rather than "British English"
-  const name = new Intl.DisplayNames(code, {
-    type: 'language',
-    languageDisplay: 'standard',
-    style: 'short',
-  }).of(code)
-
-  return name ? name.charAt(0).toLocaleUpperCase(code) + name.slice(1) : code
 }
 
 // Who is signed in, with the language and sign out tucked behind it

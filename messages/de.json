@@ -203,6 +203,7 @@
       "dashboard": "Dashboard",
       "activity": "Aktivität",
       "history": "Verlauf",
+      "email": "E-Mail",
       "complete": "Abgeschlossen",
       "incomplete": "Unvollständig",
       "connectionRequired": "Schließe zuerst die Verbindungseinstellungen ab"
@@ -389,6 +390,103 @@
       "shareLinksResetError": "Links konnten nicht zurückgesetzt werden",
       "shareLinksUsers": "Benutzer",
       "shareLinksResetButton": "Zurücksetzen"
+    },
+    "Email": {
+      "title": "E-Mail-Einstellungen",
+      "mailServer": "Mailserver",
+      "host": "Host",
+      "port": "Port",
+      "security": "Sicherheit",
+      "securities": {
+        "none": "Keine",
+        "starttls": "STARTTLS",
+        "tls": "TLS/SSL"
+      },
+      "user": "Benutzername",
+      "userDescription": "Leer lassen, wenn der Server keine Anmeldung braucht",
+      "password": "Passwort",
+      "fromAddress": "Absenderadresse",
+      "fromName": "Absendername",
+      "testEmail": "Test-E-Mail",
+      "testAddress": "Adresse für die Test-E-Mail",
+      "sendTest": "Test-E-Mail senden",
+      "sending": "Wird gesendet…",
+      "testSent": "An {address} gesendet. Wenn sie nicht im Posteingang ist, sieh im Spam-Ordner nach.",
+      "emails": "E-Mails",
+      "appUrl": "App-Adresse",
+      "appUrlDescription": "Wohin die Links in den E-Mails führen. Deine Benutzer müssen sie öffnen können, nicht nur dein eigenes Netzwerk.",
+      "language": "Sprache",
+      "recipients": "Empfänger",
+      "recipientsDescription": "Die Adressen kommen aus der Statistikquelle oder aus Seerr. Gib eine ein, um stattdessen eine andere zu verwenden. Der Schalter schickt ihnen den Newsletter.",
+      "recipientsSearch": "Benutzer suchen",
+      "recipientsNone": "Keine Benutzer gefunden",
+      "recipientsError": "Die Benutzer konnten nicht gelesen werden. Prüfe die Verbindungseinstellungen.",
+      "loading": "Benutzer werden geladen…",
+      "noAddress": "Keine Adresse",
+      "addressLabel": "E-Mail-Adresse von {name}",
+      "subscribedLabel": "Newsletter für {name}",
+      "newsletter": "Newsletter",
+      "newsletterDescription": "Schickt jedem Benutzer einen Rückblick darauf, was er und alle anderen abgespielt haben",
+      "frequency": "Häufigkeit",
+      "frequencies": {
+        "weekly": "Wöchentlich",
+        "monthly": "Monatlich"
+      },
+      "frequencyDescriptions": {
+        "weekly": "Umfasst die 7 Tage vor dem Versandtag",
+        "monthly": "Wird am 1. verschickt und umfasst den Vormonat"
+      },
+      "weekday": "Tag",
+      "hour": "Uhrzeit",
+      "hourDescription": "In der Zeitzone des Servers, {timeZone}",
+      "sectionsLabel": "Inhalt",
+      "sectionsOwnOnly": "Benutzer sehen im Dashboard nur ihre eigenen Statistiken, daher lässt der Newsletter die Statistiken des Servers und die Top-Benutzer weg",
+      "sections": {
+        "personal": "Eigene Statistiken",
+        "server": "Serverstatistiken",
+        "topUsers": "Top-Benutzer"
+      },
+      "nextSend": "Der nächste wird am {date} verschickt.",
+      "lastRun": "Zuletzt verschickt am {date}: {sent} gesendet, {failed} fehlgeschlagen, {skipped} übersprungen.",
+      "lastRunError": "Zuletzt versucht am {date}: {error}",
+      "tryIt": "Ausprobieren",
+      "tryItDescription": "Mit den gespeicherten Einstellungen und deinen eigenen Statistiken",
+      "preview": "Vorschau",
+      "sendToMe": "An mich senden",
+      "rewind": "Rewind",
+      "rewindUsers": "Rewind senden",
+      "rewindUsersDescription": "Schickt den ausgewählten Benutzern eine Einladung zu ihrem Rewind, ohne etwas davon zu verraten",
+      "rewindNotShared": "Rewind muss aktiviert und für Benutzer freigegeben sein, bevor er per E-Mail verschickt werden kann.",
+      "sendToLabel": "An {name} senden",
+      "sendRewind": "{count, plural, =0 {Senden} one {An # Benutzer senden} other {An # Benutzer senden}}",
+      "sendSummary": "{sent, plural, one {# E-Mail gesendet} other {# E-Mails gesendet}}{failed, plural, =0 {} other {, # fehlgeschlagen}}{skipped, plural, =0 {} other {, # übersprungen}}.",
+      "outcomes": {
+        "sent": "Gesendet",
+        "failed": "Fehlgeschlagen",
+        "skipped": "Übersprungen"
+      },
+      "skipReasons": {
+        "noAddress": "Keine E-Mail-Adresse",
+        "noPlays": "Im Zeitraum nichts abgespielt",
+        "nothingToShow": "Im Zeitraum wurde auf dem Server nichts abgespielt"
+      },
+      "mailAuthFailed": "Der Mailserver hat den Benutzernamen oder das Passwort nicht akzeptiert",
+      "mailUnableToConnect": "Keine Verbindung zum Mailserver. Prüfe Host, Port und Sicherheit.",
+      "mailCertificateError": "TLS mit dem Mailserver hat nicht funktioniert. Prüfe Port und Sicherheit.",
+      "mailRejected": "Der Mailserver hat die Adresse abgelehnt",
+      "mailFailed": "Der Mailserver konnte sie nicht senden",
+      "mailServerMissing": "Gib zuerst Host, Port und Absenderadresse des Mailservers ein",
+      "appUrlMissing": "Lege zuerst die App-Adresse fest, damit die E-Mails darauf verlinken können",
+      "historyReading": "Der Wiedergabeverlauf wird noch gelesen. Versuche es in ein paar Minuten erneut.",
+      "sendFailed": "Die E-Mails konnten nicht erstellt werden. Prüfe, ob die Statistikquelle erreichbar ist.",
+      "reenterPassword": "Gib das Passwort erneut ein, da sich Host oder Benutzername geändert haben",
+      "newsletterNeedsMailServer": "Richte den Mailserver ein, bevor du den Newsletter aktivierst",
+      "portError": "Der Port muss zwischen 1 und 65535 liegen",
+      "fromAddressError": "Die Absenderadresse ist keine gültige E-Mail-Adresse",
+      "appUrlError": "Die App-Adresse ist keine gültige URL",
+      "addressError": "Eine Adresse ist keine gültige E-Mail-Adresse",
+      "sectionsError": "Wähle mindestens eine Sache aus, die der Newsletter zeigen soll",
+      "previewNoUser": "Dieser Benutzer ist nicht auf dem Server oder ist ausgeschlossen."
     }
   },
   "LocaleSelect": {
@@ -832,5 +930,82 @@
     "done": "Fertig",
     "period": "Zeitraum",
     "all": "Alle"
+  },
+  "Email": {
+    "plays": "{count, plural, one {# Wiedergabe} other {# Wiedergaben}}",
+    "yourTopShows": "Deine Top-Serien",
+    "yourTopMovies": "Deine Top-Filme",
+    "yourTopArtists": "Deine Top-Künstler",
+    "anonymous": "Anonym #{number}",
+    "Rewind": {
+      "subject": "{name}, dein Rewind ist da",
+      "subjectYear": "{name}, dein Rewind {year} ist da",
+      "preheader": "Sieh dir an, was du auf {server} abgespielt hast",
+      "eyebrow": "Rewind",
+      "eyebrowYear": "Rewind {year}",
+      "title": "Dein Rewind ist da, {name}",
+      "intro": "Blick zurück auf das, was du auf {server} abgespielt hast: deine Top-Serien, -Filme und -Musik, deine Gewohnheiten und ein paar Überraschungen.",
+      "teaser": {
+        "watchTime": "Wiedergabezeit",
+        "topShow": "Top-Serie",
+        "personality": "Zuschauertyp"
+      },
+      "button": "Meinen Rewind ansehen",
+      "footer": "Der Link gehört dir: Jeder, der ihn hat, kann deinen Rewind öffnen."
+    },
+    "Newsletter": {
+      "subject": {
+        "weekly": "Deine Woche auf {server}",
+        "monthly": "Dein {month} auf {server}"
+      },
+      "eyebrow": {
+        "weekly": "Wochenrückblick",
+        "monthly": "Monatsrückblick"
+      },
+      "title": {
+        "weekly": "Deine Woche, {name}",
+        "monthly": "Dein {month}, {name}"
+      },
+      "preheader": "Was du und alle anderen auf {server} abgespielt haben",
+      "noPlays": {
+        "weekly": "Du hast diese Woche nichts abgespielt.",
+        "monthly": "Du hast diesen Monat nichts abgespielt."
+      },
+      "onServer": "Auf {server}",
+      "viewers": "Zuschauer",
+      "topShows": "Meistgeschaute Serien",
+      "topMovies": "Meistgeschaute Filme",
+      "topArtists": "Meistgehörte Künstler",
+      "topUsers": "Wer am meisten geschaut hat",
+      "yourRank": "Du bist auf Platz {rank} von {count}.",
+      "button": "Mehr Statistiken ansehen",
+      "footer": {
+        "weekly": "Du bekommst diesen Wochenrückblick von {server}.",
+        "monthly": "Du bekommst diesen Monatsrückblick von {server}."
+      },
+      "unsubscribe": "Abmelden"
+    },
+    "Test": {
+      "subject": "Test-E-Mail von {app}",
+      "title": "Es funktioniert",
+      "body": "Dein Mailserver ist eingerichtet, also können Rewinds und Newsletter verschickt werden.",
+      "footer": "Aus den E-Mail-Einstellungen gesendet."
+    },
+    "Unsubscribe": {
+      "eyebrow": "Newsletter",
+      "button": "Abmelden",
+      "confirm": {
+        "title": "Abmelden?",
+        "body": "Du bekommst dann keine Rückblicke mehr von {server}."
+      },
+      "done": {
+        "title": "Du bist abgemeldet",
+        "body": "Du bekommst keine Rückblicke mehr von {server}. Frag den Admin, wenn du sie wieder haben möchtest."
+      },
+      "invalid": {
+        "title": "Dieser Link funktioniert nicht",
+        "body": "Vielleicht wurde er abgeschnitten. Versuche den Link in einer anderen E-Mail von {server}."
+      }
+    }
   }
 }
