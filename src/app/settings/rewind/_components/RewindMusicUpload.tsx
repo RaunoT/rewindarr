@@ -144,6 +144,8 @@ export default function RewindMusicUpload({ initialMusic }: Props) {
               type='button'
               className='icon-button'
               onClick={togglePlay}
+              // The track may be on its way out
+              disabled={isBusy}
               aria-label={isPlaying ? t('musicStop') : t('musicPlay')}
             >
               {isPlaying ? <StopIcon /> : <PlayIcon />}
