@@ -51,8 +51,8 @@ export function getStatementDuration(
         MAX,
       )
     : COUNTDOWN_PLACE
+  // A speed edited by hand in the settings file plays at the normal one
+  const factor = SPEED_FACTORS[speed] ?? 1
 
-  return Math.round(
-    (duration + (isStoryEnd ? STORY_END : 0)) * SPEED_FACTORS[speed],
-  )
+  return Math.round((duration + (isStoryEnd ? STORY_END : 0)) * factor)
 }

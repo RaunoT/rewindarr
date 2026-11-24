@@ -446,7 +446,11 @@ export default function Stories({
     // As the admin set it, unless the visitor turned it on or off
     const autoplay = readStorage(AUTOPLAY_KEY)
 
-    setIsAutoplayOn(autoplay ? autoplay === 'on' : isAutoplayDefault)
+    setIsAutoplayOn(
+      autoplay === 'on' || autoplay === 'off'
+        ? autoplay === 'on'
+        : isAutoplayDefault,
+    )
   }, [isAutoplayDefault])
 
   // The press can be let go anywhere, or end in a scroll
