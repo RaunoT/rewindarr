@@ -202,7 +202,7 @@ export default function HistoryItem({
           name: isAnonymous
             ? t('History.anonymous')
             : play.userName || t('History.unknownUser'),
-          avatar: play.avatar,
+          avatar: isAnonymous ? '' : play.avatar,
           isAnonymous,
         }
       : null,

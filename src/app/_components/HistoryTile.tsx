@@ -51,7 +51,7 @@ export default async function HistoryTile({
               name: isAnonymous
                 ? t('History.anonymous')
                 : play.userName || t('History.unknownUser'),
-              avatar: play.avatar,
+              avatar: isAnonymous ? '' : play.avatar,
               isAnonymous,
             }
 

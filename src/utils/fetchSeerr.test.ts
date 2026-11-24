@@ -23,12 +23,14 @@ function seerrFetch(
   override?: (skip: number) => Response | undefined,
 ) {
   const requests: URL[] = []
-  const stub = vi.fn<Fetch>(async (input) => {
+  const inits: (RequestInit | undefined)[] = []
+  const stub = vi.fn<Fetch>(async (input, init) => {
     const url = new URL(String(input))
     const take = Number(url.searchParams.get('take'))
     const skip = Number(url.searchParams.get('skip'))
 
     requests.push(url)
+    inits.push(init)
 
     const overridden = override?.(skip)
 
@@ -68,7 +70,7 @@ function seerrFetch(
 
   vi.stubGlobal('fetch', stub)
 
-  return { requests, stats }
+  return { requests, inits, stats }
 }
 
 // One request per hour, newest first, like Seerr returns them.
@@ -96,7 +98,7 @@ afterEach(() => {
 
 describe('fetchSeerrStats', () => {
   it('reads large pages, newest first', async () => {
-    const { requests } = seerrFetch(hourlyRequests(30))
+    const { requests, inits } = seerrFetch(hourlyRequests(30))
     const { fetchSeerrStats } = await load()
     const stats = await fetchSeerrStats(
       'request',
@@ -107,6 +109,7 @@ describe('fetchSeerrStats', () => {
     expect(requests).toHaveLength(1)
     expect(requests[0].pathname).toBe('/api/v1/request')
     expect(requests[0].searchParams.get('take')).toBe('100')
+    expect(inits[0]?.redirect).toBe('manual')
   })
 
   it("reads a user's requests with only the parameters Seerr accepts", async () => {

@@ -80,7 +80,7 @@ export default function HistoryRequestItem({
               name: isAnonymous
                 ? t('History.anonymous')
                 : request.userName || t('History.unknownUser'),
-              avatar: request.avatar,
+              avatar: isAnonymous ? '' : request.avatar,
               isAnonymous,
             }
           : null

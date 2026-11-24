@@ -45,7 +45,7 @@ export default async function fetchTautulli<T>(
     return null
   }
 
-  const apiUrl = `${tautulliUrl}/api/v2?apikey=${apiKey}`
+  const apiUrl = `${tautulliUrl}/api/v2?apikey=${encodeURIComponent(apiKey)}`
 
   if (isHostDown(tautulliUrl)) {
     return null
@@ -54,15 +54,20 @@ export default async function fetchTautulli<T>(
   let res: Response | undefined
 
   try {
-    res = await fetch(`${apiUrl}&cmd=${query}&${qs.stringify(params)}`, {
-      next: {
-        revalidate: cache ? 3600 : 0,
+    res = await fetch(
+      `${apiUrl}&cmd=${encodeURIComponent(query)}&${qs.stringify(params)}`,
+      {
+        next: {
+          revalidate: cache ? 3600 : 0,
+        },
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       },
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-    })
+    )
 
     // Tautulli answers with a 400 when something isn't there
     if (!res.ok && !(missingMessage && res.status === 400)) {
+      await res.body?.cancel()
+
       if (isGatewayError(res.status)) {
         markHostDown(tautulliUrl)
       }

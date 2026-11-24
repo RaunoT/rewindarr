@@ -41,8 +41,17 @@ type Body = {
 export async function POST(request: Request) {
   // A form on another site can't send JSON without asking first, so it can't
   // test URLs as a signed-in admin
-  if (!request.headers.get('content-type')?.startsWith('application/json')) {
+  if (
+    !request.headers
+      .get('content-type')
+      ?.toLowerCase()
+      .startsWith('application/json')
+  ) {
     return new Response(null, { status: 415 })
+  }
+
+  if (!(await canManageSettings())) {
+    return new Response(null, { status: 403 })
   }
 
   const body: Partial<Body> | null = await request.json().catch(() => null)
@@ -55,10 +64,6 @@ export async function POST(request: Request) {
     !Array.isArray(fields)
   ) {
     return new Response(null, { status: 400 })
-  }
-
-  if (!(await canManageSettings())) {
-    return new Response(null, { status: 403 })
   }
 
   const formData = new FormData()

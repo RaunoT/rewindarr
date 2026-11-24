@@ -6,9 +6,11 @@ import { isHostDown } from './hostBackoff'
 import {
   getPlexThemeUrl,
   getPlexTrackUrl,
+  isSignedTheme,
   isSignedTrack,
   isThemePath,
   isTrackPath,
+  MAX_AUDIO_PATHS,
   streamPlexAudio,
 } from './plexAudio'
 
@@ -63,25 +65,67 @@ beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation(() => {})
   vi.mocked(isHostDown).mockReturnValue(false)
   fetchMock.mockReset()
+
+  const { rewindarrPlexAudioPaths, rewindarrPendingPlexAudioPaths } =
+    globalThis as {
+      rewindarrPlexAudioPaths?: Map<string, unknown>
+      rewindarrPendingPlexAudioPaths?: Map<string, unknown>
+    }
+
+  rewindarrPlexAudioPaths?.clear()
+  rewindarrPendingPlexAudioPaths?.clear()
 })
 
 afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
   vi.unstubAllEnvs()
+  vi.useRealTimers()
 })
 
 describe('getPlexThemeUrl', () => {
-  it('links the app route with a token', () => {
-    expect(getPlexThemeUrl(testSettings(), 123)).toBe(
-      '/api/rewind/theme?key=123',
+  it('signs the rating key separately from track URLs', () => {
+    const themeUrl = new URL(
+      getPlexThemeUrl(testSettings(), 123) ?? '',
+      'http://x',
     )
+    const trackUrl = new URL(
+      getPlexTrackUrl(testSettings(), '123') ?? '',
+      'http://x',
+    )
+
+    expect(themeUrl.pathname).toBe('/api/rewind/theme')
+    expect(themeUrl.searchParams.get('key')).toBe('123')
+    expect(isSignedTheme('123', themeUrl.searchParams.get('sig') ?? '')).toBe(
+      true,
+    )
+    expect(isSignedTheme('124', themeUrl.searchParams.get('sig') ?? '')).toBe(
+      false,
+    )
+    expect(isSignedTheme('123', trackUrl.searchParams.get('sig') ?? '')).toBe(
+      false,
+    )
+    expect(isSignedTrack('123', themeUrl.searchParams.get('sig') ?? '')).toBe(
+      false,
+    )
+    expect(isSignedTheme('123', '')).toBe(false)
   })
 
-  it('has none without a token or rating key', () => {
+  it('has none for Jellyfin, without a token, invalid key, or without a secret', () => {
+    const jellyfin = testSettings()
+
+    jellyfin.connection.mediaServerType = 'jellyfin'
+
+    expect(getPlexThemeUrl(jellyfin, 123)).toBeNull()
     expect(getPlexThemeUrl(testSettings(''), 123)).toBeNull()
     expect(getPlexThemeUrl(testSettings(), 0)).toBeNull()
+    expect(getPlexThemeUrl(testSettings(), 'abc')).toBeNull()
     expect(getPlexThemeUrl(testSettings(), undefined)).toBeNull()
+
+    vi.stubEnv('NEXTAUTH_SECRET', '')
+
+    expect(getPlexThemeUrl(testSettings(), 123)).toBeNull()
+    expect(isSignedTheme('123', 'anything')).toBe(false)
   })
 })
 
@@ -234,6 +278,102 @@ describe('streamPlexAudio', () => {
     await streamPlexAudio(testSettings(), 'theme', key, request('bytes=100-'))
 
     expect(fetchMock).toHaveBeenCalledTimes(3)
+  })
+
+  it('deduplicates concurrent metadata lookups for the same key', async () => {
+    const key = nextKey()
+
+    let resolveMetadata!: (response: Response) => void
+
+    fetchMock.mockImplementation(async (input: string) => {
+      if (input.endsWith(`/library/metadata/${key}`)) {
+        return await new Promise<Response>((resolve) => {
+          resolveMetadata = resolve
+        })
+      }
+
+      return new Response('audio')
+    })
+
+    const first = streamPlexAudio(testSettings(), 'theme', key, request())
+    const second = streamPlexAudio(
+      testSettings(),
+      'theme',
+      key,
+      request('bytes=10-'),
+    )
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+
+    resolveMetadata(themeMetadata(`/library/metadata/${key}/theme/1`))
+    await Promise.all([first, second])
+
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+  })
+
+  it('clears failed lookups without caching so the next request retries', async () => {
+    const key = nextKey()
+
+    fetchMock
+      .mockResolvedValueOnce(new Response(null, { status: 500 }))
+      .mockResolvedValueOnce(themeMetadata(`/library/metadata/${key}/theme/1`))
+      .mockResolvedValueOnce(new Response('audio'))
+
+    expect(
+      (await streamPlexAudio(testSettings(), 'theme', key, request())).status,
+    ).toBe(404)
+
+    const retry = await streamPlexAudio(testSettings(), 'theme', key, request())
+
+    expect(retry.status).toBe(200)
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+  })
+
+  it('evicts the oldest cached audio paths once past the cap', async () => {
+    fetchMock.mockImplementation(async (input: string) => {
+      const match = input.match(/\/library\/metadata\/(\d+)$/)
+
+      if (match) {
+        return themeMetadata(`/library/metadata/${match[1]}/theme/1`)
+      }
+
+      return new Response('audio')
+    })
+
+    const firstKey = nextKey()
+
+    await streamPlexAudio(testSettings(), 'theme', firstKey, request())
+
+    for (let i = 0; i < MAX_AUDIO_PATHS; i++) {
+      await streamPlexAudio(testSettings(), 'theme', nextKey(), request())
+    }
+
+    const callsBefore = fetchMock.mock.calls.length
+
+    await streamPlexAudio(testSettings(), 'theme', firstKey, request())
+
+    // Both metadata and audio were fetched again because `firstKey` was evicted
+    expect(fetchMock).toHaveBeenCalledTimes(callsBefore + 2)
+  })
+
+  it('drops expired cache entries when their TTL lapses', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+
+    const key = nextKey()
+
+    fetchMock.mockImplementation(async (input: string) => {
+      if (input.endsWith(`/library/metadata/${key}`)) {
+        return themeMetadata(`/library/metadata/${key}/theme/1`)
+      }
+
+      return new Response('audio')
+    })
+
+    await streamPlexAudio(testSettings(), 'theme', key, request())
+    vi.advanceTimersByTime(61 * 60 * 1000)
+    await streamPlexAudio(testSettings(), 'theme', key, request())
+
+    expect(fetchMock).toHaveBeenCalledTimes(4)
   })
 
   it('has none for an item without a theme', async () => {

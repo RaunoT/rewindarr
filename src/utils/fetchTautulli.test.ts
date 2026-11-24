@@ -205,6 +205,21 @@ describe('fetchTautulli', () => {
     expect(cachedInit.next).toEqual({ revalidate: 3600 })
   })
 
+  it('URL-encodes API keys and commands with special characters', async () => {
+    const settings = testSettings()
+
+    settings.connection.tautulliApiKey = 'k+e/y&cmd=evil'
+    vi.mocked(getSettings).mockReturnValue(settings)
+    fetchMock.mockResolvedValue(tautulliResponse({}))
+
+    await fetchTautulli('get_activity')
+
+    const url = new URL(String(fetchMock.mock.calls[0][0]))
+
+    expect(url.searchParams.get('apikey')).toBe('k+e/y&cmd=evil')
+    expect(url.searchParams.get('cmd')).toBe('get_activity')
+  })
+
   it('returns null and says so when the request times out', async () => {
     const timeout = new DOMException('The operation timed out.', 'TimeoutError')
 

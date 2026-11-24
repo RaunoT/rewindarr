@@ -157,10 +157,6 @@
   "Sidebar": {
     "label": "Hauptnavigation"
   },
-  "Offline": {
-    "title": "Du bist offline",
-    "retry": "Erneut versuchen"
-  },
   "Settings": {
     "title": "Einstellungen",
     "getStarted": "Lass uns loslegen!",

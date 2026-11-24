@@ -41,7 +41,18 @@ export async function GET(request: Request) {
     return new Response(null, { status: 404 })
   }
 
-  const { size } = fs.statSync(REWIND_MUSIC_PATH)
+  let size: number
+
+  try {
+    size = fs.statSync(REWIND_MUSIC_PATH).size
+  } catch {
+    return new Response(null, { status: 404 })
+  }
+
+  if (size === 0) {
+    return new Response(null, { status: 404 })
+  }
+
   const range = parseRange(request.headers.get('range'), size)
   const headers = new Headers({
     'Content-Type': music.type,
@@ -84,23 +95,48 @@ export async function PUT(request: Request) {
     return Response.json({ error: 'forbidden' }, { status: 403 })
   }
 
-  const name = decodeURIComponent(request.headers.get('x-file-name') ?? '')
-  const type = getMusicType(name)
-  const length = Number(request.headers.get('content-length'))
+  let name: string
 
-  if (!type || !request.body || !length) {
+  try {
+    name = decodeURIComponent(request.headers.get('x-file-name') ?? '')
+  } catch {
+    return Response.json({ error: 'type' }, { status: 400 })
+  }
+
+  const type = getMusicType(name)
+
+  if (!type || !request.body) {
     return Response.json({ error: 'type' }, { status: 415 })
   }
 
-  if (length > REWIND_MUSIC_MAX_BYTES) {
-    return Response.json({ error: 'size' }, { status: 413 })
+  const lengthHeader = request.headers.get('content-length')
+
+  if (lengthHeader !== null) {
+    const trimmed = lengthHeader.trim()
+    const length = Number(trimmed)
+
+    if (!/^\d+$/.test(trimmed)) {
+      return Response.json({ error: 'type' }, { status: 400 })
+    }
+
+    if (length === 0) {
+      return Response.json({ error: 'empty' }, { status: 400 })
+    }
+
+    if (length > REWIND_MUSIC_MAX_BYTES) {
+      return Response.json({ error: 'size' }, { status: 413 })
+    }
   }
 
   try {
     const music = await saveMusic(request.body, name, type)
 
-    if (!music) {
+    if (music === 'tooLarge') {
       return Response.json({ error: 'size' }, { status: 413 })
+    }
+
+    if (music === 'empty') {
+      return Response.json({ error: 'empty' }, { status: 400 })
     }
 
     const settings = getSettings()

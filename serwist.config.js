@@ -1,14 +1,37 @@
 // @ts-check
 import { serwist } from '@serwist/next/config'
 
-const revision = crypto.randomUUID()
-
-export default serwist({
+const config = await serwist({
   swSrc: 'src/lib/sw.ts',
   swDest: 'public/sw.js',
-  // Only what the offline page needs: its stylesheet and the app icons.
-  // Everything else is cached as it's used.
-  globPatterns: ['.next/static/**/*.css', 'public/{manifest.json,icon-*.png}'],
+  // Only the static offline fallback and its assets; hashed build chunks are
+  // cached as they are used.
+  globPatterns: ['public/{manifest.json,offline.html,offline.js,icon-*.png}'],
   precachePrerendered: false,
-  additionalPrecacheEntries: [{ url: '/~offline', revision }],
 })
+// @serwist/next turns `public/offline.html` into `/public/offline`; restore its
+// real URL while keeping the content hash revision it computed.
+const serwistConfig = {
+  ...config,
+  manifestTransforms: [
+    ...(config.manifestTransforms ?? []),
+    /** @param {import('serwist').PrecacheEntry[]} manifest */
+    (manifest) => {
+      const mapped = manifest.map((entry) =>
+        entry.url === '/public/offline'
+          ? { ...entry, url: '/offline.html' }
+          : entry,
+      )
+
+      if (!mapped.some((entry) => entry.url === '/offline.html')) {
+        throw new Error(
+          'Expected /offline.html in Serwist precache manifest after URL transform',
+        )
+      }
+
+      return { manifest: mapped, warnings: [] }
+    },
+  ],
+}
+
+export default serwistConfig
