@@ -1,3 +1,4 @@
+import { AutoplaySpeed } from '@/utils/constants'
 import { useMotionValue } from 'motion/react'
 import { RefObject, useEffect, useRef } from 'react'
 import { getStatementDuration, StatementContent } from './autoplay'
@@ -10,6 +11,7 @@ type Options = {
   isStoryEnd: boolean
   // The clock stops where it is while this is off
   isRunning: boolean
+  speed: AutoplaySpeed
   // How much of the story's progress bar is filled before the statement, and
   // with it
   from: number
@@ -89,6 +91,7 @@ export default function useAutoplay({
   step,
   isStoryEnd,
   isRunning,
+  speed,
   from,
   to,
   onEnd,
@@ -137,7 +140,7 @@ export default function useAutoplay({
     const duration =
       timer.content === undefined
         ? null
-        : getStatementDuration(timer.content, isStoryEnd)
+        : getStatementDuration(timer.content, isStoryEnd, speed)
 
     function update() {
       const share = duration ? Math.min(timer.elapsed / duration, 1) : 0
@@ -169,7 +172,17 @@ export default function useAutoplay({
     })
 
     return () => cancelAnimationFrame(frame)
-  }, [slideRef, storyIndex, step, isStoryEnd, isRunning, from, to, progress])
+  }, [
+    slideRef,
+    storyIndex,
+    step,
+    isStoryEnd,
+    isRunning,
+    speed,
+    from,
+    to,
+    progress,
+  ])
 
   return progress
 }

@@ -1,3 +1,5 @@
+import { AutoplaySpeed } from '@/utils/constants'
+
 // What a statement gives the viewer to take in
 export type StatementContent = {
   // The characters of the statement itself, which is read word by word
@@ -21,6 +23,12 @@ const MAX = 9000
 const COUNTDOWN_PLACE = 2500
 // A beat on a story's last statement, before it all makes way for the next
 const STORY_END = 1000
+// What the admin's speed does to each statement's time
+const SPEED_FACTORS: Record<AutoplaySpeed, number> = {
+  slow: 1.5,
+  normal: 1,
+  fast: 0.75,
+}
 
 // How long a statement stays up before the stories move on by themselves, in
 // milliseconds. A step without a statement of its own (`content` is null)
@@ -28,6 +36,7 @@ const STORY_END = 1000
 export function getStatementDuration(
   content: StatementContent | null,
   isStoryEnd: boolean,
+  speed: AutoplaySpeed = 'normal',
 ): number {
   const duration = content
     ? Math.min(
@@ -43,5 +52,7 @@ export function getStatementDuration(
       )
     : COUNTDOWN_PLACE
 
-  return duration + (isStoryEnd ? STORY_END : 0)
+  return Math.round(
+    (duration + (isStoryEnd ? STORY_END : 0)) * SPEED_FACTORS[speed],
+  )
 }

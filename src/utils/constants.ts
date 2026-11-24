@@ -109,6 +109,8 @@ export const DEFAULT_SETTINGS: Settings = {
     isThemeMusicActive: false,
     music: null,
     isSnowActive: true,
+    isAutoplayActive: false,
+    autoplaySpeed: 'normal',
     period: 'calendarYear',
     releaseDate: '12-01',
     startDate: '',
@@ -263,6 +265,11 @@ export const REWIND_STORIES = [
 ] as const
 
 export type RewindStoryId = (typeof REWIND_STORIES)[number]
+
+// How fast the stories move on by themselves
+export const AUTOPLAY_SPEEDS = ['slow', 'normal', 'fast'] as const
+
+export type AutoplaySpeed = (typeof AUTOPLAY_SPEEDS)[number]
 
 export const REWIND_MUSIC_MAX_BYTES = 50 * 1024 * 1024
 // What a Rewind track may be, by file extension, and the type it's served as

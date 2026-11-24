@@ -58,4 +58,10 @@ describe('getStatementDuration', () => {
       10000,
     )
   })
+
+  it("scales each statement's time by the speed", () => {
+    expect(getStatementDuration(null, true, 'slow')).toBe(5250)
+    expect(getStatementDuration(null, true, 'normal')).toBe(3500)
+    expect(getStatementDuration(null, true, 'fast')).toBe(2625)
+  })
 })

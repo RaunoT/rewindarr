@@ -329,6 +329,14 @@
       "musicSizeError": "Fail on suurem kui {size}.",
       "musicError": "Muusikat ei õnnestunud muuta. Proovi uuesti.",
       "snow": "Lumi",
+      "autoplay": "Automaatesitus",
+      "autoplayDefault": "Vaikimisi sees",
+      "autoplaySpeed": "Kiirus",
+      "autoplaySpeeds": {
+        "slow": "Aeglane",
+        "normal": "Tavaline",
+        "fast": "Kiire"
+      },
       "period": "Periood",
       "covers": "Hõlmab",
       "periods": {

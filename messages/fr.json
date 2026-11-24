@@ -329,6 +329,14 @@
       "musicSizeError": "Le fichier dépasse {size}.",
       "musicError": "La musique n'a pas pu être mise à jour. Réessayez.",
       "snow": "Neige",
+      "autoplay": "Lecture automatique",
+      "autoplayDefault": "Activée par défaut",
+      "autoplaySpeed": "Vitesse",
+      "autoplaySpeeds": {
+        "slow": "Lente",
+        "normal": "Normale",
+        "fast": "Rapide"
+      },
       "period": "Période",
       "covers": "Couvre",
       "periods": {

@@ -9,7 +9,11 @@ import {
   RewindSettings,
   SettingsFormInitialState,
 } from '@/types/settings'
-import { REWIND_STORIES, RewindStoryId } from '@/utils/constants'
+import {
+  AUTOPLAY_SPEEDS,
+  REWIND_STORIES,
+  RewindStoryId,
+} from '@/utils/constants'
 import { getOpenPages, Viewer } from '@/utils/helpers'
 import { FIRST_YEAR, getRewindPeriodType } from '@/utils/rewindPeriod'
 import {
@@ -226,6 +230,39 @@ export default function RewindSettingsForm({ settings }: Props) {
               </span>
             </Switch>
             <RewindMusicUpload initialMusic={settings.rewind.music} />
+          </section>
+          <section className='group-settings group'>
+            <h2 className='heading-settings'>{t('autoplay')}</h2>
+            <Switch
+              key={`autoplay-${rewindSettings.isAutoplayActive}`}
+              className='switch'
+              name='isAutoplayActive'
+              defaultSelected={rewindSettings.isAutoplayActive}
+            >
+              <div className='indicator' />
+              <span className='label'>
+                <span className='label-wrapper'>{t('autoplayDefault')}</span>
+              </span>
+            </Switch>
+            <label className='input-wrapper'>
+              <span className='select-wrapper'>
+                <select
+                  key={`autoplay-speed-${rewindSettings.autoplaySpeed}`}
+                  className='input'
+                  name='autoplaySpeed'
+                  defaultValue={rewindSettings.autoplaySpeed}
+                >
+                  {AUTOPLAY_SPEEDS.map((speed) => (
+                    <option key={speed} value={speed}>
+                      {t(`autoplaySpeeds.${speed}`)}
+                    </option>
+                  ))}
+                </select>
+              </span>
+              <span className='label'>
+                <span className='label-wrapper'>{t('autoplaySpeed')}</span>
+              </span>
+            </label>
           </section>
           <section className='group-settings group'>
             <h2 className='heading-settings'>{t('period')}</h2>
