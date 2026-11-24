@@ -377,7 +377,9 @@
       "shareLinksReset": "Reset links",
       "shareLinksResetDescription": "Stops every link shared so far from working",
       "shareLinksResetDone": "Links shared before no longer work",
-      "shareLinksResetError": "Couldn't reset the links"
+      "shareLinksResetError": "Couldn't reset the links",
+      "shareLinksUsers": "Users",
+      "shareLinksResetButton": "Reset"
     }
   },
   "LocaleSelect": {

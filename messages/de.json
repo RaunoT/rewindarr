@@ -377,7 +377,9 @@
       "shareLinksReset": "Links zurücksetzen",
       "shareLinksResetDescription": "Alle bisher geteilten Links funktionieren dann nicht mehr",
       "shareLinksResetDone": "Zuvor geteilte Links funktionieren nicht mehr",
-      "shareLinksResetError": "Links konnten nicht zurückgesetzt werden"
+      "shareLinksResetError": "Links konnten nicht zurückgesetzt werden",
+      "shareLinksUsers": "Benutzer",
+      "shareLinksResetButton": "Zurücksetzen"
     }
   },
   "LocaleSelect": {

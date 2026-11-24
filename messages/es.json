@@ -377,7 +377,9 @@
       "shareLinksReset": "Restablecer enlaces",
       "shareLinksResetDescription": "Todos los enlaces compartidos hasta ahora dejan de funcionar",
       "shareLinksResetDone": "Los enlaces compartidos antes ya no funcionan",
-      "shareLinksResetError": "No se pudieron restablecer los enlaces"
+      "shareLinksResetError": "No se pudieron restablecer los enlaces",
+      "shareLinksUsers": "Usuarios",
+      "shareLinksResetButton": "Restablecer"
     }
   },
   "LocaleSelect": {

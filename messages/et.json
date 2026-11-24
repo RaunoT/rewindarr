@@ -377,7 +377,9 @@
       "shareLinksReset": "Lähtesta lingid",
       "shareLinksResetDescription": "Kõik seni jagatud lingid lakkavad töötamast",
       "shareLinksResetDone": "Varem jagatud lingid enam ei tööta",
-      "shareLinksResetError": "Linke ei õnnestunud lähtestada"
+      "shareLinksResetError": "Linke ei õnnestunud lähtestada",
+      "shareLinksUsers": "Kasutajad",
+      "shareLinksResetButton": "Lähtesta"
     }
   },
   "LocaleSelect": {

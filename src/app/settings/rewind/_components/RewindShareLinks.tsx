@@ -190,14 +190,14 @@ function ShareLinkList({ users: usersRequest, isDisabled }: ListProps) {
 
   if (!users || !shownUsers) {
     return (
-      <p className='text-danger text-xs sm:pl-50' role='alert'>
+      <p className='text-danger text-xs' role='alert'>
         {t('shareLinksError')}
       </p>
     )
   }
 
   return (
-    <div className='grid gap-2 sm:pl-50'>
+    <div className='grid gap-2'>
       {users.length > SEARCH_FROM && (
         <input
           type='search'
@@ -274,24 +274,34 @@ export default function RewindShareLinks({ users }: Props) {
   return (
     <section className='group-settings group'>
       <h2 className='heading-settings'>{t('shareLinks')}</h2>
-      <p className='text-xs text-neutral-400 sm:pl-50'>
-        {t('shareLinksDescription')}
-      </p>
-      <Suspense>
-        <ShareLinkList users={users} isDisabled={isPending} />
-      </Suspense>
-      <div className='flex flex-wrap items-center gap-x-4 gap-y-2 sm:pl-50'>
-        <button
-          type='button'
-          className='button button-sm'
-          onClick={reset}
-          disabled={isPending}
-        >
-          {t('shareLinksReset')}
-        </button>
-        <p className='text-xs text-neutral-400'>
-          {t('shareLinksResetDescription')}
-        </p>
+      {/* What to know before sending one, where the other settings say what
+          they do */}
+      <div className='input-wrapper'>
+        <div className='min-w-0 flex-1'>
+          <Suspense>
+            <ShareLinkList users={users} isDisabled={isPending} />
+          </Suspense>
+        </div>
+        <span className='label label--start'>
+          <span className='label-wrapper'>{t('shareLinksUsers')}</span>
+          <small>{t('shareLinksDescription')}</small>
+        </span>
+      </div>
+      <div className='input-wrapper'>
+        <div className='flex min-w-0 flex-1 items-start'>
+          <button
+            type='button'
+            className='button button-sm'
+            onClick={reset}
+            disabled={isPending}
+          >
+            {t('shareLinksResetButton')}
+          </button>
+        </div>
+        <span className='label label--start'>
+          <span className='label-wrapper'>{t('shareLinksReset')}</span>
+          <small>{t('shareLinksResetDescription')}</small>
+        </span>
       </div>
     </section>
   )

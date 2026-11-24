@@ -377,7 +377,9 @@
       "shareLinksReset": "Réinitialiser les liens",
       "shareLinksResetDescription": "Tous les liens partagés jusqu'ici cessent de fonctionner",
       "shareLinksResetDone": "Les liens partagés auparavant ne fonctionnent plus",
-      "shareLinksResetError": "Impossible de réinitialiser les liens"
+      "shareLinksResetError": "Impossible de réinitialiser les liens",
+      "shareLinksUsers": "Utilisateurs",
+      "shareLinksResetButton": "Réinitialiser"
     }
   },
   "LocaleSelect": {

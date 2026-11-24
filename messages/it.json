@@ -377,7 +377,9 @@
       "shareLinksReset": "Reimposta i link",
       "shareLinksResetDescription": "Tutti i link condivisi finora smettono di funzionare",
       "shareLinksResetDone": "I link condivisi prima non funzionano più",
-      "shareLinksResetError": "Impossibile reimpostare i link"
+      "shareLinksResetError": "Impossibile reimpostare i link",
+      "shareLinksUsers": "Utenti",
+      "shareLinksResetButton": "Reimposta"
     }
   },
   "LocaleSelect": {
