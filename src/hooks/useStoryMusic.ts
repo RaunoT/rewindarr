@@ -1,4 +1,4 @@
-import { showAppInNowPlaying } from '@/utils/mediaSession'
+import { clearNowPlaying, showAppInNowPlaying } from '@/utils/mediaSession'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 type Player = {
@@ -121,6 +121,7 @@ export default function useStoryMusic({
       }
 
       players.clear()
+      clearNowPlaying()
     }
   }, [])
 
