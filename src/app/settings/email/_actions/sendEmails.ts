@@ -4,7 +4,6 @@ import { canManageEmail } from '@/lib/access'
 import { authOptions } from '@/lib/auth'
 import { buildTestEmail } from '@/utils/emailContent'
 import { getEmailIntl } from '@/utils/emailIntl'
-import { getAppUrl } from '@/utils/emailLinks'
 import { isEmailAddress } from '@/utils/emailRecipients'
 import {
   SendOutcome,
@@ -69,10 +68,7 @@ export async function sendTestEmail(
   }
 
   const intl = await getEmailIntl(settings.email.locale)
-  const result = await sendEmail(
-    server,
-    buildTestEmail(settings, intl, to, getAppUrl(settings)),
-  )
+  const result = await sendEmail(server, buildTestEmail(settings, intl, to))
 
   return result.status === 'sent'
     ? { status: 'success', message: t('testSent', { address: to }) }
@@ -105,6 +101,28 @@ export async function sendRewind(userIds: string[]): Promise<SendActionResult> {
   }
 
   return toResult(await sendRewindEmails(getSettings(), userIds))
+}
+
+// The signed-in admin's own Rewind invite, sent to them
+export async function sendRewindToMe(): Promise<SendActionResult> {
+  if (!(await canManageEmail())) {
+    return deny()
+  }
+
+  const session = await getServerSession(authOptions)
+
+  if (!session?.user.id) {
+    return deny()
+  }
+
+  return toResult(
+    await sendRewindEmails(
+      getSettings(),
+      [session.user.id],
+      // The one they signed in with, where there's no other
+      session.user.email ?? undefined,
+    ),
+  )
 }
 
 // The signed-in admin's own newsletter for the last period, sent to them

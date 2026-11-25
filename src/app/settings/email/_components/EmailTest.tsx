@@ -52,11 +52,13 @@ export default function EmailTest({ defaultAddress }: Props) {
   return (
     <div ref={ref} className='input-wrapper'>
       <div className='flex min-w-0 flex-1 flex-col gap-2'>
-        <div className='flex gap-2'>
+        {/* Under the address on phones, where beside it would leave it too
+            narrow to read */}
+        <div className='flex flex-col items-start gap-2 sm:flex-row sm:items-center'>
           {/* Not a setting, so it has no name and isn't saved */}
           <input
             type='email'
-            className='input'
+            className='input min-w-0'
             value={address}
             onChange={(e) => {
               setAddress(e.target.value)

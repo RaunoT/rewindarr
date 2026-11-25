@@ -26,11 +26,14 @@ export type BuiltEmail =
 const LIST_LENGTH = 3
 const SERVER_LIST_LENGTH = 5
 const RANKS_LENGTH = 5
+// From the project's site, not the app: mail apps load images through their
+// own servers, which can't reach an app that's only open at home or on a VPN
+const LOGO_URL = 'https://rewindarr.eu/assets/apple-icon.png'
 
-function getBranding(settings: Settings, appUrl: string) {
+function getBranding(settings: Settings) {
   return {
     serverName: settings.general.serverName || APP_NAME,
-    logoUrl: toAppUrl(appUrl, '/icon-192x192.png'),
+    logoUrl: LOGO_URL,
   }
 }
 
@@ -139,7 +142,7 @@ export async function buildRewindEmail(
     return { status: 'skipped', reason: 'noPlays' }
   }
 
-  const { serverName, logoUrl } = getBranding(settings, appUrl)
+  const { serverName, logoUrl } = getBranding(settings)
   const year = period.year
   const name = recipient.name
   const subject =
@@ -149,7 +152,7 @@ export async function buildRewindEmail(
   const { html, text } = renderEmail({
     locale: intl.locale,
     subject,
-    preheader: t('Email.Rewind.preheader', { server: serverName }),
+    preheader: t('Email.Rewind.preheader'),
     serverName,
     logoUrl,
     panels: [
@@ -162,10 +165,7 @@ export async function buildRewindEmail(
               : t('Email.Rewind.eyebrowYear', { year }),
         },
         { type: 'title', text: t('Email.Rewind.title', { name }) },
-        {
-          type: 'paragraph',
-          text: t('Email.Rewind.intro', { server: serverName }),
-        },
+        { type: 'paragraph', text: t('Email.Rewind.intro') },
         ...getRewindTeaser(settings, intl),
         { type: 'button', href: shareUrl, label: t('Email.Rewind.button') },
       ],
@@ -236,7 +236,7 @@ export async function buildNewsletter(
   const isServerShown = isOthersShown && sections.includes('server')
   const isRanksShown = isOthersShown && sections.includes('topUsers')
   const serverTotals = getTotals(server.stats)
-  const { serverName, logoUrl } = getBranding(settings, appUrl)
+  const { serverName, logoUrl } = getBranding(settings)
   const panels: EmailBlock[][] = []
   const month = format.dateTime(new Date(period.since), { month: 'long' })
   const range = format.dateTimeRange(
@@ -450,7 +450,6 @@ export function buildTestEmail(
   settings: Settings,
   intl: EmailIntl,
   to: string,
-  appUrl: string | null,
 ): OutgoingEmail {
   const { t } = intl
   const serverName = settings.general.serverName || APP_NAME
@@ -460,7 +459,7 @@ export function buildTestEmail(
     subject,
     preheader: t('Email.Test.body'),
     serverName,
-    logoUrl: appUrl && toAppUrl(appUrl, '/icon-192x192.png'),
+    logoUrl: LOGO_URL,
     panels: [
       [
         { type: 'eyebrow', text: APP_NAME },

@@ -1,6 +1,7 @@
 import { EmailSettings } from '@/types/settings'
 import nodemailer from 'nodemailer'
 import { SAVED_API_KEY } from './connectionSecrets'
+import { APP_NAME } from './constants'
 
 export type MailServer = Pick<
   EmailSettings,
@@ -23,6 +24,7 @@ export type OutgoingEmail = {
 
 // Why an email didn't go, as a key of the Settings.Email messages
 export type MailErrorKey =
+  | 'mailAuthRequired'
   | 'mailAuthFailed'
   | 'mailUnableToConnect'
   | 'mailCertificateError'
@@ -69,7 +71,14 @@ export function getMailErrorKey(error: unknown): MailErrorKey {
   }
   const message = error instanceof Error ? error.message : ''
 
-  if (code === 'EAUTH' || responseCode === 535) {
+  // Gmail and most others answer the first command with this until the app
+  // signs in
+  if (responseCode === 530) {
+    return 'mailAuthRequired'
+  }
+
+  // 534 is Gmail's for an account password where it wants an app password
+  if (code === 'EAUTH' || responseCode === 534 || responseCode === 535) {
     return 'mailAuthFailed'
   }
 
@@ -104,7 +113,11 @@ export async function sendEmails(
   emails: OutgoingEmail[],
 ): Promise<SendResult[]> {
   const transport = createTransport(server, emails.length > 1)
-  const from = { name: server.fromName, address: server.fromAddress }
+  // Never nameless, which inboxes would show as the bare address
+  const from = {
+    name: server.fromName.trim() || APP_NAME,
+    address: server.fromAddress,
+  }
   const results: SendResult[] = []
 
   try {

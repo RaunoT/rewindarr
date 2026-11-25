@@ -27,7 +27,7 @@ export async function register() {
     .then(({ default: getVersion }) => getVersion())
     .catch(() => {})
 
-  const { startNewsletterSchedule } = await import('./utils/newsletter')
+  const { startEmailSchedule } = await import('./utils/newsletter')
 
-  startNewsletterSchedule()
+  startEmailSchedule()
 }

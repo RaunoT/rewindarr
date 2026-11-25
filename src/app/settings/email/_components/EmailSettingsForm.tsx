@@ -1,7 +1,6 @@
 'use client'
 
 import MultiSelect from '@/components/MultiSelect'
-import { toastQueue } from '@/components/Toasts'
 import { EmailSettings, SettingsFormInitialState } from '@/types/settings'
 import {
   EMAIL_SECURITIES,
@@ -13,19 +12,17 @@ import {
 import type { EmailRecipient } from '@/utils/emailRecipients'
 import { getLocaleName } from '@/utils/localeName'
 import type { NewsletterRun } from '@/utils/newsletter'
+import { getNextSendTime, MAX_MONTH_DAY } from '@/utils/newsletterSchedule'
 import { useFormatter, useTranslations } from 'next-intl'
-import {
-  useActionState,
-  useState,
-  useSyncExternalStore,
-  useTransition,
-} from 'react'
+import { useActionState, useState, useSyncExternalStore } from 'react'
 import { Switch } from 'react-aria-components'
 import SettingsForm from '../../_components/SettingsForm'
 import { sendNewsletterToMe } from '../_actions/sendEmails'
 import saveEmailSettings from '../_actions/updateEmailSettings'
-import EmailRecipients from './EmailRecipients'
+import EmailAddresses from './EmailAddresses'
 import EmailTest from './EmailTest'
+import EmailTryIt from './EmailTryIt'
+import NewsletterRecipients from './NewsletterRecipients'
 import RewindEmails from './RewindEmails'
 
 export type EmailFormSettings = Omit<
@@ -42,8 +39,6 @@ type Props = {
   isRewindShared: boolean
   // Off when users see only their own stats, which leaves out the server's
   isOthersShown: boolean
-  // ISO 8601
-  nextSendTime: string
   lastRun: NewsletterRun | null
   adminAddress: string
   adminId: string
@@ -57,6 +52,7 @@ type EmailFormState = SettingsFormInitialState<Partial<EmailSettings>>
 const SUNDAY = new Date(2026, 0, 4)
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour)
 const WEEKDAYS = Array.from({ length: 7 }, (_, day) => day)
+const MONTH_DAYS = Array.from({ length: MAX_MONTH_DAY }, (_, day) => day + 1)
 
 function subscribe() {
   return () => {}
@@ -72,7 +68,6 @@ export default function EmailSettingsForm({
   siteUrl,
   isRewindShared,
   isOthersShown,
-  nextSendTime,
   lastRun,
   adminAddress,
   adminId,
@@ -80,7 +75,6 @@ export default function EmailSettingsForm({
 }: Props) {
   const t = useTranslations('Settings.Email')
   const tCommon = useTranslations('Common')
-  const tSettings = useTranslations('Settings')
   const format = useFormatter()
   const initialState: EmailFormState = {
     message: '',
@@ -98,7 +92,23 @@ export default function EmailSettingsForm({
   const [frequency, setFrequency] = useState<NewsletterFrequency>(
     settings.newsletterFrequency,
   )
-  const [isSending, startSending] = useTransition()
+  const [weekday, setWeekday] = useState(settings.newsletterWeekday)
+  const [monthDay, setMonthDay] = useState(settings.newsletterMonthDay)
+  const [hour, setHour] = useState(settings.newsletterHour)
+  // When the page was opened, which the next send is worked out from
+  const [openedAt] = useState(() => new Date())
+  // As picked, before it's saved, in the server's time zone like the schedule
+  const nextSendTime = getNextSendTime(
+    {
+      isNewsletterActive: true,
+      newsletterFrequency: frequency,
+      newsletterWeekday: weekday,
+      newsletterMonthDay: monthDay,
+      newsletterHour: hour,
+    },
+    openedAt,
+    timeZone,
+  )
   // The address the admin opened the settings from, until another is saved
   const origin = useSyncExternalStore(subscribe, getOrigin, () => '')
   const appUrl = emailSettings.appUrl || (siteUrl ? '' : origin)
@@ -108,21 +118,6 @@ export default function EmailSettingsForm({
     value: section,
     label: t(`sections.${section}`),
   }))
-
-  function sendToMe() {
-    startSending(async () => {
-      const result = await sendNewsletterToMe().catch(() => ({
-        status: 'error' as const,
-        message: tSettings('genericError'),
-      }))
-
-      toastQueue.add(
-        { message: result.message, status: result.status },
-        // Errors stay until dismissed, so they can be read
-        result.status === 'success' ? { timeout: 5000 } : undefined,
-      )
-    })
-  }
 
   return (
     <SettingsForm formState={formState} formAction={formAction}>
@@ -187,7 +182,6 @@ export default function EmailSettingsForm({
           />
           <span className='label'>
             <span className='label-wrapper'>{t('user')}</span>
-            <small>{t('userDescription')}</small>
           </span>
         </label>
         <label className='input-wrapper'>
@@ -266,7 +260,7 @@ export default function EmailSettingsForm({
             <span className='label-wrapper'>{t('language')}</span>
           </span>
         </label>
-        <EmailRecipients recipients={recipients} formKey={formKey} />
+        <EmailAddresses recipients={recipients} formKey={formKey} />
       </section>
       <section className='group-settings group'>
         <h2 className='heading-settings'>{t('newsletter')}</h2>
@@ -310,10 +304,10 @@ export default function EmailSettingsForm({
               <label className='input-wrapper'>
                 <span className='select-wrapper'>
                   <select
-                    key={`weekday-${emailSettings.newsletterWeekday}`}
                     className='input'
                     name='newsletterWeekday'
-                    defaultValue={emailSettings.newsletterWeekday}
+                    value={weekday}
+                    onChange={(e) => setWeekday(Number(e.target.value))}
                   >
                     {WEEKDAYS.map((day) => (
                       <option key={day} value={day}>
@@ -334,13 +328,34 @@ export default function EmailSettingsForm({
                 </span>
               </label>
             )}
+            {frequency !== 'weekly' && (
+              <label className='input-wrapper'>
+                <span className='select-wrapper'>
+                  <select
+                    className='input'
+                    name='newsletterMonthDay'
+                    value={monthDay}
+                    onChange={(e) => setMonthDay(Number(e.target.value))}
+                  >
+                    {MONTH_DAYS.map((day) => (
+                      <option key={day} value={day}>
+                        {day}
+                      </option>
+                    ))}
+                  </select>
+                </span>
+                <span className='label'>
+                  <span className='label-wrapper'>{t('monthDay')}</span>
+                </span>
+              </label>
+            )}
             <label className='input-wrapper'>
               <span className='select-wrapper'>
                 <select
-                  key={`hour-${emailSettings.newsletterHour}`}
                   className='input'
                   name='newsletterHour'
-                  defaultValue={emailSettings.newsletterHour}
+                  value={hour}
+                  onChange={(e) => setHour(Number(e.target.value))}
                 >
                   {HOURS.map((hour) => (
                     <option key={hour} value={hour}>
@@ -354,9 +369,52 @@ export default function EmailSettingsForm({
               </span>
               <span className='label'>
                 <span className='label-wrapper'>{t('hour')}</span>
-                <small>{t('hourDescription', { timeZone })}</small>
+                {/* The server's, which the schedule runs in */}
+                <small>{timeZone}</small>
               </span>
             </label>
+            {/* As picked, so it's clear when it goes out once saved */}
+            <div className='grid gap-1 text-sm sm:pl-50'>
+              <p className='text-neutral-300'>
+                {t('nextSend', {
+                  date: format.dateTime(nextSendTime, {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    timeZone,
+                  }),
+                })}
+              </p>
+              {lastRun && (
+                <p
+                  className={
+                    lastRun.error || lastRun.failed
+                      ? 'text-danger'
+                      : 'text-neutral-400'
+                  }
+                >
+                  {lastRun.error
+                    ? t('lastRunError', {
+                        date: format.dateTime(new Date(lastRun.at), {
+                          dateStyle: 'medium',
+                          timeStyle: 'short',
+                        }),
+                        error: t(lastRun.error),
+                      })
+                    : t('lastRun', {
+                        date: format.dateTime(new Date(lastRun.at), {
+                          dateStyle: 'medium',
+                          timeStyle: 'short',
+                        }),
+                        sent: lastRun.sent,
+                        failed: lastRun.failed,
+                        skipped: lastRun.skipped,
+                      })}
+                </p>
+              )}
+            </div>
             <MultiSelect
               key={`sections-${emailSettings.newsletterSections.join(',')}`}
               label={t('sectionsLabel')}
@@ -366,76 +424,14 @@ export default function EmailSettingsForm({
               defaultValue={emailSettings.newsletterSections}
               placeholder={tCommon('none')}
             />
-            <div className='input-wrapper'>
-              <div className='flex min-w-0 flex-1 flex-col items-start gap-3'>
-                {/* As saved, as that's what the schedule goes by */}
-                {settings.isNewsletterActive && (
-                  <p className='text-sm text-neutral-300'>
-                    {t('nextSend', {
-                      date: format.dateTime(new Date(nextSendTime), {
-                        weekday: 'long',
-                        day: 'numeric',
-                        month: 'long',
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        timeZone,
-                      }),
-                    })}
-                    {lastRun && (
-                      <>
-                        <br />
-                        <span
-                          className={
-                            lastRun.error || lastRun.failed
-                              ? 'text-danger'
-                              : 'text-neutral-400'
-                          }
-                        >
-                          {lastRun.error
-                            ? t('lastRunError', {
-                                date: format.dateTime(new Date(lastRun.at), {
-                                  dateStyle: 'medium',
-                                  timeStyle: 'short',
-                                }),
-                                error: t(lastRun.error),
-                              })
-                            : t('lastRun', {
-                                date: format.dateTime(new Date(lastRun.at), {
-                                  dateStyle: 'medium',
-                                  timeStyle: 'short',
-                                }),
-                                sent: lastRun.sent,
-                                failed: lastRun.failed,
-                                skipped: lastRun.skipped,
-                              })}
-                        </span>
-                      </>
-                    )}
-                  </p>
-                )}
-                <div className='flex flex-wrap gap-2'>
-                  <a
-                    href={`/api/settings/email-preview?${new URLSearchParams({ type: 'newsletter', userId: adminId })}`}
-                    target='_blank'
-                    className='button button-sm button--glass'
-                  >
-                    {t('preview')}
-                  </a>
-                  <button
-                    type='button'
-                    className='button button-sm button--glass'
-                    onClick={sendToMe}
-                    disabled={isSending}
-                  >
-                    {isSending ? t('sending') : t('sendToMe')}
-                  </button>
-                </div>
-              </div>
-              <span className='label label--start'>
-                <span className='label-wrapper'>{t('tryIt')}</span>
-                <small>{t('tryItDescription')}</small>
-              </span>
-            </div>
+            <NewsletterRecipients
+              recipients={recipients}
+              isShownOnLoad={settings.isNewsletterActive}
+            />
+            <EmailTryIt
+              previewHref={`/api/settings/email-preview?${new URLSearchParams({ type: 'newsletter', userId: adminId })}`}
+              send={sendNewsletterToMe}
+            />
           </>
         )}
       </section>

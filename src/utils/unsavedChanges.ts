@@ -25,6 +25,23 @@ export function getFormSnapshot(
   )
 }
 
+// The saved form with the fields that weren't in it yet, at their values in
+// the current one. For fields that show up once their data is read, which
+// can't have been edited before they did.
+export function addLoadedFields(saved: string, current: string) {
+  const fields = new Map<string, string[]>(JSON.parse(saved))
+
+  for (const [name, values] of JSON.parse(current) as [string, string[]][]) {
+    if (!fields.has(name)) {
+      fields.set(name, values)
+    }
+  }
+
+  return JSON.stringify(
+    [...fields.keys()].sort().map((name) => [name, fields.get(name)]),
+  )
+}
+
 type SaveResult = {
   // As sent, or null when it wasn't read
   submitted: string | null

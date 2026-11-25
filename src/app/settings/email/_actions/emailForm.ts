@@ -13,8 +13,10 @@ export const SUBSCRIBED_FIELD = 'subscribed'
 // Who was subscribed when the form was opened, so a save only changes the
 // ones the admin switched, and not someone who unsubscribed since
 export const WAS_SUBSCRIBED_FIELD = 'wasSubscribed'
-// The users the form listed, so the ones it couldn't keep their settings
-export const LISTED_USERS_FIELD = 'listedUsers'
+// The users each list showed, so the ones it couldn't keep their settings.
+// The newsletter's list only shows while it's on.
+export const ADDRESS_USERS_FIELD = 'addressUsers'
+export const SUBSCRIPTION_USERS_FIELD = 'subscriptionUsers'
 
 function readText(formData: FormData, name: string): string {
   return String(formData.get(name) ?? '').trim()
@@ -58,19 +60,20 @@ export function readEmailForm(
       'newsletterSections',
     ) as NewsletterSection[]
 
-    // Monthly ones go out on the 1st, so they keep the weekday for later
+    // Only one of them shows, and the other keeps its day for later
     if (data.newsletterFrequency === 'weekly') {
       data.newsletterWeekday = Number(readText(formData, 'newsletterWeekday'))
+    } else {
+      data.newsletterMonthDay = Number(readText(formData, 'newsletterMonthDay'))
     }
   }
 
-  const listedUsers = formData.getAll(LISTED_USERS_FIELD).map(String)
+  const addressUsers = formData.getAll(ADDRESS_USERS_FIELD).map(String)
 
-  if (listedUsers.length) {
-    const subscribed = new Set(formData.getAll(SUBSCRIBED_FIELD).map(String))
+  if (addressUsers.length) {
     const addresses = { ...saved.addresses }
 
-    for (const userId of listedUsers) {
+    for (const userId of addressUsers) {
       const address = readText(formData, `${ADDRESS_FIELD_PREFIX}${userId}`)
 
       if (address) {
@@ -80,12 +83,21 @@ export function readEmailForm(
       }
     }
 
+    data.addresses = addresses
+  }
+
+  const subscriptionUsers = formData
+    .getAll(SUBSCRIPTION_USERS_FIELD)
+    .map(String)
+
+  if (subscriptionUsers.length) {
+    const subscribed = new Set(formData.getAll(SUBSCRIBED_FIELD).map(String))
     const wasSubscribed = new Set(
       formData.getAll(WAS_SUBSCRIBED_FIELD).map(String),
     )
     const unsubscribed = new Set(saved.unsubscribed)
 
-    for (const userId of listedUsers) {
+    for (const userId of subscriptionUsers) {
       const isSubscribed = subscribed.has(userId)
 
       if (isSubscribed === wasSubscribed.has(userId)) {
@@ -99,7 +111,6 @@ export function readEmailForm(
       }
     }
 
-    data.addresses = addresses
     data.unsubscribed = [...unsubscribed]
   }
 

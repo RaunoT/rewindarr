@@ -40,6 +40,7 @@ import SettingsForm from '../../_components/SettingsForm'
 import saveRewindSettings from '../_actions/updateRewindSettings'
 import RewindMusicUpload from './RewindMusicUpload'
 import RewindReleaseDate from './RewindReleaseDate'
+import RewindReleaseEmail, { ReleaseEmailStatus } from './RewindReleaseEmail'
 import RewindShareLinks, { ShareUser } from './RewindShareLinks'
 
 type Props = {
@@ -47,6 +48,7 @@ type Props = {
   currentYear: number
   // Each user's shared link, while users can see their own Rewind
   shareUsers?: Promise<ShareUser[] | null>
+  releaseEmail?: ReleaseEmailStatus
 }
 
 type RewindFormState = SettingsFormInitialState<Partial<RewindSettings>>
@@ -103,6 +105,7 @@ export default function RewindSettingsForm({
   settings,
   currentYear,
   shareUsers,
+  releaseEmail,
 }: Props) {
   const [isActive, setIsActive] = useState<boolean>(settings.rewind.isActive)
   const [period, setPeriod] = useState<RewindPeriodType>(
@@ -299,6 +302,14 @@ export default function RewindSettingsForm({
                 key={`release-date-${rewindSettings.releaseDate}`}
                 defaultValue={rewindSettings.releaseDate}
                 year={currentYear}
+              />
+            )}
+            {/* As saved, as the invites lead to their Rewind */}
+            {period === 'calendarYear' && !isAdminOnly && releaseEmail && (
+              <RewindReleaseEmail
+                key={`release-email-${rewindSettings.isReleaseEmailActive}`}
+                defaultSelected={rewindSettings.isReleaseEmailActive}
+                {...releaseEmail}
               />
             )}
             {period === 'specificYear' && (

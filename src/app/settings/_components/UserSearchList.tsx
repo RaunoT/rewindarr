@@ -20,6 +20,8 @@ type Props<T extends ListUser> = {
 
 // Up to this many, the list is short enough to scan without a search
 const SEARCH_FROM = 5
+// How many rows show before it scrolls. The half row shows there's more.
+const SHOWN_ROWS = 3.5
 
 // The users of a settings form, with a search once there are more than a few.
 // Rows the search leaves out are hidden rather than removed, so what's typed
@@ -33,6 +35,9 @@ export default function UserSearchList<T extends ListUser>({
   const [query, setQuery] = useState('')
   const listRef = useRef<HTMLUListElement>(null)
   const [hasMoreBelow, setHasMoreBelow] = useState(false)
+  // Each list's rows are as tall as what follows the names, and taller on
+  // phones, where it wraps under them
+  const [rowHeight, setRowHeight] = useState<number | null>(null)
   const search = query.trim().toLocaleLowerCase()
   const shownIds = new Set(
     users
@@ -48,8 +53,36 @@ export default function UserSearchList<T extends ListUser>({
     )
   }
 
-  // A search can leave the list too short to scroll
-  useLayoutEffect(updateHasMoreBelow, [shownIds.size])
+  useLayoutEffect(() => {
+    const list = listRef.current
+
+    if (!list) {
+      return
+    }
+
+    function measure() {
+      const row = [...(list?.children ?? [])].find(
+        (child): child is HTMLElement =>
+          child instanceof HTMLElement && child.offsetHeight > 0,
+      )
+
+      if (row) {
+        setRowHeight(row.offsetHeight)
+      }
+    }
+
+    measure()
+
+    // A new width or search can change which row is first, or its height
+    const observer = new ResizeObserver(measure)
+
+    observer.observe(list)
+
+    return () => observer.disconnect()
+  }, [])
+
+  // A search or a new height can leave the list too short to scroll
+  useLayoutEffect(updateHasMoreBelow, [shownIds.size, rowHeight])
 
   return (
     <div className='grid gap-2'>
@@ -70,8 +103,10 @@ export default function UserSearchList<T extends ListUser>({
       <ul
         ref={listRef}
         onScroll={updateHasMoreBelow}
+        style={rowHeight ? { maxHeight: rowHeight * SHOWN_ROWS } : undefined}
         className={clsx(
-          '-mx-1 max-h-80 overflow-y-auto px-1',
+          // Until a row is measured
+          '-mx-1 max-h-60 overflow-y-auto px-1',
           hasMoreBelow && 'mask-b-from-80%',
           !shownIds.size && 'hidden',
         )}

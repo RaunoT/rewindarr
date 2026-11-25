@@ -371,6 +371,9 @@
       "releaseDate": "Avaldamise kuupäev",
       "releaseDateDescription": "Millal {year}. aasta väljaanne ilmub",
       "releaseDateError": "Kontrolli avaldamise kuupäeva.",
+      "releaseEmail": "Kutsed meiliga",
+      "releaseEmailDescription": "Ilmumise päeval saadab igale aadressiga kasutajale kutse nende Rewindile. Järgmised lähevad välja {date}.",
+      "releaseEmailNeedsMail": "Seadista esmalt meiliserver E-posti seadetes.",
       "yearError": "Kontrolli aastat.",
       "startDateError": "Kontrolli alguskuupäeva.",
       "shareLinks": "Jagatud lingid",
@@ -403,7 +406,6 @@
         "tls": "TLS/SSL"
       },
       "user": "Kasutajanimi",
-      "userDescription": "Jäta tühjaks, kui server ei nõua sisselogimist",
       "password": "Parool",
       "fromAddress": "Saatja aadress",
       "fromName": "Saatja nimi",
@@ -414,10 +416,11 @@
       "testSent": "Saadetud aadressile {address}. Kui see pole postkastis, vaata rämpsposti kausta.",
       "emails": "E-kirjad",
       "appUrl": "Rakenduse aadress",
-      "appUrlDescription": "Kuhu e-kirjades olevad lingid viivad. Sinu kasutajad peavad saama seda avada, mitte ainult sinu enda võrk.",
+      "appUrlDescription": "Kuhu e-kirjades olevad lingid viivad. Sinu kasutajad peavad saama seda avada.",
       "language": "Keel",
+      "addresses": "Aadressid",
       "recipients": "Saajad",
-      "recipientsDescription": "Aadressid tulevad statistikaallikast või Seerrist. Sisesta aadress, et kasutada hoopis seda. Lüliti saadab neile uudiskirja.",
+      "recipientsDescription": "Kasutajad saavad igal ajal loobuda",
       "recipientsSearch": "Otsi kasutajaid",
       "recipientsNone": "Kasutajaid ei leitud",
       "recipientsError": "Kasutajaid ei õnnestunud lugeda. Kontrolli ühenduse seadeid.",
@@ -430,15 +433,17 @@
       "frequency": "Sagedus",
       "frequencies": {
         "weekly": "Iga nädal",
-        "monthly": "Iga kuu"
+        "monthly": "Iga kuu",
+        "quarterly": "Iga kvartal"
       },
       "frequencyDescriptions": {
         "weekly": "Hõlmab saatmispäevale eelnenud 7 päeva",
-        "monthly": "Läheb välja kuu 1. kuupäeval ja hõlmab eelmist kuud"
+        "monthly": "Hõlmab eelmist kuud",
+        "quarterly": "Läheb välja jaan, apr, juul ja okt ning hõlmab eelmist 3 kuud"
       },
       "weekday": "Päev",
+      "monthDay": "Kuupäev",
       "hour": "Kellaaeg",
-      "hourDescription": "Serveri ajavööndis, {timeZone}",
       "sectionsLabel": "Sisu",
       "sectionsOwnOnly": "Kasutajad näevad edetabelis ainult enda statistikat, seega jätab uudiskiri serveri statistika ja kasutajate edetabeli välja",
       "sections": {
@@ -450,12 +455,11 @@
       "lastRun": "Viimati saadetud {date}: {sent} saadetud, {failed} ebaõnnestus, {skipped} vahele jäetud.",
       "lastRunError": "Viimati proovitud {date}: {error}",
       "tryIt": "Proovi",
-      "tryItDescription": "Salvestatud seadete ja sinu enda statistikaga",
       "preview": "Eelvaade",
       "sendToMe": "Saada mulle",
       "rewind": "Rewind",
-      "rewindUsers": "Saada Rewind",
-      "rewindUsersDescription": "Saadab valitud kasutajatele kutse nende Rewindile, ilma midagi ette reetmata",
+      "rewindUsers": "Saada kohe",
+      "rewindUsersDescription": "Et kõiki automaatselt kutsuda, kui see ilmub, lülita Rewindi seadetes sisse kutsed meiliga",
       "rewindNotShared": "Rewind peab olema sisse lülitatud ja kasutajatele avatud, enne kui seda saab e-postiga saata.",
       "sendToLabel": "Saada kasutajale {name}",
       "sendRewind": "{count, plural, =0 {Saada} one {Saada # kasutajale} other {Saada # kasutajale}}",
@@ -470,6 +474,7 @@
         "noPlays": "Perioodil ei mänginud midagi",
         "nothingToShow": "Perioodil ei mängitud serveris midagi"
       },
+      "mailAuthRequired": "Meiliserver vajab kasutajanime ja parooli",
       "mailAuthFailed": "Meiliserver ei aktsepteerinud kasutajanime või parooli",
       "mailUnableToConnect": "Meiliserveriga ei õnnestunud ühendust luua. Kontrolli hosti, porti ja turvalisust.",
       "mailCertificateError": "Meiliserveri TLS ei töötanud. Kontrolli porti ja turvalisust.",
@@ -940,36 +945,40 @@
     "Rewind": {
       "subject": "{name}, sinu Rewind on siin",
       "subjectYear": "{name}, sinu {year}. aasta Rewind on siin",
-      "preheader": "Vaata, mida sa serveris {server} mängisid",
+      "preheader": "Vaata, mida sa mängisid",
       "eyebrow": "Rewind",
       "eyebrowYear": "Rewind {year}",
       "title": "Sinu Rewind on siin, {name}",
-      "intro": "Vaata tagasi sellele, mida sa serveris {server} mängisid: sinu lemmikseriaalid, -filmid ja -muusika, sinu harjumused ja mõned üllatused.",
+      "intro": "Vaata tagasi sellele, mida sa mängisid: sinu lemmikseriaalid, -filmid ja -muusika, sinu harjumused ja mõned üllatused.",
       "teaser": {
         "watchTime": "Vaatamisaeg",
         "topShow": "Lemmikseriaal",
         "personality": "Vaatajatüüp"
       },
       "button": "Vaata minu Rewindi",
-      "footer": "Link on sinu oma: igaüks, kellel see on, saab sinu Rewindi avada."
+      "footer": "See link avab sinu Rewindi ilma sisse logimata, seega jaga seda ainult nendega, kellele tahad seda näidata."
     },
     "Newsletter": {
       "subject": {
         "weekly": "Sinu nädal serveris {server}",
-        "monthly": "Sinu {month} serveris {server}"
+        "monthly": "Sinu {month} serveris {server}",
+        "quarterly": "Sinu kvartal serveris {server}"
       },
       "eyebrow": {
         "weekly": "Nädala kokkuvõte",
-        "monthly": "Kuu kokkuvõte"
+        "monthly": "Kuu kokkuvõte",
+        "quarterly": "Kvartali kokkuvõte"
       },
       "title": {
         "weekly": "Sinu nädal, {name}",
-        "monthly": "Sinu {month}, {name}"
+        "monthly": "Sinu {month}, {name}",
+        "quarterly": "Sinu kvartal, {name}"
       },
       "preheader": "Mida sina ja kõik teised serveris {server} mängisid",
       "noPlays": {
         "weekly": "Sa ei mänginud sel nädalal midagi.",
-        "monthly": "Sa ei mänginud sel kuul midagi."
+        "monthly": "Sa ei mänginud sel kuul midagi.",
+        "quarterly": "Sa ei mänginud selles kvartalis midagi."
       },
       "onServer": "Serveris {server}",
       "viewers": "Vaatajad",
@@ -981,14 +990,15 @@
       "button": "Vaata rohkem statistikat",
       "footer": {
         "weekly": "Saad seda nädala kokkuvõtet serverist {server}.",
-        "monthly": "Saad seda kuu kokkuvõtet serverist {server}."
+        "monthly": "Saad seda kuu kokkuvõtet serverist {server}.",
+        "quarterly": "Saad seda kvartali kokkuvõtet serverist {server}."
       },
       "unsubscribe": "Loobu tellimusest"
     },
     "Test": {
       "subject": "Testkiri rakendusest {app}",
       "title": "See töötab",
-      "body": "Sinu meiliserver on seadistatud, seega saab Rewinde ja uudiskirju saata."
+      "body": "Sinu meiliserver on seadistatud, seega saab Rewindi kutseid ja uudiskirju saata."
     },
     "Unsubscribe": {
       "eyebrow": "Uudiskiri",

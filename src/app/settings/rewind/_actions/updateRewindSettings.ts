@@ -12,7 +12,9 @@ import {
   REWIND_STORIES,
   RewindStoryId,
 } from '@/utils/constants'
+import getSettings from '@/utils/getSettings'
 import { FIRST_YEAR, isReleaseDate } from '@/utils/rewindPeriod'
+import { passOverReleasedRewind } from '@/utils/rewindRelease'
 import { isCalendarDate } from '@/utils/timeZone'
 import { getTranslations } from 'next-intl/server'
 import { z } from 'zod'
@@ -45,6 +47,7 @@ export default async function saveRewindSettings(
         .string()
         .refine(isReleaseDate, { message: t('releaseDateError') })
         .optional(),
+      isReleaseEmailActive: z.boolean().optional(),
       year: z
         .number()
         .refine(
@@ -98,6 +101,12 @@ export default async function saveRewindSettings(
     // The picker's date has a year, which the release date leaves out
     if (data.period === 'calendarYear') {
       data.releaseDate = String(formData.get('releaseDate')).slice(5)
+
+      // Only offered while users can open their own Rewind
+      if (!data.isAdminOnly) {
+        data.isReleaseEmailActive =
+          formData.get('isReleaseEmailActive') === 'on'
+      }
     }
 
     if (data.period === 'specificYear') {
@@ -105,5 +114,20 @@ export default async function saveRewindSettings(
     }
   }
 
-  return await updateSettings(schema, data, 'rewind')
+  const saved = getSettings().rewind
+  const state = await updateSettings(schema, data, 'rewind')
+  const updated = getSettings().rewind
+
+  // An edition that's already out isn't emailed by a save, only the next one
+  if (
+    state.status === 'success' &&
+    updated.isReleaseEmailActive &&
+    (!saved.isReleaseEmailActive || saved.releaseDate !== updated.releaseDate)
+  ) {
+    await passOverReleasedRewind({ rewind: updated }).catch((error) => {
+      console.error('[REWIND EMAILS] - Unable to save the release!', error)
+    })
+  }
+
+  return state
 }

@@ -371,6 +371,9 @@
       "releaseDate": "Release date",
       "releaseDateDescription": "When the {year} edition comes out",
       "releaseDateError": "Check the release date.",
+      "releaseEmail": "Email invites",
+      "releaseEmailDescription": "On the release day, emails every user with an address an invite to their Rewind. The next ones go out on {date}.",
+      "releaseEmailNeedsMail": "Set up the mail server in the Email settings first.",
       "yearError": "Check the year.",
       "startDateError": "Check the start date.",
       "shareLinks": "Shared links",
@@ -403,7 +406,6 @@
         "tls": "TLS/SSL"
       },
       "user": "Username",
-      "userDescription": "Leave empty if the server doesn't need you to sign in",
       "password": "Password",
       "fromAddress": "From address",
       "fromName": "From name",
@@ -414,10 +416,11 @@
       "testSent": "Sent to {address}. If it isn't in the inbox, check the spam folder.",
       "emails": "Emails",
       "appUrl": "App address",
-      "appUrlDescription": "Where the links in the emails lead. Your users have to be able to open it, not just your own network.",
+      "appUrlDescription": "Where the links in the emails lead. Your users have to be able to open it.",
       "language": "Language",
+      "addresses": "Addresses",
       "recipients": "Recipients",
-      "recipientsDescription": "Addresses come from the statistics source, or from Seerr. Type one to use another instead. The switch sends them the newsletter.",
+      "recipientsDescription": "Users can unsubscribe any time",
       "recipientsSearch": "Search users",
       "recipientsNone": "No users found",
       "recipientsError": "The users couldn't be read. Check the connection settings.",
@@ -430,15 +433,17 @@
       "frequency": "Frequency",
       "frequencies": {
         "weekly": "Weekly",
-        "monthly": "Monthly"
+        "monthly": "Monthly",
+        "quarterly": "Quarterly"
       },
       "frequencyDescriptions": {
         "weekly": "Covers the 7 days before the day it goes out",
-        "monthly": "Goes out on the 1st and covers the month before"
+        "monthly": "Covers the month before",
+        "quarterly": "Goes out in Jan, Apr, Jul and Oct and covers the 3 months before"
       },
       "weekday": "Day",
+      "monthDay": "Day of the month",
       "hour": "Time",
-      "hourDescription": "In the server's time zone, {timeZone}",
       "sectionsLabel": "Content",
       "sectionsOwnOnly": "Users see only their own stats on the dashboard, so the newsletter leaves out the server's stats and top users",
       "sections": {
@@ -450,12 +455,11 @@
       "lastRun": "Last sent on {date}: {sent} sent, {failed} failed, {skipped} skipped.",
       "lastRunError": "Last tried on {date}: {error}",
       "tryIt": "Try it",
-      "tryItDescription": "With the saved settings and your own stats",
       "preview": "Preview",
       "sendToMe": "Send to me",
       "rewind": "Rewind",
-      "rewindUsers": "Send Rewind",
-      "rewindUsersDescription": "Emails the users you pick an invitation to their Rewind, without giving any of it away",
+      "rewindUsers": "Send now",
+      "rewindUsersDescription": "To automatically invite everyone when it comes out, turn on email invites in the Rewind settings",
       "rewindNotShared": "Rewind has to be on and open to users before it can be emailed.",
       "sendToLabel": "Send to {name}",
       "sendRewind": "{count, plural, =0 {Send} one {Send to # user} other {Send to # users}}",
@@ -470,6 +474,7 @@
         "noPlays": "Nothing played in the period",
         "nothingToShow": "Nothing was played on the server in the period"
       },
+      "mailAuthRequired": "The mail server needs a username and password",
       "mailAuthFailed": "The mail server didn't accept the username or password",
       "mailUnableToConnect": "Unable to connect to the mail server. Check the host, port and security.",
       "mailCertificateError": "The mail server's TLS didn't work. Check the port and security.",
@@ -940,36 +945,40 @@
     "Rewind": {
       "subject": "{name}, your Rewind is here",
       "subjectYear": "{name}, your {year} Rewind is here",
-      "preheader": "See what you played on {server}",
+      "preheader": "See what you played",
       "eyebrow": "Rewind",
       "eyebrowYear": "Rewind {year}",
       "title": "Your Rewind is here, {name}",
-      "intro": "Look back at what you played on {server}: your top shows, movies and music, your habits and a few surprises.",
+      "intro": "Look back at what you played: your top shows, movies and music, your habits and a few surprises.",
       "teaser": {
         "watchTime": "Watch time",
         "topShow": "Top show",
-        "personality": "Viewing personality"
+        "personality": "Personality"
       },
       "button": "Watch my Rewind",
-      "footer": "The link is yours: anyone who has it can open your Rewind."
+      "footer": "This link opens your Rewind without signing in, so only share it with people you want to see it."
     },
     "Newsletter": {
       "subject": {
         "weekly": "Your week on {server}",
-        "monthly": "Your {month} on {server}"
+        "monthly": "Your {month} on {server}",
+        "quarterly": "Your quarter on {server}"
       },
       "eyebrow": {
         "weekly": "Weekly recap",
-        "monthly": "Monthly recap"
+        "monthly": "Monthly recap",
+        "quarterly": "Quarterly recap"
       },
       "title": {
         "weekly": "Your week, {name}",
-        "monthly": "Your {month}, {name}"
+        "monthly": "Your {month}, {name}",
+        "quarterly": "Your quarter, {name}"
       },
       "preheader": "What you and everyone else played on {server}",
       "noPlays": {
         "weekly": "You didn't play anything this week.",
-        "monthly": "You didn't play anything this month."
+        "monthly": "You didn't play anything this month.",
+        "quarterly": "You didn't play anything this quarter."
       },
       "onServer": "On {server}",
       "viewers": "Viewers",
@@ -981,14 +990,15 @@
       "button": "See more stats",
       "footer": {
         "weekly": "You get this weekly recap from {server}.",
-        "monthly": "You get this monthly recap from {server}."
+        "monthly": "You get this monthly recap from {server}.",
+        "quarterly": "You get this quarterly recap from {server}."
       },
       "unsubscribe": "Unsubscribe"
     },
     "Test": {
       "subject": "Test email from {app}",
       "title": "It works",
-      "body": "Your mail server is set up, so Rewinds and newsletters can go out."
+      "body": "Your mail server is set up, so Rewind invites and newsletters can go out."
     },
     "Unsubscribe": {
       "eyebrow": "Newsletter",

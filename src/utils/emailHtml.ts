@@ -59,6 +59,7 @@ export const COLORS = {
   tile: '#1a1a1a',
   border: '#262626',
   highlight: '#2a2a2a',
+  buttonBorder: '#525252',
   text: '#ffffff',
   body: '#d4d4d4',
   muted: '#a3a3a3',
@@ -231,7 +232,7 @@ export function renderLayout({
                 footer &&
                 html`<tr>
                   <td
-                    style="padding: 12px 4px 0; color: ${COLORS.faint}; font-size: 12px; line-height: 18px;"
+                    style="padding: 0 4px; color: ${COLORS.faint}; font-size: 12px; line-height: 18px;"
                   >
                     ${footer}
                   </td>
@@ -300,7 +301,9 @@ export function paragraph(content: string | Html, isMuted = false): Html {
   </p>`
 }
 
-// The app's white, round button
+// A round button like the app's glass ones. Not its white one: mail apps that
+// darken light colours for dark mode, like Gmail's, turn a white button grey
+// with light text, while dark colours and white text stay as they are.
 export function button(href: string, label: string): Html {
   return html`<table
     role="presentation"
@@ -310,13 +313,13 @@ export function button(href: string, label: string): Html {
   >
     <tr>
       <td
-        bgcolor="${COLORS.text}"
-        style="background: ${COLORS.text}; border-radius: 999px;"
+        bgcolor="${COLORS.highlight}"
+        style="background: ${COLORS.highlight}; border: 1px solid ${COLORS.buttonBorder}; border-radius: 999px;"
       >
         <a
           href="${safeUrl(href)}"
           target="_blank"
-          style="display: inline-block; padding: 12px 28px; color: #000000; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 999px;"
+          style="display: inline-block; padding: 12px 28px; color: ${COLORS.text}; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 999px;"
           >${label}</a
         >
       </td>

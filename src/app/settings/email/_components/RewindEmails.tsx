@@ -14,7 +14,8 @@ import { useTranslations } from 'next-intl'
 import { Suspense, use, useState, useTransition } from 'react'
 import { Checkbox } from 'react-aria-components'
 import UserSearchList from '../../_components/UserSearchList'
-import { sendRewind } from '../_actions/sendEmails'
+import { sendRewind, sendRewindToMe } from '../_actions/sendEmails'
+import EmailTryIt from './EmailTryIt'
 
 type Props = {
   recipients: Promise<EmailRecipient[] | null>
@@ -57,7 +58,7 @@ function Outcome({ outcome }: { outcome: SendOutcome }) {
   )
 }
 
-function RewindEmailList({ recipients: request, adminId }: Props) {
+function RewindEmailList({ recipients: request }: Props) {
   const t = useTranslations('Settings.Email')
   const tSettings = useTranslations('Settings')
   const recipients = use(request)
@@ -78,8 +79,6 @@ function RewindEmailList({ recipients: request, adminId }: Props) {
   const sendable = recipients
     .filter((recipient) => recipient.address)
     .map(({ id }) => id)
-  // The first one picked, or the admin's own
-  const previewUserId = selected[0] ?? adminId
 
   function send() {
     startTransition(async () => {
@@ -166,25 +165,16 @@ function RewindEmailList({ recipients: request, adminId }: Props) {
           value={selected}
           onChange={setSelected}
         />
-        <div className='flex items-center gap-2'>
-          <a
-            href={`/api/settings/email-preview?${new URLSearchParams({ type: 'rewind', userId: previewUserId })}`}
-            target='_blank'
-            className='button button-sm button--glass'
-          >
-            {t('preview')}
-          </a>
-          <button
-            type='button'
-            className='button button-sm'
-            onClick={send}
-            disabled={isPending || !selected.length}
-          >
-            {isPending
-              ? t('sending')
-              : t('sendRewind', { count: selected.length })}
-          </button>
-        </div>
+        <button
+          type='button'
+          className='button button-sm'
+          onClick={send}
+          disabled={isPending || !selected.length}
+        >
+          {isPending
+            ? t('sending')
+            : t('sendRewind', { count: selected.length })}
+        </button>
       </div>
     </div>
   )
@@ -196,18 +186,26 @@ export default function RewindEmails(props: Props) {
   const t = useTranslations('Settings.Email')
 
   return (
-    <div className='input-wrapper'>
-      <div className='min-w-0 flex-1'>
-        <Suspense
-          fallback={<p className='text-sm text-neutral-400'>{t('loading')}</p>}
-        >
-          <RewindEmailList {...props} />
-        </Suspense>
+    <>
+      <div className='input-wrapper'>
+        <div className='min-w-0 flex-1'>
+          <Suspense
+            fallback={
+              <p className='text-sm text-neutral-400'>{t('loading')}</p>
+            }
+          >
+            <RewindEmailList {...props} />
+          </Suspense>
+        </div>
+        <span className='label label--start'>
+          <span className='label-wrapper'>{t('rewindUsers')}</span>
+          <small>{t('rewindUsersDescription')}</small>
+        </span>
       </div>
-      <span className='label label--start'>
-        <span className='label-wrapper'>{t('rewindUsers')}</span>
-        <small>{t('rewindUsersDescription')}</small>
-      </span>
-    </div>
+      <EmailTryIt
+        previewHref={`/api/settings/email-preview?${new URLSearchParams({ type: 'rewind', userId: props.adminId })}`}
+        send={sendRewindToMe}
+      />
+    </>
   )
 }

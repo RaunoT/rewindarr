@@ -82,6 +82,12 @@ describe('getMailErrorKey', () => {
       getMailErrorKey(error('ESOCKET', 'self-signed certificate in chain')),
     ).toBe('mailCertificateError')
     expect(getMailErrorKey(error('EENVELOPE'))).toBe('mailRejected')
+    expect(
+      getMailErrorKey(error('EENVELOPE', 'Authentication Required', 530)),
+    ).toBe('mailAuthRequired')
+    expect(
+      getMailErrorKey(error('EAUTH', 'Application-specific password', 534)),
+    ).toBe('mailAuthFailed')
     expect(getMailErrorKey(error('EMESSAGE', 'Rejected', 553))).toBe(
       'mailRejected',
     )

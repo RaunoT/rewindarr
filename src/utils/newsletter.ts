@@ -10,6 +10,7 @@ import {
   getNewsletterPeriod,
   NewsletterSchedule,
 } from './newsletterSchedule'
+import { checkRewindRelease } from './rewindRelease'
 
 export const NEWSLETTER_STATE_PATH = path.join(
   process.cwd(),
@@ -34,8 +35,8 @@ type NewsletterState = {
 }
 
 const EMPTY_STATE: NewsletterState = { handledUntil: null, lastRun: null }
-// How often the schedule is looked at. A newsletter goes out within this
-// long of its hour.
+// How often the schedules are looked at. A newsletter or the Rewind invites
+// go out within this long of their hour.
 const CHECK_INTERVAL_MS = 5 * 60 * 1000
 // After a start, so the history read gets a head start
 const FIRST_CHECK_MS = 60 * 1000
@@ -197,9 +198,13 @@ function check() {
   checkNewsletter().catch((error) => {
     console.error('[NEWSLETTER] - Unable to check the schedule!', error)
   })
+  checkRewindRelease().catch((error) => {
+    console.error('[REWIND EMAILS] - Unable to check the release!', error)
+  })
 }
 
-export function startNewsletterSchedule(): void {
+// The newsletter's, and the Rewind invites on the release day
+export function startEmailSchedule(): void {
   if (globalForNewsletter.rewindarrNewsletter?.timer) {
     return
   }

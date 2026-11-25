@@ -107,6 +107,8 @@ export type RewindSettings = {
   // MM-DD, when each calendar year's edition comes out. A date before July is
   // in the year after.
   releaseDate: string
+  // Emails every user with an address an invite on the release day
+  isReleaseEmailActive: boolean
   // Only used by the specific year
   year?: number
   // Only used by the custom period
@@ -195,8 +197,10 @@ export type EmailSettings = {
   unsubscribed: string[]
   isNewsletterActive: boolean
   newsletterFrequency: NewsletterFrequency
-  // 0 is Sunday. A monthly one goes out on the 1st.
+  // A weekly one's day, where 0 is Sunday
   newsletterWeekday: number
+  // A monthly or quarterly one's day of the month, up to the 28th
+  newsletterMonthDay: number
   // In the server's time zone
   newsletterHour: number
   newsletterSections: NewsletterSection[]

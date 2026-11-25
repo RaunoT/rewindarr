@@ -1,11 +1,20 @@
 import { EmailSettings } from '@/types/settings'
 import { PlayPeriod } from '@/types/statsSource'
+import {
+  CalendarDate,
+  CalendarDateTime,
+  fromDate,
+  getDayOfWeek,
+  toCalendarDate,
+  toZoned,
+} from '@internationalized/date'
 
 export type NewsletterSchedule = Pick<
   EmailSettings,
   | 'isNewsletterActive'
   | 'newsletterFrequency'
   | 'newsletterWeekday'
+  | 'newsletterMonthDay'
   | 'newsletterHour'
 >
 
@@ -13,74 +22,113 @@ export type NewsletterSchedule = Pick<
 // after it was due. Later, it would be about a week or month gone by.
 export const MAX_SEND_DELAY_MS = 24 * 60 * 60 * 1000
 
-// Times are in the server's time zone, as the settings say. The calendar day
-// is worked out first and the hour set on it after, so a change to or from
-// summer time doesn't move a send to another day or hour. An hour that's
-// skipped when the clocks go forward is the one after it, every time.
+// The last day of the month one can go out on, as every month has it
+export const MAX_MONTH_DAY = 28
+
+// Monthly ones go out every month, quarterly ones in January, April, July and
+// October
+const MONTHS_APART = { monthly: 1, quarterly: 3 } as const
+
+// The settings form passes the server's in, as it works times out in the browser
+function getServerTimeZone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone
+}
+
+// The hour is set on a calendar day, so summer time can't move a send to
+// another day. An hour the clocks skip becomes the one after it.
+function atHour(day: CalendarDate, hour: number, timeZone: string): Date {
+  return toZoned(
+    new CalendarDateTime(day.year, day.month, day.day, hour),
+    timeZone,
+  ).toDate()
+}
+
+function getMonthDay(schedule: NewsletterSchedule): number {
+  return Math.min(Math.max(schedule.newsletterMonthDay, 1), MAX_MONTH_DAY)
+}
+
+// The day it was last due on, at or before now
+function getLatestSendDay(
+  schedule: NewsletterSchedule,
+  now: Date,
+  timeZone: string,
+): CalendarDate {
+  const today = toCalendarDate(fromDate(now, timeZone))
+  const frequency = schedule.newsletterFrequency
+
+  if (frequency === 'weekly') {
+    // Weekdays count from Sunday, as in the settings
+    const day = today.subtract({
+      days:
+        (getDayOfWeek(today, 'en-US', 'sun') - schedule.newsletterWeekday + 7) %
+        7,
+    })
+
+    return atHour(day, schedule.newsletterHour, timeZone) > now
+      ? day.subtract({ weeks: 1 })
+      : day
+  }
+
+  const months = MONTHS_APART[frequency]
+  const day = new CalendarDate(
+    today.year,
+    today.month - ((today.month - 1) % months),
+    getMonthDay(schedule),
+  )
+
+  return atHour(day, schedule.newsletterHour, timeZone) > now
+    ? day.subtract({ months })
+    : day
+}
 
 // When the newsletter was last due, at or before now
 export function getLatestSendTime(
   schedule: NewsletterSchedule,
   now: Date,
+  timeZone: string = getServerTimeZone(),
 ): Date {
-  const hour = schedule.newsletterHour
-
-  if (schedule.newsletterFrequency === 'monthly') {
-    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1, hour)
-
-    return thisMonth <= now
-      ? thisMonth
-      : new Date(now.getFullYear(), now.getMonth() - 1, 1, hour)
-  }
-
-  // Noon is on the same day whatever the clocks do
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12)
-  const day =
-    today.getDate() - ((today.getDay() - schedule.newsletterWeekday + 7) % 7)
-  const time = new Date(today.getFullYear(), today.getMonth(), day, hour)
-
-  return time > now
-    ? new Date(today.getFullYear(), today.getMonth(), day - 7, hour)
-    : time
+  return atHour(
+    getLatestSendDay(schedule, now, timeZone),
+    schedule.newsletterHour,
+    timeZone,
+  )
 }
 
-export function getNextSendTime(schedule: NewsletterSchedule, now: Date): Date {
-  const latest = getLatestSendTime(schedule, now)
+export function getNextSendTime(
+  schedule: NewsletterSchedule,
+  now: Date,
+  timeZone: string = getServerTimeZone(),
+): Date {
+  const latest = getLatestSendDay(schedule, now, timeZone)
+  const frequency = schedule.newsletterFrequency
+  const next =
+    frequency === 'weekly'
+      ? latest.add({ weeks: 1 })
+      : latest.add({ months: MONTHS_APART[frequency] })
 
-  if (schedule.newsletterFrequency === 'monthly') {
-    return new Date(
-      latest.getFullYear(),
-      latest.getMonth() + 1,
-      1,
-      schedule.newsletterHour,
-    )
-  }
-
-  return new Date(
-    latest.getFullYear(),
-    latest.getMonth(),
-    latest.getDate() + 7,
-    schedule.newsletterHour,
-  )
+  return atHour(next, schedule.newsletterHour, timeZone)
 }
 
 // The whole days before the one it goes out on: the 7 before for a weekly
-// one, and the month before for a monthly one
+// one, and the calendar month or quarter before for the others, whichever day
+// of the month they go out on
 export function getNewsletterPeriod(
   schedule: Pick<EmailSettings, 'newsletterFrequency'>,
   sendTime: Date,
+  timeZone: string = getServerTimeZone(),
 ): PlayPeriod {
-  const until = new Date(
-    sendTime.getFullYear(),
-    sendTime.getMonth(),
-    sendTime.getDate(),
-  )
+  const sendDay = toCalendarDate(fromDate(sendTime, timeZone))
+  const frequency = schedule.newsletterFrequency
+  const until = frequency === 'weekly' ? sendDay : sendDay.set({ day: 1 })
   const since =
-    schedule.newsletterFrequency === 'monthly'
-      ? new Date(until.getFullYear(), until.getMonth() - 1, 1)
-      : new Date(until.getFullYear(), until.getMonth(), until.getDate() - 7)
+    frequency === 'weekly'
+      ? until.subtract({ days: 7 })
+      : until.subtract({ months: MONTHS_APART[frequency] })
 
-  return { since: since.toISOString(), until: until.toISOString() }
+  return {
+    since: since.toDate(timeZone).toISOString(),
+    until: until.toDate(timeZone).toISOString(),
+  }
 }
 
 // The send time of the newsletter that should go out now, if one should.
@@ -115,6 +163,7 @@ export function isSameSchedule(
     a.isNewsletterActive === b.isNewsletterActive &&
     a.newsletterFrequency === b.newsletterFrequency &&
     a.newsletterWeekday === b.newsletterWeekday &&
+    a.newsletterMonthDay === b.newsletterMonthDay &&
     a.newsletterHour === b.newsletterHour
   )
 }

@@ -6,11 +6,26 @@ import { SettingsFormInitialState } from '@/types/settings'
 import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { ReactNode, useEffect, useRef } from 'react'
+import { createContext, ReactNode, useContext, useEffect, useRef } from 'react'
 import LeaveGuard from './LeaveGuard'
 import { useDiscard } from './SettingsDiscard'
 import SettingsDiscardButton from './SettingsDiscardButton'
 import SettingsSaveButton from './SettingsSaveButton'
+
+const LoadedFieldsContext = createContext<() => void>(() => {})
+
+// For fields that are read after the form shows: called from the component
+// that renders them once they're there, so they don't count as a change. Off
+// for fields that only show because of an edit, which count as one.
+export function useLoadedFields(isActive = true) {
+  const markLoaded = useContext(LoadedFieldsContext)
+
+  useEffect(() => {
+    if (isActive) {
+      markLoaded()
+    }
+  }, [isActive, markLoaded])
+}
 
 type Props = {
   children: ReactNode
@@ -34,7 +49,7 @@ export default function SettingsForm({
   const t = useTranslations('Settings')
   const toastKey = useRef<string>(null)
   const formRef = useRef<HTMLFormElement>(null)
-  const { isChanged, markSubmitted, markSaved } = useFormChanges(
+  const { isChanged, markSubmitted, markSaved, markLoaded } = useFormChanges(
     formRef,
     orderedFields,
   )
@@ -105,7 +120,9 @@ export default function SettingsForm({
         onResetCapture={(event) => event.preventDefault()}
       >
         <div className='grid gap-4'>
-          {children}
+          <LoadedFieldsContext value={markLoaded}>
+            {children}
+          </LoadedFieldsContext>
           {!hideSubmit && (
             // With unsaved changes it stays in sight at the bottom of the
             // screen, until it reaches its place at the end of the form

@@ -371,6 +371,9 @@
       "releaseDate": "Data di uscita",
       "releaseDateDescription": "Quando esce l'edizione {year}",
       "releaseDateError": "Controlla la data di uscita.",
+      "releaseEmail": "Inviti via email",
+      "releaseEmailDescription": "Il giorno dell'uscita, invia a ogni utente con un indirizzo un invito al suo Rewind. I prossimi partono il {date}.",
+      "releaseEmailNeedsMail": "Configura prima il server di posta nelle impostazioni Email.",
       "yearError": "Controlla l'anno.",
       "startDateError": "Controlla la data di inizio.",
       "shareLinks": "Link condivisi",
@@ -403,7 +406,6 @@
         "tls": "TLS/SSL"
       },
       "user": "Nome utente",
-      "userDescription": "Lascia vuoto se il server non richiede l'accesso",
       "password": "Password",
       "fromAddress": "Indirizzo mittente",
       "fromName": "Nome mittente",
@@ -414,10 +416,11 @@
       "testSent": "Inviata a {address}. Se non è nella posta in arrivo, controlla la cartella spam.",
       "emails": "Email",
       "appUrl": "Indirizzo dell'app",
-      "appUrlDescription": "Dove portano i link nelle email. I tuoi utenti devono poterlo aprire, non solo la tua rete.",
+      "appUrlDescription": "Dove portano i link nelle email. I tuoi utenti devono poterlo aprire.",
       "language": "Lingua",
+      "addresses": "Indirizzi",
       "recipients": "Destinatari",
-      "recipientsDescription": "Gli indirizzi vengono dalla sorgente delle statistiche o da Seerr. Scrivine uno per usarne un altro. L'interruttore invia loro la newsletter.",
+      "recipientsDescription": "Gli utenti possono annullare l'iscrizione in qualsiasi momento",
       "recipientsSearch": "Cerca utenti",
       "recipientsNone": "Nessun utente trovato",
       "recipientsError": "Impossibile leggere gli utenti. Controlla le impostazioni di connessione.",
@@ -430,15 +433,17 @@
       "frequency": "Frequenza",
       "frequencies": {
         "weekly": "Settimanale",
-        "monthly": "Mensile"
+        "monthly": "Mensile",
+        "quarterly": "Trimestrale"
       },
       "frequencyDescriptions": {
         "weekly": "Copre i 7 giorni prima del giorno di invio",
-        "monthly": "Parte il 1° del mese e copre il mese precedente"
+        "monthly": "Copre il mese precedente",
+        "quarterly": "Parte a gen, apr, lug e ott e copre i 3 mesi precedenti"
       },
       "weekday": "Giorno",
+      "monthDay": "Giorno del mese",
       "hour": "Ora",
-      "hourDescription": "Nel fuso orario del server, {timeZone}",
       "sectionsLabel": "Contenuto",
       "sectionsOwnOnly": "Gli utenti vedono nella dashboard solo le proprie statistiche, quindi la newsletter esclude le statistiche del server e la classifica degli utenti",
       "sections": {
@@ -450,12 +455,11 @@
       "lastRun": "Ultimo invio {date}: {sent, plural, one {# inviata} other {# inviate}}, {failed, plural, one {# non riuscita} other {# non riuscite}}, {skipped, plural, one {# saltata} other {# saltate}}.",
       "lastRunError": "Ultimo tentativo {date}: {error}",
       "tryIt": "Prova",
-      "tryItDescription": "Con le impostazioni salvate e le tue statistiche",
       "preview": "Anteprima",
       "sendToMe": "Invia a me",
       "rewind": "Rewind",
-      "rewindUsers": "Invia il Rewind",
-      "rewindUsersDescription": "Invia agli utenti scelti un invito al loro Rewind, senza svelarne nulla",
+      "rewindUsers": "Invia ora",
+      "rewindUsersDescription": "Per invitare automaticamente tutti quando esce, attiva gli inviti via email nelle impostazioni di Rewind",
       "rewindNotShared": "Il Rewind deve essere attivo e aperto agli utenti prima di poterlo inviare per email.",
       "sendToLabel": "Invia a {name}",
       "sendRewind": "{count, plural, =0 {Invia} one {Invia a # utente} other {Invia a # utenti}}",
@@ -470,6 +474,7 @@
         "noPlays": "Nessuna riproduzione nel periodo",
         "nothingToShow": "Nessuna riproduzione sul server nel periodo"
       },
+      "mailAuthRequired": "Il server di posta richiede un nome utente e una password",
       "mailAuthFailed": "Il server di posta non ha accettato il nome utente o la password",
       "mailUnableToConnect": "Impossibile connettersi al server di posta. Controlla host, porta e sicurezza.",
       "mailCertificateError": "Il TLS del server di posta non ha funzionato. Controlla porta e sicurezza.",
@@ -940,36 +945,40 @@
     "Rewind": {
       "subject": "{name}, il tuo Rewind è arrivato",
       "subjectYear": "{name}, il tuo Rewind {year} è arrivato",
-      "preheader": "Scopri cosa hai riprodotto su {server}",
+      "preheader": "Scopri cosa hai riprodotto",
       "eyebrow": "Rewind",
       "eyebrowYear": "Rewind {year}",
       "title": "Il tuo Rewind è arrivato, {name}",
-      "intro": "Ripercorri cosa hai riprodotto su {server}: le tue serie, i film e la musica preferiti, le tue abitudini e qualche sorpresa.",
+      "intro": "Ripercorri cosa hai riprodotto: le tue serie, i film e la musica preferiti, le tue abitudini e qualche sorpresa.",
       "teaser": {
         "watchTime": "Tempo di visualizzazione",
         "topShow": "Serie preferita",
-        "personality": "Profilo da spettatore"
+        "personality": "Profilo"
       },
       "button": "Guarda il mio Rewind",
-      "footer": "Il link è tuo: chiunque lo abbia può aprire il tuo Rewind."
+      "footer": "Questo link apre il tuo Rewind senza accedere, quindi condividilo solo con chi vuoi che lo veda."
     },
     "Newsletter": {
       "subject": {
         "weekly": "La tua settimana su {server}",
-        "monthly": "Il tuo {month} su {server}"
+        "monthly": "Il tuo {month} su {server}",
+        "quarterly": "Il tuo trimestre su {server}"
       },
       "eyebrow": {
         "weekly": "Riepilogo settimanale",
-        "monthly": "Riepilogo mensile"
+        "monthly": "Riepilogo mensile",
+        "quarterly": "Riepilogo trimestrale"
       },
       "title": {
         "weekly": "La tua settimana, {name}",
-        "monthly": "Il tuo {month}, {name}"
+        "monthly": "Il tuo {month}, {name}",
+        "quarterly": "Il tuo trimestre, {name}"
       },
       "preheader": "Cosa hai riprodotto tu e tutti gli altri su {server}",
       "noPlays": {
         "weekly": "Questa settimana non hai riprodotto niente.",
-        "monthly": "Questo mese non hai riprodotto niente."
+        "monthly": "Questo mese non hai riprodotto niente.",
+        "quarterly": "Questo trimestre non hai riprodotto niente."
       },
       "onServer": "Su {server}",
       "viewers": "Spettatori",
@@ -981,14 +990,15 @@
       "button": "Vedi altre statistiche",
       "footer": {
         "weekly": "Ricevi questo riepilogo settimanale da {server}.",
-        "monthly": "Ricevi questo riepilogo mensile da {server}."
+        "monthly": "Ricevi questo riepilogo mensile da {server}.",
+        "quarterly": "Ricevi questo riepilogo trimestrale da {server}."
       },
       "unsubscribe": "Annulla l'iscrizione"
     },
     "Test": {
       "subject": "Email di prova da {app}",
       "title": "Funziona",
-      "body": "Il tuo server di posta è configurato, quindi Rewind e newsletter possono partire."
+      "body": "Il tuo server di posta è configurato, quindi gli inviti al Rewind e le newsletter possono partire."
     },
     "Unsubscribe": {
       "eyebrow": "Newsletter",

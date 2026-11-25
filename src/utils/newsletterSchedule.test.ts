@@ -13,11 +13,16 @@ const WEEKLY: NewsletterSchedule = {
   newsletterFrequency: 'weekly',
   // Monday
   newsletterWeekday: 1,
+  newsletterMonthDay: 1,
   newsletterHour: 9,
 }
 const MONTHLY: NewsletterSchedule = {
   ...WEEKLY,
   newsletterFrequency: 'monthly',
+}
+const QUARTERLY: NewsletterSchedule = {
+  ...WEEKLY,
+  newsletterFrequency: 'quarterly',
 }
 
 // Local times, as the schedule is in the server's time zone. 23 November 2026
@@ -55,6 +60,18 @@ describe('getLatestSendTime', () => {
       new Date(2025, 11, 1, 9),
     )
   })
+
+  it('is the 1st of the quarter for a quarterly one', () => {
+    // 1 October, as November is in the quarter it starts
+    expect(getLatestSendTime(QUARTERLY, local(23, 12))).toEqual(local(1, 9, 9))
+    expect(getLatestSendTime(QUARTERLY, local(1, 8, 9))).toEqual(local(1, 9, 6))
+    expect(getLatestSendTime(QUARTERLY, new Date(2026, 1, 3))).toEqual(
+      new Date(2026, 0, 1, 9),
+    )
+    expect(getLatestSendTime(QUARTERLY, new Date(2026, 0, 1, 3))).toEqual(
+      new Date(2025, 9, 1, 9),
+    )
+  })
 })
 
 describe('getNextSendTime', () => {
@@ -65,6 +82,20 @@ describe('getNextSendTime', () => {
 
   it('is the next 1st for a monthly one', () => {
     expect(getNextSendTime(MONTHLY, local(23, 12))).toEqual(local(1, 9, 11))
+  })
+
+  it('goes out on the day of the month picked', () => {
+    const tenth = { ...MONTHLY, newsletterMonthDay: 10 }
+
+    expect(getLatestSendTime(tenth, local(5, 12))).toEqual(local(10, 9, 9))
+    expect(getNextSendTime(tenth, local(5, 12))).toEqual(local(10, 9))
+    expect(getNextSendTime(tenth, local(10, 12))).toEqual(local(10, 9, 11))
+  })
+
+  it('is the next quarter for a quarterly one', () => {
+    expect(getNextSendTime(QUARTERLY, local(23, 12))).toEqual(
+      new Date(2027, 0, 1, 9),
+    )
   })
 })
 
@@ -80,6 +111,20 @@ describe('getNewsletterPeriod', () => {
     expect(getNewsletterPeriod(MONTHLY, local(1, 9))).toEqual({
       since: local(1, 0, 9).toISOString(),
       until: local(1).toISOString(),
+    })
+  })
+
+  it('covers the calendar month before, whichever day it goes out on', () => {
+    expect(getNewsletterPeriod(MONTHLY, local(10, 9))).toEqual({
+      since: local(1, 0, 9).toISOString(),
+      until: local(1).toISOString(),
+    })
+  })
+
+  it('covers the 3 months before a quarterly one', () => {
+    expect(getNewsletterPeriod(QUARTERLY, local(1, 9, 9))).toEqual({
+      since: local(1, 0, 6).toISOString(),
+      until: local(1, 0, 9).toISOString(),
     })
   })
 })

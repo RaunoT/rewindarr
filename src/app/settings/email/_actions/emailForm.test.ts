@@ -3,9 +3,10 @@ import { DEFAULT_SETTINGS } from '@/utils/constants'
 import { describe, expect, it } from 'vitest'
 import {
   ADDRESS_FIELD_PREFIX,
-  LISTED_USERS_FIELD,
+  ADDRESS_USERS_FIELD,
   readEmailForm,
   SUBSCRIBED_FIELD,
+  SUBSCRIPTION_USERS_FIELD,
   WAS_SUBSCRIBED_FIELD,
 } from './emailForm'
 
@@ -64,6 +65,7 @@ describe('readEmailForm', () => {
         ['isNewsletterActive', 'on'],
         ['newsletterFrequency', 'monthly'],
         ['newsletterWeekday', '3'],
+        ['newsletterMonthDay', '10'],
         ['newsletterHour', '18'],
         ['newsletterSections', 'personal'],
         ['newsletterSections', 'topUsers'],
@@ -74,6 +76,7 @@ describe('readEmailForm', () => {
     expect(data).toMatchObject({
       isNewsletterActive: true,
       newsletterFrequency: 'monthly',
+      newsletterMonthDay: 10,
       newsletterHour: 18,
       newsletterSections: ['personal', 'topUsers'],
     })
@@ -84,12 +87,15 @@ describe('readEmailForm', () => {
     const data = readEmailForm(
       toFormData([
         ...SERVER_FIELDS,
-        [LISTED_USERS_FIELD, '1'],
-        [LISTED_USERS_FIELD, '2'],
-        [LISTED_USERS_FIELD, '3'],
+        [ADDRESS_USERS_FIELD, '1'],
+        [ADDRESS_USERS_FIELD, '2'],
+        [ADDRESS_USERS_FIELD, '3'],
         [`${ADDRESS_FIELD_PREFIX}1`, ''],
         [`${ADDRESS_FIELD_PREFIX}2`, ' two@example.com '],
         [`${ADDRESS_FIELD_PREFIX}3`, ''],
+        [SUBSCRIPTION_USERS_FIELD, '1'],
+        [SUBSCRIPTION_USERS_FIELD, '2'],
+        [SUBSCRIPTION_USERS_FIELD, '3'],
         [WAS_SUBSCRIBED_FIELD, '1'],
         [WAS_SUBSCRIBED_FIELD, '3'],
         [SUBSCRIBED_FIELD, '1'],
@@ -109,7 +115,7 @@ describe('readEmailForm', () => {
     const data = readEmailForm(
       toFormData([
         ...SERVER_FIELDS,
-        [LISTED_USERS_FIELD, '2'],
+        [SUBSCRIPTION_USERS_FIELD, '2'],
         [WAS_SUBSCRIBED_FIELD, '2'],
         [SUBSCRIBED_FIELD, '2'],
       ]),
@@ -117,6 +123,20 @@ describe('readEmailForm', () => {
     )
 
     expect(data.unsubscribed).toEqual(['2', '9'])
+  })
+
+  it('keeps the subscriptions while the newsletter list is hidden', () => {
+    const data = readEmailForm(
+      toFormData([
+        ...SERVER_FIELDS,
+        [ADDRESS_USERS_FIELD, '2'],
+        [`${ADDRESS_FIELD_PREFIX}2`, 'two@example.com'],
+      ]),
+      SAVED,
+    )
+
+    expect(data.addresses).toMatchObject({ 2: 'two@example.com' })
+    expect(data).not.toHaveProperty('unsubscribed')
   })
 
   it("keeps the users' settings when they weren't listed", () => {

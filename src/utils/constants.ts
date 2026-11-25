@@ -113,6 +113,7 @@ export const DEFAULT_SETTINGS: Settings = {
     autoplaySpeed: 'normal',
     period: 'calendarYear',
     releaseDate: '12-01',
+    isReleaseEmailActive: false,
     startDate: '',
     shareVersion: 0,
     complete: false,
@@ -149,7 +150,7 @@ export const DEFAULT_SETTINGS: Settings = {
     smtpUser: '',
     smtpPassword: '',
     fromAddress: '',
-    fromName: '',
+    fromName: APP_NAME,
     appUrl: '',
     locale: 'en-GB',
     addresses: {},
@@ -157,6 +158,7 @@ export const DEFAULT_SETTINGS: Settings = {
     isNewsletterActive: false,
     newsletterFrequency: 'weekly',
     newsletterWeekday: 1,
+    newsletterMonthDay: 1,
     newsletterHour: 9,
     newsletterSections: ['personal', 'server'],
     complete: true,
@@ -299,7 +301,11 @@ export const EMAIL_SECURITIES = ['none', 'starttls', 'tls'] as const
 
 export type EmailSecurity = (typeof EMAIL_SECURITIES)[number]
 
-export const NEWSLETTER_FREQUENCIES = ['weekly', 'monthly'] as const
+export const NEWSLETTER_FREQUENCIES = [
+  'weekly',
+  'monthly',
+  'quarterly',
+] as const
 
 export type NewsletterFrequency = (typeof NEWSLETTER_FREQUENCIES)[number]
 

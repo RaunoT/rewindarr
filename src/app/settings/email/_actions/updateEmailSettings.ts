@@ -17,7 +17,7 @@ import {
   restoreMailPassword,
 } from '@/utils/mailer'
 import { passOverDueNewsletter } from '@/utils/newsletter'
-import { isSameSchedule } from '@/utils/newsletterSchedule'
+import { isSameSchedule, MAX_MONTH_DAY } from '@/utils/newsletterSchedule'
 import { getTranslations } from 'next-intl/server'
 import { z } from 'zod'
 import updateSettings from '../../_actions/updateSettings'
@@ -113,6 +113,7 @@ async function validateAndSave(
     isNewsletterActive: z.boolean(),
     newsletterFrequency: z.enum(NEWSLETTER_FREQUENCIES).optional(),
     newsletterWeekday: z.number().int().min(0).max(6).optional(),
+    newsletterMonthDay: z.number().int().min(1).max(MAX_MONTH_DAY).optional(),
     newsletterHour: z.number().int().min(0).max(23).optional(),
     newsletterSections: z
       .array(z.enum(NEWSLETTER_SECTIONS))

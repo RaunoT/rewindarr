@@ -6,7 +6,6 @@ import { EmailRecipient, getEmailRecipients } from '@/utils/emailRecipients'
 import getSettings from '@/utils/getSettings'
 import { maskMailPassword } from '@/utils/mailer'
 import { readNewsletterState } from '@/utils/newsletter'
-import { getNextSendTime } from '@/utils/newsletterSchedule'
 import { canShareRewind } from '@/utils/rewindShare'
 import { Metadata } from 'next'
 import { getServerSession } from 'next-auth'
@@ -51,7 +50,6 @@ export default async function EmailSettingsPage() {
       siteUrl={getSiteUrl() ?? ''}
       isRewindShared={canShareRewind(settings)}
       isOthersShown={canShowOthers(settings)}
-      nextSendTime={getNextSendTime(settings.email, new Date()).toISOString()}
       lastRun={lastRun}
       adminAddress={session?.user.email ?? ''}
       adminId={session?.user.id ?? ''}
