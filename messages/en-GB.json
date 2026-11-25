@@ -988,8 +988,7 @@
     "Test": {
       "subject": "Test email from {app}",
       "title": "It works",
-      "body": "Your mail server is set up, so Rewinds and newsletters can go out.",
-      "footer": "Sent from the email settings."
+      "body": "Your mail server is set up, so Rewinds and newsletters can go out."
     },
     "Unsubscribe": {
       "eyebrow": "Newsletter",

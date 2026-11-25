@@ -67,6 +67,20 @@ export const COLORS = {
 
 const FONT =
   "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+// The space between blocks in a panel. A list's rows have room around them
+// already, so less is added next to one, and every gap looks the same.
+const GAP = {
+  afterEyebrow: 12,
+  afterTitle: 8,
+  // Over a heading, and between the sections it starts
+  section: 28,
+  afterHeading: 16,
+  beforeButton: 24,
+  default: 16,
+}
+const LIST_INSET = 8
+// Over the second of two columns, once they're stacked on a phone
+const COLUMN_STACK_GAP = GAP.section - LIST_INSET
 
 // Only links are safe in an href, so nothing else can run when it's clicked
 function safeUrl(url: string): string {
@@ -82,7 +96,7 @@ type LayoutProps = {
   serverName: string
   logoUrl: string | null
   content: Html
-  footer: Html
+  footer?: Html
 }
 
 export function renderLayout({
@@ -134,7 +148,10 @@ export function renderLayout({
           .column {
             display: block !important;
             width: 100% !important;
-            padding: 0 0 8px !important;
+            padding: 0 !important;
+          }
+          .column-next {
+            padding-top: ${COLUMN_STACK_GAP}px !important;
           }
           .title {
             font-size: 26px !important;
@@ -210,13 +227,16 @@ export function renderLayout({
                 </td>
               </tr>
               ${content}
-              <tr>
-                <td
-                  style="padding: 24px 4px 0; color: ${COLORS.faint}; font-size: 12px; line-height: 18px;"
-                >
-                  ${footer}
-                </td>
-              </tr>
+              ${
+                footer &&
+                html`<tr>
+                  <td
+                    style="padding: 12px 4px 0; color: ${COLORS.faint}; font-size: 12px; line-height: 18px;"
+                  >
+                    ${footer}
+                  </td>
+                </tr>`
+              }
             </table>
           </td>
         </tr>
@@ -249,7 +269,7 @@ export function panel(content: Html): Html {
 // Small capitals over a section, like the settings' headings
 export function eyebrow(text: string): Html {
   return html`<p
-    style="margin: 0 0 12px; color: ${COLORS.muted}; font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;"
+    style="margin: 0; color: ${COLORS.muted}; font-size: 11px; line-height: 16px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;"
   >
     ${text}
   </p>`
@@ -258,7 +278,7 @@ export function eyebrow(text: string): Html {
 export function title(text: string): Html {
   return html`<h1
     class="title"
-    style="margin: 0 0 8px; color: ${COLORS.text}; font-size: 30px; line-height: 36px; font-weight: 700; letter-spacing: -0.5px;"
+    style="margin: 0; color: ${COLORS.text}; font-size: 30px; line-height: 36px; font-weight: 700; letter-spacing: -0.5px;"
   >
     ${text}
   </h1>`
@@ -266,7 +286,7 @@ export function title(text: string): Html {
 
 export function heading(text: string): Html {
   return html`<h2
-    style="margin: 0 0 16px; color: ${COLORS.text}; font-size: 18px; line-height: 24px; font-weight: 600;"
+    style="margin: 0; color: ${COLORS.text}; font-size: 18px; line-height: 24px; font-weight: 600;"
   >
     ${text}
   </h2>`
@@ -274,7 +294,7 @@ export function heading(text: string): Html {
 
 export function paragraph(content: string | Html, isMuted = false): Html {
   return html`<p
-    style="margin: 0 0 16px; color: ${isMuted ? COLORS.muted : COLORS.body}; font-size: 15px; line-height: 22px;"
+    style="margin: 0; color: ${isMuted ? COLORS.muted : COLORS.body}; font-size: 15px; line-height: 22px;"
   >
     ${content}
   </p>`
@@ -287,7 +307,6 @@ export function button(href: string, label: string): Html {
     cellpadding="0"
     cellspacing="0"
     border="0"
-    style="margin-top: 16px;"
   >
     <tr>
       <td
@@ -303,6 +322,18 @@ export function button(href: string, label: string): Html {
       </td>
     </tr>
   </table>`
+}
+
+// The same button, sending a form, for the pages the emails link to
+export function submitButton(action: string, label: string): Html {
+  return html`<form method="post" action="${action}" style="margin: 0;">
+    <button
+      type="submit"
+      style="padding: 12px 28px; border: 0; border-radius: 999px; background: ${COLORS.text}; color: #000000; font-family: ${FONT}; font-size: 15px; font-weight: 600; line-height: normal; cursor: pointer;"
+    >
+      ${label}
+    </button>
+  </form>`
 }
 
 export type StatTile = {
@@ -326,7 +357,7 @@ export function statTiles(tiles: StatTile[]): Html {
     cellpadding="0"
     cellspacing="0"
     border="0"
-    style="margin-bottom: 8px; table-layout: fixed;"
+    style="table-layout: fixed;"
   >
     <tr>
       ${tiles.map(
@@ -383,7 +414,6 @@ export function itemList(items: ListItem[]): Html {
     cellpadding="0"
     cellspacing="0"
     border="0"
-    style="margin-bottom: 8px;"
   >
     ${items.map(
       (item, i) =>
@@ -448,7 +478,7 @@ export function rankList(rows: RankRow[]): Html {
     cellpadding="0"
     cellspacing="0"
     border="0"
-    style="margin-bottom: 8px; border-collapse: separate;"
+    style="border-collapse: separate;"
   >
     ${rows.map(
       (row, i) =>
@@ -496,7 +526,7 @@ export function columns(left: Html, right: Html): Html {
         ${left}
       </td>
       <td
-        class="column"
+        class="column column-next"
         width="50%"
         style="width: 50%; padding-left: 12px; vertical-align: top;"
       >
@@ -525,6 +555,8 @@ export type EmailBlock =
   | { type: 'ranks'; rows: RankRow[] }
   | { type: 'columns'; left: EmailBlock[]; right: EmailBlock[] }
   | { type: 'button'; href: string; label: string }
+  // Only for pages, as mail apps don't send forms
+  | { type: 'form'; action: string; label: string }
 
 export type EmailDocument = {
   locale: string
@@ -534,7 +566,7 @@ export type EmailDocument = {
   logoUrl: string | null
   // Each is a panel of its own
   panels: EmailBlock[][]
-  footer: string
+  footer?: string
   footerLink?: { href: string; label: string }
 }
 
@@ -555,13 +587,62 @@ function blockToHtml(block: EmailBlock): Html {
     case 'ranks':
       return rankList(block.rows)
     case 'columns':
-      return columns(
-        new Html(block.left.map(blockToHtml).join('')),
-        new Html(block.right.map(blockToHtml).join('')),
-      )
+      return columns(renderBlocks(block.left), renderBlocks(block.right))
     case 'button':
       return button(block.href, block.label)
+    case 'form':
+      return submitButton(block.action, block.label)
   }
+}
+
+// The block a gap is next to, for columns the one at their edge
+function getEdge(block: EmailBlock, side: 'first' | 'last'): EmailBlock {
+  if (block.type !== 'columns') {
+    return block
+  }
+
+  const edge = side === 'first' ? block.left[0] : block.left.at(-1)
+
+  return edge ? getEdge(edge, side) : block
+}
+
+function getGap(previous: EmailBlock, next: EmailBlock): number {
+  const before = getEdge(previous, 'last').type
+  const after = getEdge(next, 'first').type
+  const inset =
+    (before === 'items' ? LIST_INSET : 0) + (after === 'items' ? LIST_INSET : 0)
+
+  let gap = GAP.default
+
+  if (before === 'eyebrow') {
+    gap = GAP.afterEyebrow
+  } else if (after === 'heading') {
+    gap = GAP.section
+  } else if (before === 'title') {
+    gap = GAP.afterTitle
+  } else if (before === 'heading') {
+    gap = GAP.afterHeading
+  } else if (after === 'button' || after === 'form') {
+    gap = GAP.beforeButton
+  }
+
+  return Math.max(gap - inset, 0)
+}
+
+function spacer(height: number): Html {
+  return html`<div
+    style="height: ${height}px; line-height: ${height}px; font-size: 1px; mso-line-height-rule: exactly;"
+  >
+    &nbsp;
+  </div>`
+}
+
+// Blocks one under the other, with the same gaps everywhere
+export function renderBlocks(blocks: EmailBlock[]): Html {
+  return html`${blocks.map(
+    (block, i) =>
+      html`${i > 0 && spacer(getGap(blocks[i - 1], block))}${blockToHtml(block)}`,
+  )}`
 }
 
 function blockToText(block: EmailBlock): string {
@@ -595,6 +676,8 @@ function blockToText(block: EmailBlock): string {
       return [...block.left, ...block.right].map(blockToText).join('\n\n')
     case 'button':
       return `${block.label}: ${block.href}`
+    case 'form':
+      return `${block.label}: ${block.action}`
   }
 }
 
@@ -602,10 +685,13 @@ export function renderEmail(document: EmailDocument): {
   html: string
   text: string
 } {
-  const footer = html`${document.footer}${
-    document.footerLink &&
-    html` ${link(document.footerLink.href, document.footerLink.label)}`
-  }`
+  const footer =
+    document.footer || document.footerLink
+      ? html`${document.footer}${
+          document.footerLink &&
+          html` ${link(document.footerLink.href, document.footerLink.label)}`
+        }`
+      : undefined
 
   return {
     html: renderLayout({
@@ -614,11 +700,9 @@ export function renderEmail(document: EmailDocument): {
       preheader: document.preheader,
       serverName: document.serverName,
       logoUrl: document.logoUrl,
-      content: new Html(
-        document.panels
-          .map((blocks) => panel(new Html(blocks.map(blockToHtml).join(''))))
-          .join(''),
-      ),
+      content: html`${document.panels.map((blocks) =>
+        panel(renderBlocks(blocks)),
+      )}`,
       footer,
     }),
     text: [
@@ -631,6 +715,8 @@ export function renderEmail(document: EmailDocument): {
       ]
         .filter(Boolean)
         .join('\n'),
-    ].join('\n\n\n'),
+    ]
+      .filter(Boolean)
+      .join('\n\n\n'),
   }
 }

@@ -988,8 +988,7 @@
     "Test": {
       "subject": "Test-E-Mail von {app}",
       "title": "Es funktioniert",
-      "body": "Dein Mailserver ist eingerichtet, also können Rewinds und Newsletter verschickt werden.",
-      "footer": "Aus den E-Mail-Einstellungen gesendet."
+      "body": "Dein Mailserver ist eingerichtet, also können Rewinds und Newsletter verschickt werden."
     },
     "Unsubscribe": {
       "eyebrow": "Newsletter",

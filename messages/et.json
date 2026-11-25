@@ -988,8 +988,7 @@
     "Test": {
       "subject": "Testkiri rakendusest {app}",
       "title": "See töötab",
-      "body": "Sinu meiliserver on seadistatud, seega saab Rewinde ja uudiskirju saata.",
-      "footer": "Saadetud e-posti seadetest."
+      "body": "Sinu meiliserver on seadistatud, seega saab Rewinde ja uudiskirju saata."
     },
     "Unsubscribe": {
       "eyebrow": "Uudiskiri",

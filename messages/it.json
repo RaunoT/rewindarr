@@ -988,8 +988,7 @@
     "Test": {
       "subject": "Email di prova da {app}",
       "title": "Funziona",
-      "body": "Il tuo server di posta è configurato, quindi Rewind e newsletter possono partire.",
-      "footer": "Inviata dalle impostazioni email."
+      "body": "Il tuo server di posta è configurato, quindi Rewind e newsletter possono partire."
     },
     "Unsubscribe": {
       "eyebrow": "Newsletter",

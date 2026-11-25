@@ -468,7 +468,6 @@ export function buildTestEmail(
         { type: 'paragraph', text: t('Email.Test.body') },
       ],
     ],
-    footer: t('Email.Test.footer'),
   })
 
   return { to, subject, html, text }

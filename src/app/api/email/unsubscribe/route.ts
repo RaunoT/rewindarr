@@ -1,14 +1,10 @@
 import { Settings } from '@/types/settings'
 import { APP_NAME } from '@/utils/constants'
 import {
-  COLORS,
-  eyebrow,
-  html,
-  Html,
+  EmailBlock,
   panel,
-  paragraph,
+  renderBlocks,
   renderLayout,
-  title,
 } from '@/utils/emailHtml'
 import { getEmailIntl } from '@/utils/emailIntl'
 import { getAppUrl, isUnsubscribeKey, toAppUrl } from '@/utils/emailLinks'
@@ -27,17 +23,22 @@ async function renderPage(
   const { t, locale } = await getEmailIntl(settings.email.locale)
   const appUrl = getAppUrl(settings)
   const serverName = settings.general.serverName || APP_NAME
-  const form =
-    page === 'confirm' && action
-      ? html`<form method="post" action="${action}" style="margin: 8px 0 0;">
-          <button
-            type="submit"
-            style="padding: 12px 28px; border: 0; border-radius: 999px; background: ${COLORS.text}; color: #000000; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer;"
-          >
-            ${t('Email.Unsubscribe.button')}
-          </button>
-        </form>`
-      : new Html('')
+  const blocks: EmailBlock[] = [
+    { type: 'eyebrow', text: t('Email.Unsubscribe.eyebrow') },
+    { type: 'title', text: t(`Email.Unsubscribe.${page}.title`) },
+    {
+      type: 'paragraph',
+      text: t(`Email.Unsubscribe.${page}.body`, { server: serverName }),
+    },
+  ]
+
+  if (page === 'confirm' && action) {
+    blocks.push({
+      type: 'form',
+      action,
+      label: t('Email.Unsubscribe.button'),
+    })
+  }
 
   return new Response(
     renderLayout({
@@ -46,12 +47,7 @@ async function renderPage(
       preheader: '',
       serverName,
       logoUrl: appUrl && toAppUrl(appUrl, '/icon-192x192.png'),
-      content: panel(
-        html`${eyebrow(t('Email.Unsubscribe.eyebrow'))}${title(
-          t(`Email.Unsubscribe.${page}.title`),
-        )}${paragraph(t(`Email.Unsubscribe.${page}.body`, { server: serverName }))}${form}`,
-      ),
-      footer: new Html(''),
+      content: panel(renderBlocks(blocks)),
     }),
     {
       status: page === 'invalid' ? 404 : 200,

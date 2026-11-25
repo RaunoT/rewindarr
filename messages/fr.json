@@ -988,8 +988,7 @@
     "Test": {
       "subject": "E-mail de test de {app}",
       "title": "Ça marche",
-      "body": "Votre serveur de messagerie est configuré : les Rewind et les newsletters peuvent partir.",
-      "footer": "Envoyé depuis les paramètres e-mail."
+      "body": "Votre serveur de messagerie est configuré : les Rewind et les newsletters peuvent partir."
     },
     "Unsubscribe": {
       "eyebrow": "Newsletter",

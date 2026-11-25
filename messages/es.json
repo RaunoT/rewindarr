@@ -988,8 +988,7 @@
     "Test": {
       "subject": "Correo de prueba de {app}",
       "title": "Funciona",
-      "body": "Tu servidor de correo está configurado, así que ya se pueden enviar los Rewind y los boletines.",
-      "footer": "Enviado desde los ajustes de correo."
+      "body": "Tu servidor de correo está configurado, así que ya se pueden enviar los Rewind y los boletines."
     },
     "Unsubscribe": {
       "eyebrow": "Boletín",
