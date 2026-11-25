@@ -143,14 +143,17 @@ describe('POST /api/settings/connection-test', () => {
   })
 
   it('says only connected for Jellyfin, which has no token', async () => {
+    // The hidden Plex token is sent too after switching servers
     const res = await testMediaServer('jellyfin', [
       ['statisticsSource', 'tracearr'],
       ['jellyfinUrl', 'http://jellyfin:8096'],
+      ['plexToken', 'token'],
     ])
 
     await expect(res.json()).resolves.toEqual({
       status: 'success',
       message: 'Connection.connected',
     })
+    expect(testPlexToken).not.toHaveBeenCalled()
   })
 })
