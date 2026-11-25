@@ -26,15 +26,18 @@ const LoadedFieldsContext = createContext<(container: Element) => void>(
 // For fields that are read after the form shows, inside the element the ref
 // is on: called from the component that renders them once they're there, so
 // they don't count as a change. Off for fields that only show because of an
-// edit, which count as one.
+// edit, which count as one. Only the first time they're there, as fields that
+// go and come back can have been edited meanwhile.
 export function useLoadedFields(
   ref: RefObject<Element | null>,
   isActive = true,
 ) {
   const markLoaded = useContext(LoadedFieldsContext)
+  const isMarkedRef = useRef(false)
 
   useEffect(() => {
-    if (isActive && ref.current) {
+    if (isActive && ref.current && !isMarkedRef.current) {
+      isMarkedRef.current = true
       markLoaded(ref.current)
     }
   }, [isActive, markLoaded, ref])

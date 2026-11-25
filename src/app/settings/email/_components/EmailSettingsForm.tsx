@@ -110,8 +110,6 @@ export default function EmailSettingsForm({
   // The address the admin opened the settings from, until another is saved
   const origin = useSyncExternalStore(subscribe, getOrigin, () => '')
   const appUrl = emailSettings.appUrl || (siteUrl ? '' : origin)
-  // A new key for each save, which the fields start over from
-  const formKey = formState.status ? JSON.stringify(formState.fields) : ''
   const sectionOptions = NEWSLETTER_SECTIONS.map((section) => ({
     value: section,
     label: t(`sections.${section}`),
@@ -421,15 +419,13 @@ export default function EmailSettingsForm({
               defaultValue={emailSettings.newsletterSections}
               placeholder={tCommon('none')}
             />
+            <div className='sm:pl-50'>
+              <EmailTryIt
+                previewHref={`/api/settings/email-preview?${new URLSearchParams({ type: 'newsletter', userId: adminId })}`}
+                send={sendNewsletterToMe}
+              />
+            </div>
           </>
-        )}
-        {isNewsletterActive && (
-          <div className='sm:pl-50'>
-            <EmailTryIt
-              previewHref={`/api/settings/email-preview?${new URLSearchParams({ type: 'newsletter', userId: adminId })}`}
-              send={sendNewsletterToMe}
-            />
-          </div>
         )}
       </section>
       {/* Apart from the newsletter, as every email goes to these addresses */}
@@ -437,7 +433,6 @@ export default function EmailSettingsForm({
         <h2 className='heading-settings'>{t('recipients')}</h2>
         <EmailUsers
           recipients={recipients}
-          formKey={formKey}
           isNewsletterActive={isNewsletterActive}
           isNewsletterOnLoad={settings.isNewsletterActive}
         />

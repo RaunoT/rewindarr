@@ -4,7 +4,7 @@ import SelectionActions from '@/components/SelectionActions'
 import type { EmailRecipient } from '@/utils/emailRecipients'
 import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
-import { Suspense, use, useRef, useState } from 'react'
+import { Fragment, Suspense, use, useRef, useState } from 'react'
 import { Switch } from 'react-aria-components'
 import { useLoadedFields } from '../../_components/SettingsForm'
 import UserSearchList from '../../_components/UserSearchList'
@@ -19,8 +19,6 @@ import {
 type Props = {
   // Read while the rest of the form shows. Null when they couldn't be read.
   recipients: Promise<EmailRecipient[] | null>
-  // Each save sends a new list, which the fields start over from
-  formKey: string
   // As picked, which the newsletter's column shows for
   isNewsletterActive: boolean
   // Whether the newsletter was on when the form showed, rather than turned
@@ -36,79 +34,34 @@ function getSubscribed(recipients: EmailRecipient[] | null): string[] {
   )
 }
 
-type FieldsProps = {
-  recipients: EmailRecipient[]
-  subscribed: string[]
-  isShownOnLoad: boolean
-}
-
-// Who gets the newsletter, as fields of their own, which the switches, select
-// all and clear add and remove, so the form sees them as changes. Apart from
-// the addresses, as these only count as loaded when the newsletter was on.
-function SubscriptionFields({
-  recipients,
-  subscribed,
-  isShownOnLoad,
-}: FieldsProps) {
-  const ref = useRef<HTMLDivElement>(null)
-
-  useLoadedFields(ref, isShownOnLoad)
-
-  return (
-    <div ref={ref} hidden>
-      {recipients.map((recipient) => (
-        <input
-          key={recipient.id}
-          type='hidden'
-          name={SUBSCRIPTION_USERS_FIELD}
-          value={recipient.id}
-        />
-      ))}
-      {recipients
-        .filter((recipient) => recipient.isSubscribed)
-        .map((recipient) => (
-          <input
-            key={recipient.id}
-            type='hidden'
-            name={WAS_SUBSCRIBED_FIELD}
-            value={recipient.id}
-          />
-        ))}
-      {recipients
-        .filter((recipient) => subscribed.includes(recipient.id))
-        .map((recipient) => (
-          <input
-            key={recipient.id}
-            type='hidden'
-            name={SUBSCRIBED_FIELD}
-            value={recipient.id}
-          />
-        ))}
-    </div>
-  )
-}
-
 function UserList({
   recipients: request,
-  formKey,
   isNewsletterActive,
   isNewsletterOnLoad,
 }: Props) {
   const t = useTranslations('Settings.Email')
   const recipients = use(request)
   const ref = useRef<HTMLDivElement>(null)
+  const subscriptionRef = useRef<HTMLDivElement>(null)
   const [subscribed, setSubscribed] = useState(() => getSubscribed(recipients))
   const [shownRecipients, setShownRecipients] = useState(recipients)
+  // Which read of the users the address fields show
+  const [version, setVersion] = useState(0)
 
-  // A save reads the users again, and the switches start over from them, like
-  // the fields they're compared with. Someone who unsubscribed meanwhile
-  // isn't subscribed again by the next save.
+  // A save reads the users again, and the switches and address fields start
+  // over from them, like the fields they're compared with. Someone who
+  // unsubscribed meanwhile isn't subscribed again by the next save. A save
+  // that fails reads nothing, so what was typed stays.
   if (recipients !== shownRecipients) {
     setShownRecipients(recipients)
     setSubscribed(getSubscribed(recipients))
+    setVersion(version + 1)
   }
 
   useLoadedFields(ref)
+  // The newsletter's fields only count as loaded when it was on as the form
+  // showed, rather than turned on since
+  useLoadedFields(subscriptionRef, isNewsletterOnLoad && isNewsletterActive)
 
   if (!recipients) {
     return (
@@ -145,11 +98,13 @@ function UserList({
           }
           footer={
             isNewsletterActive && (
-              <SelectionActions
-                options={recipients.map(({ id }) => id)}
-                value={subscribed}
-                onChange={setSubscribed}
-              />
+              <fieldset className='min-w-0' aria-label={t('newsletter')}>
+                <SelectionActions
+                  options={recipients.map(({ id }) => id)}
+                  value={subscribed}
+                  onChange={setSubscribed}
+                />
+              </fieldset>
             )
           }
         >
@@ -162,7 +117,7 @@ function UserList({
               />
               {/* Beside the name where the list has the room, else under it */}
               <input
-                key={`address-${formKey}-${recipient.customAddress}`}
+                key={`address-${version}`}
                 type='email'
                 className='input order-last text-sm @lg:order-none @lg:w-56'
                 name={`${ADDRESS_FIELD_PREFIX}${recipient.id}`}
@@ -193,13 +148,36 @@ function UserList({
           )}
         </UserSearchList>
       </div>
-      {isNewsletterActive && (
-        <SubscriptionFields
-          recipients={recipients}
-          subscribed={subscribed}
-          isShownOnLoad={isNewsletterOnLoad}
-        />
-      )}
+      {/* Who gets the newsletter, as fields of their own, which the switches,
+          select all and clear add and remove, so the form sees them as
+          changes. Apart from the addresses, as they count as loaded on their
+          own terms. */}
+      <div ref={subscriptionRef} hidden>
+        {isNewsletterActive &&
+          recipients.map((recipient) => (
+            <Fragment key={recipient.id}>
+              <input
+                type='hidden'
+                name={SUBSCRIPTION_USERS_FIELD}
+                value={recipient.id}
+              />
+              {recipient.isSubscribed && (
+                <input
+                  type='hidden'
+                  name={WAS_SUBSCRIBED_FIELD}
+                  value={recipient.id}
+                />
+              )}
+              {subscribed.includes(recipient.id) && (
+                <input
+                  type='hidden'
+                  name={SUBSCRIBED_FIELD}
+                  value={recipient.id}
+                />
+              )}
+            </Fragment>
+          ))}
+      </div>
     </>
   )
 }

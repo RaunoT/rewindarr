@@ -378,7 +378,7 @@
       "startDateError": "Kontrolli alguskuupäeva.",
       "shareLinks": "Jagatud lingid",
       "shareLinksDescription": "Iga link avab selle kasutaja Rewindi ilma sisse logimata, nii et seda näeb ka igaüks, kellele link edasi saadetakse.",
-      "shareLinksSendDescription": "Saada kohe saadab selle aadressile, mis on <link>E-posti seadetes</link>.",
+      "shareLinksSendDescription": "Nupp Saada kohe saadab selle aadressile, mis on <link>E-posti seadetes</link>.",
       "shareLinksSearch": "Otsi kasutajaid",
       "shareLinksNoUsers": "Kasutajaid ei leitud",
       "shareLinksError": "Kasutajaid ei õnnestunud lugeda",

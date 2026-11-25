@@ -4,7 +4,8 @@ import Avatar from '@/components/Avatar'
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
-import { ReactNode, useState } from 'react'
+import { FormEvent, ReactNode, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 
 type ListUser = {
   id: string
@@ -44,6 +45,7 @@ export default function UserSearchList<T extends ListUser>({
   const t = useTranslations('Common')
   const [query, setQuery] = useState('')
   const [isExpanded, setIsExpanded] = useState(false)
+  const listRef = useRef<HTMLUListElement>(null)
   const isLong = users.length >= SHOWN_ROWS + MIN_HIDDEN_ROWS
   const search = query.trim().toLocaleLowerCase()
   const found = users.filter((user) =>
@@ -55,6 +57,42 @@ export default function UserSearchList<T extends ListUser>({
   const shownIds = new Set(shown.map((user) => user.id))
   const hiddenCount = found.length - shown.length
   const hasToggle = isLong && !search
+
+  function toggle() {
+    if (isExpanded) {
+      setIsExpanded(false)
+
+      return
+    }
+
+    // Drawn first, so the first of the new rows can take the focus, and Tab
+    // goes on into it rather than past the whole list
+    flushSync(() => setIsExpanded(true))
+
+    const row = listRef.current?.children[SHOWN_ROWS]
+
+    if (row instanceof HTMLElement) {
+      row.focus({ preventScroll: true })
+    }
+  }
+
+  // The browser can't point at a field that fails its check in a row that
+  // isn't shown, and the save would just do nothing. Shows the row first.
+  function showInvalid(event: FormEvent<HTMLUListElement>) {
+    const field = event.target
+
+    if (!(field instanceof HTMLInputElement) || field.offsetParent) {
+      return
+    }
+
+    event.preventDefault()
+    flushSync(() => {
+      setQuery('')
+      setIsExpanded(true)
+    })
+    // After the form's own check is done
+    requestAnimationFrame(() => field.reportValidity())
+  }
 
   return (
     <div className='@container rounded-2xl bg-white/5 ring-1 ring-white/10 ring-inset'>
@@ -74,12 +112,18 @@ export default function UserSearchList<T extends ListUser>({
       )}
       {/* Nothing for them to name or apply to when a search finds no one */}
       {!!shown.length && header}
-      <ul className={clsx(!shown.length && 'hidden')}>
+      <ul
+        ref={listRef}
+        className={clsx(!shown.length && 'hidden')}
+        onInvalidCapture={showInvalid}
+      >
         {users.map((user) => (
           <li
             key={user.id}
+            // For the focus after the rest are shown
+            tabIndex={-1}
             className={clsx(
-              'flex flex-wrap items-center gap-x-3 gap-y-2 border-white/10 px-3 py-2',
+              'flex flex-wrap items-center gap-x-3 gap-y-2 border-white/10 px-3 py-2 outline-none',
               user.id !== shown[0]?.id && 'border-t',
               !shownIds.has(user.id) && 'hidden',
             )}
@@ -103,7 +147,7 @@ export default function UserSearchList<T extends ListUser>({
             <button
               type='button'
               className='show-more'
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={toggle}
               aria-expanded={isExpanded}
             >
               {isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
