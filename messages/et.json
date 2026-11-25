@@ -104,7 +104,7 @@
     "onlyMine": "Ainult minu",
     "search": "Otsi pealkirju",
     "clearSearch": "Tühjenda otsing",
-    "noMatches": "Filtritele ei vasta ükski esitus",
+    "noMatches": "Otsingule või filtritele ei vasta ükski esitus",
     "pagination": "Lehed",
     "page": "Leht {page}",
     "pageOf": "{page} / {pageCount}",

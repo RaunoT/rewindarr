@@ -104,7 +104,7 @@
     "onlyMine": "Only mine",
     "search": "Search titles",
     "clearSearch": "Clear search",
-    "noMatches": "No plays match the filters",
+    "noMatches": "No plays match the search or filters",
     "pagination": "Pages",
     "page": "Page {page}",
     "pageOf": "{page} of {pageCount}",
