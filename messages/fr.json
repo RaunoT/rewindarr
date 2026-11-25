@@ -77,8 +77,7 @@
     "personal": "Moi uniquement",
     "sortByLabel": "Trier par",
     "sort": "Trier",
-    "playThreshold": "Les lectures courtes, généralement sous {percent, number, percent}, s'ajoutent à la durée mais pas au nombre de lectures.",
-    "playThresholdZero": "Les lectures très courtes s'ajoutent à la durée mais pas au nombre de lectures."
+    "playThreshold": "Les lectures sous {percent, number, percent} s'ajoutent à la durée mais pas au nombre de lectures."
   },
   "DashboardNavContent": {
     "label": "Navigation du tableau de bord",

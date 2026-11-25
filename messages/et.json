@@ -77,8 +77,7 @@
     "personal": "Ainult minu",
     "sortByLabel": "Sorteerimisalus",
     "sort": "Sorteerimine",
-    "playThreshold": "Lühikesed esitused, tavaliselt alla {percent, number, percent}, lisavad aega, kuid esituste arvu hulka ei lähe.",
-    "playThresholdZero": "Väga lühikesed esitused lisavad aega, kuid esituste arvu hulka ei lähe."
+    "playThreshold": "Alla {percent, number, percent} esitused lisavad aega, kuid esituste arvu hulka ei lähe."
   },
   "DashboardNavContent": {
     "label": "Edetabeli navigatsioon",

@@ -207,13 +207,13 @@ export default function DashboardFilters({
         )}
         <FilterGroup label={t('sort')}>{getSort()}</FilterGroup>
         {/* Viewers can't see the admin's threshold, and without it a title
-            with time but no plays looks wrong. Even at 0%, a very short play
-            without a known length doesn't count. */}
-        <FilterNote>
-          {minPlayPercent > 0
-            ? t('playThreshold', { percent: minPlayPercent / 100 })
-            : t('playThresholdZero')}
-        </FilterNote>
+            with time but no plays looks wrong. At 0% nearly every play
+            counts. */}
+        {minPlayPercent > 0 && (
+          <FilterNote>
+            {t('playThreshold', { percent: minPlayPercent / 100 })}
+          </FilterNote>
+        )}
       </FilterSheet>
     </div>
   )

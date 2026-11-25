@@ -77,8 +77,7 @@
     "personal": "Just me",
     "sortByLabel": "Sort by",
     "sort": "Sort",
-    "playThreshold": "Short plays, usually under {percent, number, percent}, add to the time but not to the play count.",
-    "playThresholdZero": "Very short plays add to the time but not to the play count."
+    "playThreshold": "Plays under {percent, number, percent} add to the time but not to the play count."
   },
   "DashboardNavContent": {
     "label": "Dashboard navigation",

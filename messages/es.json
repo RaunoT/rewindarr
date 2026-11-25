@@ -77,8 +77,7 @@
     "personal": "Solo yo",
     "sortByLabel": "Ordenar por",
     "sort": "Ordenar",
-    "playThreshold": "Las reproducciones cortas, normalmente por debajo del {percent, number, percent}, suman al tiempo pero no al número de reproducciones.",
-    "playThresholdZero": "Las reproducciones muy cortas suman al tiempo pero no al número de reproducciones."
+    "playThreshold": "Las reproducciones por debajo del {percent, number, percent} suman al tiempo pero no al número de reproducciones."
   },
   "DashboardNavContent": {
     "label": "Navegación del panel",
