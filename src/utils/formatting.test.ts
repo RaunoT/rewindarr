@@ -47,8 +47,19 @@ describe('bytesToSize', () => {
     expect(bytesToSize(999.996 * GB, 2, t)).toBe('0.98 TB')
   })
 
-  it('returns nothing for no size', () => {
+  it('stops at the largest unit', () => {
+    expect(bytesToSize(1024 ** 9, 2, t)).toBe('1,024 YB')
+  })
+
+  it('returns nothing for no size or a size that makes no sense', () => {
     expect(bytesToSize(0, 2, t)).toBeUndefined()
+    expect(bytesToSize(-1024, 2, t)).toBeUndefined()
+    expect(bytesToSize(Infinity, 2, t)).toBeUndefined()
+    expect(bytesToSize(NaN, 2, t)).toBeUndefined()
+  })
+
+  it('keeps a fraction of a byte in bytes', () => {
+    expect(bytesToSize(0.5, 2, t)).toBe('0.5 Bytes')
   })
 })
 
