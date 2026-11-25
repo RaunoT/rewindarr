@@ -1,8 +1,11 @@
 'use client'
 
 import Avatar from '@/components/Avatar'
+import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
-import { ReactNode, useLayoutEffect, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
+import { FormEvent, ReactNode, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 
 type ListUser = {
   id: string
@@ -14,108 +17,114 @@ type Props<T extends ListUser> = {
   users: T[]
   searchLabel: string
   emptyLabel: string
+  // The names of the columns, above the rows
+  header?: ReactNode
+  // What applies to the whole list, at its end
+  footer?: ReactNode
   // What follows the user's picture and name in their row
   children: (user: T) => ReactNode
 }
 
-// Up to this many, the list is short enough to scan without a search
-const SEARCH_FROM = 5
-// How many rows show before it scrolls. The half row shows there's more.
-const SHOWN_ROWS = 3.5
+// How many rows show until the rest are asked for
+const SHOWN_ROWS = 5
+// The fewest rows worth a button to show them
+const MIN_HIDDEN_ROWS = 2
 
-// The users of a settings form, with a search once there are more than a few.
-// Rows the search leaves out are hidden rather than removed, so what's typed
-// in them is still sent with the form.
+// The users of a settings form in a card, which grows with the page rather
+// than scrolling by itself. A container, so rows can lay out by its width. A long list starts with its first rows, and has a
+// search. Rows that aren't shown are hidden rather than removed, so what's
+// typed in them is still sent with the form.
 export default function UserSearchList<T extends ListUser>({
   users,
   searchLabel,
   emptyLabel,
+  header,
+  footer,
   children,
 }: Props<T>) {
+  const t = useTranslations('Common')
   const [query, setQuery] = useState('')
+  const [isExpanded, setIsExpanded] = useState(false)
   const listRef = useRef<HTMLUListElement>(null)
-  const [hasMoreBelow, setHasMoreBelow] = useState(false)
-  // Each list's rows are as tall as what follows the names, and taller on
-  // phones, where it wraps under them
-  const [rowHeight, setRowHeight] = useState<number | null>(null)
+  const isLong = users.length >= SHOWN_ROWS + MIN_HIDDEN_ROWS
   const search = query.trim().toLocaleLowerCase()
-  const shownIds = new Set(
-    users
-      .filter((user) => user.name.toLocaleLowerCase().includes(search))
-      .map((user) => user.id),
+  const found = users.filter((user) =>
+    user.name.toLocaleLowerCase().includes(search),
   )
+  // A search shows all it finds
+  const shown =
+    isLong && !isExpanded && !search ? found.slice(0, SHOWN_ROWS) : found
+  const shownIds = new Set(shown.map((user) => user.id))
+  const hiddenCount = found.length - shown.length
+  const hasToggle = isLong && !search
 
-  function updateHasMoreBelow() {
-    const list = listRef.current
+  function toggle() {
+    if (isExpanded) {
+      setIsExpanded(false)
 
-    setHasMoreBelow(
-      !!list && list.scrollHeight - list.scrollTop - list.clientHeight > 1,
-    )
-  }
-
-  useLayoutEffect(() => {
-    const list = listRef.current
-
-    if (!list) {
       return
     }
 
-    function measure() {
-      const row = [...(list?.children ?? [])].find(
-        (child): child is HTMLElement =>
-          child instanceof HTMLElement && child.offsetHeight > 0,
-      )
+    // Drawn first, so the first of the new rows can take the focus, and Tab
+    // goes on into it rather than past the whole list
+    flushSync(() => setIsExpanded(true))
 
-      if (row) {
-        setRowHeight(row.offsetHeight)
-      }
+    const row = listRef.current?.children[SHOWN_ROWS]
+
+    if (row instanceof HTMLElement) {
+      row.focus({ preventScroll: true })
+    }
+  }
+
+  // The browser can't point at a field that fails its check in a row that
+  // isn't shown, and the save would just do nothing. Shows the row first.
+  function showInvalid(event: FormEvent<HTMLUListElement>) {
+    const field = event.target
+
+    if (!(field instanceof HTMLInputElement) || field.offsetParent) {
+      return
     }
 
-    measure()
-
-    // A new width or search can change which row is first, or its height
-    const observer = new ResizeObserver(measure)
-
-    observer.observe(list)
-
-    return () => observer.disconnect()
-  }, [])
-
-  // A search or a new height can leave the list too short to scroll
-  useLayoutEffect(updateHasMoreBelow, [shownIds.size, rowHeight])
+    event.preventDefault()
+    flushSync(() => {
+      setQuery('')
+      setIsExpanded(true)
+    })
+    // After the form's own check is done
+    requestAnimationFrame(() => field.reportValidity())
+  }
 
   return (
-    <div className='grid gap-2'>
-      {users.length > SEARCH_FROM && (
-        <input
-          type='search'
-          className='input'
-          placeholder={searchLabel}
-          aria-label={searchLabel}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          // Not a save of the form it's in
-          onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
-        />
+    <div className='@container rounded-2xl bg-white/5 ring-1 ring-white/10 ring-inset'>
+      {isLong && (
+        <div className='border-b border-white/10 p-2'>
+          <input
+            type='search'
+            className='input text-sm'
+            placeholder={searchLabel}
+            aria-label={searchLabel}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            // Not a save of the form it's in
+            onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
+          />
+        </div>
       )}
-      {/* Half a row shows at the end while it scrolls, fading out while
-          there's more below. The focus rings stay inside the scrolled area. */}
+      {/* Nothing for them to name or apply to when a search finds no one */}
+      {!!shown.length && header}
       <ul
         ref={listRef}
-        onScroll={updateHasMoreBelow}
-        style={rowHeight ? { maxHeight: rowHeight * SHOWN_ROWS } : undefined}
-        className={clsx(
-          // Until a row is measured
-          '-mx-1 max-h-60 overflow-y-auto px-1',
-          hasMoreBelow && 'mask-b-from-80%',
-          !shownIds.size && 'hidden',
-        )}
+        className={clsx(!shown.length && 'hidden')}
+        onInvalidCapture={showInvalid}
       >
         {users.map((user) => (
           <li
             key={user.id}
+            // For the focus after the rest are shown
+            tabIndex={-1}
             className={clsx(
-              'flex flex-wrap items-center gap-x-3 gap-y-2 border-white/10 py-2 not-first:border-t',
+              'flex flex-wrap items-center gap-x-3 gap-y-2 border-white/10 px-3 py-2 outline-none',
+              user.id !== shown[0]?.id && 'border-t',
               !shownIds.has(user.id) && 'hidden',
             )}
           >
@@ -127,8 +136,32 @@ export default function UserSearchList<T extends ListUser>({
           </li>
         ))}
       </ul>
-      {!shownIds.size && (
-        <p className='py-2 text-sm text-neutral-400'>{emptyLabel}</p>
+      {!shown.length && (
+        <p className='px-3 py-6 text-center text-sm text-neutral-400'>
+          {emptyLabel}
+        </p>
+      )}
+      {!!shown.length && (hasToggle || footer) && (
+        <div className='flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-white/10 px-2 py-2'>
+          {hasToggle && (
+            <button
+              type='button'
+              className='show-more'
+              onClick={toggle}
+              aria-expanded={isExpanded}
+            >
+              {isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
+              {isExpanded
+                ? t('showLess')
+                : t('showMoreCount', { count: hiddenCount })}
+            </button>
+          )}
+          {footer && (
+            <div className='ml-auto flex min-w-0 flex-wrap items-center justify-end gap-x-3 gap-y-2'>
+              {footer}
+            </div>
+          )}
+        </div>
       )}
     </div>
   )

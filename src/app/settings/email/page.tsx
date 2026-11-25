@@ -6,7 +6,6 @@ import { EmailRecipient, getEmailRecipients } from '@/utils/emailRecipients'
 import getSettings from '@/utils/getSettings'
 import { maskMailPassword } from '@/utils/mailer'
 import { readNewsletterState } from '@/utils/newsletter'
-import { canShareRewind } from '@/utils/rewindShare'
 import { Metadata } from 'next'
 import { getServerSession } from 'next-auth'
 import { getTranslations } from 'next-intl/server'
@@ -48,7 +47,6 @@ export default async function EmailSettingsPage() {
       // Not waited for, so the form shows while they're read
       recipients={readRecipients()}
       siteUrl={getSiteUrl() ?? ''}
-      isRewindShared={canShareRewind(settings)}
       isOthersShown={canShowOthers(settings)}
       lastRun={lastRun}
       adminAddress={session?.user.email ?? ''}

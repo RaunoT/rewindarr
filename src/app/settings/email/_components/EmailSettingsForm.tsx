@@ -14,16 +14,14 @@ import { getLocaleName } from '@/utils/localeName'
 import type { NewsletterRun } from '@/utils/newsletter'
 import { getNextSendTime, MAX_MONTH_DAY } from '@/utils/newsletterSchedule'
 import { useFormatter, useTranslations } from 'next-intl'
-import Link from 'next/link'
 import { useActionState, useState, useSyncExternalStore } from 'react'
 import { Switch } from 'react-aria-components'
 import SettingsForm from '../../_components/SettingsForm'
-import { sendNewsletterToMe, sendRewindToMe } from '../_actions/sendEmails'
+import { sendNewsletterToMe } from '../_actions/sendEmails'
 import saveEmailSettings from '../_actions/updateEmailSettings'
-import EmailAddresses from './EmailAddresses'
 import EmailTest from './EmailTest'
 import EmailTryIt from './EmailTryIt'
-import NewsletterRecipients from './NewsletterRecipients'
+import EmailUsers from './EmailUsers'
 
 export type EmailFormSettings = Omit<
   EmailSettings,
@@ -36,7 +34,6 @@ type Props = {
   recipients: Promise<EmailRecipient[] | null>
   // The address set for the app, which the emails use unless another is set
   siteUrl: string
-  isRewindShared: boolean
   // Off when users see only their own stats, which leaves out the server's
   isOthersShown: boolean
   lastRun: NewsletterRun | null
@@ -69,7 +66,6 @@ export default function EmailSettingsForm({
   settings,
   recipients,
   siteUrl,
-  isRewindShared,
   isOthersShown,
   lastRun,
   adminAddress,
@@ -114,8 +110,6 @@ export default function EmailSettingsForm({
   // The address the admin opened the settings from, until another is saved
   const origin = useSyncExternalStore(subscribe, getOrigin, () => '')
   const appUrl = emailSettings.appUrl || (siteUrl ? '' : origin)
-  // A new key for each save, which the fields start over from
-  const formKey = formState.status ? JSON.stringify(formState.fields) : ''
   const sectionOptions = NEWSLETTER_SECTIONS.map((section) => ({
     value: section,
     label: t(`sections.${section}`),
@@ -262,7 +256,6 @@ export default function EmailSettingsForm({
             <span className='label-wrapper'>{t('language')}</span>
           </span>
         </label>
-        <EmailAddresses recipients={recipients} formKey={formKey} />
       </section>
       <section className='group-settings group'>
         <h2 className='heading-settings'>{t('newsletter')}</h2>
@@ -426,44 +419,23 @@ export default function EmailSettingsForm({
               defaultValue={emailSettings.newsletterSections}
               placeholder={tCommon('none')}
             />
-            <NewsletterRecipients
-              recipients={recipients}
-              isShownOnLoad={settings.isNewsletterActive}
-            />
-            <EmailTryIt
-              previewHref={`/api/settings/email-preview?${new URLSearchParams({ type: 'newsletter', userId: adminId })}`}
-              send={sendNewsletterToMe}
-            />
+            <div className='sm:pl-50'>
+              <EmailTryIt
+                previewHref={`/api/settings/email-preview?${new URLSearchParams({ type: 'newsletter', userId: adminId })}`}
+                send={sendNewsletterToMe}
+              />
+            </div>
           </>
         )}
       </section>
+      {/* Apart from the newsletter, as every email goes to these addresses */}
       <section className='group-settings group'>
-        <h2 className='heading-settings'>{t('rewind')}</h2>
-        {isRewindShared ? (
-          <>
-            {/* Sent from the list of users there, next to their links */}
-            <p className='text-sm text-neutral-400 sm:pl-50'>
-              {t.rich('rewindSendFrom', {
-                link: (chunks) => (
-                  <Link
-                    href='/settings/rewind'
-                    className='link-light text-neutral-200 underline underline-offset-2'
-                  >
-                    {chunks}
-                  </Link>
-                ),
-              })}
-            </p>
-            <EmailTryIt
-              previewHref={`/api/settings/email-preview?${new URLSearchParams({ type: 'rewind', userId: adminId })}`}
-              send={sendRewindToMe}
-            />
-          </>
-        ) : (
-          <p className='text-sm text-neutral-400 sm:pl-50'>
-            {t('rewindNotShared')}
-          </p>
-        )}
+        <h2 className='heading-settings'>{t('recipients')}</h2>
+        <EmailUsers
+          recipients={recipients}
+          isNewsletterActive={isNewsletterActive}
+          isNewsletterOnLoad={settings.isNewsletterActive}
+        />
       </section>
     </SettingsForm>
   )

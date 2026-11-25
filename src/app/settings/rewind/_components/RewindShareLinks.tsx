@@ -1,6 +1,5 @@
 'use client'
 
-import Avatar from '@/components/Avatar'
 import { toastQueue } from '@/components/Toasts'
 import {
   ArrowUpOnSquareIcon,
@@ -10,17 +9,17 @@ import {
 } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   Suspense,
   use,
   useEffect,
-  useLayoutEffect,
-  useRef,
   useState,
   useSyncExternalStore,
   useTransition,
 } from 'react'
+import UserSearchList from '../../_components/UserSearchList'
 import { sendRewind } from '../../email/_actions/sendEmails'
 import resetShareLinks from '../_actions/resetShareLinks'
 
@@ -41,8 +40,6 @@ type Props = {
   canEmail: boolean
 }
 
-// Up to this many, the list is short enough to scan without a search
-const SEARCH_FROM = 5
 const COPIED_MS = 2000
 
 // Phones and tablets send it on with their share sheet. Desktops copy it, as
@@ -267,26 +264,10 @@ function ShareLinkList({
   const tEmail = useTranslations('Settings.Email')
   const tSettings = useTranslations('Settings')
   const users = use(usersRequest)
-  const [query, setQuery] = useState('')
-  // Kept here, as a search takes rows out while their email is on its way.
-  // By the link, so a reset of the links starts them over.
+  // By the link, so a reset of the links starts them over
   const [sendStates, setSendStates] = useState<
     Partial<Record<string, SendState>>
   >({})
-  const listRef = useRef<HTMLUListElement>(null)
-  const [hasMoreBelow, setHasMoreBelow] = useState(false)
-  const search = query.trim().toLocaleLowerCase()
-  const shownUsers = users?.filter((user) =>
-    user.name.toLocaleLowerCase().includes(search),
-  )
-
-  function updateHasMoreBelow() {
-    const list = listRef.current
-
-    setHasMoreBelow(
-      !!list && list.scrollHeight - list.scrollTop - list.clientHeight > 1,
-    )
-  }
 
   function setSendState(user: ShareUser, state?: SendState) {
     setSendStates((states) => ({ ...states, [user.path]: state }))
@@ -329,10 +310,7 @@ function ShareLinkList({
     })
   }
 
-  // A search can leave the list too short to scroll
-  useLayoutEffect(updateHasMoreBelow, [shownUsers?.length])
-
-  if (!users || !shownUsers) {
+  if (!users) {
     return (
       <p className='text-danger text-xs' role='alert'>
         {t('shareLinksError')}
@@ -341,59 +319,25 @@ function ShareLinkList({
   }
 
   return (
-    <div className='grid gap-2'>
-      {users.length > SEARCH_FROM && (
-        <input
-          type='search'
-          className='input'
-          placeholder={t('shareLinksSearch')}
-          aria-label={t('shareLinksSearch')}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          // Not a save of the form it's in
-          onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
-        />
-      )}
-      {shownUsers.length ? (
-        // Half a row shows at the end while it scrolls, fading out while
-        // there's more below. The focus rings stay inside the scrolled area.
-        <ul
-          ref={listRef}
-          onScroll={updateHasMoreBelow}
-          className={clsx(
-            '-mx-1 max-h-68 overflow-y-auto px-1',
-            hasMoreBelow && 'mask-b-from-80%',
+    <UserSearchList
+      users={users}
+      searchLabel={t('shareLinksSearch')}
+      emptyLabel={t('shareLinksNoUsers')}
+    >
+      {(user) => (
+        <>
+          {canEmail && (
+            <SendRewindButton
+              user={user}
+              isDisabled={isDisabled}
+              state={sendStates[user.path]}
+              onSend={() => send(user)}
+            />
           )}
-        >
-          {shownUsers.map((user) => (
-            <li
-              key={user.path}
-              className='flex items-center gap-3 py-2 not-first:border-t not-first:border-white/10'
-            >
-              <div className='relative size-8 shrink-0 overflow-hidden rounded-full'>
-                <Avatar src={user.thumb} name={user.name} sizes='2rem' />
-              </div>
-              <span className='min-w-0 flex-1 truncate text-sm'>
-                {user.name}
-              </span>
-              {canEmail && (
-                <SendRewindButton
-                  user={user}
-                  isDisabled={isDisabled}
-                  state={sendStates[user.path]}
-                  onSend={() => send(user)}
-                />
-              )}
-              <ShareLinkButton user={user} isDisabled={isDisabled} />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className='py-2 text-sm text-neutral-400'>
-          {t('shareLinksNoUsers')}
-        </p>
+          <ShareLinkButton user={user} isDisabled={isDisabled} />
+        </>
       )}
-    </div>
+    </UserSearchList>
   )
 }
 
@@ -429,7 +373,7 @@ export default function RewindShareLinks({ users, canEmail }: Props) {
       {/* What to know before sending one, where the other settings say what
           they do */}
       <div className='input-wrapper'>
-        <div className='min-w-0 flex-1'>
+        <div className='grid min-w-0 flex-1 gap-3'>
           <Suspense>
             <ShareLinkList
               users={users}
@@ -437,26 +381,38 @@ export default function RewindShareLinks({ users, canEmail }: Props) {
               canEmail={canEmail}
             />
           </Suspense>
+          {/* Under the list it applies to, with what it does beside it */}
+          <div className='flex flex-wrap items-center gap-x-3 gap-y-2'>
+            <button
+              type='button'
+              className='button button-sm button--glass'
+              onClick={reset}
+              disabled={isPending}
+            >
+              {t('shareLinksReset')}
+            </button>
+            <p className='text-xs text-neutral-400'>
+              {t('shareLinksResetDescription')}
+            </p>
+          </div>
         </div>
         <span className='label label--start'>
           <span className='label-wrapper'>{t('shareLinksUsers')}</span>
           <small>{t('shareLinksDescription')}</small>
-        </span>
-      </div>
-      <div className='input-wrapper'>
-        <div className='flex min-w-0 flex-1 items-start'>
-          <button
-            type='button'
-            className='button button-sm'
-            onClick={reset}
-            disabled={isPending}
-          >
-            {t('shareLinksResetButton')}
-          </button>
-        </div>
-        <span className='label label--start'>
-          <span className='label-wrapper'>{t('shareLinksReset')}</span>
-          <small>{t('shareLinksResetDescription')}</small>
+          {canEmail && (
+            <small className='mt-2'>
+              {t.rich('shareLinksSendDescription', {
+                link: (chunks) => (
+                  <Link
+                    href='/settings/email'
+                    className='link-light text-neutral-200 underline underline-offset-2'
+                  >
+                    {chunks}
+                  </Link>
+                ),
+              })}
+            </small>
+          )}
         </span>
       </div>
     </section>
