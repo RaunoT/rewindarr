@@ -1,4 +1,5 @@
 import { Settings } from '@/types/settings'
+import { getArtistPicture, isSignedArtist } from '@/utils/artistPictures'
 import getSettings from '@/utils/getSettings'
 import { isHostDown, markHostDown, markHostUp } from '@/utils/hostBackoff'
 import { getUpstreamImageUrl, isAllowedRedirect } from '@/utils/imageUpstream'
@@ -80,10 +81,25 @@ function limitSize(maxBytes: number) {
 export async function GET(request: Request) {
   const settings = getSettings()
   const { searchParams } = new URL(request.url)
-  const upstreamUrl = getUpstreamImageUrl(searchParams, settings)
+  const artist = searchParams.get('artist')
+
+  if (
+    artist !== null &&
+    !isSignedArtist(artist, searchParams.get('sig') ?? '')
+  ) {
+    return new Response('[IMAGE PROXY] - Image not allowed', { status: 400 })
+  }
+
+  // An artist's picture is only searched for once the media server's fails
+  const upstreamUrl =
+    artist === null
+      ? getUpstreamImageUrl(searchParams, settings)
+      : await getArtistPicture(artist)
 
   if (!upstreamUrl) {
-    return new Response('[IMAGE PROXY] - Image not allowed', { status: 400 })
+    return artist === null
+      ? new Response('[IMAGE PROXY] - Image not allowed', { status: 400 })
+      : new Response('[IMAGE PROXY] - No picture found', { status: 404 })
   }
 
   // Kept apart from the API on the same host, which an image failing says

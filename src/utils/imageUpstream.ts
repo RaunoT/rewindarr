@@ -22,6 +22,8 @@ const PLEX_IMAGE_PATH =
   /^\/library\/metadata\/\d+\/(thumb|art|banner|clearLogo|poster)(\/\d+)?$/
 const MAX_DIMENSION = 2000
 const TMDB_IMAGE_HOST = 'image.tmdb.org'
+// Deezer's artist pictures, for artists the media server has none of
+const DEEZER_IMAGE_HOST = 'cdn-images.dzcdn.net'
 // plex.tv's own photo transcoder (/photo) fetches any URL it is given, so
 // only explicit avatar paths on plex.tv are allowed directly.
 const PLEX_TV_HOST = 'plex.tv'
@@ -154,6 +156,10 @@ function isPublicImageUrl({
     return decoded.startsWith('/t/p/')
   }
 
+  if (hostname === DEEZER_IMAGE_HOST) {
+    return decoded.startsWith('/images/artist/')
+  }
+
   if (hostname === PLEX_ASSETS_HOST) {
     return decoded.startsWith('/avatars/')
   }
@@ -161,6 +167,17 @@ function isPublicImageUrl({
   return (
     hostname === PLEX_TV_HOST &&
     PLEX_TV_IMAGE_PATHS.some((prefix) => decoded.startsWith(prefix))
+  )
+}
+
+// Deezer's picture of an artist, the only kind the app shows from Deezer
+export function isDeezerArtistPicture(url: unknown): url is string {
+  const parsed = typeof url === 'string' ? parseUrl(url) : null
+
+  return (
+    !!parsed &&
+    parsed.hostname === DEEZER_IMAGE_HOST &&
+    isPublicImageUrl(parsed)
   )
 }
 

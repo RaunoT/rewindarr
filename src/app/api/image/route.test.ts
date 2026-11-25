@@ -1,12 +1,17 @@
 import { Settings } from '@/types/settings'
+import { getArtistPictureUrl } from '@/utils/artistPictures'
 import { DEFAULT_SETTINGS } from '@/utils/constants'
 import getSettings from '@/utils/getSettings'
 import { isHostDown } from '@/utils/hostBackoff'
+import { searchArtistPicture } from '@/utils/musicPreviewSources'
 import { cloneDeep } from 'lodash'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { GET } from './route'
 
 vi.mock('@/utils/getSettings', () => ({ default: vi.fn() }))
+vi.mock('@/utils/musicPreviewSources', () => ({
+  searchArtistPicture: vi.fn(),
+}))
 
 const fetchMock = vi.fn()
 
@@ -61,6 +66,49 @@ describe('GET /api/image', () => {
     expect(await res.text()).toBe('png')
     expect(String(fetchMock.mock.calls[0][0])).toContain('cmd=pms_image_proxy')
     expect(fetchMock.mock.calls[0][1]).toMatchObject({ redirect: 'manual' })
+  })
+
+  describe("an artist's picture", () => {
+    const PICTURE =
+      'https://cdn-images.dzcdn.net/images/artist/abc/500x500-000000-80-0-0.jpg'
+
+    function artistRequest(name: string) {
+      vi.stubEnv('NEXTAUTH_SECRET', 'secret')
+
+      return new Request(`http://localhost${getArtistPictureUrl(name)}`)
+    }
+
+    afterEach(() => {
+      vi.unstubAllEnvs()
+    })
+
+    it("serves Deezer's picture of a signed artist", async () => {
+      vi.mocked(searchArtistPicture).mockResolvedValue(PICTURE)
+      fetchMock.mockResolvedValue(image())
+
+      const res = await GET(artistRequest('Proxy Artist'))
+
+      expect(res.status).toBe(200)
+      expect(fetchMock.mock.calls[0][0]).toBe(PICTURE)
+    })
+
+    it('answers 404 for an artist Deezer has no picture of', async () => {
+      vi.mocked(searchArtistPicture).mockResolvedValue(null)
+
+      const res = await GET(artistRequest('Pictureless Artist'))
+
+      expect(res.status).toBe(404)
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
+
+    it("doesn't search for an artist it didn't sign", async () => {
+      vi.stubEnv('NEXTAUTH_SECRET', 'secret')
+
+      const res = await GET(request({ artist: 'Anyone', sig: 'forged' }))
+
+      expect(res.status).toBe(400)
+      expect(searchArtistPicture).not.toHaveBeenCalled()
+    })
   })
 
   it('refuses paths outside the artwork', async () => {

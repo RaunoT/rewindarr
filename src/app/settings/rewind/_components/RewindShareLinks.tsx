@@ -1,25 +1,26 @@
 'use client'
 
-import Avatar from '@/components/Avatar'
 import { toastQueue } from '@/components/Toasts'
 import {
   ArrowUpOnSquareIcon,
   CheckIcon,
   LinkIcon,
+  PaperAirplaneIcon,
 } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   Suspense,
   use,
   useEffect,
-  useLayoutEffect,
-  useRef,
   useState,
   useSyncExternalStore,
   useTransition,
 } from 'react'
+import UserSearchList from '../../_components/UserSearchList'
+import { sendRewind } from '../../email/_actions/sendEmails'
 import resetShareLinks from '../_actions/resetShareLinks'
 
 export type ShareUser = {
@@ -28,15 +29,17 @@ export type ShareUser = {
   thumb: string | null
   // Signed by the server
   path: string
+  // Somewhere to email it, with a mail server set
+  hasAddress: boolean
 }
 
 type Props = {
   // Read while the rest of the form shows. Null when they couldn't be read.
   users: Promise<ShareUser[] | null>
+  // With a mail server, so each user can be emailed theirs
+  canEmail: boolean
 }
 
-// Up to this many, the list is short enough to scan without a search
-const SEARCH_FROM = 5
 const COPIED_MS = 2000
 
 // Phones and tablets send it on with their share sheet. Desktops copy it, as
@@ -77,6 +80,33 @@ async function copyText(text: string): Promise<void> {
   } finally {
     textarea.remove()
   }
+}
+
+// Labels stacked in one cell, so the button keeps the width of the longest
+function StackedLabels({
+  labels,
+  shown,
+  className = 'grid',
+}: {
+  labels: string[]
+  shown: string
+  className?: string
+}) {
+  return (
+    <span className={className}>
+      {labels.map((label, index) => (
+        <span
+          key={index}
+          className={clsx(
+            'col-start-1 row-start-1',
+            label !== shown && 'invisible',
+          )}
+        >
+          {label}
+        </span>
+      ))}
+    </span>
+  )
 }
 
 type ButtonProps = {
@@ -139,24 +169,82 @@ function ShareLinkButton({ user, isDisabled }: ButtonProps) {
         })}
       >
         {isCopied ? <CheckIcon className='text-success' /> : <Icon />}
-        {/* Both labels take the same room, so the button keeps its width */}
-        <span className='grid'>
-          <span
-            className={clsx('col-start-1 row-start-1', isCopied && 'invisible')}
-          >
-            {isSheet ? t('share') : t('copyLink')}
-          </span>
-          <span
-            className={clsx(
-              'col-start-1 row-start-1',
-              !isCopied && 'invisible',
-            )}
-          >
-            {t('copied')}
-          </span>
-        </span>
+        <StackedLabels
+          labels={[isSheet ? t('share') : t('copyLink'), t('copied')]}
+          shown={isCopied ? t('copied') : isSheet ? t('share') : t('copyLink')}
+        />
       </button>
       <output className='sr-only'>{isCopied ? t('copied') : ''}</output>
+    </>
+  )
+}
+
+type SendState = 'pending' | 'sent'
+
+type SendButtonProps = {
+  user: ShareUser
+  isDisabled: boolean
+  state?: SendState
+  onSend: () => void
+}
+
+function SendRewindButton({
+  user,
+  isDisabled,
+  state,
+  onSend,
+}: SendButtonProps) {
+  const t = useTranslations('Settings.Rewind')
+  const tEmail = useTranslations('Settings.Email')
+  const isPending = state === 'pending'
+  const isSent = state === 'sent'
+
+  function send() {
+    // Still focusable and pressable, so the reason reaches touch and
+    // keyboard users too
+    if (!user.hasAddress) {
+      toastQueue.add(
+        {
+          message: t('emailError', {
+            name: user.name,
+            reason: tEmail('skipReasons.noAddress'),
+          }),
+          status: 'error',
+        },
+        { timeout: 5000 },
+      )
+
+      return
+    }
+
+    onSend()
+  }
+
+  return (
+    <>
+      <button
+        type='button'
+        className='button-card disabled:opacity-50 aria-disabled:opacity-50'
+        onClick={send}
+        disabled={isDisabled || isPending}
+        aria-disabled={!user.hasAddress || undefined}
+        title={user.hasAddress ? undefined : tEmail('noAddress')}
+        aria-label={t('emailLabel', { name: user.name })}
+      >
+        {isSent ? (
+          <CheckIcon className='text-success' />
+        ) : (
+          <PaperAirplaneIcon className={clsx(isPending && 'animate-pulse')} />
+        )}
+        {/* Only the icon while the name needs the room. The labels come in
+            once the list has the width for them in every language. */}
+        <StackedLabels
+          labels={[t('sendNow'), t('sent')]}
+          shown={isSent ? t('sent') : t('sendNow')}
+          className='hidden md:grid'
+        />
+      </button>
+      <output className='sr-only'>{isSent ? t('sent') : ''}</output>
     </>
   )
 }
@@ -164,31 +252,65 @@ function ShareLinkButton({ user, isDisabled }: ButtonProps) {
 type ListProps = {
   users: Promise<ShareUser[] | null>
   isDisabled: boolean
+  canEmail: boolean
 }
 
-function ShareLinkList({ users: usersRequest, isDisabled }: ListProps) {
+function ShareLinkList({
+  users: usersRequest,
+  isDisabled,
+  canEmail,
+}: ListProps) {
   const t = useTranslations('Settings.Rewind')
+  const tEmail = useTranslations('Settings.Email')
+  const tSettings = useTranslations('Settings')
   const users = use(usersRequest)
-  const [query, setQuery] = useState('')
-  const listRef = useRef<HTMLUListElement>(null)
-  const [hasMoreBelow, setHasMoreBelow] = useState(false)
-  const search = query.trim().toLocaleLowerCase()
-  const shownUsers = users?.filter((user) =>
-    user.name.toLocaleLowerCase().includes(search),
-  )
+  // By the link, so a reset of the links starts them over
+  const [sendStates, setSendStates] = useState<
+    Partial<Record<string, SendState>>
+  >({})
 
-  function updateHasMoreBelow() {
-    const list = listRef.current
-
-    setHasMoreBelow(
-      !!list && list.scrollHeight - list.scrollTop - list.clientHeight > 1,
-    )
+  function setSendState(user: ShareUser, state?: SendState) {
+    setSendStates((states) => ({ ...states, [user.path]: state }))
   }
 
-  // A search can leave the list too short to scroll
-  useLayoutEffect(updateHasMoreBelow, [shownUsers?.length])
+  // Emails the user the link to their Rewind straight away, apart from the
+  // form's save. Not in a transition, so a send to one user doesn't wait for
+  // another's.
+  async function send(user: ShareUser) {
+    setSendState(user, 'pending')
 
-  if (!users || !shownUsers) {
+    const result = await sendRewind([user.id]).catch(() => ({
+      status: 'error' as const,
+      message: tSettings('genericError'),
+      outcomes: undefined,
+    }))
+    const outcome = result.outcomes?.find(({ userId }) => userId === user.id)
+
+    if (outcome?.status === 'sent') {
+      setSendState(user, 'sent')
+
+      return
+    }
+
+    setSendState(user, undefined)
+
+    const reason = outcome?.reason
+      ? outcome.status === 'skipped'
+        ? tEmail(`skipReasons.${outcome.reason}`)
+        : tEmail(outcome.reason)
+      : // Removed or excluded since the page was opened
+        result.outcomes && !outcome
+        ? tEmail('previewNoUser')
+        : result.message
+
+    // Errors stay until dismissed, so they can be read
+    toastQueue.add({
+      message: t('emailError', { name: user.name, reason }),
+      status: 'error',
+    })
+  }
+
+  if (!users) {
     return (
       <p className='text-danger text-xs' role='alert'>
         {t('shareLinksError')}
@@ -197,57 +319,31 @@ function ShareLinkList({ users: usersRequest, isDisabled }: ListProps) {
   }
 
   return (
-    <div className='grid gap-2'>
-      {users.length > SEARCH_FROM && (
-        <input
-          type='search'
-          className='input'
-          placeholder={t('shareLinksSearch')}
-          aria-label={t('shareLinksSearch')}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          // Not a save of the form it's in
-          onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
-        />
-      )}
-      {shownUsers.length ? (
-        // Half a row shows at the end while it scrolls, fading out while
-        // there's more below. The focus rings stay inside the scrolled area.
-        <ul
-          ref={listRef}
-          onScroll={updateHasMoreBelow}
-          className={clsx(
-            '-mx-1 max-h-68 overflow-y-auto px-1',
-            hasMoreBelow && 'mask-b-from-80%',
+    <UserSearchList
+      users={users}
+      searchLabel={t('shareLinksSearch')}
+      emptyLabel={t('shareLinksNoUsers')}
+    >
+      {(user) => (
+        <>
+          {canEmail && (
+            <SendRewindButton
+              user={user}
+              isDisabled={isDisabled}
+              state={sendStates[user.path]}
+              onSend={() => send(user)}
+            />
           )}
-        >
-          {shownUsers.map((user) => (
-            <li
-              key={user.id}
-              className='flex items-center gap-3 py-2 not-first:border-t not-first:border-white/10'
-            >
-              <div className='relative size-8 shrink-0 overflow-hidden rounded-full'>
-                <Avatar src={user.thumb} name={user.name} sizes='2rem' />
-              </div>
-              <span className='min-w-0 flex-1 truncate text-sm'>
-                {user.name}
-              </span>
-              <ShareLinkButton user={user} isDisabled={isDisabled} />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className='py-2 text-sm text-neutral-400'>
-          {t('shareLinksNoUsers')}
-        </p>
+          <ShareLinkButton user={user} isDisabled={isDisabled} />
+        </>
       )}
-    </div>
+    </UserSearchList>
   )
 }
 
 // In the form, though copying a link or resetting them saves nothing in it,
 // like the background track
-export default function RewindShareLinks({ users }: Props) {
+export default function RewindShareLinks({ users, canEmail }: Props) {
   const t = useTranslations('Settings.Rewind')
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -277,30 +373,46 @@ export default function RewindShareLinks({ users }: Props) {
       {/* What to know before sending one, where the other settings say what
           they do */}
       <div className='input-wrapper'>
-        <div className='min-w-0 flex-1'>
+        <div className='grid min-w-0 flex-1 gap-3'>
           <Suspense>
-            <ShareLinkList users={users} isDisabled={isPending} />
+            <ShareLinkList
+              users={users}
+              isDisabled={isPending}
+              canEmail={canEmail}
+            />
           </Suspense>
+          {/* Under the list it applies to, with what it does beside it */}
+          <div className='flex flex-wrap items-center gap-x-3 gap-y-2'>
+            <button
+              type='button'
+              className='button button-sm button--glass'
+              onClick={reset}
+              disabled={isPending}
+            >
+              {t('shareLinksReset')}
+            </button>
+            <p className='text-xs text-neutral-400'>
+              {t('shareLinksResetDescription')}
+            </p>
+          </div>
         </div>
         <span className='label label--start'>
           <span className='label-wrapper'>{t('shareLinksUsers')}</span>
           <small>{t('shareLinksDescription')}</small>
-        </span>
-      </div>
-      <div className='input-wrapper'>
-        <div className='flex min-w-0 flex-1 items-start'>
-          <button
-            type='button'
-            className='button button-sm'
-            onClick={reset}
-            disabled={isPending}
-          >
-            {t('shareLinksResetButton')}
-          </button>
-        </div>
-        <span className='label label--start'>
-          <span className='label-wrapper'>{t('shareLinksReset')}</span>
-          <small>{t('shareLinksResetDescription')}</small>
+          {canEmail && (
+            <small className='mt-2'>
+              {t.rich('shareLinksSendDescription', {
+                link: (chunks) => (
+                  <Link
+                    href='/settings/email'
+                    className='link-light text-neutral-200 underline underline-offset-2'
+                  >
+                    {chunks}
+                  </Link>
+                ),
+              })}
+            </small>
+          )}
         </span>
       </div>
     </section>

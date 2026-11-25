@@ -116,7 +116,7 @@ export default function MediaItem({
     <div className='poster max-sm:w-12'>
       {!isUsers ? (
         <PosterImage
-          srcs={[posterSrc, data.tmdb_poster]}
+          srcs={[posterSrc, data.fallback_poster]}
           type={type}
           sizes='10rem'
           preload={i < DASHBOARD_PAGE_SIZE}

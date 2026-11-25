@@ -3,6 +3,7 @@
 import { RewindMusic } from '@/types/settings'
 import { REWIND_MUSIC_MAX_BYTES, REWIND_MUSIC_TYPES } from '@/utils/constants'
 import { bytesToSize } from '@/utils/formatting'
+import { clearNowPlaying, showAppInNowPlaying } from '@/utils/mediaSession'
 import { PlayIcon, StopIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
@@ -23,6 +24,18 @@ function getFileName(fileName: string) {
   return dot > 0
     ? { name: fileName.slice(0, dot), extension: fileName.slice(dot + 1) }
     : { name: fileName, extension: '' }
+}
+
+// A paused track stays on the lock screen, so it's unloaded too
+function release(audio: HTMLAudioElement | null) {
+  if (!audio) {
+    return
+  }
+
+  audio.pause()
+  audio.removeAttribute('src')
+  audio.load()
+  clearNowPlaying()
 }
 
 // Saved as soon as it's chosen, apart from the rest of the form
@@ -51,11 +64,19 @@ export default function RewindMusicUpload({ initialMusic }: Props) {
   }
 
   // A detached player keeps playing after the page is left
-  useEffect(() => () => audioRef.current?.pause(), [])
+  useEffect(() => () => detach(), [])
+
+  // Clears the ref first, so a late event from the unloaded player doesn't
+  // count as the one in use
+  function detach() {
+    const audio = audioRef.current
+
+    audioRef.current = null
+    release(audio)
+  }
 
   function stop() {
-    audioRef.current?.pause()
-    audioRef.current = null
+    detach()
     setIsPlaying(false)
   }
 
@@ -74,6 +95,7 @@ export default function RewindMusicUpload({ initialMusic }: Props) {
     audio.addEventListener('error', end)
     audioRef.current = audio
     setIsPlaying(true)
+    showAppInNowPlaying()
     audio.play().catch(end)
   }
 

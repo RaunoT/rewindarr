@@ -320,6 +320,33 @@ describe('getTopItems', () => {
   it('leaves out plays before the exact period start date', async () => {
     expect(await rank('duration', '2026-03-02')).toEqual(['Heat', 'Alien'])
   })
+
+  it("links each artist to Deezer's picture, for when the server has none", async () => {
+    vi.stubEnv('NEXTAUTH_SECRET', 'secret')
+    vi.mocked(getSettings).mockReturnValue({
+      general: { excludedUsers: [] },
+    } as unknown as ReturnType<typeof getSettings>)
+
+    const { items } = await createPlayStats({
+      getPlays: async () => [
+        play('song', '2026-03-01T20:00:00Z', {
+          mediaType: 'track',
+          artistName: 'Albert King',
+        }),
+      ],
+      getUsers: async () => [],
+      getMediaData: async () => ({ thumb: '', isDeleted: false }),
+    }).getTopItems({ section_type: 'artist' } as Library, {
+      since: '2026-01-01',
+      count: 5,
+    })
+
+    vi.unstubAllEnvs()
+
+    expect(items[0].fallback_poster).toMatch(
+      /^\/api\/image\?artist=Albert\+King&sig=/,
+    )
+  })
 })
 
 describe('countPlayedTitles', () => {

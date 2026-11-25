@@ -1,4 +1,6 @@
 import { requireSettingsAccess } from '@/lib/access'
+import { toEmailRecipient } from '@/utils/emailRecipients'
+import { fetchSeerrEmails } from '@/utils/fetchSeerr'
 import getSettings from '@/utils/getSettings'
 import { checkRequiredSettings } from '@/utils/helpers'
 import { isMailServerSet } from '@/utils/mailer'
@@ -25,11 +27,14 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-async function getShareUsers(): Promise<ShareUser[] | null> {
+async function getShareUsers(canEmail: boolean): Promise<ShareUser[] | null> {
   const settings = getSettings()
 
   try {
-    const users = await getActiveUsers(settings)
+    const [users, seerrEmails] = await Promise.all([
+      getActiveUsers(settings),
+      canEmail ? fetchSeerrEmails() : null,
+    ])
 
     return users
       .flatMap((user) => {
@@ -43,6 +48,9 @@ async function getShareUsers(): Promise<ShareUser[] | null> {
                 name: getRewindUserName(user),
                 thumb: user.user_thumb || user.thumb || null,
                 path,
+                hasAddress:
+                  canEmail &&
+                  !!toEmailRecipient(settings, user, seerrEmails).address,
               },
             ]
           : []
@@ -82,6 +90,7 @@ export default async function RewindSettingsPage() {
   const settings = getSettings()
   // Not during the setup, when there's no one to share with yet
   const canShare = !checkRequiredSettings(settings) && canShareRewind(settings)
+  const canEmail = isMailServerSet(settings.email)
   const currentYear = new Date().getFullYear()
 
   return (
@@ -89,7 +98,8 @@ export default async function RewindSettingsPage() {
       settings={toPublicSettings(settings)}
       currentYear={currentYear}
       // Not waited for, so the form shows while they're read
-      shareUsers={canShare ? getShareUsers() : undefined}
+      shareUsers={canShare ? getShareUsers(canEmail) : undefined}
+      canEmail={canEmail}
       // Always, as the form shows the switch as soon as users can open their
       // own Rewind, and a save of a form without it would turn it off
       releaseEmail={await getReleaseEmailStatus()}

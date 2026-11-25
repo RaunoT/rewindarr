@@ -54,6 +54,10 @@ describe('renderEmail', () => {
         { type: 'button', href: 'https://rewind.example.com', label: 'Open' },
       ],
     ],
+    footerButton: {
+      href: 'https://rewind.example.com/stats',
+      label: 'More stats',
+    },
     footer: 'You get this weekly.',
     footerLink: {
       href: 'https://rewind.example.com/api/email/unsubscribe',
@@ -68,6 +72,16 @@ describe('renderEmail', () => {
     expect(body).toContain('https://image.tmdb.org/t/p/w300/a.jpg')
   })
 
+  it('centres the footer button above the footer text', () => {
+    const buttonAt = body.indexOf('https://rewind.example.com/stats')
+
+    expect(buttonAt).toBeGreaterThan(body.indexOf('Severance'))
+    expect(buttonAt).toBeLessThan(body.indexOf('You get this weekly.'))
+    expect(body.lastIndexOf('align="center"', buttonAt)).toBeGreaterThan(
+      body.indexOf('Severance'),
+    )
+  })
+
   it('only links to web addresses', () => {
     expect(body).not.toContain('javascript:')
   })
@@ -77,6 +91,7 @@ describe('renderEmail', () => {
     expect(text).toContain('Watch time: 5 hrs')
     expect(text).toContain('1. Severance - 4 plays')
     expect(text).toContain('Open: https://rewind.example.com')
+    expect(text).toContain('More stats: https://rewind.example.com/stats')
     expect(text).toContain(
       'Unsubscribe: https://rewind.example.com/api/email/unsubscribe',
     )

@@ -48,6 +48,8 @@ type Props = {
   currentYear: number
   // Each user's shared link, while users can see their own Rewind
   shareUsers?: Promise<ShareUser[] | null>
+  // With a mail server, so each user can be emailed theirs
+  canEmail: boolean
   releaseEmail: ReleaseEmailStatus
 }
 
@@ -105,6 +107,7 @@ export default function RewindSettingsForm({
   settings,
   currentYear,
   shareUsers,
+  canEmail,
   releaseEmail,
 }: Props) {
   const [isActive, setIsActive] = useState<boolean>(settings.rewind.isActive)
@@ -342,7 +345,7 @@ export default function RewindSettingsForm({
           </section>
           {/* As saved, until a save opens or closes Rewind to users */}
           {!isAdminOnly && shareUsers && (
-            <RewindShareLinks users={shareUsers} />
+            <RewindShareLinks users={shareUsers} canEmail={canEmail} />
           )}
         </>
       )}

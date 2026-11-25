@@ -50,48 +50,46 @@ export default function EmailTest({ defaultAddress }: Props) {
   const Icon = isError ? ExclamationCircleIcon : CheckCircleIcon
 
   return (
-    <div ref={ref} className='input-wrapper'>
-      <div className='flex min-w-0 flex-1 flex-col gap-2'>
-        {/* Under the address on phones, where beside it would leave it too
-            narrow to read */}
-        <div className='flex flex-col items-start gap-2 sm:flex-row sm:items-center'>
-          {/* Not a setting, so it has no name and isn't saved */}
-          <input
-            type='email'
-            className='input min-w-0'
-            value={address}
-            onChange={(e) => {
-              setAddress(e.target.value)
-              setResult(null)
-            }}
-            // Not a save of the form it's in
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                send()
-              }
-            }}
-            placeholder='you@example.com'
-            aria-label={t('testAddress')}
-          />
-          <button
-            type='button'
-            className='button button-sm button--glass shrink-0'
-            onClick={send}
-            disabled={isPending || !address.trim()}
-          >
-            {isPending ? t('sending') : t('sendTest')}
-          </button>
-        </div>
+    // Laid out like the connection tests: the result and the button go under
+    // the field
+    <div className='input-with-test'>
+      <label className='input-wrapper'>
+        {/* Not a setting, so it has no name and isn't saved */}
+        <input
+          type='email'
+          className='input'
+          value={address}
+          onChange={(e) => {
+            setAddress(e.target.value)
+            setResult(null)
+          }}
+          // Not a save of the form it's in
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              send()
+            }
+          }}
+          placeholder='you@example.com'
+          aria-label={t('testAddress')}
+        />
+        <span className='label'>
+          <span className='label-wrapper'>{t('testEmail')}</span>
+        </span>
+      </label>
+      <div ref={ref} className='input-test flex flex-col items-start'>
         {/* Kept when empty, so screen readers announce what appears in it */}
         <p
           className={clsx(
-            'flex items-start gap-1.5 text-sm empty:hidden',
+            'flex items-start gap-1.5 text-sm',
             isError ? 'text-danger' : 'text-neutral-300',
+            (isPending || result) && 'mb-3',
           )}
           aria-live='polite'
         >
-          {result && !isPending && (
+          {isPending ? (
+            t('sending')
+          ) : result ? (
             <>
               <Icon
                 className={clsx(
@@ -102,12 +100,20 @@ export default function EmailTest({ defaultAddress }: Props) {
               />
               {result.message}
             </>
-          )}
+          ) : null}
         </p>
+        <button
+          type='button'
+          className={clsx(
+            'button button-sm button--glass',
+            !isPending && !result && 'mt-2',
+          )}
+          onClick={send}
+          disabled={isPending || !address.trim()}
+        >
+          {t('sendTest')}
+        </button>
       </div>
-      <span className='label'>
-        <span className='label-wrapper'>{t('testEmail')}</span>
-      </span>
     </div>
   )
 }

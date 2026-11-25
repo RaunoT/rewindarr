@@ -103,28 +103,6 @@ export async function sendRewind(userIds: string[]): Promise<SendActionResult> {
   return toResult(await sendRewindEmails(getSettings(), userIds))
 }
 
-// The signed-in admin's own Rewind invite, sent to them
-export async function sendRewindToMe(): Promise<SendActionResult> {
-  if (!(await canManageEmail())) {
-    return deny()
-  }
-
-  const session = await getServerSession(authOptions)
-
-  if (!session?.user.id) {
-    return deny()
-  }
-
-  return toResult(
-    await sendRewindEmails(
-      getSettings(),
-      [session.user.id],
-      // The one they signed in with, where there's no other
-      session.user.email ?? undefined,
-    ),
-  )
-}
-
 // The signed-in admin's own newsletter for the last period, sent to them
 export async function sendNewsletterToMe(): Promise<SendActionResult> {
   if (!(await canManageEmail())) {

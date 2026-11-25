@@ -155,7 +155,7 @@ export function getStoryArt(id: string, userRewind: UserRewind): string[] {
 
   return [
     ...new Set(
-      [item.tmdb_backdrop, getPoster(item), item.tmdb_poster].filter(
+      [item.tmdb_backdrop, getPoster(item), item.fallback_poster].filter(
         (src): src is string => !!src,
       ),
     ),
