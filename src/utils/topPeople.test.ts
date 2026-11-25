@@ -59,7 +59,7 @@ beforeEach(() => {
 })
 
 describe('rankPeople', () => {
-  it('counts each title once and ranks by titles, then watch time', () => {
+  it('counts each title once and ranks by watch time, then titles', () => {
     const directors = rankPeople(
       [
         credited('Inception', 100, { directors: ['Christopher Nolan'] }, 27205),
@@ -97,6 +97,26 @@ describe('rankPeople', () => {
         together: [],
         tmdbIds: [],
       },
+    ])
+  })
+
+  it('ranks someone with fewer titles but more watch time higher', () => {
+    const actors = rankPeople(
+      [
+        credited('Mad Max: Fury Road', 8 * 60, { actors: ['Charlize Theron'] }),
+        credited('Prometheus', 6 * 60, { actors: ['Charlize Theron'] }),
+        credited('Atomic Blonde', 7 * 60, { actors: ['Charlize Theron'] }),
+        credited('Gladiator', 152 * 60, { actors: ['Russell Crowe'] }),
+        credited('A Beautiful Mind', 59 * 60, { actors: ['Russell Crowe'] }),
+      ],
+      'actors',
+    )
+
+    expect(
+      actors.map(({ name, count, duration }) => ({ name, count, duration })),
+    ).toEqual([
+      { name: 'Russell Crowe', count: 2, duration: 211 * 60 },
+      { name: 'Charlize Theron', count: 3, duration: 21 * 60 },
     ])
   })
 
