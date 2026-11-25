@@ -1,3 +1,4 @@
+import { showAppInNowPlaying } from '@/utils/mediaSession'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 type Player = {
@@ -61,6 +62,7 @@ export default function useStoryMusic({
     (url: string) => {
       const player = getPlayer(url)
 
+      showAppInNowPlaying()
       player.audio.play().catch((error: unknown) => {
         if (error instanceof DOMException && error.name === 'NotAllowedError') {
           onBlockedRef.current()

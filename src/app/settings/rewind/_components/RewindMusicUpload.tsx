@@ -3,6 +3,7 @@
 import { RewindMusic } from '@/types/settings'
 import { REWIND_MUSIC_MAX_BYTES, REWIND_MUSIC_TYPES } from '@/utils/constants'
 import { bytesToSize } from '@/utils/formatting'
+import { showAppInNowPlaying } from '@/utils/mediaSession'
 import { PlayIcon, StopIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
@@ -74,6 +75,7 @@ export default function RewindMusicUpload({ initialMusic }: Props) {
     audio.addEventListener('error', end)
     audioRef.current = audio
     setIsPlaying(true)
+    showAppInNowPlaying()
     audio.play().catch(end)
   }
 
