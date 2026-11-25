@@ -62,12 +62,11 @@ function getAppPicture(pictures: Pictures, image: string | null | undefined) {
   return pictures.appUrl ? toAppImageUrl(pictures.appUrl, image) : null
 }
 
-// In the app's order: time, plays and, on the server's lists, viewers
+// In the app's order: time, then plays
 function toListItem(
   item: ItemRow,
   intl: EmailIntl,
   imageUrl: string | null,
-  isServer: boolean,
 ): ListItem {
   const { t } = intl
 
@@ -78,10 +77,6 @@ function toListItem(
       // The count only says something from 2 plays up. Under the play
       // threshold, a partial watch adds time without a play.
       item.total_plays > 1 && t('Email.plays', { count: item.total_plays }),
-      // A reader's own lists are only theirs
-      isServer &&
-        item.users_watched &&
-        t('MediaItem.statUsers', { count: item.users_watched }),
     ]
       .filter(Boolean)
       .join(' · '),
@@ -93,14 +88,12 @@ function toTitleItems(
   items: ItemRow[],
   intl: EmailIntl,
   pictures: Pictures,
-  isServer: boolean,
 ): ListItem[] {
   return items.map((item) =>
     toListItem(
       item,
       intl,
       getAppPicture(pictures, item.thumb) ?? (item.fallback_poster || null),
-      isServer,
     ),
   )
 }
@@ -111,7 +104,6 @@ async function toArtistItems(
   items: ItemRow[],
   intl: EmailIntl,
   pictures: Pictures,
-  isServer: boolean,
 ): Promise<ListItem[]> {
   return Promise.all(
     items.map(async (item) =>
@@ -120,7 +112,6 @@ async function toArtistItems(
         intl,
         getAppPicture(pictures, item.thumb) ??
           (await getArtistPicture(item.title)),
-        isServer,
       ),
     ),
   )
@@ -133,23 +124,22 @@ async function getItemColumns(
   headings: { shows: string; movies: string; audio: string },
   intl: EmailIntl,
   pictures: Pictures,
-  isServer: boolean,
 ): Promise<EmailBlock[]> {
   const items: { heading: string; icon: EmailIcon; items: ListItem[] }[] = [
     {
       heading: headings.shows,
       icon: 'show',
-      items: toTitleItems(lists.shows, intl, pictures, isServer),
+      items: toTitleItems(lists.shows, intl, pictures),
     },
     {
       heading: headings.movies,
       icon: 'movie',
-      items: toTitleItems(lists.movies, intl, pictures, isServer),
+      items: toTitleItems(lists.movies, intl, pictures),
     },
     {
       heading: headings.audio,
       icon: 'artist',
-      items: await toArtistItems(lists.audio, intl, pictures, isServer),
+      items: await toArtistItems(lists.audio, intl, pictures),
     },
   ]
   const blocks = items
@@ -428,7 +418,6 @@ export async function buildNewsletter(
               },
               intl,
               pictures,
-              false,
             )),
           ]
         : [
@@ -479,7 +468,6 @@ export async function buildNewsletter(
         },
         intl,
         pictures,
-        true,
       )),
     ])
   }
