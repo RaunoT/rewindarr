@@ -44,6 +44,16 @@ describe('getAppUrl', () => {
   it('is null without either', () => {
     expect(getAppUrl(settings)).toBeNull()
   })
+
+  it('is null for an address links in emails cannot use', () => {
+    settings.email.appUrl = 'mailto:alex@example.com'
+
+    expect(getAppUrl(settings)).toBeNull()
+
+    settings.email.appUrl = 'ftp://rewind.example.com'
+
+    expect(getAppUrl(settings)).toBeNull()
+  })
 })
 
 describe('toAppUrl', () => {

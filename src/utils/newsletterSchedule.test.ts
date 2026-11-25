@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import {
   getDueSendTime,
   getLatestSendTime,
@@ -115,6 +115,42 @@ describe('isSameSchedule', () => {
     expect(isSameSchedule(WEEKLY, MONTHLY)).toBe(false)
     expect(isSameSchedule(WEEKLY, { ...WEEKLY, newsletterHour: 10 })).toBe(
       false,
+    )
+  })
+})
+
+describe('across a change to summer time', () => {
+  const zone = process.env.TZ
+  // Saturdays at 3, the hour the clocks skip in Tallinn on Sunday 29 March 2026
+  const SATURDAY_3AM: NewsletterSchedule = {
+    ...WEEKLY,
+    newsletterWeekday: 6,
+    newsletterHour: 3,
+  }
+
+  beforeAll(() => {
+    process.env.TZ = 'Europe/Tallinn'
+  })
+
+  afterAll(() => {
+    if (zone === undefined) {
+      delete process.env.TZ
+    } else {
+      process.env.TZ = zone
+    }
+  })
+
+  it("keeps the week's send time on the day the clocks change", () => {
+    const saturday = new Date(2026, 2, 28, 3)
+
+    expect(getLatestSendTime(SATURDAY_3AM, new Date(2026, 2, 29, 1))).toEqual(
+      saturday,
+    )
+    expect(
+      getDueSendTime(SATURDAY_3AM, saturday, new Date(2026, 2, 29, 1)),
+    ).toBeNull()
+    expect(getNextSendTime(SATURDAY_3AM, new Date(2026, 2, 29, 1))).toEqual(
+      new Date(2026, 3, 4, 3),
     )
   })
 })

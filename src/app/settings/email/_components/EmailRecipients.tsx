@@ -9,6 +9,7 @@ import {
   ADDRESS_FIELD_PREFIX,
   LISTED_USERS_FIELD,
   SUBSCRIBED_FIELD,
+  WAS_SUBSCRIBED_FIELD,
 } from '../_actions/emailForm'
 
 type Props = {
@@ -39,6 +40,13 @@ function RecipientList({ recipients: request, formKey }: Props) {
       {(recipient) => (
         <>
           <input type='hidden' name={LISTED_USERS_FIELD} value={recipient.id} />
+          {recipient.isSubscribed && (
+            <input
+              type='hidden'
+              name={WAS_SUBSCRIBED_FIELD}
+              value={recipient.id}
+            />
+          )}
           {/* Under the name on phones, beside it on wider screens */}
           <input
             key={`address-${formKey}-${recipient.customAddress}`}

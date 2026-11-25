@@ -13,9 +13,10 @@ export type NewsletterSchedule = Pick<
 // after it was due. Later, it would be about a week or month gone by.
 export const MAX_SEND_DELAY_MS = 24 * 60 * 60 * 1000
 
-// Times are in the server's time zone, as the settings say. Dates are moved
-// by calendar days rather than by milliseconds, so the hour stays the same
-// across a change to or from summer time.
+// Times are in the server's time zone, as the settings say. The calendar day
+// is worked out first and the hour set on it after, so a change to or from
+// summer time doesn't move a send to another day or hour. An hour that's
+// skipped when the clocks go forward is the one after it, every time.
 
 // When the newsletter was last due, at or before now
 export function getLatestSendTime(
@@ -32,16 +33,15 @@ export function getLatestSendTime(
       : new Date(now.getFullYear(), now.getMonth() - 1, 1, hour)
   }
 
-  const time = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour)
-  const daysBack = (time.getDay() - schedule.newsletterWeekday + 7) % 7
+  // Noon is on the same day whatever the clocks do
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12)
+  const day =
+    today.getDate() - ((today.getDay() - schedule.newsletterWeekday + 7) % 7)
+  const time = new Date(today.getFullYear(), today.getMonth(), day, hour)
 
-  time.setDate(time.getDate() - daysBack)
-
-  if (time > now) {
-    time.setDate(time.getDate() - 7)
-  }
-
-  return time
+  return time > now
+    ? new Date(today.getFullYear(), today.getMonth(), day - 7, hour)
+    : time
 }
 
 export function getNextSendTime(schedule: NewsletterSchedule, now: Date): Date {
@@ -56,9 +56,12 @@ export function getNextSendTime(schedule: NewsletterSchedule, now: Date): Date {
     )
   }
 
-  latest.setDate(latest.getDate() + 7)
-
-  return latest
+  return new Date(
+    latest.getFullYear(),
+    latest.getMonth(),
+    latest.getDate() + 7,
+    schedule.newsletterHour,
+  )
 }
 
 // The whole days before the one it goes out on: the 7 before for a weekly

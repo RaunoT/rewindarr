@@ -32,6 +32,12 @@ describe('isEmailAddress', () => {
     expect(isEmailAddress('alex@example')).toBe(false)
     expect(isEmailAddress('alex @example.com')).toBe(false)
   })
+
+  it('takes one mailbox, not a list', () => {
+    expect(isEmailAddress('alex@example.com,other.example.com')).toBe(false)
+    expect(isEmailAddress('alex@example.com;b@example.com')).toBe(false)
+    expect(isEmailAddress('Alex <alex@example.com>')).toBe(false)
+  })
 })
 
 describe('toEmailRecipient', () => {
@@ -63,6 +69,14 @@ describe('toEmailRecipient', () => {
     expect(
       toEmailRecipient(settings, { ...USER, email: '' }, seerr).address,
     ).toBe('alex@seerr.example.com')
+  })
+
+  it("skips Seerr's when it isn't one address", () => {
+    const seerr = new Map([['42', 'alex@example.com, sam@example.com']])
+
+    expect(
+      toEmailRecipient(settings, { ...USER, email: '' }, seerr).address,
+    ).toBe('')
   })
 
   it("matches Jellyfin's IDs with or without dashes", () => {

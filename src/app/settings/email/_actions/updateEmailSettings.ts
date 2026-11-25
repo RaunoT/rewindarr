@@ -1,6 +1,6 @@
 'use server'
 
-import { denySettingsAccess } from '@/lib/access'
+import { canManageEmail, denySettingsAccess } from '@/lib/access'
 import { EmailSettings, SettingsFormInitialState } from '@/types/settings'
 import {
   EMAIL_SECURITIES,
@@ -8,6 +8,7 @@ import {
   NEWSLETTER_FREQUENCIES,
   NEWSLETTER_SECTIONS,
 } from '@/utils/constants'
+import { isWebUrl } from '@/utils/emailLinks'
 import { isEmailAddress } from '@/utils/emailRecipients'
 import getSettings from '@/utils/getSettings'
 import {
@@ -47,6 +48,15 @@ async function validateAndSave(
   }
 
   const t = await getTranslations('Settings.Email')
+
+  if (!(await canManageEmail())) {
+    return {
+      message: (await getTranslations('Settings'))('genericError'),
+      status: 'error',
+      fields: prevState?.fields,
+    }
+  }
+
   const saved = getSettings().email
   const submitted = readEmailForm(formData, saved)
   const data = restoreMailPassword(
@@ -89,10 +99,9 @@ async function validateAndSave(
       message: t('fromAddressError'),
     }),
     fromName: z.string(),
-    appUrl: z
-      .string()
-      .url({ message: t('appUrlError') })
-      .or(z.literal('')),
+    appUrl: z.string().refine((value) => !value || isWebUrl(value), {
+      message: t('appUrlError'),
+    }),
     locale: z.enum(LOCALES as [string, ...string[]]),
     addresses: z
       .record(

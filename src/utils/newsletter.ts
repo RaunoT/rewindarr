@@ -156,6 +156,26 @@ export async function checkNewsletter(now: Date = new Date()): Promise<void> {
       failed: count('failed'),
       skipped: count('skipped'),
     }
+    // When none went out because the mail server couldn't be reached, it's
+    // tried again at the next check. Nobody got it yet, so nobody gets it
+    // twice. A wrong password or a rejected address isn't, as trying again
+    // wouldn't change it.
+    const failures = report.outcomes.filter(
+      (outcome) => outcome.status === 'failed',
+    )
+
+    if (
+      !lastRun.sent &&
+      failures.length &&
+      failures.every((outcome) => outcome.reason === 'mailUnableToConnect')
+    ) {
+      console.error(
+        `[NEWSLETTER] - Unable to send any of ${lastRun.failed}, trying again later.`,
+      )
+      await writeNewsletterState({ ...state, lastRun })
+
+      return
+    }
 
     console.log(
       `[NEWSLETTER] - Sent ${lastRun.sent}, failed ${lastRun.failed}, skipped ${lastRun.skipped}.`,

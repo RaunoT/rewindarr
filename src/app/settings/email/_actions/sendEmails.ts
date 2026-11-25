@@ -1,6 +1,6 @@
 'use server'
 
-import { canManageSettings } from '@/lib/access'
+import { canManageEmail } from '@/lib/access'
 import { authOptions } from '@/lib/auth'
 import { buildTestEmail } from '@/utils/emailContent'
 import { getEmailIntl } from '@/utils/emailIntl'
@@ -39,7 +39,7 @@ export async function sendTestEmail(
   fields: [string, string][],
   to: string,
 ): Promise<SendActionResult> {
-  if (!(await canManageSettings())) {
+  if (!(await canManageEmail())) {
     return deny()
   }
 
@@ -100,7 +100,7 @@ async function toResult(report: SendReport): Promise<SendActionResult> {
 }
 
 export async function sendRewind(userIds: string[]): Promise<SendActionResult> {
-  if (!(await canManageSettings())) {
+  if (!(await canManageEmail())) {
     return deny()
   }
 
@@ -109,7 +109,7 @@ export async function sendRewind(userIds: string[]): Promise<SendActionResult> {
 
 // The signed-in admin's own newsletter for the last period, sent to them
 export async function sendNewsletterToMe(): Promise<SendActionResult> {
-  if (!(await canManageSettings())) {
+  if (!(await canManageEmail())) {
     return deny()
   }
 

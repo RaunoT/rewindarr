@@ -10,6 +10,9 @@ import { normalizeUrl } from '@/utils/url'
 // Each user's address and subscription are sent under their ID
 export const ADDRESS_FIELD_PREFIX = 'address:'
 export const SUBSCRIBED_FIELD = 'subscribed'
+// Who was subscribed when the form was opened, so a save only changes the
+// ones the admin switched, and not someone who unsubscribed since
+export const WAS_SUBSCRIBED_FIELD = 'wasSubscribed'
 // The users the form listed, so the ones it couldn't keep their settings
 export const LISTED_USERS_FIELD = 'listedUsers'
 
@@ -77,11 +80,27 @@ export function readEmailForm(
       }
     }
 
+    const wasSubscribed = new Set(
+      formData.getAll(WAS_SUBSCRIBED_FIELD).map(String),
+    )
+    const unsubscribed = new Set(saved.unsubscribed)
+
+    for (const userId of listedUsers) {
+      const isSubscribed = subscribed.has(userId)
+
+      if (isSubscribed === wasSubscribed.has(userId)) {
+        continue
+      }
+
+      if (isSubscribed) {
+        unsubscribed.delete(userId)
+      } else {
+        unsubscribed.add(userId)
+      }
+    }
+
     data.addresses = addresses
-    data.unsubscribed = [
-      ...saved.unsubscribed.filter((userId) => !listedUsers.includes(userId)),
-      ...listedUsers.filter((userId) => !subscribed.has(userId)),
-    ]
+    data.unsubscribed = [...unsubscribed]
   }
 
   return data

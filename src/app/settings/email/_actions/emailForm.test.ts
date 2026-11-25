@@ -6,6 +6,7 @@ import {
   LISTED_USERS_FIELD,
   readEmailForm,
   SUBSCRIBED_FIELD,
+  WAS_SUBSCRIBED_FIELD,
 } from './emailForm'
 
 const SAVED: EmailSettings = {
@@ -89,6 +90,8 @@ describe('readEmailForm', () => {
         [`${ADDRESS_FIELD_PREFIX}1`, ''],
         [`${ADDRESS_FIELD_PREFIX}2`, ' two@example.com '],
         [`${ADDRESS_FIELD_PREFIX}3`, ''],
+        [WAS_SUBSCRIBED_FIELD, '1'],
+        [WAS_SUBSCRIBED_FIELD, '3'],
         [SUBSCRIBED_FIELD, '1'],
         [SUBSCRIBED_FIELD, '2'],
       ]),
@@ -100,6 +103,20 @@ describe('readEmailForm', () => {
       9: 'nine@example.com',
     })
     expect(data.unsubscribed).toEqual(['9', '3'])
+  })
+
+  it('keeps an unsubscribe that came after the form was opened', () => {
+    const data = readEmailForm(
+      toFormData([
+        ...SERVER_FIELDS,
+        [LISTED_USERS_FIELD, '2'],
+        [WAS_SUBSCRIBED_FIELD, '2'],
+        [SUBSCRIBED_FIELD, '2'],
+      ]),
+      SAVED,
+    )
+
+    expect(data.unsubscribed).toEqual(['2', '9'])
   })
 
   it("keeps the users' settings when they weren't listed", () => {

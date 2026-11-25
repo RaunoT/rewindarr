@@ -1,4 +1,4 @@
-import { canManageSettings } from '@/lib/access'
+import { canManageEmail } from '@/lib/access'
 import { authOptions } from '@/lib/auth'
 import {
   buildNewsletter,
@@ -31,7 +31,7 @@ function text(message: string, status = 200): Response {
 // Shows an email as a user would get it, without sending it. Their own stats
 // are in it, so only admins can open it.
 export async function GET(request: Request) {
-  if (!(await canManageSettings())) {
+  if (!(await canManageEmail())) {
     return new Response(null, { status: 403 })
   }
 

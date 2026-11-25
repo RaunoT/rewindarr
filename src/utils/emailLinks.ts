@@ -12,7 +12,20 @@ const KEY_BYTES = 16
 // The address the emails link to: the one set for them, or the app's own.
 // Null without either, as a link to the admin's localhost would lead nowhere.
 export function getAppUrl(settings: Pick<Settings, 'email'>): string | null {
-  return normalizeUrl(settings.email.appUrl || getSiteUrl()) || null
+  const url = normalizeUrl(settings.email.appUrl || getSiteUrl())
+
+  return isWebUrl(url) ? url : null
+}
+
+// Links in emails only work from an http or https address
+export function isWebUrl(value: string): boolean {
+  try {
+    const { protocol } = new URL(value)
+
+    return protocol === 'http:' || protocol === 'https:'
+  } catch {
+    return false
+  }
 }
 
 export function toAppUrl(appUrl: string, path: string): string {

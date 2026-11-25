@@ -17,8 +17,10 @@ export type EmailRecipient = {
   isSubscribed: boolean
 }
 
-// Loose on purpose: the mail server is the one to tell what it can deliver to
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+// Loose on purpose: the mail server is the one to tell what it can deliver to.
+// Without the characters that would make it a list or a named address, so
+// it's always one mailbox.
+const EMAIL_PATTERN = /^[^\s@,;<>()"]+@[^\s@,;<>()"]+\.[^\s@,;<>()"]+$/
 
 export function isEmailAddress(value: string): boolean {
   return EMAIL_PATTERN.test(value)
@@ -39,10 +41,10 @@ export function toEmailRecipient(
 ): EmailRecipient {
   const id = String(user.user_id)
   const customAddress = settings.email.addresses[id]?.trim() ?? ''
-  const sourceAddress = user.email?.trim() ?? ''
-  const foundAddress = isEmailAddress(sourceAddress)
-    ? sourceAddress
-    : (seerrEmails?.get(getSeerrKey(settings, id)) ?? '')
+  const foundAddress =
+    [user.email, seerrEmails?.get(getSeerrKey(settings, id))]
+      .map((address) => address?.trim() ?? '')
+      .find(isEmailAddress) ?? ''
 
   return {
     id,
