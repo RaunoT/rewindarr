@@ -29,7 +29,7 @@ type Props = {
   // save. A failed save leaves values in the form that weren't saved.
   isSaved: boolean
   checkOn?: { status: string }
-  // The section's last field, which the result goes under
+  // The last field it tests, which the result goes under
   children: ReactNode
 }
 
@@ -118,7 +118,8 @@ export default function ConnectionTest({
   }, [checkOn])
 
   // A result is about the values it was tested with, so it goes once one of
-  // them changes
+  // them changes. Those are the section's fields above it, not ones below
+  // such as Tracearr's server choice.
   useEffect(() => {
     const section = ref.current?.closest('section')
 
@@ -127,7 +128,15 @@ export default function ConnectionTest({
     }
 
     function clear(event: Event) {
-      if (ref.current?.contains(event.target as Node)) {
+      const field = event.target as Node
+
+      if (
+        !ref.current ||
+        !(
+          ref.current.compareDocumentPosition(field) &
+          Node.DOCUMENT_POSITION_PRECEDING
+        )
+      ) {
         return
       }
 

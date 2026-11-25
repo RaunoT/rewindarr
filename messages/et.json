@@ -217,6 +217,8 @@
       "testService": "Testi teenust {service}",
       "testing": "Testimine…",
       "connected": "Ühendatud",
+      "connectedWithoutToken": "Ühendatud. Tokenit pole, mida testida.",
+      "connectedWithToken": "Ühendatud ja token töötab.",
       "history": "Esitusajalugu",
       "historyDescription": "Uued mängimised lisatakse automaatselt",
       "historySyncing": "Ajaloo sünkroonimine…",

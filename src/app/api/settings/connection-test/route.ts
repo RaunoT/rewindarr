@@ -107,12 +107,27 @@ async function testConnection(
 
     return error
       ? { status: 'error', message: t(error.key, error.values) }
-      : { status: 'success', message: t('Connection.connected') }
+      : { status: 'success', message: t(getSuccessKey(service, data)) }
   } catch (error) {
     console.error('[CONFIG] - Error testing connection!', error)
 
     return { status: 'error', message: t('genericError') }
   }
+}
+
+// Plex's result shows under its optional token, so it says whether one was
+// tested too
+function getSuccessKey(
+  service: TestedService,
+  data: ReturnType<typeof readConnectionForm>,
+) {
+  if (service !== 'mediaServer' || data.mediaServerType !== 'plex') {
+    return 'Connection.connected'
+  }
+
+  return data.plexToken
+    ? 'Connection.connectedWithToken'
+    : 'Connection.connectedWithoutToken'
 }
 
 async function runTest(

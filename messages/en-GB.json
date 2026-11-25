@@ -217,6 +217,8 @@
       "testService": "Test {service}",
       "testing": "Testing…",
       "connected": "Connected",
+      "connectedWithoutToken": "Connected. No token to test.",
+      "connectedWithToken": "Connected, and the token works.",
       "history": "Play history",
       "historyDescription": "New plays are added automatically",
       "historySyncing": "Syncing the history…",
