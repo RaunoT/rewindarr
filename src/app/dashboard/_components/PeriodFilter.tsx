@@ -43,7 +43,8 @@ export default function PeriodFilter({
   const tFilters = useTranslations('Filters')
   const pathname = usePathname()
   const ownFilterParams = useFilterParams()
-  const { searchParams, navigate } = filterParams ?? ownFilterParams
+  const { searchParams, committedSearchParams, navigate } =
+    filterParams ?? ownFilterParams
   const {
     dashboard: { setPeriod },
   } = useContext(GlobalContext)
@@ -57,6 +58,11 @@ export default function PeriodFilter({
   ]
   const validPeriodValues = periodOptions.map((option) => option.value)
   const isValidPeriod = periodParam && validPeriodValues.includes(periodParam)
+  const committedPeriodParam = committedSearchParams.get('period')
+  const savedPeriod =
+    committedPeriodParam && validPeriodValues.includes(committedPeriodParam)
+      ? (committedPeriodParam as DashboardSearchParams['period'])
+      : undefined
 
   // Sort period options by value
   periodOptions.sort((a, b) => {
@@ -67,25 +73,19 @@ export default function PeriodFilter({
   })
 
   function handleChange(value: string) {
-    const isDefault = value === 'custom'
-
-    setPeriod(
-      isDefault ? undefined : (value as DashboardSearchParams['period']),
+    navigate((params) =>
+      setPeriodFilter(params, value === 'custom' ? '' : value),
     )
-    navigate((params) => setPeriodFilter(params, isDefault ? '' : value))
   }
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [pathname])
 
+  // Saved once the URL has it, as a change still loading can be canceled
   useEffect(() => {
-    setPeriod(
-      isValidPeriod
-        ? (periodParam as DashboardSearchParams['period'])
-        : undefined,
-    )
-  }, [periodParam, setPeriod, isValidPeriod])
+    setPeriod(savedPeriod)
+  }, [savedPeriod, setPeriod])
 
   return (
     <SegmentedControl

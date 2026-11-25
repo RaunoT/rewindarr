@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   clearDashboardFilters,
   getAvailableSort,
+  getNextFilterUrl,
   setDashboardFilters,
   setPeriodFilter,
 } from './dashboardFilters'
@@ -98,5 +99,36 @@ describe('clearDashboardFilters', () => {
         clearDashboardFilters,
       ),
     ).toBe('')
+  })
+})
+
+describe('getNextFilterUrl', () => {
+  // As the dashboard does it: the URL stays the same until the page for the
+  // first change loads, and the query shown already has that change
+  it('keeps a change made while the one before still loads', () => {
+    const committedQuery = ''
+    const justMe = (params: URLSearchParams) =>
+      setDashboardFilters(params, { personal: 'true' })
+    const watchTime = (params: URLSearchParams) =>
+      setDashboardFilters(params, { sortBy: 'duration' })
+    const first = getNextFilterUrl('/dashboard/movies', committedQuery, justMe)
+    const second = getNextFilterUrl('/dashboard/movies', first.query, watchTime)
+
+    expect(first.url).toBe('/dashboard/movies?personal=true')
+    expect(second.url).toBe('/dashboard/movies?personal=true&sortBy=duration')
+    // Starting from the URL instead loses the first change
+    expect(
+      getNextFilterUrl('/dashboard/movies', committedQuery, watchTime).url,
+    ).toBe('/dashboard/movies?sortBy=duration')
+  })
+
+  it('leaves the query out when nothing is left in it', () => {
+    expect(
+      getNextFilterUrl(
+        '/dashboard/movies',
+        'personal=true&period=7days',
+        clearDashboardFilters,
+      ),
+    ).toEqual({ query: '', url: '/dashboard/movies' })
   })
 })

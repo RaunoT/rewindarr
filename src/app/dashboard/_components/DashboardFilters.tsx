@@ -12,6 +12,7 @@ import { PublicSettings } from '@/types/settings'
 import {
   clearDashboardFilters,
   getAvailableSort,
+  getDashboardFilters,
   setDashboardFilters,
 } from '@/utils/dashboardFilters'
 import { getDashboardSort } from '@/utils/helpers'
@@ -41,15 +42,21 @@ export default function DashboardFilters({
 }: Props) {
   // Shared with the period, so a change to either builds on the other's
   const filterParams = useFilterParams()
-  const { searchParams, navigate } = filterParams
+  const { searchParams, committedSearchParams, navigate } = filterParams
   const isPersonal: DashboardSearchParams['personal'] =
     searchParams.get('personal') === 'true' ? 'true' : undefined
   const sortBy = getAvailableSort(
     isOwnOnly ? 'true' : isPersonal,
     getDashboardSort(searchParams.get('sortBy')),
   )
+  const committed = getDashboardFilters(committedSearchParams)
+  const committedPersonal = committed.personal
+  const committedSort = getAvailableSort(
+    isOwnOnly ? 'true' : committedPersonal,
+    committed.sortBy,
+  )
   const hasUrlFilters =
-    searchParams.has('personal') || searchParams.has('sortBy')
+    committedSearchParams.has('personal') || committedSearchParams.has('sortBy')
   const {
     dashboard: { setIsPersonal, setSortBy },
   } = useContext(GlobalContext)
@@ -84,34 +91,38 @@ export default function DashboardFilters({
   }
 
   useEffect(() => {
-    if (!hasRestoredSavedFilters) {
-      hasRestoredSavedFilters = true
-
-      const savedPersonal =
-        personalFilter && readStorage('dashboardPersonal') === 'true'
-          ? 'true'
-          : undefined
-      const savedSort = getAvailableSort(
-        isOwnOnly ? 'true' : savedPersonal,
-        getDashboardSort(readStorage('dashboardSort')),
-      )
-
-      if (!hasUrlFilters && (savedPersonal || savedSort)) {
-        isRestoringRef.current = true
-        navigate(
-          (params) =>
-            setDashboardFilters(
-              params,
-              { personal: savedPersonal, sortBy: savedSort },
-              isOwnOnly,
-            ),
-          { replace: true },
-        )
-
-        return
-      }
+    if (hasRestoredSavedFilters) {
+      return
     }
 
+    hasRestoredSavedFilters = true
+
+    const savedPersonal =
+      personalFilter && readStorage('dashboardPersonal') === 'true'
+        ? 'true'
+        : undefined
+    const savedSort = getAvailableSort(
+      isOwnOnly ? 'true' : savedPersonal,
+      getDashboardSort(readStorage('dashboardSort')),
+    )
+
+    if (!hasUrlFilters && (savedPersonal || savedSort)) {
+      isRestoringRef.current = true
+      navigate(
+        (params) =>
+          setDashboardFilters(
+            params,
+            { personal: savedPersonal, sortBy: savedSort },
+            isOwnOnly,
+          ),
+        { replace: true },
+      )
+    }
+  }, [hasUrlFilters, isOwnOnly, navigate, personalFilter])
+
+  // Remembered for the next visit and for the links on the home page, once
+  // the URL has them
+  useEffect(() => {
     if (isRestoringRef.current) {
       if (!hasUrlFilters) {
         return
@@ -120,18 +131,14 @@ export default function DashboardFilters({
       isRestoringRef.current = false
     }
 
-    // Remembered for the next visit and for the links on the home page
-    setIsPersonal(isPersonal)
-    setSortBy(sortBy)
+    setIsPersonal(committedPersonal)
+    setSortBy(committedSort)
   }, [
+    committedPersonal,
+    committedSort,
     hasUrlFilters,
-    isOwnOnly,
-    isPersonal,
-    navigate,
-    personalFilter,
     setIsPersonal,
     setSortBy,
-    sortBy,
   ])
 
   const tCommon = useTranslations('Common')

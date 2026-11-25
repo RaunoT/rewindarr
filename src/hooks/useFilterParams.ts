@@ -1,9 +1,13 @@
+import { getNextFilterUrl } from '@/utils/dashboardFilters'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { startTransition, useCallback, useMemo, useOptimistic } from 'react'
 
 export type FilterParams = {
   // The URL's, or the last change to them while its page loads
   searchParams: URLSearchParams
+  // Only the URL's. A change still loading can be canceled, by Back or
+  // another link, so it's what's saved.
+  committedSearchParams: URLSearchParams
   navigate: (
     update: (params: URLSearchParams) => void,
     options?: { replace?: boolean },
@@ -17,16 +21,20 @@ export default function useFilterParams(): FilterParams {
   const router = useRouter()
   const pathname = usePathname()
   const urlSearchParams = useSearchParams()
-  const [query, setQuery] = useOptimistic(urlSearchParams.toString())
+  const committedQuery = urlSearchParams.toString()
+  const [query, setQuery] = useOptimistic(committedQuery)
   const searchParams = useMemo(() => new URLSearchParams(query), [query])
+  const committedSearchParams = useMemo(
+    () => new URLSearchParams(committedQuery),
+    [committedQuery],
+  )
   const navigate = useCallback<FilterParams['navigate']>(
     (update, { replace = false } = {}) => {
-      const params = new URLSearchParams(query)
-
-      update(params)
-
-      const nextQuery = params.toString()
-      const url = nextQuery ? `${pathname}?${nextQuery}` : pathname
+      const { query: nextQuery, url } = getNextFilterUrl(
+        pathname,
+        query,
+        update,
+      )
 
       // Shown until the page for the latest change has loaded
       startTransition(() => {
@@ -42,5 +50,5 @@ export default function useFilterParams(): FilterParams {
     [pathname, query, router, setQuery],
   )
 
-  return { searchParams, navigate }
+  return { searchParams, committedSearchParams, navigate }
 }

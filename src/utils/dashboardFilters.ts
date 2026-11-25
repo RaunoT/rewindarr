@@ -64,3 +64,21 @@ export function setPeriodFilter(params: URLSearchParams, period?: string) {
     params.delete('period')
   }
 }
+
+// The next change starts from the query shown, not the URL's
+export function getNextFilterUrl(
+  pathname: string,
+  query: string,
+  update: (params: URLSearchParams) => void,
+): { query: string; url: string } {
+  const params = new URLSearchParams(query)
+
+  update(params)
+
+  const nextQuery = params.toString()
+
+  return {
+    query: nextQuery,
+    url: nextQuery ? `${pathname}?${nextQuery}` : pathname,
+  }
+}
