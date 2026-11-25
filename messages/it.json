@@ -534,6 +534,7 @@
       "showsAndArtists": "Hai scoperto <showsCount>{showsValue, number}</showsCount> <shows>{showsValue, plural, one {nuova serie} other {nuove serie}}</shows> e <artistsCount>{artistsValue, number}</artistsCount> <artists>{artistsValue, plural, one {nuovo artista} other {nuovi artisti}}</artists>",
       "top": "La tua scoperta più grande è stata <title>{titleValue}</title>, con <duration>{durationValue}</duration> del tuo tempo",
       "only": "Si tratta di <title>{titleValue}</title>, con <duration>{durationValue}</duration> del tuo tempo",
+      "after": "Dopo <headline>{headlineValue}</headline>, la tua scoperta più grande è stata <title>{titleValue}</title>, con <duration>{durationValue}</duration> del tuo tempo",
       "gaveUp": "Uno ti è sfuggito: <title>{titleValue}</title> si è fermato al <percent>{percentValue, number, percent}</percent>. Magari la prossima volta?"
     },
     "Libraries": {

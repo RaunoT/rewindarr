@@ -534,6 +534,7 @@
       "showsAndArtists": "Vous avez découvert <showsCount>{showsValue, number}</showsCount> <shows>{showsValue, plural, one {nouvelle série} other {nouvelles séries}}</shows> et <artistsCount>{artistsValue, number}</artistsCount> <artists>{artistsValue, plural, one {nouvel artiste} other {nouveaux artistes}}</artists>",
       "top": "Votre plus belle découverte était <title>{titleValue}</title>, avec <duration>{durationValue}</duration> au compteur",
       "only": "Il s'agissait de <title>{titleValue}</title>, avec <duration>{durationValue}</duration> au compteur",
+      "after": "Après <headline>{headlineValue}</headline>, votre plus belle découverte était <title>{titleValue}</title>, avec <duration>{durationValue}</duration> au compteur",
       "gaveUp": "Un film vous a échappé : <title>{titleValue}</title>, arrêté à <percent>{percentValue, number, percent}</percent>. Ce sera pour une prochaine fois ?"
     },
     "Libraries": {

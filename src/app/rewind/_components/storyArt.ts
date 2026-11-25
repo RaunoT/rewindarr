@@ -127,7 +127,7 @@ function getStoryTitle(
     case 'time_travel':
       return titleMoments.timeTravel?.oldest.item
     case 'discoveries':
-      return titleMoments.discoveries?.top.item
+      return titleMoments.discoveries?.top?.item
     case 'binge':
       return moments.binge?.item
     case 'only_you':

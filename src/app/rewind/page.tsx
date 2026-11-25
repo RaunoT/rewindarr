@@ -74,7 +74,7 @@ import {
   getUsers,
 } from '@/utils/statsSource'
 import { toDateKey, toTimeZone } from '@/utils/timeZone'
-import { getTitleMoments } from '@/utils/titleMoments'
+import { getTitleMoments, getTopHeadlines } from '@/utils/titleMoments'
 import { getYearOverYear } from '@/utils/yearOverYear'
 import { sumBy } from 'lodash'
 import { Metadata } from 'next'
@@ -396,7 +396,12 @@ async function getRewind(
         })
       : null,
   ])
-  const titleMoments = await getTitleMoments(plays, allPlays, until)
+  const titleMoments = await getTitleMoments(
+    plays,
+    allPlays,
+    until,
+    getTopHeadlines(topMediaItems, settings.rewind.hiddenStories, !!topTrack),
+  )
   const yearOverYear = await getYearOverYear(allPlays, period, timeZone, {
     shows: topMediaItems.shows[0],
     movies: topMediaItems.movies[0],

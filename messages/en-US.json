@@ -534,6 +534,7 @@
       "showsAndArtists": "You discovered <showsCount>{showsValue, number}</showsCount> <shows>new {showsValue, plural, one {show} other {shows}}</shows> and <artistsCount>{artistsValue, number}</artistsCount> <artists>new {artistsValue, plural, one {artist} other {artists}}</artists>",
       "top": "Your biggest find was <title>{titleValue}</title>, which got <duration>{durationValue}</duration> of your time",
       "only": "It was <title>{titleValue}</title>, which got <duration>{durationValue}</duration> of your time",
+      "after": "After <headline>{headlineValue}</headline>, your biggest find was <title>{titleValue}</title>, which got <duration>{durationValue}</duration> of your time",
       "gaveUp": "One that got away: you made it <percent>{percentValue, number, percent}</percent> into <title>{titleValue}</title>. Maybe next time?"
     },
     "Libraries": {

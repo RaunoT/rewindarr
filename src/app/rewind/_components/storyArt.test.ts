@@ -115,6 +115,16 @@ describe('getStoryArt', () => {
     }
   })
 
+  it('has none for discoveries that only show their counts', () => {
+    const userRewind = rewind({
+      titleMoments: {
+        discoveries: { shows: 2, artists: 0, top: null, after: ['Severance'] },
+      },
+    })
+
+    expect(getStoryArt('discoveries', userRewind)).toEqual([])
+  })
+
   const title = item({ tmdb_backdrop: BACKDROP })
 
   it.each<[string, Record<string, unknown>]>([

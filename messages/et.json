@@ -534,6 +534,7 @@
       "showsAndArtists": "Sa avastasid <showsCount>{showsValue, number}</showsCount> <shows>{showsValue, plural, one {uue sarja} other {uut sarja}}</shows> ja <artistsCount>{artistsValue, number}</artistsCount> <artists>{artistsValue, plural, one {uue artisti} other {uut artisti}}</artists>",
       "top": "Suurim avastus oli <title>{titleValue}</title>, millele kulus sul <duration>{durationValue}</duration>",
       "only": "See oli <title>{titleValue}</title>, millele kulus sul <duration>{durationValue}</duration>",
+      "after": "Kui <headline>{headlineValue}</headline> välja arvata, oli suurim avastus <title>{titleValue}</title>, millele kulus sul <duration>{durationValue}</duration>",
       "gaveUp": "Üks jäi pooleli: <title>{titleValue}</title> sai vaadatud <percent>{percentValue, number, percent}</percent> ulatuses. Ehk järgmisel korral?"
     },
     "Libraries": {
