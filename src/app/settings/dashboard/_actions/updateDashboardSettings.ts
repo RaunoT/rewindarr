@@ -6,6 +6,7 @@ import {
   DashboardTotalStatistics,
   SettingsFormInitialState,
 } from '@/types/settings'
+import { isBuiltInPeriodLength } from '@/utils/getPeriod'
 import { isCalendarDate } from '@/utils/timeZone'
 import { getTranslations } from 'next-intl/server'
 import { z } from 'zod'
@@ -43,6 +44,10 @@ export default async function saveDashboardSettings(
           message: t('customPeriodError'),
         },
       )
+      // The period filter already has these, so they'd show twice
+      .refine((value) => !isBuiltInPeriodLength(Number(value)), {
+        message: t('customPeriodBuiltInError'),
+      })
       .optional(),
     startDate: z
       .string()

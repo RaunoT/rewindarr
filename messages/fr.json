@@ -244,6 +244,7 @@
     "Dashboard": {
       "title": "Paramètres du tableau de bord",
       "customPeriodError": "La période personnalisée doit être un nombre entier entre 1 et 3000.",
+      "customPeriodBuiltInError": "Le filtre de période propose déjà 7 jours et l'année passée (365 jours). Choisissez un autre nombre de jours.",
       "startDateError": "Vérifiez la date de début.",
       "usersPage": "Page des utilisateurs",
       "statistics": "Statistiques",

@@ -77,6 +77,47 @@ describe('saveDashboardSettings', () => {
     expect(writeSettings).not.toHaveBeenCalled()
   })
 
+  it('rejects custom periods as long as a built-in one', async () => {
+    for (const customPeriod of ['7', '365', '007']) {
+      const result = await saveDashboardSettings(
+        initialState,
+        formDataFrom({ customPeriod }),
+      )
+
+      expect(result).toMatchObject({
+        status: 'error',
+        message: 'customPeriodBuiltInError',
+      })
+    }
+
+    expect(writeSettings).not.toHaveBeenCalled()
+  })
+
+  it('reports a malformed custom period as such', async () => {
+    const result = await saveDashboardSettings(
+      initialState,
+      formDataFrom({ customPeriod: '7.5' }),
+    )
+
+    expect(result).toMatchObject({
+      status: 'error',
+      message: 'customPeriodError',
+    })
+  })
+
+  it('accepts other custom periods', async () => {
+    for (const customPeriod of ['1', '8', '364', '366']) {
+      const result = await saveDashboardSettings(
+        initialState,
+        formDataFrom({ customPeriod }),
+      )
+
+      expect(result.status).toBe('success')
+    }
+
+    expect(writeSettings).toHaveBeenCalledTimes(4)
+  })
+
   it('accepts valid ISO calendar dates', async () => {
     const result = await saveDashboardSettings(
       initialState,

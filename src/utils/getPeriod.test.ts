@@ -2,7 +2,11 @@ import { Settings } from '@/types/settings'
 import { cloneDeep } from 'lodash'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
-import getPeriod, { parseCustomPeriod } from './getPeriod'
+import getPeriod, {
+  getPeriodOptions,
+  isBuiltInPeriodLength,
+  parseCustomPeriod,
+} from './getPeriod'
 
 function settingsWith(customPeriod: string): Settings {
   const settings = cloneDeep(DEFAULT_SETTINGS)
@@ -100,5 +104,39 @@ describe('parseCustomPeriod', () => {
     ['', 1],
   ])('reads %j as %i days', (value, days) => {
     expect(parseCustomPeriod(value)).toBe(days)
+  })
+})
+
+describe('getPeriodOptions', () => {
+  it.each([
+    [1, ['custom', '7days', 'pastYear', 'allTime']],
+    [30, ['7days', 'custom', 'pastYear', 'allTime']],
+    [366, ['7days', 'pastYear', 'custom', 'allTime']],
+    [3000, ['7days', 'pastYear', 'custom', 'allTime']],
+  ])('sorts the options around a %i-day custom period', (days, options) => {
+    expect(getPeriodOptions(days)).toEqual(options)
+  })
+
+  it.each([
+    [7, ['custom', 'pastYear', 'allTime']],
+    [365, ['7days', 'custom', 'allTime']],
+  ])(
+    'offers a saved %i-day custom period once, in place of the built-in one',
+    (days, options) => {
+      expect(getPeriodOptions(days)).toEqual(options)
+    },
+  )
+})
+
+describe('isBuiltInPeriodLength', () => {
+  it.each([
+    [7, true],
+    [365, true],
+    [1, false],
+    [30, false],
+    [366, false],
+    [NaN, false],
+  ])('reads %i days as built-in: %s', (days, isBuiltIn) => {
+    expect(isBuiltInPeriodLength(days)).toBe(isBuiltIn)
   })
 })

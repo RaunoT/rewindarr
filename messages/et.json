@@ -244,6 +244,7 @@
     "Dashboard": {
       "title": "Edetabeli seaded",
       "customPeriodError": "Kohandatud periood peab olema täisarv vahemikus 1–3000.",
+      "customPeriodBuiltInError": "Perioodi filtris on 7 päeva ja viimane aasta (365 päeva) juba olemas. Vali muu päevade arv.",
       "startDateError": "Kontrolli alguskuupäeva.",
       "usersPage": "Kasutajate leht",
       "statistics": "Statistika",
