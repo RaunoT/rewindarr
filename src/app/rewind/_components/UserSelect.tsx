@@ -30,6 +30,8 @@ export default function UserSelect({ users, defaultUserId }: Props) {
     const newParams = new URLSearchParams(searchParams.toString())
 
     newParams.set('userId', userId)
+    // A shared link's key is the user's it came with
+    newParams.delete('key')
     router.push(`/rewind?${newParams.toString()}`)
   }
 

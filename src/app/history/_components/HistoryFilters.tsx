@@ -8,6 +8,7 @@ import SegmentedControl from '@/components/filters/SegmentedControl'
 import { UserList } from '@/components/filters/UserPicker'
 import { MediaIcon, STAT_ICONS } from '@/components/icons'
 import SelectionActions from '@/components/SelectionActions'
+import useFilterParams from '@/hooks/useFilterParams'
 import { PublicSettings } from '@/types/settings'
 import { PlayIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
@@ -51,12 +52,17 @@ export default function HistoryFilters({
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  // The period's, which shows a new one before its page has loaded
+  const periodParams = useFilterParams()
   const searchParam = searchParams.get('q') ?? ''
+  const query = searchParams.toString()
   const [search, setSearch] = useState(searchParam)
   // Back and the other filters change the URL too
   const [shownSearchParam, setShownSearchParam] = useState(searchParam)
   // Searches sent to the URL that it hasn't shown yet, oldest first
   const [pendingSearches, setPendingSearches] = useState<string[]>([])
+  const [clearedFromQuery, setClearedFromQuery] = useState<string | null>(null)
+  const isClearing = clearedFromQuery === query
   // Ones in the URL that aren't among the options don't count
   const pickedLibraries = getPicked('library', libraries)
   const pickedUsers = getPicked('user', users)
@@ -70,7 +76,7 @@ export default function HistoryFilters({
     Number(pickedLibraries.length > 0) +
     Number(pickedUsers.length > 0)
   const canClear =
-    activeCount > 0 || !!searchParam || searchParams.has('period')
+    activeCount > 0 || !!searchParam || periodParams.searchParams.has('period')
   const hasMoreFilters = hasRequests || libraries.length > 1 || users.length > 0
 
   if (searchParam !== shownSearchParam) {
@@ -113,13 +119,15 @@ export default function HistoryFilters({
     const rows = searchParams.get('rows')
 
     setSearch('')
+    setPendingSearches(searchParam ? [''] : [])
+    setClearedFromQuery(searchParam ? query : null)
     router.push(rows ? `${pathname}?rows=${rows}` : pathname)
   }
 
   useEffect(() => {
     const value = search.trim()
 
-    if (value === shownSearchParam) {
+    if (isClearing || value === shownSearchParam) {
       return
     }
 
@@ -143,7 +151,7 @@ export default function HistoryFilters({
     }, SEARCH_DELAY)
 
     return () => clearTimeout(timer)
-  }, [search, shownSearchParam, pathname, router])
+  }, [isClearing, search, shownSearchParam, pathname, router])
 
   function getKind() {
     return (
@@ -204,12 +212,16 @@ export default function HistoryFilters({
       <SearchPill
         label={t('search')}
         value={search}
-        onChange={setSearch}
+        onChange={(value) => {
+          setClearedFromQuery(null)
+          setSearch(value)
+        }}
         clearLabel={t('clearSearch')}
         className='min-w-40 flex-1'
       />
       <PeriodFilter
         settings={settings}
+        filterParams={periodParams}
         className='max-sm:order-last max-sm:w-full'
       />
       {hasMoreFilters && (

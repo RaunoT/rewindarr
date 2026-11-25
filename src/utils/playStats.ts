@@ -104,6 +104,7 @@ export type PlayStats = Pick<
   StatsSource,
   | 'getTotalDuration'
   | 'getTopItems'
+  | 'getPlayedCount'
   | 'getTopUsers'
   | 'getMediaStats'
   | 'getTopMediaItems'
@@ -305,6 +306,31 @@ function toItemRow(plays: Play[], minPercent: number): ItemRow {
   }
 }
 
+// An episode is told apart within its show by its numbers, and a track within
+// its artist by its title, as their IDs change when they're re-added
+function getKeyWithinItem(play: Play): string {
+  if (
+    play.mediaType === 'episode' &&
+    play.seasonNumber !== null &&
+    play.episodeNumber !== null
+  ) {
+    return `${play.seasonNumber}x${play.episodeNumber}`
+  }
+
+  return play.mediaType === 'movie' ? '' : play.title.trim().toLowerCase()
+}
+
+// How many different movies, episodes or tracks have a play that counts,
+// grouped like the rankings' items
+export function countPlayedTitles(plays: Play[], minPercent: number): number {
+  const countedPlays = plays.filter((play) => isCountedPlay(play, minPercent))
+
+  return sumBy(
+    groupPlays(countedPlays),
+    (group) => new Set(group.map(getKeyWithinItem)).size,
+  )
+}
+
 const COMPARE_ITEMS: Record<TopItemsSort, (a: ItemRow, b: ItemRow) => number> =
   {
     duration: (a, b) => b.total_duration - a.total_duration,
@@ -382,11 +408,11 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
 
   async function getTopItems(
     library: Library,
-    { period, userId, sortBy, count }: TopItemsQuery,
+    { since, userId, sortBy, count }: TopItemsQuery,
   ): Promise<TopItems> {
     const mediaType = LIBRARY_PLAY_TYPES[library.section_type]
     const plays = await getPlays({
-      since: new Date(Date.now() - period * 24 * 60 * 60 * 1000),
+      since,
       userId,
       libraries: [library],
     })
@@ -402,6 +428,15 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
       items: await addAdditionalData(items, mediaType),
       hasMore: topItems.length > count,
     }
+  }
+
+  async function getPlayedCount(
+    library: Library,
+    query: PlayPeriod & { userId: string },
+  ): Promise<number> {
+    const plays = await getPlays({ ...query, libraries: [library] })
+
+    return countPlayedTitles(plays, getMinPlayPercent())
   }
 
   async function getTotalDuration(query: DurationQuery): Promise<number> {
@@ -473,10 +508,12 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
     const plays = await getPlays({ ...period, userId, libraries })
     const minPercent = getMinPlayPercent()
 
+    // A title only brings its cast and crew in once it has a play that
+    // counts, or a few minutes of it would rank them
     function getTitles(mediaType: PlayMediaType) {
-      return groupPlays(
-        plays.filter((play) => play.mediaType === mediaType),
-      ).map((group) => toItemRow(group, minPercent))
+      return groupPlays(plays.filter((play) => play.mediaType === mediaType))
+        .map((group) => toItemRow(group, minPercent))
+        .filter((item) => item.total_plays > 0)
     }
 
     return findTopPeople(
@@ -615,11 +652,12 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
     play: Play,
     userId?: string,
     until?: string,
+    libraries?: Library[],
   ): Promise<ItemRow> {
     const userPlays = userId
-      ? (await getPlays({ since: new Date(0), until, userId })).filter(
-          (other) => other.mediaType === play.mediaType,
-        )
+      ? (
+          await getPlays({ since: new Date(0), until, userId, libraries })
+        ).filter((other) => other.mediaType === play.mediaType)
       : []
     const plays = userPlays.some((other) => other.id === play.id)
       ? userPlays
@@ -663,6 +701,7 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
   return {
     getTotalDuration,
     getTopItems,
+    getPlayedCount,
     getTopUsers,
     getMediaStats,
     getTopMediaItems,

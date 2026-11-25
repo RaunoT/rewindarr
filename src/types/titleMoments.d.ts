@@ -30,8 +30,12 @@ export type TitleMoments = {
   discoveries: {
     shows: number
     artists: number
-    // The one the user spent the most time on
-    top: TitleCard & { duration: string }
+    // The one the user spent the most time on that no story before has
+    // headlined. Null when they all have.
+    top: (TitleCard & { duration: string }) | null
+    // The finds other stories headlined that are bigger than the top one,
+    // the biggest first
+    after: string[]
   } | null
   // A movie started in the period that the user has never finished. Null
   // until the whole history has been read.

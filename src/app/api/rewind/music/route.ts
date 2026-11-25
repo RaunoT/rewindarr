@@ -1,8 +1,7 @@
-import { canManageSettings } from '@/lib/access'
-import { authOptions } from '@/lib/auth'
+import { canManageSettings, canPlayRewind } from '@/lib/access'
 import { REWIND_MUSIC_MAX_BYTES } from '@/utils/constants'
 import getSettings, { writeSettings } from '@/utils/getSettings'
-import { canViewFeature, getViewer } from '@/utils/helpers'
+import { isSettingsPageLocked } from '@/utils/helpers'
 import {
   getMusicType,
   getMusicUrl,
@@ -12,7 +11,7 @@ import {
   saveMusic,
 } from '@/utils/rewindMusic'
 import fs from 'fs'
-import { getServerSession } from 'next-auth'
+import { FileHandle } from 'fs/promises'
 import { revalidatePath } from 'next/cache'
 import { Readable } from 'stream'
 
@@ -30,22 +29,37 @@ function getContentDisposition(name: string) {
   return `attachment; filename="${fallback}"; filename*=UTF-8''${encoded}`
 }
 
-// The track plays wherever Rewind can be seen. Admins can also download it
-// from the settings while Rewind is hidden.
+// The track plays wherever Rewind can be seen. Admins can also play and
+// download it from the settings while Rewind is hidden.
 export async function GET(request: Request) {
   const settings = getSettings()
-  const session = await getServerSession(authOptions)
   const music = settings.rewind.music
   const isDownload = new URL(request.url).searchParams.has('download')
   const canGet =
-    canViewFeature(settings, 'rewind', getViewer(session)) ||
-    (isDownload && (await canManageSettings(settings)))
+    (await canPlayRewind(settings)) || (await canManageSettings(settings))
 
   if (!canGet || !music || !getMusicUrl(settings)) {
     return new Response(null, { status: 404 })
   }
 
-  const { size } = fs.statSync(REWIND_MUSIC_PATH)
+  // The size and the bytes come from one open file, so an upload or delete
+  // in between can't mix two tracks or end the stream early
+  let file: FileHandle
+
+  try {
+    file = await fs.promises.open(REWIND_MUSIC_PATH, 'r')
+  } catch {
+    return new Response(null, { status: 404 })
+  }
+
+  const { size } = await file.stat()
+
+  if (size === 0) {
+    await file.close()
+
+    return new Response(null, { status: 404 })
+  }
+
   const range = parseRange(request.headers.get('range'), size)
   const headers = new Headers({
     'Content-Type': music.type,
@@ -61,6 +75,7 @@ export async function GET(request: Request) {
 
   if (range === 'invalid') {
     headers.set('Content-Range', `bytes */${size}`)
+    await file.close()
 
     return new Response(null, { status: 416, headers })
   }
@@ -73,7 +88,7 @@ export async function GET(request: Request) {
     headers.set('Content-Range', `bytes ${start}-${end}/${size}`)
   }
 
-  const stream = fs.createReadStream(REWIND_MUSIC_PATH, { start, end })
+  const stream = file.createReadStream({ start, end })
 
   return new Response(Readable.toWeb(stream) as ReadableStream, {
     status: range ? 206 : 200,
@@ -84,27 +99,57 @@ export async function GET(request: Request) {
 // The file is the body, its name in a header. PUT and DELETE can't be sent
 // from another site without CORS allowing them.
 export async function PUT(request: Request) {
-  if (!(await canManageSettings())) {
+  const initialSettings = getSettings()
+
+  if (
+    !(await canManageSettings(initialSettings)) ||
+    isSettingsPageLocked('rewind', initialSettings)
+  ) {
     return Response.json({ error: 'forbidden' }, { status: 403 })
   }
 
-  const name = decodeURIComponent(request.headers.get('x-file-name') ?? '')
-  const type = getMusicType(name)
-  const length = Number(request.headers.get('content-length'))
+  let name: string
 
-  if (!type || !request.body || !length) {
+  try {
+    name = decodeURIComponent(request.headers.get('x-file-name') ?? '')
+  } catch {
+    return Response.json({ error: 'type' }, { status: 400 })
+  }
+
+  const type = getMusicType(name)
+
+  if (!type || !request.body) {
     return Response.json({ error: 'type' }, { status: 415 })
   }
 
-  if (length > REWIND_MUSIC_MAX_BYTES) {
-    return Response.json({ error: 'size' }, { status: 413 })
+  const lengthHeader = request.headers.get('content-length')
+
+  if (lengthHeader !== null) {
+    const trimmed = lengthHeader.trim()
+    const length = Number(trimmed)
+
+    if (!/^\d+$/.test(trimmed)) {
+      return Response.json({ error: 'type' }, { status: 400 })
+    }
+
+    if (length === 0) {
+      return Response.json({ error: 'empty' }, { status: 400 })
+    }
+
+    if (length > REWIND_MUSIC_MAX_BYTES) {
+      return Response.json({ error: 'size' }, { status: 413 })
+    }
   }
 
   try {
     const music = await saveMusic(request.body, name, type)
 
-    if (!music) {
+    if (music === 'tooLarge') {
       return Response.json({ error: 'size' }, { status: 413 })
+    }
+
+    if (music === 'empty') {
+      return Response.json({ error: 'empty' }, { status: 400 })
     }
 
     const settings = getSettings()
@@ -122,13 +167,16 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE() {
-  if (!(await canManageSettings())) {
+  const settings = getSettings()
+
+  if (
+    !(await canManageSettings(settings)) ||
+    isSettingsPageLocked('rewind', settings)
+  ) {
     return Response.json({ error: 'forbidden' }, { status: 403 })
   }
 
   try {
-    const settings = getSettings()
-
     settings.rewind.music = null
     writeSettings(settings)
     removeMusic()

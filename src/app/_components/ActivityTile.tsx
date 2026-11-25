@@ -30,7 +30,12 @@ export default function ActivityTile({ settings }: Props) {
   const { data: session } = useSession()
   const { data, isLoading, isError } = useQuery({
     // A change to who sees which streams doesn't show the old ones meanwhile
-    queryKey: ['activity', settings.activity],
+    queryKey: [
+      'activity',
+      settings.activity,
+      settings.general.isAnonymized,
+      session?.user.id ?? null,
+    ],
     queryFn: getActivity,
     refetchInterval: 5000,
     refetchIntervalInBackground: false,
@@ -83,7 +88,7 @@ export default function ActivityTile({ settings }: Props) {
         !data?.stream_count && (
           // Big and at the bottom, so the empty tile doesn't look unfinished
           <p className='mt-auto text-2xl font-semibold tracking-tight'>
-            {t('Home.streams', { count: 0 })}
+            {t('Activity.noActivity')}
           </p>
         )
       )}

@@ -65,6 +65,19 @@ describe('getRewindPeriodType', () => {
 
     expect(getRewindPeriodType(settings)).toBe('calendarYear')
   })
+
+  it('treats a custom period with an invalid start date as the default', () => {
+    expect(
+      getRewindPeriodType(
+        rewindSettings('custom', { startDate: '2025-02-31' }),
+      ),
+    ).toBe('calendarYear')
+    expect(
+      getRewindPeriodType(
+        rewindSettings('custom', { startDate: 'not-a-date' }),
+      ),
+    ).toBe('calendarYear')
+  })
 })
 
 describe('isReleaseDate', () => {
@@ -190,18 +203,35 @@ describe('getEditionPeriod', () => {
 
 describe('getRewindPeriod', () => {
   it('runs from a year before now to now by default', () => {
-    expect(getRewindPeriod(rewindSettings('pastYear'), { now })).toEqual({
+    expect(
+      getRewindPeriod(rewindSettings('pastYear'), { timeZone: 'UTC', now }),
+    ).toEqual({
       since: '2025-03-10',
       year: null,
+      today: '2026-03-10',
     })
   })
 
   it('runs from the custom start date to now', () => {
     expect(
       getRewindPeriod(rewindSettings('custom', { startDate: '2025-06-01' }), {
+        timeZone: 'UTC',
         now,
       }),
-    ).toEqual({ since: '2025-06-01', year: null })
+    ).toEqual({
+      since: '2025-06-01',
+      year: null,
+      today: '2026-03-10',
+    })
+  })
+
+  it("ends on the viewer's date, which can be a day ahead of UTC", () => {
+    expect(
+      getRewindPeriod(rewindSettings('pastYear'), {
+        timeZone: TALLINN,
+        now: new Date('2026-03-31T22:30:00Z'),
+      }).today,
+    ).toBe('2026-04-01')
   })
 
   it('shows the latest edition by default', () => {

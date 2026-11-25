@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function DashboardSettingsPage() {
-  await requireSettingsAccess()
+  await requireSettingsAccess('dashboard')
 
   const settings = getSettings()
 

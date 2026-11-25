@@ -6,6 +6,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import proxy from './proxy'
 import { DEFAULT_SETTINGS } from './utils/constants'
 import getSettings from './utils/getSettings'
+import {
+  getRewindSharePath,
+  REWIND_SHARE_COOKIE,
+  REWIND_SHARE_HEADER,
+} from './utils/rewindShare'
 import { getServerUser } from './utils/statsSource'
 
 vi.mock('./utils/getSettings', () => ({ default: vi.fn() }))
@@ -150,6 +155,33 @@ describe('proxy', () => {
       )
     })
 
+    it('reads the first protocol from comma-separated X-Forwarded-Proto headers', async () => {
+      const secureRes = await request(await staleAdminCookie(), '/dashboard', {
+        cookieName: '__Secure-next-auth.session-token',
+        headers: { 'x-forwarded-proto': 'HTTPS, http' },
+      })
+      const plainRes = await request(await staleAdminCookie(), '/dashboard', {
+        headers: { 'x-forwarded-proto': 'http, http' },
+      })
+      const plainOverHttpsRes = await request(
+        await staleAdminCookie(),
+        '/dashboard',
+        {
+          headers: { 'x-forwarded-proto': 'https, http' },
+        },
+      )
+
+      expect(secureRes?.headers.get('location')).toBe(
+        'http://localhost:3000/settings/connection',
+      )
+      expect(plainRes?.headers.get('location')).toBe(
+        'http://localhost:3000/settings/connection',
+      )
+      expect(plainOverHttpsRes?.headers.get('location')).toBe(
+        'http://localhost:3000/',
+      )
+    })
+
     it('ignores the plain cookie of a request over HTTPS', async () => {
       const res = await request(await staleAdminCookie(), '/dashboard', {
         headers: https,
@@ -224,6 +256,49 @@ describe('proxy', () => {
         'http://localhost:3000/?callbackUrl=%2Frewind',
       )
     })
+
+    it("opens a user's shared Rewind without a login", async () => {
+      const res = await request('', getRewindSharePath(getSettings(), '42')!)
+
+      expect(res?.headers.get('location')).toBeNull()
+      // Passed on to the layout, which can't read the URL
+      expect(
+        res?.headers.get(`x-middleware-request-${REWIND_SHARE_HEADER}`),
+      ).toBe('42')
+      expect(res?.cookies.get(REWIND_SHARE_COOKIE)?.value).toMatch(/^42:/)
+    })
+
+    it("sends a link with another user's key to log in", async () => {
+      const key = new URLSearchParams(
+        getRewindSharePath(getSettings(), '42')!.split('?')[1],
+      ).get('key')
+      const res = await request('', `/rewind?userId=43&key=${key}`)
+
+      expect(res?.headers.get('location')).toContain('callbackUrl=')
+    })
+
+    it('sends a link with a repeated user or key to log in', async () => {
+      const path = getRewindSharePath(getSettings(), '42')!
+
+      for (const extra of ['&userId=42', '&key=x']) {
+        const res = await request('', path + extra)
+
+        expect(res?.headers.get('location')).toContain('callbackUrl=')
+      }
+    })
+
+    it("doesn't take the shared user from the browser", async () => {
+      getSettings().general.isOutsideAccess = true
+
+      const res = await request('', '/dashboard', {
+        headers: { [REWIND_SHARE_HEADER]: '42' },
+      })
+
+      expect(res?.headers.get('location')).toBeNull()
+      expect(
+        res?.headers.get(`x-middleware-request-${REWIND_SHARE_HEADER}`),
+      ).toBeNull()
+    })
   })
 
   it('sends old links to the Tracearr shows library to its new name', async () => {
@@ -243,5 +318,49 @@ describe('proxy', () => {
     const res = await request('', '/dashboard/tv-shows')
 
     expect(res?.headers.get('location')).not.toContain('/dashboard/shows')
+  })
+
+  describe('settings setup redirects', () => {
+    beforeEach(() => {
+      vi.mocked(getServerUser).mockResolvedValue({
+        status: 'member',
+        isAdmin: true,
+      })
+    })
+
+    it('does not treat non-settings paths containing "settings" as settings pages', async () => {
+      const settings: Settings = cloneDeep(DEFAULT_SETTINGS)
+
+      vi.mocked(getSettings).mockReturnValue(settings)
+
+      const res = await request('', '/dashboard/settings')
+
+      expect(res?.headers.get('location')).toBe(
+        'http://localhost:3000/settings/connection',
+      )
+    })
+
+    it('redirects locked settings subpages to /settings/connection during setup and admin post-update', async () => {
+      const initialSettings: Settings = cloneDeep(DEFAULT_SETTINGS)
+
+      vi.mocked(getSettings).mockReturnValue(initialSettings)
+
+      const initialRes = await request('', '/settings/general')
+
+      expect(initialRes?.headers.get('location')).toBe(
+        'http://localhost:3000/settings/connection',
+      )
+
+      const postUpdateSettings: Settings = cloneDeep(DEFAULT_SETTINGS)
+
+      postUpdateSettings.setupComplete = true
+      vi.mocked(getSettings).mockReturnValue(postUpdateSettings)
+
+      const adminRes = await requestAsAdmin('/settings/general')
+
+      expect(adminRes?.headers.get('location')).toBe(
+        'http://localhost:3000/settings/connection',
+      )
+    })
   })
 })

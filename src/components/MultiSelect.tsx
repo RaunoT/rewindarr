@@ -2,7 +2,7 @@
 
 import SelectionActions from '@/components/SelectionActions'
 import { CheckIcon } from '@heroicons/react/24/outline'
-import { ReactNode, useState } from 'react'
+import { ReactNode, useRef, useState } from 'react'
 import {
   Button,
   Label,
@@ -41,6 +41,18 @@ export default function MultiSelect({
   placeholder,
 }: Props) {
   const [value, setValue] = useState(defaultValue)
+  const ref = useRef<HTMLDivElement>(null)
+  // In the list's order rather than the order they were picked
+  const selectedOptions = options.filter((option) =>
+    value.includes(option.value),
+  )
+
+  // Options are picked in a popover outside the form, so the form hears of
+  // the change from the field instead, like it would from an input
+  function change(nextValue: string[]) {
+    setValue(nextValue)
+    ref.current?.dispatchEvent(new Event('change', { bubbles: true }))
+  }
 
   return (
     <>
@@ -52,30 +64,28 @@ export default function MultiSelect({
       <Select
         selectionMode='multiple'
         value={value}
-        onChange={(keys) => setValue(keys.map(String))}
+        onChange={(keys) => change(keys.map(String))}
         placeholder={placeholder}
         className='input-wrapper'
+        ref={ref}
       >
         <Button className='peer input input--select flex min-h-10 min-w-0 flex-wrap items-center text-left'>
           <SelectValue className='flex min-w-0 flex-wrap gap-1.5'>
             {({ isPlaceholder }) =>
-              isPlaceholder ? (
+              isPlaceholder || selectedOptions.length === 0 ? (
                 <span className='text-neutral-400'>{placeholder}</span>
               ) : (
-                // In the list's order rather than the order they were picked
-                options
-                  .filter((option) => value.includes(option.value))
-                  .map((option) => (
-                    <span
-                      key={option.value}
-                      className='icon-stat-wrapper text-sm'
-                    >
-                      {option.icon && (
-                        <span className='option-icon'>{option.icon}</span>
-                      )}
-                      <span className='truncate'>{option.label}</span>
-                    </span>
-                  ))
+                selectedOptions.map((option) => (
+                  <span
+                    key={option.value}
+                    className='icon-stat-wrapper text-sm'
+                  >
+                    {option.icon && (
+                      <span className='option-icon'>{option.icon}</span>
+                    )}
+                    <span className='truncate'>{option.label}</span>
+                  </span>
+                ))
               )
             }
           </SelectValue>
@@ -92,7 +102,7 @@ export default function MultiSelect({
           <SelectionActions
             options={options.map((option) => option.value)}
             value={value}
-            onChange={setValue}
+            onChange={change}
             className='mb-1.5 shrink-0 justify-end border-b border-white/10 pb-1.5'
           />
           <ListBox

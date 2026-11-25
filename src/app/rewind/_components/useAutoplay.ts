@@ -1,3 +1,4 @@
+import { AutoplaySpeed } from '@/utils/constants'
 import { useMotionValue } from 'motion/react'
 import { RefObject, useEffect, useRef } from 'react'
 import { getStatementDuration, StatementContent } from './autoplay'
@@ -10,6 +11,7 @@ type Options = {
   isStoryEnd: boolean
   // The clock stops where it is while this is off
   isRunning: boolean
+  speed: AutoplaySpeed
   // How much of the story's progress bar is filled before the statement, and
   // with it
   from: number
@@ -89,6 +91,7 @@ export default function useAutoplay({
   step,
   isStoryEnd,
   isRunning,
+  speed,
   from,
   to,
   onEnd,
@@ -100,6 +103,29 @@ export default function useAutoplay({
   useEffect(() => {
     onEndRef.current = onEnd
   }, [onEnd])
+
+  useEffect(() => {
+    const slide = slideRef.current
+
+    if (!slide || step <= 0) {
+      return
+    }
+
+    // A phone's screen can be shorter than a story, and the statements
+    // after the first can come in below it. A countdown's next place comes
+    // in at the top of its list, which its story starts with.
+    const statements = slide.querySelectorAll(`[data-story-step="${step}"]`)
+    const latest = statements[statements.length - 1]
+    const behavior = window.matchMedia(REDUCED_MOTION_QUERY).matches
+      ? 'auto'
+      : 'smooth'
+
+    if (latest) {
+      latest.scrollIntoView({ block: 'nearest', behavior })
+    } else {
+      slide.scrollTo({ top: 0, behavior })
+    }
+  }, [slideRef, storyIndex, step])
 
   useEffect(() => {
     const key = `${storyIndex}:${step}`
@@ -116,28 +142,12 @@ export default function useAutoplay({
       const statements = slide.querySelectorAll(`[data-story-step="${step}"]`)
 
       timer.content = statements.length ? measure(statements) : null
-
-      // A phone's screen can be shorter than a story, and the statements
-      // after the first can come in below it. A countdown's next place comes
-      // in at the top of its list, which its story starts with.
-      if (step > 0) {
-        const latest = statements[statements.length - 1]
-        const behavior = window.matchMedia(REDUCED_MOTION_QUERY).matches
-          ? 'auto'
-          : 'smooth'
-
-        if (latest) {
-          latest.scrollIntoView({ block: 'nearest', behavior })
-        } else {
-          slide.scrollTo({ top: 0, behavior })
-        }
-      }
     }
 
     const duration =
       timer.content === undefined
         ? null
-        : getStatementDuration(timer.content, isStoryEnd)
+        : getStatementDuration(timer.content, isStoryEnd, speed)
 
     function update() {
       const share = duration ? Math.min(timer.elapsed / duration, 1) : 0
@@ -169,7 +179,17 @@ export default function useAutoplay({
     })
 
     return () => cancelAnimationFrame(frame)
-  }, [slideRef, storyIndex, step, isStoryEnd, isRunning, from, to, progress])
+  }, [
+    slideRef,
+    storyIndex,
+    step,
+    isStoryEnd,
+    isRunning,
+    speed,
+    from,
+    to,
+    progress,
+  ])
 
   return progress
 }

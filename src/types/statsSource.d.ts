@@ -241,8 +241,8 @@ export type Genres = {
 export type TopItemsSort = 'duration' | 'plays' | 'users'
 
 export type TopItemsQuery = {
-  // In days
-  period: number
+  // ISO 8601
+  since: string
   userId?: string
   // Watch time when left out
   sortBy?: TopItemsSort
@@ -315,6 +315,11 @@ export type StatsSource = {
   // In seconds. Excluded users are left out unless the query is for one user.
   getTotalDuration: (query: DurationQuery) => Promise<number>
   getTopItems: (library: Library, query: TopItemsQuery) => Promise<TopItems>
+  // How many of the library's movies, episodes or tracks the user played
+  getPlayedCount: (
+    library: Library,
+    query: PlayPeriod & { userId: string },
+  ) => Promise<number>
   // Ranked by watch time with each user's play counts, without excluded users
   getTopUsers: (query: TopUsersQuery) => Promise<ItemRow[] | null>
   // A user with no plays in the period
@@ -355,7 +360,12 @@ export type StatsSource = {
   // a user, the row counts every play of it the user has, up to `until` when
   // given, which waits for the whole history to be read. Without one, only
   // this play.
-  getPlayItem: (play: Play, userId?: string, until?: string) => Promise<ItemRow>
+  getPlayItem: (
+    play: Play,
+    userId?: string,
+    until?: string,
+    libraries?: Library[],
+  ) => Promise<ItemRow>
   // Every play in the query's period, the newest first, without excluded users
   // unless the query is for one user
   getHistoryPlays: (query: DurationQuery) => Promise<HistoryPlay[]>

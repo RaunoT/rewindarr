@@ -1,24 +1,24 @@
+import { formatClockTime, formatDateTime } from '@/utils/formatting'
 import { useLocale } from 'next-intl'
 
 type Props = {
   time: Date
+  timeZone?: string
 }
 
 // The time, as the list's headings have the day. The full date is on hover.
-// In the Rewindarr server's timezone, like the headings.
-export default function HistoryTime({ time }: Props) {
+// In the viewer's timezone like the headings, or the Rewindarr server's without
+// one.
+export default function HistoryTime({ time, timeZone }: Props) {
   const locale = useLocale()
 
   return (
     <time
       dateTime={time.toISOString()}
-      title={new Intl.DateTimeFormat(locale, {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-      }).format(time)}
+      title={formatDateTime(time, locale, timeZone)}
       className='whitespace-nowrap'
     >
-      {new Intl.DateTimeFormat(locale, { timeStyle: 'short' }).format(time)}
+      {formatClockTime(time, locale, timeZone)}
     </time>
   )
 }

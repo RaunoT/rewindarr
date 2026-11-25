@@ -6,6 +6,8 @@ services:
     restart: unless-stopped
     ports:
       - 3000:8383
-    env_file: '.env.local'
+    env_file:
+      - path: .env.local
+        required: false
     volumes:
       - ./config:/app/config

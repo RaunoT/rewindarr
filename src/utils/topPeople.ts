@@ -161,7 +161,8 @@ export async function mapWithLimit<T, R>(
   return results
 }
 
-// People match by name, as Tautulli only gives names. Ties go to the higher
+// People match by name, as Tautulli only gives names. They rank by the time
+// spent on their titles, then by how many there are. Ties go to the higher
 // billed, so a cast that's always together is led by its lead.
 export function rankPeople(
   titles: CreditedTitle[],
@@ -209,8 +210,8 @@ export function rankPeople(
     }))
     .sort(
       (a, b) =>
-        b.titles.length - a.titles.length ||
         b.duration - a.duration ||
+        b.titles.length - a.titles.length ||
         a.billing - b.billing,
     )
   const shown: ((typeof ranked)[number] & { together: string[] })[] = []

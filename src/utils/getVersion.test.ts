@@ -28,13 +28,11 @@ describe('compareVersions', () => {
 })
 
 describe('getVersion', () => {
-  const releases = [
-    { tag_name: 'v5.3.0-develop.1', draft: false, prerelease: true },
-    { tag_name: 'v5.2.0', draft: true, prerelease: false },
-    { tag_name: 'v5.1.0', draft: false, prerelease: false },
-  ]
+  const latestRelease = { tag_name: 'v5.1.0', draft: false, prerelease: false }
 
   beforeEach(() => {
+    delete (globalThis as { rewindarrVersionCache?: unknown })
+      .rewindarrVersionCache
     clock += 24 * 60 * 60 * 1000
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(clock)
@@ -51,11 +49,15 @@ describe('getVersion', () => {
     fetchMock.mockReset()
   })
 
-  it('finds the latest stable release', async () => {
-    fetchMock.mockResolvedValue(Response.json(releases))
+  it('finds the latest stable release via /releases/latest', async () => {
+    fetchMock.mockResolvedValue(Response.json(latestRelease))
 
     const version = await getVersion()
 
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.github.com/repos/RaunoT/rewindarr/releases/latest',
+      expect.any(Object),
+    )
     expect(version).toMatchObject({
       currentVersion: 'v5.0.0',
       latestVersion: 'v5.1.0',
@@ -75,6 +77,10 @@ describe('getVersion', () => {
 
     const version = await getVersion()
 
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.github.com/repos/RaunoT/rewindarr/releases?per_page=100',
+      expect.any(Object),
+    )
     expect(version).toMatchObject({
       currentVersion: 'v5.3.0-develop.10',
       latestVersion: 'v5.3.0-develop.18',
@@ -92,7 +98,7 @@ describe('getVersion', () => {
   })
 
   it('passes a timeout signal', async () => {
-    fetchMock.mockResolvedValue(Response.json(releases))
+    fetchMock.mockResolvedValue(Response.json(latestRelease))
 
     await getVersion()
 
@@ -104,7 +110,10 @@ describe('getVersion', () => {
       'a rate limit',
       () => Response.json({ message: 'rate limit' }, { status: 403 }),
     ],
-    ['an object body', () => Response.json({ message: 'unexpected' })],
+    [
+      'an unexpected object body',
+      () => Response.json({ message: 'unexpected' }),
+    ],
     ['a non-JSON body', () => new Response('<html></html>')],
   ])('keeps the current version after %s', async (_name, respond) => {
     fetchMock.mockResolvedValue(respond())
@@ -118,25 +127,45 @@ describe('getVersion', () => {
     })
   })
 
-  it('ignores releases without a tag name', async () => {
-    fetchMock.mockResolvedValue(
-      Response.json([{ draft: false, prerelease: false }, ...releases]),
-    )
-
-    const version = await getVersion()
-
-    expect(version.latestVersion).toBe('v5.1.0')
-  })
-
-  it('waits 15 minutes before checking again after a failed response', async () => {
-    fetchMock.mockImplementation(async () =>
-      Response.json({ message: 'rate limit' }, { status: 403 }),
-    )
+  it('backs off after an unexpected 200 object body instead of refetching immediately', async () => {
+    fetchMock.mockResolvedValue(Response.json({ message: 'unexpected' }))
 
     await getVersion()
     await getVersion()
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('ignores releases without a tag name', async () => {
+    vi.stubEnv('NEXT_PUBLIC_VERSION_TAG', '5.0.0-develop.1')
+    fetchMock.mockResolvedValue(
+      Response.json([
+        { draft: false, prerelease: true },
+        { tag_name: 'v5.0.0-develop.2', draft: false, prerelease: true },
+      ]),
+    )
+
+    const version = await getVersion()
+
+    expect(version.latestVersion).toBe('v5.0.0-develop.2')
+  })
+
+  it('waits 15 minutes before checking again after a failed response', async () => {
+    const cancel = vi.fn(async () => {})
+
+    fetchMock.mockImplementation(async () => {
+      const res = Response.json({ message: 'rate limit' }, { status: 403 })
+
+      Object.defineProperty(res, 'body', { value: { cancel } })
+
+      return res
+    })
+
+    await getVersion()
+    await getVersion()
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(cancel).toHaveBeenCalledTimes(1)
 
     vi.setSystemTime(clock + 16 * 60 * 1000)
     await getVersion()
@@ -150,5 +179,34 @@ describe('getVersion', () => {
     const version = await getVersion()
 
     expect(version.hasUpdate).toBe(false)
+  })
+
+  it('returns without blocking when wait is false and refreshes in the background', async () => {
+    let resolveFetch: (response: Response) => void = () => {}
+
+    fetchMock.mockReturnValue(
+      new Promise<Response>((resolve) => {
+        resolveFetch = resolve
+      }),
+    )
+
+    const immediate = await getVersion({ wait: false })
+
+    expect(immediate).toMatchObject({
+      currentVersion: 'v5.0.0',
+      latestVersion: 'v5.0.0',
+      hasUpdate: false,
+    })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+
+    resolveFetch(Response.json(latestRelease))
+
+    await vi.waitFor(async () => {
+      expect(await getVersion({ wait: false })).toMatchObject({
+        latestVersion: 'v5.1.0',
+        hasUpdate: true,
+      })
+    })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 })

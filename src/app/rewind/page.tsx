@@ -61,7 +61,9 @@ import {
   getPersonalitySignals,
   getPlaySignals,
 } from '@/utils/rewindPersonality'
+import { isRewindShareKey } from '@/utils/rewindShare'
 import { getTopPercent } from '@/utils/rewindTotal'
+import { getRewindUserName } from '@/utils/rewindUser'
 import {
   getActiveUsers,
   getHistoryProgress,
@@ -69,9 +71,10 @@ import {
   getLibraries,
   getMediaServer,
   getStatsSource,
+  getUsers,
 } from '@/utils/statsSource'
-import { toTimeZone } from '@/utils/timeZone'
-import { getTitleMoments } from '@/utils/titleMoments'
+import { toDateKey, toTimeZone } from '@/utils/timeZone'
+import { getTitleMoments, getTopHeadlines } from '@/utils/titleMoments'
 import { getYearOverYear } from '@/utils/yearOverYear'
 import { sumBy } from 'lodash'
 import { Metadata } from 'next'
@@ -96,37 +99,48 @@ export async function generateMetadata(): Promise<Metadata> {
 
 async function RewindContent({
   userId,
+  shareKey,
   year,
 }: {
   userId?: string
+  shareKey?: string
   year?: string
 }) {
   const session = await getServerSession(authOptions)
   const settings = getSettings()
+  // A user's shared link opens their Rewind for anyone, signed in or not
+  const isShared = isRewindShareKey(settings, userId, shareKey)
 
-  if (!canViewFeature(settings, 'rewind', getViewer(session))) {
+  if (!isShared && !canViewFeature(settings, 'rewind', getViewer(session))) {
     return notFound()
   }
 
-  let user: RewindUser | undefined = session?.user && {
-    id: session.user.id,
-    name: session.user.name ?? '',
-    image: session.user.image,
-    isAdmin: session.user.isAdmin,
-  }
+  let user: RewindUser | undefined
 
-  // Only admins can open another user's rewind.
-  if (session?.user.isAdmin && userId) {
+  // Only admins can open another user's rewind, or a link the admin shared
+  if ((session?.user.isAdmin || isShared) && userId) {
     const users = await getActiveUsers(settings)
     const queriedUser = users.find((u) => String(u.user_id) === userId)
 
     if (queriedUser) {
       user = {
         image: queriedUser.thumb,
-        name: queriedUser.friendly_name,
+        name: getRewindUserName(queriedUser),
         id: userId,
         isAdmin: false,
       }
+    } else if (isShared) {
+      // Not whoever happens to be signed in
+      return notFound()
+    }
+  }
+
+  if (!user && session?.user) {
+    user = {
+      id: session.user.id,
+      name: await getOwnName(session.user.id, session.user.name ?? ''),
+      image: session.user.image,
+      isAdmin: session.user.isAdmin,
     }
   }
 
@@ -160,7 +174,12 @@ async function RewindContent({
   const rewind = getRewind(user, libraries, period, timeZone, {
     viewersRequest,
     totals,
-    isOthersHidden: !!getOwnOnlyUserId(settings, 'dashboard', session),
+    // A shared Rewind leaves them out as it would for the user, whoever
+    // opens it
+    isOthersHidden:
+      isShared && !session?.user.isAdmin
+        ? settings.dashboard.isOwnOnly
+        : !!getOwnOnlyUserId(settings, 'dashboard', session),
   })
 
   return (
@@ -173,6 +192,24 @@ async function RewindContent({
       rewind={rewind}
     />
   )
+}
+
+// As the user picker names them. Excluded users are looked up too, as they
+// still see their own Rewind, and the account's name stands in when the source
+// can't be read.
+async function getOwnName(userId: string, accountName: string) {
+  try {
+    const users = await getUsers()
+
+    return getRewindUserName(
+      users.find((u) => String(u.user_id) === userId),
+      accountName,
+    )
+  } catch (error) {
+    console.error("[REWIND] - Error reading the user's name!", error)
+
+    return accountName
+  }
 }
 
 // The total story's, which only need the plays, so they're in long before the
@@ -342,6 +379,7 @@ async function getRewind(
         firstPlay.play,
         hasFirstPlayTotals ? user.id : undefined,
         until,
+        libraries,
       )
     : null
   // The viewer's plays in the period, and all of them up to its end once the
@@ -358,7 +396,12 @@ async function getRewind(
         })
       : null,
   ])
-  const titleMoments = await getTitleMoments(plays, allPlays, until)
+  const titleMoments = await getTitleMoments(
+    plays,
+    allPlays,
+    until,
+    getTopHeadlines(topMediaItems, settings.rewind.hiddenStories, !!topTrack),
+  )
   const yearOverYear = await getYearOverYear(allPlays, period, timeZone, {
     shows: topMediaItems.shows[0],
     movies: topMediaItems.movies[0],
@@ -396,13 +439,23 @@ async function getRewind(
     user: user,
     period,
   }
+  const asOf = Math.min(Date.now(), until ? Date.parse(until) : Infinity)
+  const personalityYear =
+    period.year ??
+    Number(
+      toDateKey(
+        until ? Math.min(Date.now(), Date.parse(until) - 1) : Date.now(),
+        timeZone,
+      ).slice(0, 4),
+    )
 
   // Read from the stats above, once they're all in
   userRewind.personality = getPersonality(
     getPersonalitySignals(
       userRewind,
-      getPlaySignals(plays, settings.general.minPlayPercent),
+      getPlaySignals(plays, settings.general.minPlayPercent, asOf),
     ),
+    personalityYear,
   )
 
   const isSeerrActive =
@@ -540,17 +593,19 @@ async function getRewind(
 type Props = {
   searchParams: Promise<{
     userId?: string
+    // Signs a shared link to the user's Rewind
+    key?: string
     // A calendar year's edition, the latest without one
     year?: string
   }>
 }
 
 export default async function RewindPage({ searchParams }: Props) {
-  const { userId, year } = await searchParams
+  const { userId, key, year } = await searchParams
 
   return (
-    <Suspense fallback={<Loading />} key={`${userId}|${year}`}>
-      <RewindContent userId={userId} year={year} />
+    <Suspense fallback={<Loading />} key={`${userId}|${key}|${year}`}>
+      <RewindContent userId={userId} shareKey={key} year={year} />
     </Suspense>
   )
 }

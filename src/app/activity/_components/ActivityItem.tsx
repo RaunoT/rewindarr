@@ -25,7 +25,6 @@ import {
 import { ArrowRightIcon } from '@heroicons/react/16/solid'
 import { ChevronDownIcon, DeviceTabletIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
-import { capitalize, toUpper } from 'lodash'
 import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { ReactNode, useContext, useId, useState } from 'react'
@@ -291,18 +290,22 @@ export default function ActivityItem({
           </Detail>
           {isAdmin && !settings.general.isAnonymized && location && (
             <Detail label={t('location')}>
-              {`${toUpper(location)} · `}
-              {location === 'wan' ? (
-                <a
-                  href={`https://ipinfo.io/${ip_address_public}`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='underline decoration-white/30 underline-offset-2 transition-colors hover:decoration-white'
-                >
-                  {ip_address_public}
-                </a>
+              {location === 'wan' && ip_address_public ? (
+                <>
+                  {`${toUpper(location)} · `}
+                  <a
+                    href={`https://ipinfo.io/${encodeURIComponent(ip_address_public)}`}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='underline decoration-white/30 underline-offset-2 transition-colors hover:decoration-white'
+                  >
+                    {ip_address_public}
+                  </a>
+                </>
+              ) : ip_address ? (
+                `${toUpper(location)} · ${ip_address}`
               ) : (
-                ip_address
+                toUpper(location)
               )}
             </Detail>
           )}
@@ -331,6 +334,7 @@ export default function ActivityItem({
         avatar: session.user_thumb,
         isAnonymous,
       }}
+      isUserFirst
       stats={
         <>
           {device && (
@@ -383,6 +387,14 @@ export default function ActivityItem({
 
 function isPresent(value?: number | string | null): value is number | string {
   return value != null && value !== ''
+}
+
+function capitalize(value?: string): string {
+  return value ? `${value[0].toUpperCase()}${value.slice(1).toLowerCase()}` : ''
+}
+
+function toUpper(value?: string): string {
+  return value ? value.toUpperCase() : ''
 }
 
 // Tautulli sends 0 or 1, Tracearr a boolean

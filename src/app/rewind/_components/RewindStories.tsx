@@ -139,7 +139,11 @@ export default function RewindStories({
   return (
     <>
       {settings.rewind.isSnowActive && <Snow />}
-      <Stories stories={stories} />
+      <Stories
+        stories={stories}
+        isAutoplayDefault={settings.rewind.isAutoplayActive}
+        autoplaySpeed={settings.rewind.autoplaySpeed}
+      />
     </>
   )
 }

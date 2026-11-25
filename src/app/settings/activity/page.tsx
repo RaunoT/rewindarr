@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ActivitySettingsPage() {
-  await requireSettingsAccess()
+  await requireSettingsAccess('activity')
 
   const settings = getSettings()
 

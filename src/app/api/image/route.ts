@@ -31,14 +31,20 @@ async function fetchImage(
       return { response, url: currentUrl }
     }
 
-    const nextUrl = new URL(location, currentUrl).toString()
+    const parsedUrl = URL.parse(location, currentUrl)
 
     await response.body?.cancel()
+
+    if (!parsedUrl) {
+      return null
+    }
+
+    const nextUrl = parsedUrl.toString()
 
     if (!isAllowedRedirect(nextUrl, currentUrl, settings)) {
       // Only the host: the first request's URL carries Tautulli's API key.
       console.warn(
-        `[IMAGE PROXY] - Not following a redirect to ${new URL(nextUrl).host}.`,
+        `[IMAGE PROXY] - Not following a redirect to ${parsedUrl.host}.`,
       )
 
       return null
@@ -111,6 +117,8 @@ export async function GET(request: Request) {
 
     // The app draws its own initials for these, so it's treated as no picture
     if (PLEX_DEFAULT_AVATAR.test(url)) {
+      await response.body?.cancel()
+
       return new Response('[IMAGE PROXY] - No picture set', { status: 404 })
     }
 
@@ -120,6 +128,8 @@ export async function GET(request: Request) {
       !contentType.startsWith('image/') ||
       contentLength > MAX_IMAGE_BYTES
     ) {
+      await response.body?.cancel()
+
       return new Response('[IMAGE PROXY] - Failed to fetch the image', {
         status: response.ok ? 502 : response.status,
       })

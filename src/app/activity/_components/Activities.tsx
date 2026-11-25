@@ -9,6 +9,7 @@ import { MediaServer } from '@/types/statsSource'
 import { APP_NAME } from '@/utils/constants'
 import { ExclamationTriangleIcon, MoonIcon } from '@heroicons/react/24/outline'
 import { useQuery } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useEffect } from 'react'
 import getActivity from '../_actions/getActivity'
@@ -23,22 +24,34 @@ type Props = {
 export default function Activities({ settings, mediaServer }: Props) {
   const t = useTranslations('Activity')
   const errorT = useTranslations('Error')
+  const { data: session } = useSession()
+  const userId = session?.user.id ?? null
+  const isAdmin = !!session?.user.isAdmin
   const { data, error, isLoading, refetch } = useQuery({
     // A change to who sees which streams doesn't show the old ones meanwhile
-    queryKey: ['activity', settings.activity],
+    queryKey: [
+      'activity',
+      settings.activity,
+      settings.general.isAnonymized,
+      userId,
+    ],
     queryFn: getActivity,
     refetchInterval: 5000,
     refetchIntervalInBackground: false,
   })
 
   useEffect(() => {
+    if (data === undefined) {
+      return
+    }
+
     const baseTitle = settings.general.serverName || APP_NAME
     const streamCount = data?.stream_count ?? 0
     const title =
       streamCount > 0 ? `(${streamCount}) ${t('title')}` : t('title')
 
     document.title = `${title} | ${baseTitle}`
-  }, [data?.stream_count, settings.general.serverName, t])
+  }, [data, settings.general.serverName, t])
 
   if (isLoading) {
     return (
@@ -70,6 +83,7 @@ export default function Activities({ settings, mediaServer }: Props) {
           // The server answered, but got nothing from the source
           <SourceUnreachable
             source={settings.connection.statisticsSource}
+            isAdmin={isAdmin}
             onRetry={refetch}
             isInCard
           />

@@ -29,12 +29,23 @@ jobs:
           for package in rewindarr plex-rewind; do
             count=$(curl -fsSL "https://github.com/RaunoT/rewindarr/pkgs/container/$package" \
               | grep -A2 'Total downloads' | sed -n 's/.*title="\([0-9][0-9]*\)".*/\1/p')
-            : "${count:?No download count found for ghcr.io/raunot/$package}"
+            case "$count" in
+              ''|*[!0-9]*)
+                echo "Invalid download count for ghcr.io/raunot/$package: '$count'" >&2
+                exit 1
+                ;;
+            esac
             total=$((total + count))
           done
 
           for repo in rewindarr plex-rewind; do
-            count=$(curl -fsSL "https://hub.docker.com/v2/repositories/raunoot/$repo/" | jq -r .pull_count)
+            count=$(curl -fsSL "https://hub.docker.com/v2/repositories/raunoot/$repo/" | jq -r '.pull_count // empty')
+            case "$count" in
+              ''|*[!0-9]*)
+                echo "Invalid pull count for docker.io/raunoot/$repo: '$count'" >&2
+                exit 1
+                ;;
+            esac
             total=$((total + count))
           done
 

@@ -41,6 +41,18 @@ type Props = {
   onChange?: (value: CalendarDate | null) => void
 }
 
+function parseCalendarDate(value?: string): CalendarDate | null {
+  if (!value) {
+    return null
+  }
+
+  try {
+    return parseDate(value)
+  } catch {
+    return null
+  }
+}
+
 export default function DatePicker({
   label,
   helperText,
@@ -51,21 +63,23 @@ export default function DatePicker({
   onChange,
 }: Props) {
   const [isOpen, setIsOpen] = useState<boolean>(false)
-  const [value, setValue] = useState<CalendarDate | null>(
-    defaultValue ? parseDate(defaultValue) : null,
+  const [value, setValue] = useState<CalendarDate | null>(() =>
+    parseCalendarDate(defaultValue),
   )
   const locale = useLocale()
   const t = useTranslations('DatePicker')
+
+  function handleChange(newValue: CalendarDate | null) {
+    setValue(newValue)
+    onChange?.(newValue)
+  }
 
   return (
     <I18nProvider locale={locale === 'en' ? 'en-GB' : locale}>
       <AriaDatePicker
         value={value}
         isOpen={isOpen}
-        onChange={(newValue) => {
-          setValue(newValue)
-          onChange?.(newValue)
-        }}
+        onChange={handleChange}
         onOpenChange={setIsOpen}
         className='input-wrapper'
         name={name}
@@ -97,7 +111,7 @@ export default function DatePicker({
             {value && (
               <Button
                 slot={null}
-                onPress={() => setValue(null)}
+                onPress={() => handleChange(null)}
                 aria-label={t('clear')}
                 className='focus-visible:focus-ring absolute inset-y-0 right-14 my-auto size-6 rounded-full text-neutral-300 transition-colors after:absolute after:-inset-2 hover:text-white'
               >

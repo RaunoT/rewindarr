@@ -88,6 +88,23 @@ describe('GET /api/image', () => {
     )
   })
 
+  it('follows plex.tv to an uploaded avatar', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        redirect(
+          'https://assets.plex.tv/avatars/0123456789abcdef0123456789abcdef01234567.?1700000000',
+        ),
+      )
+      .mockResolvedValueOnce(image())
+
+    const res = await GET(
+      request({ url: 'https://plex.tv/users/abc/avatar?c=1' }),
+    )
+
+    expect(res.status).toBe(200)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
   it("follows Tautulli's own redirect to HTTPS", async () => {
     fetchMock
       .mockResolvedValueOnce(redirect('https://tautulli:8181/api/v2?x=1'))
@@ -119,6 +136,35 @@ describe('GET /api/image', () => {
     const res = await GET(request({ url: 'https://plex.tv/users/abc/avatar' }))
 
     expect(res.status).toBe(404)
+  })
+
+  it('returns 400 without backing off on a malformed redirect Location header', async () => {
+    const cancel = vi.fn(async () => {})
+    const badRedirect = redirect('http://[invalid')
+
+    Object.defineProperty(badRedirect, 'body', { value: { cancel } })
+    fetchMock.mockResolvedValueOnce(badRedirect)
+
+    const res = await GET(request({ url: 'https://plex.tv/users/abc/avatar' }))
+
+    expect(res.status).toBe(400)
+    expect(cancel).toHaveBeenCalledTimes(1)
+    expect(isHostDown('https://plex.tv (images)')).toBe(false)
+  })
+
+  it('cancels the upstream body on non-OK and rejected responses', async () => {
+    const cancel = vi.fn(async () => {})
+    const html = new Response('<html>', {
+      headers: { 'content-type': 'text/html' },
+    })
+
+    Object.defineProperty(html, 'body', { value: { cancel } })
+    fetchMock.mockResolvedValueOnce(html)
+
+    expect(
+      (await GET(request({ img: '/library/metadata/1/thumb' }))).status,
+    ).toBe(502)
+    expect(cancel).toHaveBeenCalledTimes(1)
   })
 
   it('refuses responses that are not images or are too large', async () => {

@@ -10,6 +10,10 @@ import { getTautulliHistoryReaders, toTautulliPlay } from './tautulliHistory'
 
 vi.mock('./fetchTautulli', () => ({ default: vi.fn() }))
 vi.mock('./getSettings', () => ({ default: vi.fn() }))
+vi.mock('./sourceSnapshot', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./sourceSnapshot')>()),
+  dropStaleSnapshots: vi.fn(),
+}))
 
 const fetchMock = vi.mocked(fetchTautulli)
 const started = Date.parse('2026-10-01T20:00:00Z') / 1000
@@ -57,6 +61,9 @@ function historyResponse(rows: TautulliHistoryRow[], total = rows.length) {
 }
 
 beforeEach(() => {
+  delete (globalThis as { rewindarrTautulliFirstPlays?: unknown })
+    .rewindarrTautulliFirstPlays
+
   const settings: Settings = cloneDeep(DEFAULT_SETTINGS)
 
   settings.connection.tautulliUrl = 'http://tautulli:8181'
@@ -186,6 +193,31 @@ describe('toTautulliPlay', () => {
   it('leaves out other media types', () => {
     expect(toTautulliPlay(row({ media_type: 'clip' }))).toBeNull()
   })
+
+  it('leaves out rows with non-finite, null or zero start timestamps and sanitizes numbers', () => {
+    for (const started of [
+      Number.NaN,
+      null as unknown as number,
+      undefined as unknown as number,
+      0,
+    ]) {
+      expect(toTautulliPlay(row({ started }))).toBeNull()
+    }
+
+    expect(
+      toTautulliPlay(
+        row({
+          date: null as unknown as number,
+          play_duration: -10,
+          percent_complete: Number.NaN,
+        }),
+      ),
+    ).toMatchObject({
+      startedAt: started * 1000,
+      durationMs: 0,
+      percentComplete: null,
+    })
+  })
 })
 
 describe('getTautulliHistoryReaders', () => {
@@ -259,5 +291,33 @@ describe('getTautulliHistoryReaders', () => {
       'get_history',
       expect.objectContaining({ section_id: '7', order_dir: 'asc', length: 1 }),
     )
+  })
+
+  it('keeps the first-play cache separate per Tautulli URL', async () => {
+    fetchMock
+      .mockResolvedValueOnce(historyResponse([row({ started: 1262304000 })]))
+      .mockResolvedValueOnce(historyResponse([row({ started: 1577836800 })]))
+
+    const [firstServerReader] = getTautulliHistoryReaders([
+      library('7', 'movie'),
+    ])
+
+    await expect(firstServerReader.getFirstPlayAt()).resolves.toBe(
+      1262304000 * 1000,
+    )
+
+    const otherSettings = cloneDeep(DEFAULT_SETTINGS)
+
+    otherSettings.connection.tautulliUrl = 'http://other-tautulli:8181'
+    vi.mocked(getSettings).mockReturnValue(otherSettings)
+
+    const [secondServerReader] = getTautulliHistoryReaders([
+      library('7', 'movie'),
+    ])
+
+    await expect(secondServerReader.getFirstPlayAt()).resolves.toBe(
+      1577836800 * 1000,
+    )
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 })

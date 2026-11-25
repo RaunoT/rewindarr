@@ -16,11 +16,23 @@ type Props = {
   settings: PublicSettings
   missingSetting: string | null
   siteUrl?: string
+  // What a signed-in viewer can open: a Rewind, and its year while it's new,
+  // or the other pages
+  hasRewind: boolean
+  hasStats: boolean
+  newRewindYear: number | null
 }
 
 // Shown until there's something to browse: before logging in, or while an
 // admin still has to finish the setup
-export default function Home({ settings, missingSetting, siteUrl }: Props) {
+export default function Home({
+  settings,
+  missingSetting,
+  siteUrl,
+  hasRewind,
+  hasStats,
+  newRewindYear,
+}: Props) {
   const { isLoading, error, handleLogin } = usePlexAuth(siteUrl)
   const { data: session, status } = useSession()
   const isLoggedIn = status === 'authenticated'
@@ -60,9 +72,25 @@ export default function Home({ settings, missingSetting, siteUrl }: Props) {
           </p>
         </>
       ) : (
-        <h1 className='animate-fade-up animation-delay-300 mb-4 max-w-full text-[2.5rem] leading-none font-bold tracking-tight text-balance wrap-anywhere'>
-          {settings.general.serverName ? settings.general.serverName : APP_NAME}
-        </h1>
+        <>
+          <h1 className='animate-fade-up animation-delay-300 mb-4 max-w-full text-[2.5rem] leading-none font-bold tracking-tight text-balance wrap-anywhere'>
+            {settings.general.serverName
+              ? settings.general.serverName
+              : APP_NAME}
+          </h1>
+          {/* What signing in is for, as people often arrive from a link. The
+              Rewind tile's own words, which the sign-in leads to. Nothing
+              when signing in opens nothing. */}
+          {!isLoggedIn && (hasRewind || hasStats) && (
+            <p className='animate-fade-up animation-delay-500 mb-6 text-balance text-neutral-300'>
+              {!hasRewind
+                ? t('loginStats')
+                : newRewindYear === null
+                  ? t('rewindDescription')
+                  : t('rewindEdition', { year: String(newRewindYear) })}
+            </p>
+          )}
+        </>
       )}
 
       <div className='animate-fade-in animation-delay-700 flex w-full flex-col gap-3'>
@@ -73,6 +101,7 @@ export default function Home({ settings, missingSetting, siteUrl }: Props) {
             <button
               className='button button--plex w-full'
               onClick={handleLogin}
+              disabled={isLoading}
             >
               <LoginWithPlexLabel />
             </button>

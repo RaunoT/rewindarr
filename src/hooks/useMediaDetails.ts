@@ -28,31 +28,35 @@ export function useMediaDetails(
   const isVideo = media_type === 'episode' || media_type === 'movie'
   const isTmdbPoster =
     isVideo && (settings.general.isPostersTmdbOnly || !originalPoster)
+  const queryKey =
+    media_type === 'episode'
+      ? [
+          'media-details',
+          'tv',
+          grandparent_title,
+          grandparent_guids ?? [],
+          guids ?? [],
+        ]
+      : ['media-details', 'movie', title, Number(year) || null, guids ?? []]
   const { data: details, isLoading } = useQuery({
-    queryKey: ['media-details', media_type, title, grandparent_title, year],
-    queryFn: async () => {
-      try {
-        // An episode's year is its own, not the show's, so it's no help here
-        return media_type === 'episode'
-          ? await getMediaDetails({
-              type: 'tv',
-              title: grandparent_title,
-              guids: grandparent_guids,
-              episodeGuids: guids,
-            })
-          : await getMediaDetails({
-              type: 'movie',
-              title,
-              year: Number(year) || undefined,
-              guids,
-            })
-      } catch (error) {
-        console.error('Error fetching media details:', error)
-
-        return null
-      }
-    },
+    queryKey,
+    queryFn: async () =>
+      // An episode's year is its own, not the show's, so it's no help here
+      media_type === 'episode'
+        ? await getMediaDetails({
+            type: 'tv',
+            title: grandparent_title,
+            guids: grandparent_guids,
+            episodeGuids: guids,
+          })
+        : await getMediaDetails({
+            type: 'movie',
+            title,
+            year: Number(year) || undefined,
+            guids,
+          }),
     enabled: isVideo,
+    retry: 1,
     staleTime: 1000 * 60 * 60, // 1 hour
   })
 

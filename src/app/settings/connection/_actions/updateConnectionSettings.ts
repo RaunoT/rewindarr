@@ -5,16 +5,17 @@ import {
   ConnectionSettings,
   GeneralSettings,
   SettingsFormInitialState,
-  StatisticsSource,
 } from '@/types/settings'
-import { TracearrServersResponse } from '@/types/tracearr'
-import {
-  ConnectionError,
-  getFetchError,
-  getStatusError,
-  getTautulliResultError,
-} from '@/utils/connectionErrors'
+import { ConnectionError } from '@/utils/connectionErrors'
+import { readConnectionForm } from '@/utils/connectionForm'
 import { maskApiKeys, restoreApiKeys } from '@/utils/connectionSecrets'
+import {
+  testMediaServerUrl,
+  testPlexToken,
+  testSeerr,
+  testTautulli,
+  testTracearr,
+} from '@/utils/connectionTests'
 import {
   selectOtherServers,
   selectServer,
@@ -22,39 +23,40 @@ import {
 } from '@/utils/fetchTracearr'
 import getSettings from '@/utils/getSettings'
 import { getLibrarySlug } from '@/utils/helpers'
-import { isGatewayError, markHostUp } from '@/utils/hostBackoff'
-import { getIdentityPath, readServerId } from '@/utils/mediaServer'
 import { getMediaServerName, getMediaServerUrl } from '@/utils/mediaServerName'
 import { getReachableLibraries, startHistoryRead } from '@/utils/statsSource'
-import { normalizeUrl } from '@/utils/url'
 import { getTranslations } from 'next-intl/server'
 import { z } from 'zod'
 import updateSettings from '../../_actions/updateSettings'
 
+const httpUrl = z
+  .string()
+  .url()
+  .regex(/^https?:\/\//i)
 // Only the selected statistics source has to be filled in.
 const baseSchema = z.object({
-  tautulliUrl: z.string().url().or(z.literal('')),
+  tautulliUrl: httpUrl.or(z.literal('')),
   tautulliApiKey: z.string(),
-  tracearrUrl: z.string().url().or(z.literal('')),
+  tracearrUrl: httpUrl.or(z.literal('')),
   tracearrApiKey: z.string(),
   tracearrServerId: z.string(),
   tracearrOtherServerIds: z.array(z.string()),
-  seerrUrl: z.string().url().optional().or(z.literal('')),
+  seerrUrl: httpUrl.optional().or(z.literal('')),
   seerrApiKey: z.string().optional(),
   mediaServerType: z.enum(['plex', 'jellyfin']),
-  plexUrl: z.string().url().or(z.literal('')),
-  jellyfinUrl: z.string().url().or(z.literal('')),
+  plexUrl: httpUrl.or(z.literal('')),
+  jellyfinUrl: httpUrl.or(z.literal('')),
   plexToken: z.string().optional(),
   complete: z.boolean(),
 })
 const schema = z.discriminatedUnion('statisticsSource', [
   baseSchema.extend({
     statisticsSource: z.literal('tautulli'),
-    tautulliUrl: z.string().url(),
+    tautulliUrl: httpUrl,
   }),
   baseSchema.extend({
     statisticsSource: z.literal('tracearr'),
-    tracearrUrl: z.string().url(),
+    tracearrUrl: httpUrl,
     tracearrApiKey: z.string().min(1),
   }),
 ])
@@ -62,52 +64,6 @@ const schema = z.discriminatedUnion('statisticsSource', [
 const generalSchema = z.custom<GeneralSettings>(
   (value) => typeof (value as GeneralSettings)?.complete === 'boolean',
 )
-
-type TestResult =
-  | { response: Response; error?: never }
-  | { response?: never; error: ConnectionError }
-
-async function testRequest(
-  service: string,
-  baseUrl: string,
-  path: string,
-  init?: RequestInit,
-): Promise<TestResult> {
-  try {
-    const response = await fetch(`${baseUrl}${path}`, {
-      ...init,
-      cache: 'no-store',
-    })
-
-    // The service answers again, so its requests needn't wait for a check
-    if (!isGatewayError(response.status)) {
-      markHostUp(baseUrl)
-    }
-
-    return { response }
-  } catch (error) {
-    console.error(`[CONFIG] - Error testing ${service} connection!`, error)
-
-    return { error: getFetchError(error) }
-  }
-}
-
-function getResponseError(
-  service: string,
-  response: Response,
-): ConnectionError | null {
-  if (response.ok) {
-    return null
-  }
-
-  console.error(
-    `[CONFIG] - Error testing ${service} connection!`,
-    response.status,
-    response.statusText,
-  )
-
-  return getStatusError(response.status)
-}
 
 export default async function saveConnectionSettings(
   prevState: SettingsFormInitialState<ConnectionSettings>,
@@ -131,25 +87,7 @@ async function testAndSave(
     return denied
   }
 
-  const submitted = {
-    statisticsSource: formData.get('statisticsSource') as StatisticsSource,
-    tautulliUrl: normalizeUrl(formData.get('tautulliUrl') as string),
-    tautulliApiKey: formData.get('tautulliApiKey') as string,
-    tracearrUrl: normalizeUrl(formData.get('tracearrUrl') as string),
-    tracearrApiKey: formData.get('tracearrApiKey') as string,
-    tracearrServerId: (formData.get('tracearrServerId') as string | null) ?? '',
-    tracearrOtherServerIds: formData.getAll(
-      'tracearrOtherServerIds',
-    ) as string[],
-    seerrUrl: normalizeUrl(formData.get('seerrUrl') as string),
-    seerrApiKey: formData.get('seerrApiKey') as string,
-    // Tautulli only tracks Plex. Tracearr's is set from the chosen server.
-    mediaServerType: getSettings().connection.mediaServerType,
-    plexUrl: normalizeUrl(formData.get('plexUrl') as string),
-    plexToken: ((formData.get('plexToken') as string | null) ?? '').trim(),
-    jellyfinUrl: normalizeUrl(formData.get('jellyfinUrl') as string),
-    complete: true,
-  }
+  const submitted = readConnectionForm(formData)
   const t = await getTranslations('Settings')
   const { connection: data, needsKey } = restoreApiKeys(
     submitted,
@@ -172,56 +110,30 @@ async function testAndSave(
 
   try {
     if (data.statisticsSource === 'tracearr') {
-      const { response, error } = await testRequest(
-        'Tracearr',
+      const { servers, error } = await testTracearr(
         data.tracearrUrl,
-        '/api/v2/public/servers',
-        { headers: { Authorization: `Bearer ${data.tracearrApiKey}` } },
+        data.tracearrApiKey,
       )
 
       if (error) {
         return fail('Tracearr', error)
       }
 
-      const responseError = getResponseError('Tracearr', response)
-
-      if (responseError) {
-        return fail('Tracearr', responseError)
-      }
-
-      const servers: TracearrServersResponse | null = await response
-        .json()
-        .catch(() => null)
-
-      if (!Array.isArray(servers?.data)) {
-        return fail('Tracearr', getStatusError(response.status))
-      }
-
-      const serverOptions = toServerOptions(servers.data)
-
-      if (!serverOptions.length) {
-        return {
-          message: `Tracearr - ${t('noMediaServer')}`,
-          status: 'error',
-          fields: data,
-        }
-      }
-
-      const server = selectServer(servers.data, data.tracearrServerId)
+      const server = selectServer(servers, data.tracearrServerId)
 
       if (!server) {
         return {
           message: `Tracearr - ${t('chooseMediaServer')}`,
           status: 'error',
           fields: data,
-          tracearrServers: serverOptions,
+          tracearrServers: toServerOptions(servers),
         }
       }
 
       data.tracearrServerId = server.server_id
       // Without the chosen one, and any that's gone from Tracearr
       data.tracearrOtherServerIds = selectOtherServers(
-        servers.data,
+        servers,
         server,
         data.tracearrOtherServerIds,
       ).map(({ server_id }) => server_id)
@@ -230,53 +142,18 @@ async function testAndSave(
     } else {
       data.mediaServerType = 'plex'
 
-      const { response, error } = await testRequest(
-        'Tautulli',
-        data.tautulliUrl,
-        `/api/v2?apikey=${data.tautulliApiKey}&cmd=status`,
-      )
+      const error = await testTautulli(data.tautulliUrl, data.tautulliApiKey)
 
       if (error) {
         return fail('Tautulli', error)
       }
-
-      const responseError = getResponseError('Tautulli', response)
-
-      if (responseError) {
-        return fail('Tautulli', responseError)
-      }
-
-      const resultError = getTautulliResultError(
-        await response.json().catch(() => null),
-        response.status,
-      )
-
-      if (resultError) {
-        console.error(
-          '[CONFIG] - Error testing Tautulli connection!',
-          resultError.key,
-        )
-
-        return fail('Tautulli', resultError)
-      }
     }
 
-    if (data.seerrUrl && data.seerrApiKey) {
-      const { response, error } = await testRequest(
-        'Seerr',
-        data.seerrUrl,
-        '/api/v1/user',
-        { headers: { 'X-API-KEY': data.seerrApiKey } },
-      )
+    if (data.seerrUrl || data.seerrApiKey) {
+      const error = await testSeerr(data.seerrUrl ?? '', data.seerrApiKey ?? '')
 
       if (error) {
         return fail('Seerr', error)
-      }
-
-      const responseError = getResponseError('Seerr', response)
-
-      if (responseError) {
-        return fail('Seerr', responseError)
       }
     }
 
@@ -286,76 +163,24 @@ async function testAndSave(
       const serverUrl = getMediaServerUrl(data)
 
       if (data.mediaServerType === 'jellyfin' && !serverUrl) {
-        return {
-          message: `${serverName} - ${t('mediaServerUrlRequired')}`,
-          status: 'error',
-          fields: data,
-        }
+        return fail(serverName, { key: 'mediaServerUrlRequired' })
       }
 
       if (serverUrl) {
-        const { response, error } = await testRequest(
-          serverName,
-          serverUrl,
-          getIdentityPath(data.mediaServerType),
-          { headers: { Accept: 'application/json' } },
-        )
+        const error = await testMediaServerUrl(data.mediaServerType, serverUrl)
 
         if (error) {
           return fail(serverName, error)
-        }
-
-        const responseError = getResponseError(serverName, response)
-
-        if (responseError) {
-          return fail(serverName, responseError)
-        }
-
-        // Another service at the URL can answer too, but not with an ID
-        if (
-          !readServerId(
-            data.mediaServerType,
-            await response.json().catch(() => null),
-          )
-        ) {
-          return {
-            message: `${serverName} - ${t('notMediaServer', { server: serverName })}`,
-            status: 'error',
-            fields: data,
-          }
         }
       }
     }
 
     // Jellyfin keeps the token for switching back, but has no use for it
     if (data.mediaServerType === 'plex' && data.plexToken) {
-      if (!data.plexUrl) {
-        return fail('Plex', { key: 'tokenNeedsUrl' })
-      }
-
-      // A redirect isn't followed, as the token would go with it
-      const { response, error } = await testRequest(
-        'Plex',
-        data.plexUrl,
-        '/library/sections',
-        {
-          headers: { 'X-Plex-Token': data.plexToken },
-          redirect: 'manual',
-        },
-      )
+      const error = await testPlexToken(data.plexUrl, data.plexToken)
 
       if (error) {
         return fail('Plex', error)
-      }
-
-      if (response.status === 401 || response.status === 403) {
-        return fail('Plex', { key: 'invalidToken' })
-      }
-
-      const responseError = getResponseError('Plex', response)
-
-      if (responseError) {
-        return fail('Plex', responseError)
       }
     }
   } catch (error) {

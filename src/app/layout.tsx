@@ -11,11 +11,13 @@ import getVersion from '@/utils/getVersion'
 import {
   canViewFeature,
   checkRequiredSettings,
+  getFirstHeaderValue,
   getViewer,
   isRewindOnly,
   sortByActiveLibraries,
 } from '@/utils/helpers'
 import { toPublicSettings } from '@/utils/publicSettings'
+import { REWIND_SHARE_HEADER } from '@/utils/rewindShare'
 import { getReachableLibraries } from '@/utils/statsSource'
 import { SerwistProvider } from '@serwist/next/react'
 import { Metadata, Viewport } from 'next'
@@ -34,14 +36,19 @@ async function getMetadataBase(): Promise<URL | null> {
   const siteUrl = getSiteUrl()
 
   if (siteUrl) {
-    return new URL(siteUrl)
+    return URL.parse(siteUrl)
   }
 
   const requestHeaders = await headers()
   const host =
-    requestHeaders.get('x-forwarded-host') ?? requestHeaders.get('host')
+    getFirstHeaderValue(requestHeaders.get('x-forwarded-host')) ||
+    requestHeaders.get('host')?.trim()
   const protocol =
-    requestHeaders.get('x-forwarded-proto') === 'https' ? 'https' : 'http'
+    getFirstHeaderValue(
+      requestHeaders.get('x-forwarded-proto'),
+    )?.toLowerCase() === 'https'
+      ? 'https'
+      : 'http'
 
   return host ? URL.parse(`${protocol}://${host}`) : null
 }
@@ -95,13 +102,16 @@ type Props = {
 
 export default async function RootLayout({ children }: Props) {
   const settings = getSettings()
-  const version = await getVersion()
+  const version = await getVersion({ wait: false })
   const locale = await getLocale()
   const missingSetting = checkRequiredSettings(settings)
   const session = await getServerSession(authOptions)
   // Set by the proxy. Reading it also keeps every page dynamically rendered,
   // which the nonce needs: a static page would have none.
-  const nonce = (await headers()).get('x-nonce') ?? undefined
+  const requestHeaders = await headers()
+  const nonce = requestHeaders.get('x-nonce') ?? undefined
+  // Its address is the key to a user's Rewind, which analytics would keep
+  const isSharedRewind = requestHeaders.has(REWIND_SHARE_HEADER)
   const detailsCookie = (await cookies()).get(
     ACTIVITY_DETAILS_COOKIE_NAME,
   )?.value
@@ -124,7 +134,7 @@ export default async function RootLayout({ children }: Props) {
           disable={process.env.NODE_ENV === 'development'}
         >
           <NextIntlClientProvider>
-            {settings.general.googleAnalyticsId && (
+            {settings.general.googleAnalyticsId && !isSharedRewind && (
               <GoogleAnalytics
                 id={settings.general.googleAnalyticsId}
                 isSignedIn={!!session}

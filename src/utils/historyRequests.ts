@@ -37,7 +37,11 @@ export function getRequestStatus(request: SeerrRequestItem): RequestStatus {
       return 'failed'
   }
 
-  switch (request.media?.status) {
+  const mediaStatus = request.is4k
+    ? request.media?.status4k
+    : request.media?.status
+
+  switch (mediaStatus) {
     case 4:
       return 'partiallyAvailable'
     case 5:
@@ -47,11 +51,13 @@ export function getRequestStatus(request: SeerrRequestItem): RequestStatus {
   }
 }
 
-// The requests made since `since`, without the excluded users'. Null when
-// Seerr isn't set up or couldn't be asked. Requests from Seerr users who
-// aren't on the media server keep Seerr's name for them.
+// The requests made since `since`, without the excluded users' unless asked
+// for one user's own. Null when Seerr isn't set up or couldn't be asked.
+// Requests from Seerr users who aren't on the media server keep Seerr's name
+// for them.
 export async function getHistoryRequests(
   since: string,
+  onlyUserId?: string,
 ): Promise<HistoryRequest[] | null> {
   const settings = getSettings()
 
@@ -76,14 +82,20 @@ export async function getHistoryRequests(
     const mediaUserIds = getMediaUserIds(request.requestedBy)
     const userId = mediaUserIds.find((id) => usersById.has(id))
     const user = userId ? usersById.get(userId) : undefined
-    const jellyfinId = request.media?.jellyfinMediaId
+    const isOnlyUser = !!(onlyUserId && mediaUserIds.includes(onlyUserId))
+    const jellyfinId = request.is4k
+      ? request.media?.jellyfinMediaId4k
+      : request.media?.jellyfinMediaId
+    const plexRatingKey = request.is4k
+      ? request.media?.ratingKey4k
+      : request.media?.ratingKey
 
     // An excluded user stays excluded once they're no longer listed, as
-    // Tautulli leaves out inactive users
+    // Tautulli leaves out inactive users, unless they're viewing their own
     if (
       !tmdbId ||
       (request.type !== 'movie' && request.type !== 'tv') ||
-      mediaUserIds.some((id) => excludedUsers.includes(id))
+      (mediaUserIds.some((id) => excludedUsers.includes(id)) && !isOnlyUser)
     ) {
       return []
     }
@@ -103,8 +115,8 @@ export async function getHistoryRequests(
             ? jellyfinId
               ? normalizeJellyfinId(jellyfinId)
               : null
-            : request.media?.ratingKey || null,
-        userId: userId ?? '',
+            : plexRatingKey || null,
+        userId: userId ?? (isOnlyUser ? onlyUserId : ''),
         userName:
           user?.friendly_name ||
           user?.username ||

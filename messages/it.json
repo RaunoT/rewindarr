@@ -5,6 +5,7 @@
     "setupRequiredDescription": "Questa applicazione deve essere configurata da un amministratore.",
     "loginWithPlex": "Accedi con <plex>Plex</plex>",
     "loginWithJellyfin": "Accedi con <jellyfin>Jellyfin</jellyfin>",
+    "loginStats": "Scopri cosa si è guardato sul server.",
     "username": "Nome utente",
     "password": "Password",
     "loginError": {
@@ -29,7 +30,7 @@
     "rewindDescription": "I tuoi momenti migliori, una storia alla volta.",
     "rewindEdition": "Il tuo Rewind {year} è arrivato, una storia alla volta.",
     "earlierRewinds": "Anni precedenti",
-    "streams": "{count, plural, =0 {Niente in riproduzione} one {# in riproduzione} other {# in riproduzione}}",
+    "streams": "{count, plural, one {# in riproduzione} other {# in riproduzione}}",
     "mostWatched": "Il più visto",
     "mostListened": "Il più ascoltato",
     "emptyTitle": "Ancora niente da mostrare",
@@ -49,7 +50,7 @@
     "location": "Posizione",
     "bandwidth": "Banda",
     "streamDetails": "Dettagli dello stream",
-    "noActivity": "Nessuna riproduzione in corso",
+    "noActivity": "Niente in riproduzione",
     "loadError": "Impossibile caricare l'attività",
     "paused": "In pausa",
     "buffering": "In buffering",
@@ -75,7 +76,8 @@
     "general": "Di tutti",
     "personal": "Solo le mie",
     "sortByLabel": "Ordina per",
-    "sort": "Ordina"
+    "sort": "Ordina",
+    "playThreshold": "Le riproduzioni sotto il {percent, number, percent} si aggiungono al tempo ma non al numero di riproduzioni."
   },
   "DashboardNavContent": {
     "label": "Navigazione della dashboard",
@@ -103,7 +105,7 @@
     "onlyMine": "Solo le mie",
     "search": "Cerca titoli",
     "clearSearch": "Cancella ricerca",
-    "noMatches": "Nessuna riproduzione corrisponde ai filtri",
+    "noMatches": "Nessuna riproduzione corrisponde alla ricerca o ai filtri",
     "pagination": "Pagine",
     "page": "Pagina {page}",
     "pageOf": "{page} di {pageCount}",
@@ -120,7 +122,7 @@
     "kindLabel": "Tipo",
     "plays": "Riproduzioni",
     "requests": "Richieste",
-    "request": "Richiesta",
+    "requested": "Richiesta",
     "unknownTitle": "Titolo sconosciuto",
     "season": "Stagione {season}",
     "seasonCount": "{count, plural, one {# stagione} other {# stagioni}}",
@@ -145,8 +147,8 @@
     "days": "{count, plural, one {# giorno} other {# giorni}}"
   },
   "NotFound": {
-    "title": "404",
-    "cta": "Forse conviene ricominciare dall'inizio"
+    "title": "Pagina non trovata",
+    "cta": "Torna alla home"
   },
   "AppProvider": {
     "updateAvailable": "Aggiornamento disponibile",
@@ -155,10 +157,6 @@
   },
   "Sidebar": {
     "label": "Navigazione principale"
-  },
-  "Offline": {
-    "title": "Sei offline",
-    "retry": "Riprova"
   },
   "Settings": {
     "title": "Impostazioni",
@@ -169,6 +167,12 @@
     "genericError": "Qualcosa è andato storto. Riprova.",
     "save": "Salva",
     "continue": "Continua",
+    "unsavedChanges": "Modifiche non salvate",
+    "discardChanges": "Annulla",
+    "leaveTitle": "Uscire senza salvare?",
+    "leaveDescription": "Le modifiche in questa pagina non sono state salvate.",
+    "leave": "Esci",
+    "stay": "Resta",
     "setupFinished": "È tutto pronto!",
     "reenterApiKey": "Inserisci di nuovo la chiave API dopo aver cambiato l'URL.",
     "reenterToken": "Inserisci di nuovo il token dopo aver cambiato l'URL.",
@@ -176,12 +180,15 @@
     "invalidApiKey": "Chiave API non valida.",
     "invalidToken": "Token non valido.",
     "tokenNeedsUrl": "Inserisci l'URL per usare il token.",
+    "enterUrl": "Inserisci l'URL.",
+    "enterApiKey": "Inserisci la chiave API.",
     "unableToConnect": "Impossibile connettersi. Controlla l'URL e che il server sia attivo.",
     "noMediaServer": "Nessun server Plex o Jellyfin trovato.",
     "chooseMediaServer": "Scegli quale server usare.",
     "mediaServerUrlRequired": "Inserisci l'URL di Jellyfin, da cui gli utenti accedono.",
     "notMediaServer": "{server} non ha risposto a questo URL.",
     "urlNotFound": "Non trovato. Controlla l'URL, compreso l'eventuale percorso di base.",
+    "redirected": "L'URL reindirizza altrove. Inserisci l'indirizzo a cui porta.",
     "unexpectedResponse": "Risposta inattesa (HTTP {status}).",
     "certificateError": "Errore del certificato HTTPS. Controlla che l'URL corrisponda a un certificato valido.",
     "invalidField": "Controlla {field, select, tautulliUrl {l'URL di Tautulli} tautulliApiKey {la chiave API di Tautulli} tracearrUrl {l'URL di Tracearr} tracearrApiKey {la chiave API di Tracearr} plexUrl {l'URL di Plex} jellyfinUrl {l'URL di Jellyfin} plexToken {il token di Plex} seerrUrl {l'URL di Seerr} seerrApiKey {la chiave API di Seerr} googleAnalyticsId {l'ID di Google Analytics} other {le impostazioni}}.",
@@ -196,6 +203,7 @@
       "dashboard": "Dashboard",
       "activity": "Attività",
       "history": "Cronologia",
+      "email": "Email",
       "complete": "Fatto",
       "incomplete": "Da completare",
       "connectionRequired": "Completa prima le impostazioni di connessione"
@@ -213,6 +221,12 @@
       "optionalService": "{service} (facoltativo)",
       "plexUrlHelp": "Aggiunge link che aprono i titoli in Plex",
       "jellyfinUrlHelp": "Per l'accesso e per i link che aprono i titoli in Jellyfin",
+      "test": "Prova",
+      "testService": "Prova {service}",
+      "testing": "Prova in corso…",
+      "connected": "Connesso",
+      "connectedWithoutToken": "Connesso. Nessun token da testare.",
+      "connectedWithToken": "Connesso, e il token funziona.",
       "history": "Cronologia riproduzioni",
       "historyDescription": "Le nuove riproduzioni vengono aggiunte automaticamente",
       "historySyncing": "Sincronizzazione della cronologia…",
@@ -233,6 +247,7 @@
     "Dashboard": {
       "title": "Impostazioni della dashboard",
       "customPeriodError": "Il periodo personalizzato deve essere un numero intero da 1 a 3000.",
+      "customPeriodBuiltInError": "Il filtro del periodo ha già 7 giorni e l'ultimo anno (365 giorni). Scegli un altro numero di giorni.",
       "startDateError": "Controlla la data di inizio.",
       "usersPage": "Pagina degli utenti",
       "statistics": "Statistiche",
@@ -322,6 +337,8 @@
       "musicFileDetails": "{format} · {size}",
       "musicUpload": "Carica",
       "musicReplace": "Sostituisci",
+      "musicPlay": "Riproduci la traccia",
+      "musicStop": "Ferma la traccia",
       "musicDownload": "Scarica",
       "musicRemove": "Rimuovi",
       "musicSaving": "Salvataggio…",
@@ -329,6 +346,14 @@
       "musicSizeError": "Il file supera {size}.",
       "musicError": "Non è stato possibile aggiornare la musica. Riprova.",
       "snow": "Neve",
+      "autoplay": "Riproduzione automatica",
+      "autoplayDefault": "Attiva per impostazione predefinita",
+      "autoplaySpeed": "Velocità",
+      "autoplaySpeeds": {
+        "slow": "Lenta",
+        "normal": "Normale",
+        "fast": "Veloce"
+      },
       "period": "Periodo",
       "covers": "Copre",
       "periods": {
@@ -346,7 +371,127 @@
       "releaseDate": "Data di uscita",
       "releaseDateDescription": "Quando esce l'edizione {year}",
       "releaseDateError": "Controlla la data di uscita.",
-      "yearError": "Controlla l'anno."
+      "releaseEmail": "Inviti via email",
+      "releaseEmailDescription": "Il giorno dell'uscita, invia a ogni utente con un indirizzo un invito al suo Rewind. I prossimi partono il {date}.",
+      "releaseEmailNeedsMail": "Configura prima il server di posta nelle impostazioni Email.",
+      "yearError": "Controlla l'anno.",
+      "startDateError": "Controlla la data di inizio.",
+      "shareLinks": "Link condivisi",
+      "shareLinksDescription": "Ogni link apre il Rewind di quell'utente senza accedere, quindi può vederlo anche chiunque lo riceva.",
+      "shareLinksSearch": "Cerca utenti",
+      "shareLinksNoUsers": "Nessun utente trovato",
+      "shareLinksError": "Impossibile leggere gli utenti",
+      "copyLink": "Copia link",
+      "copyLinkLabel": "Copia il link al Rewind di {name}",
+      "share": "Condividi",
+      "shareLabel": "Condividi il Rewind di {name}",
+      "copied": "Copiato",
+      "copyError": "Impossibile copiare il link: {url}",
+      "shareLinksReset": "Reimposta i link",
+      "shareLinksResetDescription": "Tutti i link condivisi finora smettono di funzionare",
+      "shareLinksResetDone": "I link condivisi prima non funzionano più",
+      "shareLinksResetError": "Impossibile reimpostare i link",
+      "shareLinksUsers": "Utenti",
+      "shareLinksResetButton": "Reimposta"
+    },
+    "Email": {
+      "title": "Impostazioni email",
+      "mailServer": "Server di posta",
+      "host": "Host",
+      "port": "Porta",
+      "security": "Sicurezza",
+      "securities": {
+        "none": "Nessuna",
+        "starttls": "STARTTLS",
+        "tls": "TLS/SSL"
+      },
+      "user": "Nome utente",
+      "password": "Password",
+      "fromAddress": "Indirizzo mittente",
+      "fromName": "Nome mittente",
+      "testEmail": "Email di prova",
+      "testAddress": "Indirizzo a cui inviare l'email di prova",
+      "sendTest": "Invia email di prova",
+      "sending": "Invio in corso…",
+      "testSent": "Inviata a {address}. Se non è nella posta in arrivo, controlla la cartella spam.",
+      "emails": "Email",
+      "appUrl": "Indirizzo dell'app",
+      "appUrlDescription": "Dove portano i link nelle email. I tuoi utenti devono poterlo aprire.",
+      "language": "Lingua",
+      "addresses": "Indirizzi",
+      "recipients": "Destinatari",
+      "recipientsDescription": "Gli utenti possono annullare l'iscrizione in qualsiasi momento",
+      "recipientsSearch": "Cerca utenti",
+      "recipientsNone": "Nessun utente trovato",
+      "recipientsError": "Impossibile leggere gli utenti. Controlla le impostazioni di connessione.",
+      "loading": "Caricamento utenti…",
+      "noAddress": "Nessun indirizzo",
+      "addressLabel": "Indirizzo email di {name}",
+      "subscribedLabel": "Newsletter per {name}",
+      "newsletter": "Newsletter",
+      "newsletterDescription": "Invia a ogni utente un riepilogo di cosa hanno riprodotto lui e tutti gli altri",
+      "frequency": "Frequenza",
+      "frequencies": {
+        "weekly": "Settimanale",
+        "monthly": "Mensile",
+        "quarterly": "Trimestrale"
+      },
+      "frequencyDescriptions": {
+        "weekly": "Copre i 7 giorni prima del giorno di invio",
+        "monthly": "Copre il mese precedente",
+        "quarterly": "Parte a gen, apr, lug e ott e copre i 3 mesi precedenti"
+      },
+      "weekday": "Giorno",
+      "monthDay": "Giorno del mese",
+      "hour": "Ora",
+      "sectionsLabel": "Contenuto",
+      "sectionsOwnOnly": "Gli utenti vedono nella dashboard solo le proprie statistiche, quindi la newsletter esclude le statistiche del server e la classifica degli utenti",
+      "sections": {
+        "personal": "Le proprie statistiche",
+        "server": "Statistiche del server",
+        "topUsers": "Top degli utenti"
+      },
+      "nextSend": "La prossima parte {date}.",
+      "lastRun": "Ultimo invio {date}: {sent, plural, one {# inviata} other {# inviate}}, {failed, plural, one {# non riuscita} other {# non riuscite}}, {skipped, plural, one {# saltata} other {# saltate}}.",
+      "lastRunError": "Ultimo tentativo {date}: {error}",
+      "tryIt": "Prova",
+      "preview": "Anteprima",
+      "sendToMe": "Invia a me",
+      "rewind": "Rewind",
+      "rewindUsers": "Invia ora",
+      "rewindUsersDescription": "Per invitare automaticamente tutti quando esce, attiva gli inviti via email nelle impostazioni di Rewind",
+      "rewindNotShared": "Il Rewind deve essere attivo e aperto agli utenti prima di poterlo inviare per email.",
+      "sendToLabel": "Invia a {name}",
+      "sendRewind": "{count, plural, =0 {Invia} one {Invia a # utente} other {Invia a # utenti}}",
+      "sendSummary": "{sent, plural, one {# email inviata} other {# email inviate}}{failed, plural, =0 {} one {, # non riuscita} other {, # non riuscite}}{skipped, plural, =0 {} one {, # saltata} other {, # saltate}}.",
+      "outcomes": {
+        "sent": "Inviata",
+        "failed": "Non riuscita",
+        "skipped": "Saltata"
+      },
+      "skipReasons": {
+        "noAddress": "Nessun indirizzo email",
+        "noPlays": "Nessuna riproduzione nel periodo",
+        "nothingToShow": "Nessuna riproduzione sul server nel periodo"
+      },
+      "mailAuthRequired": "Il server di posta richiede un nome utente e una password",
+      "mailAuthFailed": "Il server di posta non ha accettato il nome utente o la password",
+      "mailUnableToConnect": "Impossibile connettersi al server di posta. Controlla host, porta e sicurezza.",
+      "mailCertificateError": "Il TLS del server di posta non ha funzionato. Controlla porta e sicurezza.",
+      "mailRejected": "Il server di posta ha rifiutato l'indirizzo",
+      "mailFailed": "Il server di posta non è riuscito a inviarla",
+      "mailServerMissing": "Inserisci prima host, porta e indirizzo mittente del server di posta",
+      "appUrlMissing": "Imposta prima l'indirizzo dell'app, così le email possono rimandare lì",
+      "historyReading": "La cronologia delle riproduzioni è ancora in lettura. Riprova tra qualche minuto.",
+      "sendFailed": "Impossibile preparare le email. Controlla che la sorgente delle statistiche sia raggiungibile.",
+      "reenterPassword": "Inserisci di nuovo la password, perché l'host o il nome utente sono cambiati",
+      "newsletterNeedsMailServer": "Configura il server di posta prima di attivare la newsletter",
+      "portError": "La porta deve essere tra 1 e 65535",
+      "fromAddressError": "L'indirizzo mittente non è un indirizzo email valido",
+      "appUrlError": "L'indirizzo dell'app non è un URL valido",
+      "addressError": "Un indirizzo non è un indirizzo email valido",
+      "sectionsError": "Scegli almeno una cosa da mostrare nella newsletter",
+      "previewNoUser": "Quell'utente non è sul server, o è escluso."
     }
   },
   "LocaleSelect": {
@@ -494,6 +639,7 @@
       "showsAndArtists": "Hai scoperto <showsCount>{showsValue, number}</showsCount> <shows>{showsValue, plural, one {nuova serie} other {nuove serie}}</shows> e <artistsCount>{artistsValue, number}</artistsCount> <artists>{artistsValue, plural, one {nuovo artista} other {nuovi artisti}}</artists>",
       "top": "La tua scoperta più grande è stata <title>{titleValue}</title>, con <duration>{durationValue}</duration> del tuo tempo",
       "only": "Si tratta di <title>{titleValue}</title>, con <duration>{durationValue}</duration> del tuo tempo",
+      "after": "Dopo <headline>{headlineValue}</headline>, la tua scoperta più grande è stata <title>{titleValue}</title>, con <duration>{durationValue}</duration> del tuo tempo",
       "gaveUp": "Uno ti è sfuggito: <title>{titleValue}</title> si è fermato al <percent>{percentValue, number, percent}</percent>. Magari la prossima volta?"
     },
     "Libraries": {
@@ -694,8 +840,8 @@
     },
     "Summary": {
       "title": {
-        "server": "{serverName} Rewind {years}",
-        "default": "Rewind {years}"
+        "server": "{serverName} Rewind {period}",
+        "default": "Rewind {period}"
       },
       "top": {
         "show": "Serie preferita",
@@ -768,6 +914,7 @@
     "labelRequests": "Richieste",
     "you": "(tu)",
     "requestLabel": "Richiedi {title}",
+    "openRequestLabel": "Apri la richiesta di {title} in Seerr",
     "externalLinkLabel": "{title} su {site}",
     "externalSearchLabel": "Cerca {title} su {site}"
   },
@@ -776,7 +923,10 @@
     "listenTime": "Tempo di ascolto",
     "movies": "Film",
     "episodes": "Episodi",
-    "tracks": "Brani"
+    "tracks": "Brani",
+    "moviesWatched": "Film visti",
+    "episodesWatched": "Episodi visti",
+    "tracksPlayed": "Brani ascoltati"
   },
   "Filters": {
     "title": "Filtri",
@@ -785,5 +935,86 @@
     "done": "Fatto",
     "period": "Periodo",
     "all": "Tutti"
+  },
+  "Email": {
+    "plays": "{count, plural, one {# riproduzione} other {# riproduzioni}}",
+    "yourTopShows": "Le tue serie preferite",
+    "yourTopMovies": "I tuoi film preferiti",
+    "yourTopArtists": "I tuoi artisti preferiti",
+    "anonymous": "Anonimo #{number}",
+    "Rewind": {
+      "subject": "{name}, il tuo Rewind è arrivato",
+      "subjectYear": "{name}, il tuo Rewind {year} è arrivato",
+      "preheader": "Scopri cosa hai riprodotto",
+      "eyebrow": "Rewind",
+      "eyebrowYear": "Rewind {year}",
+      "title": "Il tuo Rewind è arrivato, {name}",
+      "intro": "Ripercorri cosa hai riprodotto: le tue serie, i film e la musica preferiti, le tue abitudini e qualche sorpresa.",
+      "teaser": {
+        "watchTime": "Tempo di visualizzazione",
+        "topShow": "Serie preferita",
+        "personality": "Profilo"
+      },
+      "button": "Guarda il mio Rewind",
+      "footer": "Questo link apre il tuo Rewind senza accedere, quindi condividilo solo con chi vuoi che lo veda."
+    },
+    "Newsletter": {
+      "subject": {
+        "weekly": "La tua settimana su {server}",
+        "monthly": "Il tuo {month} su {server}",
+        "quarterly": "Il tuo trimestre su {server}"
+      },
+      "eyebrow": {
+        "weekly": "Riepilogo settimanale",
+        "monthly": "Riepilogo mensile",
+        "quarterly": "Riepilogo trimestrale"
+      },
+      "title": {
+        "weekly": "La tua settimana, {name}",
+        "monthly": "Il tuo {month}, {name}",
+        "quarterly": "Il tuo trimestre, {name}"
+      },
+      "preheader": "Cosa hai riprodotto tu e tutti gli altri su {server}",
+      "noPlays": {
+        "weekly": "Questa settimana non hai riprodotto niente.",
+        "monthly": "Questo mese non hai riprodotto niente.",
+        "quarterly": "Questo trimestre non hai riprodotto niente."
+      },
+      "onServer": "Su {server}",
+      "viewers": "Spettatori",
+      "topShows": "Serie più viste",
+      "topMovies": "Film più visti",
+      "topArtists": "Artisti più ascoltati",
+      "topUsers": "Chi ha guardato di più",
+      "yourRank": "Sei al {rank}° posto su {count}.",
+      "button": "Vedi altre statistiche",
+      "footer": {
+        "weekly": "Ricevi questo riepilogo settimanale da {server}.",
+        "monthly": "Ricevi questo riepilogo mensile da {server}.",
+        "quarterly": "Ricevi questo riepilogo trimestrale da {server}."
+      },
+      "unsubscribe": "Annulla l'iscrizione"
+    },
+    "Test": {
+      "subject": "Email di prova da {app}",
+      "title": "Funziona",
+      "body": "Il tuo server di posta è configurato, quindi gli inviti al Rewind e le newsletter possono partire."
+    },
+    "Unsubscribe": {
+      "eyebrow": "Newsletter",
+      "button": "Annulla l'iscrizione",
+      "confirm": {
+        "title": "Annullare l'iscrizione?",
+        "body": "Non riceverai più i riepiloghi da {server}."
+      },
+      "done": {
+        "title": "Iscrizione annullata",
+        "body": "Non riceverai più riepiloghi da {server}. Chiedi al suo amministratore se li vuoi di nuovo."
+      },
+      "invalid": {
+        "title": "Questo link non funziona",
+        "body": "Potrebbe essere stato troncato. Prova il link in un'altra email da {server}."
+      }
+    }
   }
 }

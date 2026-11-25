@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - Dockerfile
+      - docker-entrypoint.sh
       - .dockerignore
       - package.json
       - pnpm-lock.yaml
@@ -11,6 +12,16 @@ on:
       - next.config.ts
       - serwist.config.js
       - src/proxy.ts
+      - src/instrumentation.ts
+      - src/lib/authEnv.ts
+      - src/lib/sw.ts
+      - src/utils/getSettings.ts
+      - src/utils/helpers.ts
+      - src/app/api/health/**
+      - src/app/api/status/**
+      - public/manifest.json
+      - public/offline.html
+      - public/offline.js
       - .github/scripts/smoke-test.sh
       - .github/workflows/docker-build.yml
 
@@ -23,7 +34,7 @@ permissions:
 
 jobs:
   docker-build:
-    if: ${{ !(github.base_ref == 'main' && github.head_ref == 'develop') }}
+    if: ${{ !(github.base_ref == 'main' && github.head_ref == 'develop' && github.event.pull_request.head.repo.full_name == github.repository) }}
     name: Build ${{ matrix.platform }} and smoke test
     runs-on: ${{ matrix.platform == 'linux/arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     strategy:

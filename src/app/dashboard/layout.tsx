@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth'
 import getSettings from '@/utils/getSettings'
 import {
   canViewFeature,
+  getDashboardFilterAccess,
   getViewer,
   isUsersPageVisible,
   sortByActiveLibraries,
@@ -30,6 +31,7 @@ export default async function DashboardLayout({ children }: Props) {
   const activeLibraries = sortByActiveLibraries(libraries, settings)
   const t = await getTranslations('Dashboard')
   const isUsersPageActive = isUsersPageVisible(settings, session)
+  const filterAccess = getDashboardFilterAccess(settings, session)
 
   return (
     <div className='page-width flex flex-1 flex-col lg:flex-none'>
@@ -40,6 +42,7 @@ export default async function DashboardLayout({ children }: Props) {
           <DashboardNav
             libraries={activeLibraries}
             isUsersPageActive={isUsersPageActive}
+            filterAccess={filterAccess}
             isMenu
           />
         }
@@ -47,6 +50,7 @@ export default async function DashboardLayout({ children }: Props) {
         <DashboardNav
           libraries={activeLibraries}
           isUsersPageActive={isUsersPageActive}
+          filterAccess={filterAccess}
         />
       </PageTitle>
       {children}

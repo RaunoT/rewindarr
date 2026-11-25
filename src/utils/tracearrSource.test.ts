@@ -25,6 +25,7 @@ vi.mock('./getSettings', () => ({ default: vi.fn() }))
 vi.mock('./fetchTmdb', () => ({ default: vi.fn() }))
 vi.mock('./sourceSnapshot', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./sourceSnapshot')>()),
+  dropStaleSnapshots: vi.fn(),
   getSnapshot: vi.fn(),
   hasSnapshot: vi.fn(),
   saveSnapshot: vi.fn(),
@@ -141,20 +142,35 @@ describe('getTopItems', () => {
     vi.mocked(getTracearrPlays).mockResolvedValue(artists)
 
     const library = LIBRARIES[2]
-    // Back to before the plays, whenever the test runs
-    const period = Math.ceil(
-      (Date.now() - new Date('2026-01-01').getTime()) / (24 * 60 * 60 * 1000),
-    )
+    const since = '2026-01-01'
     const twoOfThree = await tracearrSource.getTopItems(library, {
-      period,
+      since,
       count: 2,
     })
-    const all = await tracearrSource.getTopItems(library, { period, count: 3 })
+    const all = await tracearrSource.getTopItems(library, { since, count: 3 })
 
     expect(twoOfThree.items).toHaveLength(2)
     expect(twoOfThree.hasMore).toBe(true)
     expect(all.items).toHaveLength(3)
     expect(all.hasMore).toBe(false)
+  })
+})
+
+describe('getPlayedCount', () => {
+  it("counts only the library's media type", async () => {
+    vi.mocked(getTracearrPlays).mockResolvedValue([
+      play({ title: 'Dune' }),
+      play({ title: 'Heat' }),
+      play({ mediaType: 'episode', title: 'Pilot', showTitle: 'Andor' }),
+      play({ mediaType: 'track', title: 'Song', artistName: 'Smilers' }),
+    ])
+
+    const count = await tracearrSource.getPlayedCount(library('movie'), {
+      since: '2026-01-01',
+      userId: '1',
+    })
+
+    expect(count).toBe(2)
   })
 })
 

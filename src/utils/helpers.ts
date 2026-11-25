@@ -1,10 +1,24 @@
 import { DashboardSearchParams } from '@/types/dashboard'
 import { RewindTotals, UserRewind } from '@/types/rewind'
-import { Settings, StatisticsSource } from '@/types/settings'
+import { PublicSettings, Settings, StatisticsSource } from '@/types/settings'
 import { Library } from '@/types/statsSource'
-import { get, kebabCase } from 'lodash'
+import kebabCase from 'lodash/kebabCase'
 import { Session } from 'next-auth'
 import { SETTINGS_PAGES } from './constants'
+
+function getSettingValue(settings: Settings, keyPath: string): unknown {
+  let current: unknown = settings
+
+  for (const segment of keyPath.split('.')) {
+    if (current === null || typeof current !== 'object') {
+      return undefined
+    }
+
+    current = (current as Record<string, unknown>)[segment]
+  }
+
+  return current
+}
 
 const SOURCE_REQUIRED_SETTINGS: Record<StatisticsSource, string[]> = {
   tautulli: ['connection.tautulliUrl', 'connection.tautulliApiKey'],
@@ -54,7 +68,7 @@ export function getViewer(session: Session | null): Viewer {
 // and server actions check this too. A rewind is always someone's, so outside
 // access doesn't open it up.
 export function canViewFeature(
-  settings: Pick<Settings, 'general' | Feature>,
+  settings: Pick<PublicSettings, 'general' | Feature>,
   feature: Feature,
   viewer: Viewer,
 ): boolean {
@@ -79,6 +93,18 @@ export function canViewFeature(
   )
 }
 
+function isOwnOnlyViewer<F extends OwnOnlyFeature>(
+  settings: Pick<PublicSettings, F>,
+  feature: F,
+  viewer: Viewer,
+): boolean {
+  const { isOwnOnly, isOwnOnlyForAdmin } = settings[feature]
+
+  return (
+    viewer.isLoggedIn && isOwnOnly && (!viewer.isAdmin || isOwnOnlyForAdmin)
+  )
+}
+
 // A rewind is always the viewer's own
 export type OwnOnlyFeature = Exclude<Feature, 'rewind'>
 
@@ -89,13 +115,11 @@ function isOwnOnlyFeature(feature: Feature): feature is OwnOnlyFeature {
 // The user whose own stats, streams or plays alone the page shows, or none
 // for everyone's
 export function getOwnOnlyUserId<F extends OwnOnlyFeature>(
-  settings: Pick<Settings, F>,
+  settings: Pick<PublicSettings, F>,
   feature: F,
   session: Session | null | undefined,
 ): string | undefined {
-  const { isOwnOnly, isOwnOnlyForAdmin } = settings[feature]
-
-  if (!session || !isOwnOnly || (session.user.isAdmin && !isOwnOnlyForAdmin)) {
+  if (!session || !isOwnOnlyViewer(settings, feature, getViewer(session))) {
     return undefined
   }
 
@@ -107,7 +131,7 @@ const FEATURES: Feature[] = ['rewind', 'dashboard', 'activity', 'history']
 // The users page is all about everyone else, so a viewer who only sees their
 // own stats doesn't get it
 export function isUsersPageVisible(
-  settings: Pick<Settings, 'dashboard'>,
+  settings: Pick<PublicSettings, 'dashboard'>,
   session: Session | null | undefined,
 ): boolean {
   return (
@@ -136,7 +160,7 @@ export function isLoginRequired(settings: Settings, pathname: string): boolean {
 
 // The home page's tiles, so it knows when it has none to show
 export function getHomeTiles(
-  settings: Pick<Settings, 'general' | Feature>,
+  settings: Pick<PublicSettings, 'general' | Feature>,
   viewer: Viewer,
   libraryCount: number,
 ) {
@@ -150,24 +174,28 @@ export function getHomeTiles(
 }
 
 // The pages a viewer can open. A dashboard with no libraries and no users
-// page has nothing in it.
+// page for that viewer has nothing in it.
 export function getOpenPages(
-  settings: Pick<Settings, 'general' | Feature>,
+  settings: Pick<PublicSettings, 'general' | Feature>,
   viewer: Viewer,
 ): Feature[] {
+  const hasUsersPage =
+    settings.dashboard.isUsersPageActive &&
+    !isOwnOnlyViewer(settings, 'dashboard', viewer)
+
   return FEATURES.filter(
     (feature) =>
       canViewFeature(settings, feature, viewer) &&
       (feature !== 'dashboard' ||
         settings.general.activeLibraries.length > 0 ||
-        settings.dashboard.isUsersPageActive),
+        hasUsersPage),
   )
 }
 
 // With nothing else to show, the home page would only lead to Rewind, so
 // Rewind takes its place
 export function isRewindOnly(
-  settings: Pick<Settings, 'general' | Feature>,
+  settings: Pick<PublicSettings, 'general' | Feature>,
   viewer: Viewer,
 ): boolean {
   const pages = getOpenPages(settings, viewer)
@@ -190,7 +218,7 @@ export function checkRequiredSettings(settings: Settings): string | null {
     ...serverRequiredSettings,
     ...REQUIRED_SETTINGS,
   ]) {
-    if (!get(settings, key)) {
+    if (!getSettingValue(settings, key)) {
       return key
     }
   }
@@ -204,6 +232,18 @@ export function isSettingsPageLocked(
   settings: { connection: { complete: boolean } },
 ): boolean {
   return !settings.connection.complete && key !== 'connection'
+}
+
+export function isSettingsPath(pathname: string): boolean {
+  return pathname === '/settings' || pathname.startsWith('/settings/')
+}
+
+// A reverse proxy chain can join headers like X-Forwarded-Proto with commas,
+// with the client-facing hop first.
+export function getFirstHeaderValue(value: string | null): string | undefined {
+  const first = value?.split(',')[0].trim()
+
+  return first || undefined
 }
 
 export function getSettingsPage(missingSettingKey: string): string | undefined {
@@ -377,4 +417,42 @@ export function getDashboardSort(
   value?: string | null,
 ): DashboardSearchParams['sortBy'] {
   return value === 'duration' || value === 'users' ? value : undefined
+}
+
+export type DashboardFilterAccess = {
+  // Signed in, so "Just me" has someone to show
+  personalFilter: boolean
+  // Only the viewer's own stats, whatever the URL asks for
+  isOwnOnly: boolean
+}
+
+export function getDashboardFilterAccess(
+  settings: Pick<PublicSettings, 'dashboard'>,
+  session: Session | null | undefined,
+): DashboardFilterAccess {
+  const isOwnOnly = !!getOwnOnlyUserId(settings, 'dashboard', session)
+
+  return { personalFilter: !!session?.user.id && !isOwnOnly, isOwnOnly }
+}
+
+// The saved filters for a link to a dashboard, the ones the viewer can use.
+// The users dashboard only has the period.
+export function getDashboardQuery(
+  { personal, period, sortBy }: DashboardSearchParams,
+  { personalFilter, isOwnOnly }: DashboardFilterAccess,
+  isUsers = false,
+): string {
+  const isPersonal = !isUsers && personalFilter && personal === 'true'
+  // Every title on a personal dashboard has the same one user
+  const sort =
+    isUsers || ((isPersonal || isOwnOnly) && sortBy === 'users')
+      ? undefined
+      : sortBy
+  const params = new URLSearchParams({
+    ...(isPersonal && { personal: 'true' }),
+    ...(period && { period }),
+    ...(sort && { sortBy: sort }),
+  })
+
+  return params.size ? `?${params.toString()}` : ''
 }

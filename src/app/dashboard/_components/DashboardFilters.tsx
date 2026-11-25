@@ -4,15 +4,24 @@ import {
   GlobalContext,
   readStorage,
 } from '@/app/_components/GlobalContextProvider'
-import FilterSheet, { FilterGroup } from '@/components/filters/FilterSheet'
+import FilterSheet, {
+  FilterGroup,
+  FilterNote,
+} from '@/components/filters/FilterSheet'
 import SegmentedControl from '@/components/filters/SegmentedControl'
+import useFilterParams from '@/hooks/useFilterParams'
 import { DashboardSearchParams } from '@/types/dashboard'
 import { PublicSettings } from '@/types/settings'
+import {
+  clearDashboardFilters,
+  getAvailableSort,
+  getDashboardFilters,
+  setDashboardFilters,
+} from '@/utils/dashboardFilters'
 import { getDashboardSort } from '@/utils/helpers'
 import { BarsArrowDownIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useContext, useEffect } from 'react'
+import { useContext, useEffect } from 'react'
 import PeriodFilter from './PeriodFilter'
 
 type Props = {
@@ -23,17 +32,9 @@ type Props = {
 }
 
 // Saved filters are applied once per page load, when a dashboard is opened
-// without any in its URL. After that the URL is the only source of truth, so
-// Back and Forward keep working.
+// without any in its URL. After that the links to the dashboards carry them,
+// and the URL is the only source of truth, so Back and Forward keep working.
 let hasRestoredSavedFilters = false
-
-// Every title on a personal dashboard has the same one user
-function getAvailableSort(
-  personal: DashboardSearchParams['personal'],
-  sort: DashboardSearchParams['sortBy'],
-): DashboardSearchParams['sortBy'] {
-  return personal === 'true' && sort === 'users' ? undefined : sort
-}
 
 // The period stays in sight. On wider screens the other filters sit across
 // from it, on phones they're in a sheet.
@@ -42,109 +43,117 @@ export default function DashboardFilters({
   personalFilter,
   isOwnOnly = false,
 }: Props) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  // Shared with the period, so a change to either builds on the other's
+  const filterParams = useFilterParams()
+  const { searchParams, committedSearchParams, isChangeLoaded, navigate } =
+    filterParams
+  // Only for a viewer who has the choice, as the server ignores it otherwise
   const isPersonal: DashboardSearchParams['personal'] =
-    searchParams.get('personal') === 'true' ? 'true' : undefined
+    personalFilter && searchParams.get('personal') === 'true'
+      ? 'true'
+      : undefined
   const sortBy = getAvailableSort(
     isOwnOnly ? 'true' : isPersonal,
     getDashboardSort(searchParams.get('sortBy')),
   )
+  const committed = getDashboardFilters(committedSearchParams)
+  const committedPersonal = personalFilter ? committed.personal : undefined
+  const committedSort = getAvailableSort(
+    isOwnOnly ? 'true' : committedPersonal,
+    committed.sortBy,
+  )
   const hasUrlFilters =
-    searchParams.has('personal') || searchParams.has('sortBy')
+    (personalFilter && committedSearchParams.has('personal')) ||
+    committedSearchParams.has('sortBy')
   const {
     dashboard: { setIsPersonal, setSortBy },
   } = useContext(GlobalContext)
   const t = useTranslations('DashboardFilters')
 
-  // oxlint-disable-next-line @stylistic/padding-line-between-statements
-  const getUrl = useCallback(
-    (
-      personal: DashboardSearchParams['personal'],
-      sort: DashboardSearchParams['sortBy'],
-    ) => {
-      const params = new URLSearchParams(searchParams.toString())
-
-      // A new list starts from its first rows again
-      params.delete('limit')
-
-      if (personal === 'true') {
-        params.set('personal', 'true')
-      } else {
-        params.delete('personal')
-      }
-
-      const availableSort = getAvailableSort(personal, sort)
-
-      if (availableSort) {
-        params.set('sortBy', availableSort)
-      } else {
-        params.delete('sortBy')
-      }
-
-      const query = params.toString()
-
-      return query ? `${pathname}?${query}` : pathname
-    },
-    [pathname, searchParams],
-  )
-
   function handlePersonalChange(value: string) {
-    router.push(getUrl(value === 'true' ? 'true' : undefined, sortBy))
+    navigate((params) =>
+      setDashboardFilters(
+        params,
+        { personal: value === 'true' ? 'true' : undefined },
+        isOwnOnly,
+      ),
+    )
   }
 
   function handleSortChange(value: string) {
-    router.push(getUrl(isPersonal, getDashboardSort(value)))
+    navigate((params) =>
+      setDashboardFilters(
+        params,
+        {
+          sortBy: getDashboardSort(value),
+          // One in the URL that the viewer can't use goes
+          ...(!personalFilter && { personal: undefined }),
+        },
+        isOwnOnly,
+      ),
+    )
   }
 
-  // Back to the defaults, the period too
   function handleClear() {
-    const params = new URLSearchParams(searchParams.toString())
-
-    for (const name of ['period', 'personal', 'sortBy', 'limit']) {
-      params.delete(name)
-    }
-
-    const query = params.toString()
-
-    router.push(query ? `${pathname}?${query}` : pathname)
+    navigate(clearDashboardFilters)
   }
 
   useEffect(() => {
-    if (!hasRestoredSavedFilters) {
-      hasRestoredSavedFilters = true
-
-      const savedPersonal =
-        personalFilter && readStorage('dashboardPersonal') === 'true'
-          ? 'true'
-          : undefined
-      const savedSort = getDashboardSort(readStorage('dashboardSort'))
-
-      if (!hasUrlFilters && (savedPersonal || savedSort)) {
-        router.replace(getUrl(savedPersonal, savedSort))
-
-        return
-      }
+    if (hasRestoredSavedFilters) {
+      return
     }
 
-    // Remembered for the next visit and for the links on the home page
-    setIsPersonal(isPersonal)
-    setSortBy(sortBy)
+    hasRestoredSavedFilters = true
+
+    const savedPersonal =
+      personalFilter && readStorage('dashboardPersonal') === 'true'
+        ? 'true'
+        : undefined
+    const savedSort = getAvailableSort(
+      isOwnOnly ? 'true' : savedPersonal,
+      getDashboardSort(readStorage('dashboardSort')),
+    )
+
+    if (!hasUrlFilters && (savedPersonal || savedSort)) {
+      navigate(
+        (params) =>
+          setDashboardFilters(
+            params,
+            { personal: savedPersonal, sortBy: savedSort },
+            isOwnOnly,
+          ),
+        { replace: true },
+      )
+    }
+  }, [hasUrlFilters, isOwnOnly, navigate, personalFilter])
+
+  // Remembered for the next visit and for the links to the dashboards. Only a
+  // change made here is, not the filters of a link or of Back and Forward, and
+  // only once its page has loaded, as Back or a link can cancel it.
+  useEffect(() => {
+    if (!isChangeLoaded) {
+      return
+    }
+
+    if (personalFilter) {
+      setIsPersonal(committedPersonal)
+    }
+
+    // The period, which Clear all resets too, is saved by its own filter
+    setSortBy(committedSort)
   }, [
-    getUrl,
-    hasUrlFilters,
-    isPersonal,
+    committedPersonal,
+    committedSort,
+    isChangeLoaded,
     personalFilter,
-    router,
     setIsPersonal,
     setSortBy,
-    sortBy,
   ])
 
   const tCommon = useTranslations('Common')
   const activeCount = Number(personalFilter && !!isPersonal) + Number(!!sortBy)
   const canClear = activeCount > 0 || searchParams.has('period')
+  const { minPlayPercent } = settings.general
 
   function getAudience() {
     return (
@@ -182,7 +191,11 @@ export default function DashboardFilters({
 
   return (
     <div className='mb-4 flex items-center gap-2'>
-      <PeriodFilter settings={settings} className='max-sm:flex-1' />
+      <PeriodFilter
+        settings={settings}
+        filterParams={filterParams}
+        className='max-sm:flex-1'
+      />
       <FilterSheet
         count={activeCount}
         canClear={canClear}
@@ -193,6 +206,14 @@ export default function DashboardFilters({
           <FilterGroup label={t('type')}>{getAudience()}</FilterGroup>
         )}
         <FilterGroup label={t('sort')}>{getSort()}</FilterGroup>
+        {/* Viewers can't see the admin's threshold, and without it a title
+            with time but no plays looks wrong. At 0% nearly every play
+            counts. */}
+        {minPlayPercent > 0 && (
+          <FilterNote>
+            {t('playThreshold', { percent: minPlayPercent / 100 })}
+          </FilterNote>
+        )}
       </FilterSheet>
     </div>
   )

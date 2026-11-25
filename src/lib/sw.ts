@@ -1,3 +1,4 @@
+/// <reference lib="webworker" />
 import type { PrecacheEntry, SerwistGlobalConfig } from 'serwist'
 import {
   CacheFirst,
@@ -46,7 +47,7 @@ const serwist = new Serwist({
   fallbacks: {
     entries: [
       {
-        url: '/~offline',
+        url: '/offline.html',
         matcher({ request }) {
           return request.destination === 'document'
         },

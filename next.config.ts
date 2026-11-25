@@ -19,10 +19,12 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'plex.tv',
+        pathname: '/users/**',
       },
       {
         protocol: 'https',
         hostname: 'image.tmdb.org',
+        pathname: '/t/p/**',
       },
     ],
   },
@@ -31,12 +33,8 @@ const nextConfig: NextConfig = {
       {
         source: '/(.*)',
         headers: [
-          // includeSubDomains/preload would commit every self-hosted domain's
-          // subdomains to HTTPS, which isn't this app's call to make.
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000',
-          },
+          // HSTS is left to the TLS-terminating reverse proxy so plain-HTTP
+          // self-hosted installs are not locked into HTTPS across ports.
           // Pages get a stricter policy with a script nonce from the proxy.
           {
             key: 'Content-Security-Policy',
@@ -56,7 +54,8 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: '',
+            value:
+              'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
           },
         ],
       },
@@ -67,6 +66,16 @@ const nextConfig: NextConfig = {
           {
             key: 'Content-Security-Policy',
             value: IMAGE_CSP,
+          },
+        ],
+      },
+      {
+        source: '/offline.html',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value:
+              "default-src 'none'; style-src 'unsafe-inline'; script-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'",
           },
         ],
       },

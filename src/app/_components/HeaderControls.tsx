@@ -72,6 +72,7 @@ export default function HeaderControls({ className }: Props) {
           href='https://github.com/RaunoT/rewindarr/releases'
           aria-label={t('updateAvailable')}
           target='_blank'
+          rel='noopener noreferrer'
           className='icon-button'
         >
           <ArrowPathIcon className='size-5' />

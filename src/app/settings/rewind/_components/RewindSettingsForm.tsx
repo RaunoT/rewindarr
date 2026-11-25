@@ -9,7 +9,11 @@ import {
   RewindSettings,
   SettingsFormInitialState,
 } from '@/types/settings'
-import { REWIND_STORIES, RewindStoryId } from '@/utils/constants'
+import {
+  AUTOPLAY_SPEEDS,
+  REWIND_STORIES,
+  RewindStoryId,
+} from '@/utils/constants'
 import { getOpenPages, Viewer } from '@/utils/helpers'
 import { FIRST_YEAR, getRewindPeriodType } from '@/utils/rewindPeriod'
 import {
@@ -36,9 +40,15 @@ import SettingsForm from '../../_components/SettingsForm'
 import saveRewindSettings from '../_actions/updateRewindSettings'
 import RewindMusicUpload from './RewindMusicUpload'
 import RewindReleaseDate from './RewindReleaseDate'
+import RewindReleaseEmail, { ReleaseEmailStatus } from './RewindReleaseEmail'
+import RewindShareLinks, { ShareUser } from './RewindShareLinks'
 
 type Props = {
   settings: PublicSettings
+  currentYear: number
+  // Each user's shared link, while users can see their own Rewind
+  shareUsers?: Promise<ShareUser[] | null>
+  releaseEmail: ReleaseEmailStatus
 }
 
 type RewindFormState = SettingsFormInitialState<Partial<RewindSettings>>
@@ -91,7 +101,12 @@ const REQUEST_STORIES: RewindStoryId[] = ['requests', 'requests_reach']
 // Where users start depends on what they can open
 const USER: Viewer = { isLoggedIn: true, isAdmin: false }
 
-export default function RewindSettingsForm({ settings }: Props) {
+export default function RewindSettingsForm({
+  settings,
+  currentYear,
+  shareUsers,
+  releaseEmail,
+}: Props) {
   const [isActive, setIsActive] = useState<boolean>(settings.rewind.isActive)
   const [period, setPeriod] = useState<RewindPeriodType>(
     getRewindPeriodType(settings),
@@ -107,8 +122,6 @@ export default function RewindSettingsForm({ settings }: Props) {
   const openPages = getOpenPages(settings, USER).filter(
     (page) => page !== 'rewind',
   )
-  // oxlint-disable-next-line react/purity
-  const thisYear = new Date().getFullYear()
   const storyOptions = REWIND_STORIES.filter(
     (story) =>
       settings.connection.isSeerrActive || !REQUEST_STORIES.includes(story),
@@ -228,6 +241,39 @@ export default function RewindSettingsForm({ settings }: Props) {
             <RewindMusicUpload initialMusic={settings.rewind.music} />
           </section>
           <section className='group-settings group'>
+            <h2 className='heading-settings'>{t('autoplay')}</h2>
+            <Switch
+              key={`autoplay-${rewindSettings.isAutoplayActive}`}
+              className='switch'
+              name='isAutoplayActive'
+              defaultSelected={rewindSettings.isAutoplayActive}
+            >
+              <div className='indicator' />
+              <span className='label'>
+                <span className='label-wrapper'>{t('autoplayDefault')}</span>
+              </span>
+            </Switch>
+            <label className='input-wrapper'>
+              <span className='select-wrapper'>
+                <select
+                  key={`autoplay-speed-${rewindSettings.autoplaySpeed}`}
+                  className='input'
+                  name='autoplaySpeed'
+                  defaultValue={rewindSettings.autoplaySpeed}
+                >
+                  {AUTOPLAY_SPEEDS.map((speed) => (
+                    <option key={speed} value={speed}>
+                      {t(`autoplaySpeeds.${speed}`)}
+                    </option>
+                  ))}
+                </select>
+              </span>
+              <span className='label'>
+                <span className='label-wrapper'>{t('autoplaySpeed')}</span>
+              </span>
+            </label>
+          </section>
+          <section className='group-settings group'>
             <h2 className='heading-settings'>{t('period')}</h2>
             <label className='input-wrapper'>
               <span className='select-wrapper'>
@@ -255,6 +301,15 @@ export default function RewindSettingsForm({ settings }: Props) {
               <RewindReleaseDate
                 key={`release-date-${rewindSettings.releaseDate}`}
                 defaultValue={rewindSettings.releaseDate}
+                year={currentYear}
+              />
+            )}
+            {/* While users can open their own Rewind, which the invites lead to */}
+            {period === 'calendarYear' && !isAdminOnly && (
+              <RewindReleaseEmail
+                key={`release-email-${rewindSettings.isReleaseEmailActive}`}
+                defaultSelected={rewindSettings.isReleaseEmailActive}
+                {...releaseEmail}
               />
             )}
             {period === 'specificYear' && (
@@ -265,9 +320,9 @@ export default function RewindSettingsForm({ settings }: Props) {
                   className='input'
                   name='year'
                   // Last year's is the one most likely to be over
-                  defaultValue={rewindSettings.year ?? thisYear - 1}
+                  defaultValue={rewindSettings.year ?? currentYear - 1}
                   min={FIRST_YEAR}
-                  max={thisYear}
+                  max={currentYear}
                   required
                 />
                 <span className='label'>
@@ -285,6 +340,10 @@ export default function RewindSettingsForm({ settings }: Props) {
               />
             )}
           </section>
+          {/* As saved, until a save opens or closes Rewind to users */}
+          {!isAdminOnly && shareUsers && (
+            <RewindShareLinks users={shareUsers} />
+          )}
         </>
       )}
     </SettingsForm>

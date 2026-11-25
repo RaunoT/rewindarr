@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { redirect } from 'next/navigation'
 import { ReactNode, SVGProps } from 'react'
 import PageTitle from '../_components/PageTitle'
+import SettingsDiscard from './_components/SettingsDiscard'
 import SettingsNav from './_components/SettingsNav'
 import SettingsVersion from './_components/SettingsVersion'
 
@@ -46,12 +47,13 @@ export default async function SettingsLayout({ children }: Props) {
           missingSetting={missingSetting}
         />
       </PageTitle>
-      {children}
+      <SettingsDiscard>{children}</SettingsDiscard>
 
       <div className='glass-sheet mt-4 flex flex-col flex-wrap justify-between gap-3 sm:flex-row'>
         <a
           href='https://buymeacoffee.com/fr9lzfrhdh'
           target='_blank'
+          rel='noopener noreferrer'
           className='link-light inline-flex items-center gap-2'
         >
           <BeerIcon className='size-6 text-amber-400' />
@@ -60,6 +62,7 @@ export default async function SettingsLayout({ children }: Props) {
         <a
           href='https://github.com/sponsors/RaunoT'
           target='_blank'
+          rel='noopener noreferrer'
           className='link-light inline-flex items-center gap-2'
         >
           <HeartIcon className='size-6 text-red-500' />
@@ -68,6 +71,7 @@ export default async function SettingsLayout({ children }: Props) {
         <a
           href='https://github.com/RaunoT/rewindarr/issues'
           target='_blank'
+          rel='noopener noreferrer'
           className='link-light inline-flex items-center gap-2'
         >
           <Image src={githubSvg} alt='GitHub' className='size-6 p-0.5' />

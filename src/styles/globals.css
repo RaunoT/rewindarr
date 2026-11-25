@@ -225,8 +225,8 @@
       @apply size-3.5 shrink-0;
     }
 
-    &:is(a) {
-      @apply focus-visible:focus-ring relative transition-colors hover:bg-white/20;
+    &:is(a, button) {
+      @apply focus-visible:focus-ring relative cursor-pointer transition-colors hover:bg-white/20;
 
       /* A 40px tall tap area. Links sit 6px apart, so their tap areas meet
          without overlapping. */
@@ -339,6 +339,21 @@
     }
   }
 
+  /* A story taller than a phone's screen fades out at the bottom while
+     there's more below, the fade shrinking away as it reaches the end.
+     Scrolled down, it fades out at the top too, before reaching the
+     progress bar over it. */
+  .story-slide {
+    @variant max-sm {
+      mask-image: linear-gradient(
+        transparent 1rem,
+        #000 calc(1rem + min(2rem, var(--scrolled, 0px))),
+        #000 calc(100% - min(4rem, var(--more-below, 0px))),
+        transparent
+      );
+    }
+  }
+
   .poster {
     @apply relative aspect-2/3 w-16 shrink-0 overflow-hidden rounded-md! shadow-lg shadow-black/40 sm:w-18;
   }
@@ -372,8 +387,8 @@
 
   /* A poster that opens the item shows its MediaLinkIcon while hovered or
      focused, in place of any other overlay. Over a bare poster it fades in.
-     Another overlay swaps for it at once, as fading both would dim them
-     halfway, which flickers when they're the same, like a request's plus. */
+     Another overlay, such as a paused stream's, swaps for it at once, as
+     fading both would dim them halfway. */
   .media-link-icon {
     @apply opacity-0;
   }
@@ -599,6 +614,32 @@
     }
   }
 
+  /* A question to answer: a sheet on phones, a card in the middle on wider
+     screens. Used with sheet. */
+  .sheet--dialog {
+    @apply sm:max-w-sm sm:rounded-3xl sm:pb-5;
+
+    @variant sm {
+      &[data-entering] {
+        animation: fade-up 0.2s ease-out;
+      }
+
+      &[data-exiting] {
+        animation: fade-in 0.15s ease-in reverse;
+      }
+    }
+  }
+
+  /* A form's save button while there are unsaved changes, kept in sight at the
+     bottom of the screen. The margins take back its padding, so nothing moves
+     when it turns into one. Darker than other glass, so the fields scrolling
+     under it don't show through. */
+  .save-bar {
+    @apply glass-pill sticky bottom-[max(--spacing(4),env(safe-area-inset-bottom))] z-20 -m-2 bg-neutral-900/85 p-2 pl-5;
+
+    animation: fade-up 0.2s ease-out;
+  }
+
   /* Used with glass-sheet, whose padding and radius it replaces */
   .menu {
     @apply bg-neutral-900/70 p-1.5 outline-none;
@@ -696,6 +737,30 @@
       .label {
         @apply text-white;
       }
+    }
+  }
+
+  /* A field with a connection test, which goes right under its input however
+     long the field's description is */
+  .input-with-test {
+    @apply relative grid gap-2 sm:grid-cols-[--spacing(48)_minmax(0,1fr)] sm:grid-rows-[auto_auto_1fr];
+
+    > .input-wrapper {
+      @apply contents;
+
+      > :not(.label) {
+        @apply sm:col-start-2 sm:row-start-1;
+      }
+
+      /* Its spare height goes to the last row. The first line lines up with
+         the middle of a single line input. */
+      > .label {
+        @apply order-first sm:col-start-1 sm:row-span-3 sm:row-start-1 sm:self-start sm:pt-2.5;
+      }
+    }
+
+    > .input-test {
+      @apply sm:col-start-2 sm:row-start-2;
     }
   }
 
@@ -914,6 +979,19 @@
 
   .animate-pulse {
     animation: none;
+  }
+
+  .save-bar {
+    animation: none;
+  }
+
+  .filter-panel,
+  .sheet-overlay,
+  .sheet {
+    &[data-entering],
+    &[data-exiting] {
+      animation: none;
+    }
   }
 
   .button:active:not([disabled]) {

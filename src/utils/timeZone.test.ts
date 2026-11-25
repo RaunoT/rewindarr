@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   createHourAndDayReader,
+  isCalendarDate,
   toDateKey,
   toDayNumber,
   toTimeZone,
@@ -56,5 +57,26 @@ describe('toDateKey', () => {
 
   it('counts days in a row 1 apart', () => {
     expect(toDayNumber('2026-03-01') - toDayNumber('2026-02-28')).toBe(1)
+  })
+})
+
+describe('isCalendarDate', () => {
+  it('accepts valid ISO calendar dates', () => {
+    expect(isCalendarDate('2026-03-01')).toBe(true)
+    expect(isCalendarDate('2024-02-29')).toBe(true)
+  })
+
+  it('rejects impossible dates, timestamps and non-ISO strings', () => {
+    for (const value of [
+      '',
+      '2023-02-29',
+      '2026-04-31',
+      '2026-13-01',
+      '0099-01-01',
+      'March 1, 2026',
+      '2026-03-01T00:00:00Z',
+    ]) {
+      expect(isCalendarDate(value)).toBe(false)
+    }
   })
 })

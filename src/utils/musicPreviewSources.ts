@@ -47,6 +47,11 @@ type DeezerAlbum = {
   tracks?: { data?: DeezerTrack[] }
 }
 
+type DeezerArtist = {
+  name?: string
+  picture_medium?: string
+}
+
 type DeezerError = {
   error?: { code?: number; message?: string }
 }
@@ -132,6 +137,10 @@ async function fetchService<T>(service: Service, path: string): Promise<T> {
   }
 
   await waitTurn(service)
+
+  if (isHostDown(service.url)) {
+    throw new MusicPreviewError(`${service.name} can't be reached`)
+  }
 
   let res: Response
 
@@ -442,4 +451,23 @@ export async function fetchDeezerPreview(id: number): Promise<string | null> {
   const track = await fetchDeezer<DeezerTrack>(`/track/${id}`)
 
   return isPreviewUrl(track?.preview) ? track.preview : null
+}
+
+// The artist's picture, which anyone can load, for emails that can't load the
+// media server's. Only for the same name, as a close one is someone else.
+export async function searchArtistPicture(
+  name: string,
+): Promise<string | null> {
+  const answer = await fetchDeezer<{ data?: DeezerArtist[] }>(
+    `/search/artist?${new URLSearchParams({ q: name, limit: '5' })}`,
+  )
+  const artist = answer?.data?.find(
+    (result) => result.name?.toLocaleLowerCase() === name.toLocaleLowerCase(),
+  )
+  const picture = artist?.picture_medium
+
+  // Deezer's stand-in for an artist without a picture leaves its ID out
+  return isPreviewUrl(picture) && !picture.includes('/artist//')
+    ? picture
+    : null
 }

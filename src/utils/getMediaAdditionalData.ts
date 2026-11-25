@@ -7,6 +7,7 @@ import {
 import fetchRottenTomatoes from './fetchRottenTomatoes'
 import fetchTmdb from './fetchTmdb'
 import getSettings from './getSettings'
+import { LOOKUP_CONCURRENCY, mapWithLimit } from './topPeople'
 
 export type TmdbMediaType = 'movie' | 'tv'
 
@@ -162,8 +163,10 @@ export default async function getMediaAdditionalData(
     statistics.includes('rottenTomatoesRating') ||
     statistics.includes('rottenTomatoesAudienceRating') ||
     settings.general.activeExternalLinks.includes('rottenTomatoes')
-  const additionalData = await Promise.all(
-    media.map(async (row) => {
+  const additionalData = await mapWithLimit(
+    media,
+    LOOKUP_CONCURRENCY,
+    async (row) => {
       const source = await getSourceData(row, type)
       const item = withSourceData(row, source)
       const { tmdbId, details } = await getTmdbData(item, type)
@@ -182,7 +185,7 @@ export default async function getMediaAdditionalData(
           : null,
       ])
       const tmdbPoster = details?.poster_path
-        ? `https://image.tmdb.org/t/p/w300/${details.poster_path}`
+        ? `https://image.tmdb.org/t/p/w300${details.poster_path.startsWith('/') ? '' : '/'}${details.poster_path}`
         : null
       const poster =
         (isPostersTmdbOnly && tmdbPoster) || source.thumb || tmdbPoster || ''
@@ -208,7 +211,7 @@ export default async function getMediaAdditionalData(
         tmdb_poster: tmdbPoster,
         tmdb_backdrop: tmdbBackdrop,
       }
-    }),
+    },
   )
 
   media.map((mediaItem, i) => {

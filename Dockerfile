@@ -38,7 +38,7 @@ RUN --mount=type=cache,id=corepack,target=/root/.cache/node/corepack \
     pnpm run build
 
 # Production image, copy all the files and run next
-FROM base AS runner
+FROM node:26-alpine AS runner
 WORKDIR /app
 
 # su-exec lets the entrypoint drop root privileges
@@ -56,8 +56,8 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
 # The app saves settings to config and Next.js writes its caches to .next/cache,
-# so both need to be writable by the node user (the entrypoint fixes config on start)
-RUN mkdir -p config .next/cache && chown -R node:node config .next/cache
+# so both need to be writable by the runtime user (sticky 1777 cache supports custom --user UIDs)
+RUN mkdir -p config .next/cache && chown -R node:node config .next/cache && chmod 1777 .next/cache
 
 COPY --chmod=755 docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
@@ -70,7 +70,9 @@ ENV PORT=8383
 ENV HOSTNAME="0.0.0.0"
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD wget -qO /dev/null "http://127.0.0.1:${PORT}/api/health" || exit 1
+  CMD unset http_proxy HTTP_PROXY https_proxy HTTPS_PROXY; \
+    wget -qO /dev/null "http://127.0.0.1:${PORT:-8383}/api/health" \
+    || wget -qO /dev/null "http://[::1]:${PORT:-8383}/api/health"
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["node", "server.js"]

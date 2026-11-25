@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function GeneralSettingsPage() {
-  await requireSettingsAccess()
+  await requireSettingsAccess('general')
 
   const [libraries, users] = await Promise.all([
     // Fresh, so a library that was just added can be picked straight away
@@ -37,6 +37,7 @@ export default async function GeneralSettingsPage() {
       // A retry can bring in the libraries, which the form only reads once
       key={libraries?.map((library) => library.section_id).join()}
       settings={toPublicSettings(settings)}
+      excludedUsers={settings.general.excludedUsers}
       libraries={libraries}
       // Emails and other account details stay on the server.
       users={users.map(({ user_id, friendly_name, thumb, user_thumb }) => ({

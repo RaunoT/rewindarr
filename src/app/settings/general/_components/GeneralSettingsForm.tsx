@@ -35,6 +35,7 @@ import SortableLibrary from './SortableLibrary'
 
 type Props = {
   settings: PublicSettings
+  excludedUsers: string[]
   // Null when the source can't be reached
   libraries: Library[] | null
   users: { user_id: string; friendly_name: string; avatar: string }[]
@@ -44,6 +45,7 @@ type GeneralFormState = SettingsFormInitialState<GeneralSettings>
 
 export default function GeneralSettingsForm({
   settings,
+  excludedUsers,
   libraries: sourceLibraries,
   users,
 }: Props) {
@@ -158,6 +160,7 @@ export default function GeneralSettingsForm({
     status: '',
     fields: {
       ...settings.general,
+      excludedUsers,
     },
   }
   const [formState, formAction] = useActionState<GeneralFormState, FormData>(
@@ -216,6 +219,7 @@ export default function GeneralSettingsForm({
       formState={formState}
       formAction={formAction}
       hideSubmit={!hasLibraries}
+      orderedFields={['activeLibraries']}
       isSetup={!generalSettings.complete}
     >
       <section className='group-settings group'>

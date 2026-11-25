@@ -15,6 +15,7 @@ type SnapshotFile = {
 
 type SnapshotState = {
   answers: Promise<Map<string, unknown>> | null
+  droppedPrefixes: Map<string, string>
   saveTimer: ReturnType<typeof setTimeout> | null
   saving: Promise<void>
   hasLoggedSaveError: boolean
@@ -23,6 +24,8 @@ type SnapshotState = {
 const VERSION = 1
 // A page asks for several answers at once, which go into one save
 const SAVE_DELAY = 1000
+// Cap cached per-title metadata so long-running instances don't grow without limit
+const MAX_MEDIA_ENTRIES = 5000
 // Next.js can bundle this file into more than one chunk, and each copy would
 // otherwise save its own answers.
 const globalForSnapshot = globalThis as unknown as {
@@ -30,10 +33,46 @@ const globalForSnapshot = globalThis as unknown as {
 }
 const state = (globalForSnapshot.rewindarrSourceSnapshot ??= {
   answers: null,
+  droppedPrefixes: new Map(),
   saveTimer: null,
   saving: Promise.resolve(),
   hasLoggedSaveError: false,
 })
+
+state.droppedPrefixes ??= new Map()
+
+function isMediaKey(key: string): boolean {
+  return key.includes('|media|')
+}
+
+function pruneMediaEntries(answers: Map<string, unknown>): boolean {
+  let mediaCount = 0
+
+  for (const key of answers.keys()) {
+    if (isMediaKey(key)) {
+      mediaCount++
+    }
+  }
+
+  let excess = mediaCount - MAX_MEDIA_ENTRIES
+
+  if (excess <= 0) {
+    return false
+  }
+
+  for (const key of answers.keys()) {
+    if (excess <= 0) {
+      break
+    }
+
+    if (isMediaKey(key)) {
+      answers.delete(key)
+      excess--
+    }
+  }
+
+  return true
+}
 
 export function getSnapshotFilePath(): string {
   return path.join(process.cwd(), 'config/source-snapshot.json')
@@ -74,7 +113,13 @@ async function readSnapshotFile(): Promise<Map<string, unknown>> {
     return new Map()
   }
 
-  return new Map(Object.entries(file.answers))
+  const answers = new Map(Object.entries(file.answers))
+
+  if (pruneMediaEntries(answers)) {
+    saveSoon()
+  }
+
+  return answers
 }
 
 function getAnswers(): Promise<Map<string, unknown>> {
@@ -122,11 +167,34 @@ export async function saveSnapshot(
   answer: unknown,
 ): Promise<void> {
   const answers = await getAnswers()
+  const hasKey = answers.has(key)
 
-  if (!isEqual(answers.get(key), answer)) {
-    answers.set(key, answer)
-    saveSoon()
+  if (hasKey ? isEqual(answers.get(key), answer) : answer === undefined) {
+    if (hasKey && isMediaKey(key)) {
+      const existing = answers.get(key)
+
+      answers.delete(key)
+      answers.set(key, existing)
+    }
+
+    return
   }
+
+  answers.delete(key)
+  answers.set(key, answer)
+
+  if (isMediaKey(key)) {
+    pruneMediaEntries(answers)
+  }
+
+  const source = `${key.split('|')[0] ?? ''}|`
+  const currentPrefix = state.droppedPrefixes.get(source)
+
+  if (currentPrefix && !key.startsWith(currentPrefix)) {
+    state.droppedPrefixes.delete(source)
+  }
+
+  saveSoon()
 }
 
 // The saved answer, or null without a valid one
@@ -134,9 +202,51 @@ export async function getSnapshot<T>(
   key: string,
   isValid: (answer: unknown) => answer is T,
 ): Promise<T | null> {
-  const answer = (await getAnswers()).get(key)
+  const answers = await getAnswers()
 
-  return isValid(answer) ? answer : null
+  if (!answers.has(key)) {
+    return null
+  }
+
+  const answer = answers.get(key)
+
+  if (!isValid(answer)) {
+    return null
+  }
+
+  if (isMediaKey(key)) {
+    answers.delete(key)
+    answers.set(key, answer)
+  }
+
+  return answer
+}
+
+// Drops a source's snapshots other than the current prefix, such as from an
+// old URL or server, while keeping snapshots from other sources intact.
+export async function dropStaleSnapshots(currentPrefix: string): Promise<void> {
+  const source = `${currentPrefix.split('|')[0] ?? ''}|`
+
+  if (source === '|' || state.droppedPrefixes.get(source) === currentPrefix) {
+    return
+  }
+
+  const answers = await getAnswers()
+
+  let deleted = false
+
+  for (const key of answers.keys()) {
+    if (key.startsWith(source) && !key.startsWith(currentPrefix)) {
+      answers.delete(key)
+      deleted = true
+    }
+  }
+
+  state.droppedPrefixes.set(source, currentPrefix)
+
+  if (deleted) {
+    saveSoon()
+  }
 }
 
 // Whether the source with this key prefix answered since snapshots were saved

@@ -4,13 +4,17 @@ import { UserAvatar } from '@/components/UserBadge'
 import { DashboardSearchParams } from '@/types/dashboard'
 import { Settings } from '@/types/settings'
 import { Library } from '@/types/statsSource'
+import { TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
+import { formatClockTime, formatDateTime } from '@/utils/formatting'
 import { getRecentPlays } from '@/utils/getHistory'
 import { getOwnOnlyUserId } from '@/utils/helpers'
 import { getImageProxyUrl } from '@/utils/imageProxy'
+import { toDateKey, toTimeZone } from '@/utils/timeZone'
 import { ChevronRightIcon, ClockIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { Session } from 'next-auth'
 import { getLocale, getNow, getTranslations } from 'next-intl/server'
+import { cookies } from 'next/headers'
 import Link from 'next/link'
 import TileItem, { TILE_ITEM_COUNT, TileItemsSkeleton } from './TileItem'
 
@@ -36,6 +40,9 @@ export default async function HistoryTile({
   })
   const locale = await getLocale()
   const now = await getNow()
+  const timeZone = toTimeZone(
+    (await cookies()).get(TIME_ZONE_COOKIE_NAME)?.value,
+  )
 
   return (
     <div className='glass-sheet tile'>
@@ -51,7 +58,7 @@ export default async function HistoryTile({
               name: isAnonymous
                 ? t('History.anonymous')
                 : play.userName || t('History.unknownUser'),
-              avatar: play.avatar,
+              avatar: isAnonymous ? '' : play.avatar,
               isAnonymous,
             }
 
@@ -76,6 +83,7 @@ export default async function HistoryTile({
                     time={new Date(play.startedAt)}
                     now={now}
                     locale={locale}
+                    timeZone={timeZone}
                     isNewest={index === 0}
                   />
                 }
@@ -149,31 +157,38 @@ type TimelineMarkProps = {
   time: Date
   now: Date
   locale: string
+  timeZone?: string
   // The newest play's dot lights up
   isNewest: boolean
 }
 
 // When the play started, on a line through the plays: today's by the clock,
-// older ones by the date. In the server's timezone, like the history page.
-function TimelineMark({ time, now, locale, isNewest }: TimelineMarkProps) {
-  const isToday = time.toDateString() === now.toDateString()
+// older ones by the date. In the viewer's timezone like the history page, or
+// the server's without one.
+function TimelineMark({
+  time,
+  now,
+  locale,
+  timeZone,
+  isNewest,
+}: TimelineMarkProps) {
+  const isToday =
+    toDateKey(time.getTime(), timeZone) === toDateKey(now.getTime(), timeZone)
 
   return (
     <>
       <time
         dateTime={time.toISOString()}
-        title={new Intl.DateTimeFormat(locale, {
-          dateStyle: 'medium',
-          timeStyle: 'short',
-        }).format(time)}
+        title={formatDateTime(time, locale, timeZone)}
         className='w-14 shrink-0 text-right text-xs whitespace-nowrap text-neutral-400 tabular-nums'
       >
-        {new Intl.DateTimeFormat(
-          locale,
-          isToday
-            ? { hour: 'numeric', minute: '2-digit' }
-            : { day: 'numeric', month: 'short' },
-        ).format(time)}
+        {isToday
+          ? formatClockTime(time, locale, timeZone)
+          : new Intl.DateTimeFormat(locale, {
+              day: 'numeric',
+              month: 'short',
+              timeZone,
+            }).format(time)}
       </time>
       <span
         aria-hidden='true'

@@ -91,7 +91,7 @@ export function writeSettings(settings: Settings): void {
     console.warn(
       `[SETTINGS] - Unable to replace ${SETTINGS_PATH} atomically (${code}), writing it in place instead.`,
     )
-    fs.writeFileSync(SETTINGS_PATH, content)
+    fs.writeFileSync(SETTINGS_PATH, content, { mode: 0o600 })
   }
 
   invalid = undefined
@@ -404,7 +404,11 @@ function writeAtomically(content: string): void {
   const original = statQuietly()
 
   try {
-    const fd = fs.openSync(tempPath, 'w', original && original.mode & 0o777)
+    const fd = fs.openSync(
+      tempPath,
+      'w',
+      original ? original.mode & 0o777 : 0o600,
+    )
 
     try {
       if (original) {

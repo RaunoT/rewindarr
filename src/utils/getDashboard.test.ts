@@ -7,8 +7,11 @@ import { fetchSeerrStats, fetchSeerrUserId } from './fetchSeerr'
 import {
   getItemsLimit,
   getNextItemsLimit,
+  getTotalCount,
   getTotalRequests,
+  getTotalSize,
 } from './getDashboard'
+import { getStatsSource } from './statsSource'
 
 vi.mock('next-intl/server', () => ({ getTranslations: vi.fn() }))
 vi.mock('./statsSource', () => ({ getStatsSource: vi.fn() }))
@@ -25,9 +28,9 @@ function library(type: Library['section_type']): Library {
     section_id: '1',
     section_name: type,
     section_type: type,
-    count: '1',
-    parent_count: '0',
-    child_count: '0',
+    count: '12',
+    parent_count: '3',
+    child_count: '40',
     is_active: 1,
   }
 }
@@ -122,6 +125,69 @@ describe('getTotalRequests', () => {
       await getTotalRequests('2026-09-01', withoutStatistic),
     ).toBeUndefined()
     expect(statsMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('getTotalCount', () => {
+  const getPlayedCount = vi.fn()
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    getPlayedCount.mockResolvedValue(4)
+    vi.mocked(getStatsSource).mockReturnValue({
+      getPlayedCount,
+    } as unknown as ReturnType<typeof getStatsSource>)
+  })
+
+  it("counts a library's movies, episodes or tracks", async () => {
+    expect(
+      await getTotalCount(library('movie'), '2026-09-01', settings()),
+    ).toBe(12)
+    expect(await getTotalCount(library('show'), '2026-09-01', settings())).toBe(
+      40,
+    )
+    expect(getPlayedCount).not.toHaveBeenCalled()
+  })
+
+  it('counts what one user played in the period', async () => {
+    const show = library('show')
+
+    expect(await getTotalCount(show, '2026-09-01', settings(), '42')).toBe(4)
+    expect(getPlayedCount).toHaveBeenCalledWith(show, {
+      since: '2026-09-01',
+      userId: '42',
+    })
+  })
+
+  it('needs the statistic to be on', async () => {
+    const withoutStatistic = settings()
+
+    withoutStatistic.dashboard.activeTotalStatistics = ['duration']
+
+    expect(
+      await getTotalCount(
+        library('movie'),
+        '2026-09-01',
+        withoutStatistic,
+        '42',
+      ),
+    ).toBeUndefined()
+    expect(getPlayedCount).not.toHaveBeenCalled()
+  })
+})
+
+describe('getTotalSize', () => {
+  it("leaves the library's size out for one user", async () => {
+    const getLibrariesSize = vi.fn()
+
+    vi.mocked(getStatsSource).mockReturnValue({
+      getLibrariesSize,
+    } as unknown as ReturnType<typeof getStatsSource>)
+
+    expect(
+      await getTotalSize(library('movie'), settings(), '42'),
+    ).toBeUndefined()
+    expect(getLibrariesSize).not.toHaveBeenCalled()
   })
 })
 

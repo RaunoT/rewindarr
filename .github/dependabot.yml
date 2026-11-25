@@ -13,3 +13,31 @@ updates:
       github-actions:
         patterns:
           - '*'
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: build
+      prefix-development: chore
+      include: scope
+    groups:
+      npm-minor:
+        update-types:
+          - minor
+          - patch
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: build
+      include: scope
+    ignore:
+      - dependency-name: node
+        update-types:
+          - version-update:semver-major

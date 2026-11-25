@@ -8,6 +8,33 @@ export function parseCustomPeriod(customPeriod: string): number {
   return Math.max(1, parseInt(customPeriod) || 1)
 }
 
+type PeriodOption = NonNullable<DashboardSearchParams['period']>
+
+// How long the built-in periods are, which a custom period would only repeat
+const BUILT_IN_PERIOD_DAYS = { '7days': 7, pastYear: 365 } as const
+
+export function isBuiltInPeriodLength(days: number): boolean {
+  return Object.values(BUILT_IN_PERIOD_DAYS).includes(days as never)
+}
+
+// The period filter's options, shortest first. A custom period saved before
+// the settings turned these lengths down stands in for the built-in one, as
+// it's the default the filter falls back to.
+export function getPeriodOptions(customPeriod: number): PeriodOption[] {
+  const options: { value: PeriodOption; days: number }[] = [
+    { value: '7days', days: BUILT_IN_PERIOD_DAYS['7days'] },
+    { value: 'pastYear', days: BUILT_IN_PERIOD_DAYS.pastYear },
+    { value: 'allTime', days: Infinity },
+  ]
+
+  return [
+    { value: 'custom' as const, days: customPeriod },
+    ...options.filter(({ days }) => days !== customPeriod),
+  ]
+    .sort((a, b) => a.days - b.days)
+    .map(({ value }) => value)
+}
+
 export default function getPeriod(
   periodSearchParam: DashboardSearchParams['period'],
   settings: Settings,

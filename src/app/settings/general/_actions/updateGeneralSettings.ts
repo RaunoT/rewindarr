@@ -21,7 +21,7 @@ export default async function saveGeneralSettings(
   prevState: SettingsFormInitialState<GeneralSettings>,
   formData: FormData,
 ) {
-  const denied = await denySettingsAccess(prevState)
+  const denied = await denySettingsAccess(prevState, 'general')
 
   if (denied) {
     return denied

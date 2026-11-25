@@ -7,7 +7,13 @@ export type ConnectionError = {
     | 'unexpectedResponse'
     | 'certificateError'
     | 'unableToConnect'
-  values?: { status: number }
+    | 'noMediaServer'
+    | 'notMediaServer'
+    | 'mediaServerUrlRequired'
+    | 'enterUrl'
+    | 'enterApiKey'
+    | 'redirected'
+  values?: Record<string, string | number>
 }
 
 // Error codes Node reports when a TLS certificate can't be verified.
@@ -36,6 +42,12 @@ export function getStatusError(status: number): ConnectionError {
 
   if (status === 404) {
     return { key: 'urlNotFound' }
+  }
+
+  // Only from requests that don't follow redirects, as their key would go
+  // with it
+  if (status >= 300 && status < 400) {
+    return { key: 'redirected' }
   }
 
   return unexpectedResponse(status)

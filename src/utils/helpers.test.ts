@@ -1,5 +1,6 @@
 import { Settings } from '@/types/settings'
-import { cloneDeep } from 'lodash'
+import { Library } from '@/types/statsSource'
+import { cloneDeep, kebabCase as lodashKebabCase } from 'lodash'
 import { Session } from 'next-auth'
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
@@ -8,8 +9,13 @@ import {
   checkRequiredSettings,
   getAverage,
   getAverageShares,
+  getDashboardFilterAccess,
+  getDashboardQuery,
   getDifference,
+  getFirstHeaderValue,
   getHomeTiles,
+  getLibrarySlug,
+  getOpenPages,
   getOwnOnlyUserId,
   getRequestsBreakdown,
   getRewindBreakdown,
@@ -20,6 +26,7 @@ import {
   isPostUpdateMissingSettings,
   isRewindOnly,
   isSettingsPageLocked,
+  isSettingsPath,
   isUsersPageVisible,
   Viewer,
 } from './helpers'
@@ -603,6 +610,24 @@ describe('isRewindOnly', () => {
     settings.dashboard.isUsersPageActive = true
 
     expect(isRewindOnly(settings, user)).toBe(false)
+    expect(getOpenPages(settings, user)).toEqual(['rewind', 'dashboard'])
+
+    settings.dashboard.isOwnOnly = true
+
+    expect(isRewindOnly(settings, user)).toBe(true)
+    expect(getOpenPages(settings, user)).toEqual(['rewind'])
+    expect(isRewindOnly(settings, admin)).toBe(false)
+    expect(getOpenPages(settings, admin)).toEqual(['rewind', 'dashboard'])
+
+    settings.dashboard.isOwnOnlyForAdmin = true
+
+    expect(isRewindOnly(settings, admin)).toBe(true)
+    expect(getOpenPages(settings, admin)).toEqual(['rewind'])
+
+    settings.general.activeLibraries = ['movies']
+
+    expect(isRewindOnly(settings, user)).toBe(false)
+    expect(isRewindOnly(settings, admin)).toBe(false)
   })
 
   it('goes by what each viewer can see', () => {
@@ -639,5 +664,133 @@ describe('isSettingsPageLocked', () => {
     const settings = { connection: { complete: true } }
 
     expect(isSettingsPageLocked('general', settings)).toBe(false)
+  })
+})
+
+describe('isSettingsPath', () => {
+  it('matches only /settings and its subpaths', () => {
+    expect(isSettingsPath('/settings')).toBe(true)
+    expect(isSettingsPath('/settings/general')).toBe(true)
+    expect(isSettingsPath('/dashboard/settings')).toBe(false)
+    expect(isSettingsPath('/settings-other')).toBe(false)
+  })
+})
+
+describe('getFirstHeaderValue', () => {
+  it('reads the first trimmed value from a forwarded header list', () => {
+    expect(getFirstHeaderValue('https, http')).toBe('https')
+    expect(getFirstHeaderValue(' example.com , proxy.internal ')).toBe(
+      'example.com',
+    )
+    expect(getFirstHeaderValue('  , https')).toBeUndefined()
+    expect(getFirstHeaderValue(null)).toBeUndefined()
+  })
+})
+
+describe('getLibrarySlug', () => {
+  it.each([
+    'TV Shows',
+    '4K Movies',
+    'Movies 4K',
+    'Sci-Fi & Fantasy',
+    "Kids' Movies",
+    'Café Music',
+    'TVShows',
+    'myMovies',
+    'Anime (Subbed)',
+    '2024_Movies',
+    'Foo--Bar',
+    'HDMovies2',
+    '1080p Movies',
+    'Über Movies',
+    'Æon',
+    '2nd Edition',
+    '映画 2024',
+    'Кино',
+    'Мой сериалы',
+    'Ёлки',
+    'Phim Việt',
+    'Ταινίες',
+    'ドラマ',
+    'हिन्दी फ़िल्में',
+    'Musik ♫',
+    'Vidéos 😀',
+    'Ⅳ Movies',
+    '한국 드라마',
+    '',
+  ])('matches lodash kebabCase for %j', (name) => {
+    expect(getLibrarySlug({ section_name: name } as Library)).toBe(
+      lodashKebabCase(name),
+    )
+  })
+})
+
+describe('getDashboardQuery', () => {
+  const signedIn = { personalFilter: true, isOwnOnly: false }
+  const signedOut = { personalFilter: false, isOwnOnly: false }
+  const ownOnly = { personalFilter: false, isOwnOnly: true }
+
+  it('carries the saved filters', () => {
+    expect(
+      getDashboardQuery(
+        { personal: 'true', period: '7days', sortBy: 'duration' },
+        signedIn,
+      ),
+    ).toBe('?personal=true&period=7days&sortBy=duration')
+    expect(getDashboardQuery({}, signedIn)).toBe('')
+  })
+
+  it('only carries the period to the users dashboard', () => {
+    expect(
+      getDashboardQuery(
+        { personal: 'true', period: 'allTime', sortBy: 'duration' },
+        signedIn,
+        true,
+      ),
+    ).toBe('?period=allTime')
+    expect(getDashboardQuery({ personal: 'true' }, signedIn, true)).toBe('')
+  })
+
+  it('leaves out "Just me" for a viewer without it', () => {
+    expect(
+      getDashboardQuery({ personal: 'true', sortBy: 'duration' }, signedOut),
+    ).toBe('?sortBy=duration')
+    expect(getDashboardQuery({ personal: 'true' }, ownOnly)).toBe('')
+  })
+
+  it('leaves out the users sort when only one user is shown', () => {
+    expect(getDashboardQuery({ sortBy: 'users' }, ownOnly)).toBe('')
+    expect(
+      getDashboardQuery({ personal: 'true', sortBy: 'users' }, signedIn),
+    ).toBe('?personal=true')
+    expect(
+      getDashboardQuery({ personal: 'true', sortBy: 'users' }, signedOut),
+    ).toBe('?sortBy=users')
+  })
+})
+
+describe('getDashboardFilterAccess', () => {
+  const session = { user: { id: '1', isAdmin: false } } as Session
+
+  it('offers "Just me" to a signed-in viewer', () => {
+    expect(getDashboardFilterAccess(DEFAULT_SETTINGS, session)).toEqual({
+      personalFilter: true,
+      isOwnOnly: false,
+    })
+    expect(getDashboardFilterAccess(DEFAULT_SETTINGS, null)).toEqual({
+      personalFilter: false,
+      isOwnOnly: false,
+    })
+  })
+
+  it('has no choice when the viewer only sees their own', () => {
+    const settings = cloneDeep(DEFAULT_SETTINGS)
+
+    settings.dashboard.isOwnOnly = true
+
+    expect(getDashboardFilterAccess(settings, session)).toEqual({
+      personalFilter: false,
+      isOwnOnly: true,
+    })
   })
 })

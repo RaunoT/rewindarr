@@ -1,9 +1,10 @@
 import { Play, PlayMediaType } from '@/types/playHistory'
-import { ItemRow, Library, TopItemsSort } from '@/types/statsSource'
+import { ItemRow, Library, TopItemsSort, TopPerson } from '@/types/statsSource'
 import { sum } from 'lodash'
 import { describe, expect, it, vi } from 'vitest'
 import getSettings from './getSettings'
 import {
+  countPlayedTitles,
   createPlayStats,
   filterPlays,
   getExcludedIdentityIds,
@@ -202,16 +203,22 @@ describe('getPlayItem', () => {
     }),
   ]
 
-  function getPlayItem(plays: Play[], userId?: string, until?: string) {
+  function getPlayItem(
+    plays: Play[],
+    userId?: string,
+    until?: string,
+    libraries?: Library[],
+  ) {
     vi.mocked(getSettings).mockReturnValue({
       general: { excludedUsers: [] },
     } as unknown as ReturnType<typeof getSettings>)
 
     return createPlayStats({
-      getPlays: async () => plays,
+      getPlays: async (_, requestedLibraries) =>
+        requestedLibraries ? [] : plays,
       getUsers: async () => [user('1', 'alice'), user('2', 'bob')],
       getMediaData: async () => ({ thumb: '', isDeleted: false }),
-    }).getPlayItem(firstPlay, userId, until)
+    }).getPlayItem(firstPlay, userId, until, libraries)
   }
 
   it("counts the user's plays of the item since their first play", async () => {
@@ -243,6 +250,23 @@ describe('getPlayItem', () => {
     expect(item.total_plays).toBe(1)
     expect(item.total_duration).toBe(6000)
   })
+
+  it('scopes user plays to the given libraries', async () => {
+    const shows = { section_type: 'show' } as Library
+    const getPlays = vi.fn(async () => history)
+
+    vi.mocked(getSettings).mockReturnValue({
+      general: { excludedUsers: [] },
+    } as unknown as ReturnType<typeof getSettings>)
+
+    await createPlayStats({
+      getPlays,
+      getUsers: async () => [user('1', 'alice')],
+      getMediaData: async () => ({ thumb: '', isDeleted: false }),
+    }).getPlayItem(firstPlay, '1', undefined, [shows])
+
+    expect(getPlays).toHaveBeenCalledWith(new Date(0), [shows])
+  })
 })
 
 describe('getTopItems', () => {
@@ -263,7 +287,7 @@ describe('getTopItems', () => {
     ),
   ]
 
-  async function rank(sortBy?: TopItemsSort) {
+  async function rank(sortBy?: TopItemsSort, since = '2026-01-01') {
     vi.mocked(getSettings).mockReturnValue({
       general: { excludedUsers: [] },
     } as unknown as ReturnType<typeof getSettings>)
@@ -273,7 +297,7 @@ describe('getTopItems', () => {
       getUsers: async () => [],
       getMediaData: async () => ({ thumb: '', isDeleted: false }),
     }).getTopItems({ section_type: 'movie' } as Library, {
-      period: 3650,
+      since,
       sortBy,
       count: 5,
     })
@@ -291,6 +315,167 @@ describe('getTopItems', () => {
 
   it('ranks by users, then by plays', async () => {
     expect(await rank('users')).toEqual(['Alien', 'Heat', 'Dune'])
+  })
+
+  it('leaves out plays before the exact period start date', async () => {
+    expect(await rank('duration', '2026-03-02')).toEqual(['Heat', 'Alien'])
+  })
+})
+
+describe('countPlayedTitles', () => {
+  it('counts each movie once, however often it was played', () => {
+    expect(
+      countPlayedTitles(
+        [
+          play('heat 1', '2026-03-01T20:00:00Z', { title: 'Heat', year: 1995 }),
+          play('heat 2', '2026-03-02T20:00:00Z', { title: 'Heat', year: 1995 }),
+          play('dune', '2026-03-03T20:00:00Z', { title: 'Dune', year: 2021 }),
+        ],
+        50,
+      ),
+    ).toBe(2)
+  })
+
+  it("counts a show's episodes by their numbers", () => {
+    function episode(id: string, season: number, number: number, title = id) {
+      return play(id, '2026-03-01T20:00:00Z', {
+        mediaType: 'episode',
+        title,
+        showTitle: 'Severance',
+        seasonNumber: season,
+        episodeNumber: number,
+      })
+    }
+
+    expect(
+      countPlayedTitles(
+        [
+          episode('pilot', 1, 1),
+          // Renamed since, but the same episode
+          episode('pilot again', 1, 1, 'Good News About Hell'),
+          episode('second', 1, 2),
+          episode('premiere', 2, 1),
+          play('other show', '2026-03-01T20:00:00Z', {
+            mediaType: 'episode',
+            title: 'Pilot',
+            showTitle: 'Andor',
+            seasonNumber: 1,
+            episodeNumber: 1,
+          }),
+        ],
+        50,
+      ),
+    ).toBe(4)
+  })
+
+  it('tells specials apart from the first season', () => {
+    function episode(id: string, season: number, number: number) {
+      return play(id, '2026-03-01T20:00:00Z', {
+        mediaType: 'episode',
+        title: 'Episode',
+        showTitle: 'Doctor Who',
+        seasonNumber: season,
+        episodeNumber: number,
+      })
+    }
+
+    expect(
+      countPlayedTitles(
+        [
+          episode('special', 0, 1),
+          episode('first', 1, 1),
+          episode('again', 0, 1),
+        ],
+        50,
+      ),
+    ).toBe(2)
+  })
+
+  it('counts episodes without numbers by their title', () => {
+    function episode(id: string, title: string) {
+      return play(id, '2026-03-01T20:00:00Z', {
+        mediaType: 'episode',
+        title,
+        showTitle: 'Severance',
+      })
+    }
+
+    expect(
+      countPlayedTitles(
+        [
+          episode('1', 'Good News About Hell'),
+          episode('2', 'good news about hell'),
+          episode('3', 'Half Loop'),
+        ],
+        50,
+      ),
+    ).toBe(2)
+  })
+
+  it('counts tracks by their title within the artist', () => {
+    function track(id: string, title: string, artistName: string) {
+      return play(id, '2026-03-01T20:00:00Z', {
+        mediaType: 'track',
+        title,
+        artistName,
+        durationMs: 3 * 60 * 1000,
+      })
+    }
+
+    expect(
+      countPlayedTitles(
+        [
+          track('1', 'Intro', 'The xx'),
+          track('2', 'intro ', 'The xx'),
+          track('3', 'Intro', 'M83'),
+          track('4', 'Angels', 'The xx'),
+        ],
+        50,
+      ),
+    ).toBe(3)
+  })
+
+  it('leaves out titles without a play that counts', () => {
+    expect(
+      countPlayedTitles(
+        [
+          play('given up', '2026-03-01T20:00:00Z', {
+            title: 'Alien',
+            percentComplete: 10,
+          }),
+          play('watched', '2026-03-01T20:00:00Z', { title: 'Heat' }),
+        ],
+        50,
+      ),
+    ).toBe(1)
+  })
+})
+
+describe('getPlayedCount', () => {
+  it("counts only the user's plays in the period", async () => {
+    vi.mocked(getSettings).mockReturnValue({
+      general: { excludedUsers: ['2'], minPlayPercent: 50 },
+    } as unknown as ReturnType<typeof getSettings>)
+
+    const count = await createPlayStats({
+      getPlays: async () => [
+        play('heat', '2026-03-02T20:00:00Z', { title: 'Heat' }),
+        play('dune', '2026-03-03T20:00:00Z', { title: 'Dune' }),
+        play('before', '2026-02-01T20:00:00Z', { title: 'Alien' }),
+        play('bob', '2026-03-03T20:00:00Z', {
+          title: 'Up',
+          identityId: 'bob',
+        }),
+      ],
+      // The user's own count, even when they're excluded from the server's
+      getUsers: async () => [user('2', 'alice'), user('3', 'bob')],
+      getMediaData: async () => ({ thumb: '', isDeleted: false }),
+    }).getPlayedCount({ section_type: 'movie' } as Library, {
+      since: '2026-03-01',
+      userId: '2',
+    })
+
+    expect(count).toBe(2)
   })
 })
 
@@ -411,7 +596,7 @@ describe('plays short of the percent in the settings', () => {
 
   it('count every play with the percent at 0', async () => {
     const { items } = await getStats(0).getTopItems(movies, {
-      period: 3650,
+      since: '2026-01-01',
       sortBy: 'plays',
       count: 5,
     })
@@ -424,7 +609,7 @@ describe('plays short of the percent in the settings', () => {
 
   it('add their watch time to an item, but not a play or a user', async () => {
     const { items } = await getStats().getTopItems(movies, {
-      period: 3650,
+      since: '2026-01-01',
       sortBy: 'plays',
       count: 5,
     })
@@ -441,7 +626,7 @@ describe('plays short of the percent in the settings', () => {
 
   it('keep an item without a counted play in the watch time ranking', async () => {
     const { items } = await getStats().getTopItems(movies, {
-      period: 3650,
+      since: '2026-01-01',
       sortBy: 'duration',
       count: 5,
     })
@@ -486,6 +671,130 @@ describe('plays short of the percent in the settings', () => {
 
     expect(sum(hourly)).toBe(1)
     expect(sum(daily)).toBe(1)
+  })
+})
+
+describe('getTopPeople', () => {
+  // Three movies with the same star sampled for minutes, two others watched
+  const runtime = 140 * 60 * 1000
+  const casts: Record<string, string[]> = {
+    'Mad Max: Fury Road': ['Charlize Theron'],
+    Prometheus: ['Charlize Theron'],
+    'Atomic Blonde': ['Charlize Theron'],
+    Gladiator: ['Russell Crowe'],
+    'A Beautiful Mind': ['Russell Crowe'],
+  }
+  const history = Object.keys(casts).map((title, i) => {
+    const isSampled = casts[title][0] === 'Charlize Theron'
+
+    return play(title, `2026-03-0${i + 1}T20:00:00Z`, {
+      title,
+      lengthMs: runtime,
+      durationMs: isSampled ? 7 * 60 * 1000 : runtime,
+    })
+  })
+
+  async function getPeople(plays: Play[], cast: Record<string, string[]>) {
+    vi.mocked(getSettings).mockReturnValue({
+      general: { excludedUsers: [], minPlayPercent: 50 },
+    } as unknown as ReturnType<typeof getSettings>)
+
+    const getMediaData = vi.fn(async (item: ItemRow) => ({
+      thumb: '',
+      isDeleted: false,
+      credits: { directors: [], actors: cast[item.title] },
+    }))
+    const people = await createPlayStats({
+      getPlays: async () => plays,
+      getUsers: async () => [user('1', 'alice')],
+      getMediaData,
+    }).getTopPeople(
+      '1',
+      [
+        { section_type: 'movie' } as Library,
+        { section_type: 'show' } as Library,
+      ],
+      { since: '2026-01-01' },
+    )
+
+    return {
+      people,
+      lookups: getMediaData.mock.calls.map(([item]) => item.title),
+    }
+  }
+
+  function summarize(people: TopPerson[]) {
+    return people.map(({ name, count, duration }) => ({
+      name,
+      count,
+      duration,
+    }))
+  }
+
+  it('leaves out titles without a play that counts, before their credits', async () => {
+    const { people, lookups } = await getPeople(history, casts)
+
+    expect(lookups).toEqual(['Gladiator', 'A Beautiful Mind'])
+    expect(summarize(people.movieActors)).toEqual([
+      { name: 'Russell Crowe', count: 2, duration: 2 * 140 * 60 },
+    ])
+  })
+
+  it('looks nothing up when every title was only sampled', async () => {
+    const sampled = history.filter(
+      (play) => casts[play.title][0] === 'Charlize Theron',
+    )
+    const { people, lookups } = await getPeople(sampled, casts)
+
+    expect(lookups).toEqual([])
+    expect(people).toEqual({ directors: [], movieActors: [], showActors: [] })
+  })
+
+  it("counts a show once, with its sampled episodes' watch time", async () => {
+    const episodeLength = 50 * 60 * 1000
+
+    function episode(
+      id: string,
+      showTitle: string,
+      overrides: Partial<Play>,
+    ): Play {
+      return play(id, '2026-03-01T20:00:00Z', {
+        mediaType: 'episode',
+        showTitle,
+        lengthMs: episodeLength,
+        ...overrides,
+      })
+    }
+
+    // The same show on two servers, one episode watched and one sampled
+    const plays = [
+      episode('watched', 'Severance', {
+        title: 'Good News About Hell',
+        grandparentRatingKey: '10',
+        showMediaId: 'severance',
+        durationMs: episodeLength,
+      }),
+      episode('sampled', 'Severance', {
+        title: 'Half Loop',
+        grandparentRatingKey: '20',
+        showMediaId: 'severance',
+        durationMs: 3 * 60 * 1000,
+      }),
+      episode('other', 'Andor', {
+        title: 'Kassa',
+        showMediaId: 'andor',
+        durationMs: episodeLength,
+      }),
+    ]
+    const { people, lookups } = await getPeople(plays, {
+      Severance: ['Adam Scott'],
+      Andor: ['Adam Scott'],
+    })
+
+    expect(lookups).toEqual(['Severance', 'Andor'])
+    expect(summarize(people.showActors)).toEqual([
+      { name: 'Adam Scott', count: 2, duration: (2 * 50 + 3) * 60 },
+    ])
   })
 })
 

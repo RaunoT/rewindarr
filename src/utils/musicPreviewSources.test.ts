@@ -380,4 +380,21 @@ describe('fetchDeezerPreview', () => {
       MusicPreviewError,
     )
   })
+
+  it('skips the request if the host is marked down while waiting its turn', async () => {
+    fetchMock.mockImplementationOnce(async () => {
+      vi.mocked(isHostDown).mockReturnValue(true)
+
+      return Response.json({ id: 11, preview: DEEZER_PREVIEW })
+    })
+
+    const first = fetchDeezerPreview(11).catch((error: unknown) => error)
+    const second = fetchDeezerPreview(12).catch((error: unknown) => error)
+
+    await vi.runAllTimersAsync()
+
+    await expect(first).resolves.toBe(DEEZER_PREVIEW)
+    await expect(second).resolves.toBeInstanceOf(MusicPreviewError)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
 })

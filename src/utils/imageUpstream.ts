@@ -22,9 +22,12 @@ const PLEX_IMAGE_PATH =
   /^\/library\/metadata\/\d+\/(thumb|art|banner|clearLogo|poster)(\/\d+)?$/
 const MAX_DIMENSION = 2000
 const TMDB_IMAGE_HOST = 'image.tmdb.org'
-// plex.tv's own photo transcoder fetches any URL it is given
-const PLEX_TV_HOST = /(^|\.)plex\.tv$/
-const PLEX_TV_PHOTO_PATH = /^\/photo(\/|$)/
+// plex.tv's own photo transcoder (/photo) fetches any URL it is given, so
+// only explicit avatar paths on plex.tv are allowed directly.
+const PLEX_TV_HOST = 'plex.tv'
+const PLEX_TV_IMAGE_PATHS = ['/users/', '/avatars/']
+// Where plex.tv redirects uploaded avatars to
+const PLEX_ASSETS_HOST = 'assets.plex.tv'
 // Plex avatars redirect through Gravatar, which serves the plex.tv fallback
 // through WordPress's image proxy. Both fetch other URLs too, so they're only
 // followed as redirects, and the proxy only to plex.tv.
@@ -115,11 +118,49 @@ function isTracearrImageUrl(url: URL, settings: Settings): boolean {
   )
 }
 
-function isPublicImageUrl({ protocol, hostname, pathname }: URL): boolean {
+function decodeSafePath(pathname: string): string | null {
+  if (ENCODED_SEPARATOR.test(pathname)) {
+    return null
+  }
+
+  try {
+    const decoded = decodeURIComponent(pathname)
+
+    return ENCODED_SEPARATOR.test(decoded) ? null : decoded
+  } catch {
+    return null
+  }
+}
+
+function isPublicImageUrl({
+  protocol,
+  hostname,
+  pathname,
+  port,
+  username,
+  password,
+}: URL): boolean {
+  if (protocol !== 'https:' || port || username || password) {
+    return false
+  }
+
+  const decoded = decodeSafePath(pathname)
+
+  if (!decoded) {
+    return false
+  }
+
+  if (hostname === TMDB_IMAGE_HOST) {
+    return decoded.startsWith('/t/p/')
+  }
+
+  if (hostname === PLEX_ASSETS_HOST) {
+    return decoded.startsWith('/avatars/')
+  }
+
   return (
-    protocol === 'https:' &&
-    (hostname === TMDB_IMAGE_HOST ||
-      (PLEX_TV_HOST.test(hostname) && !PLEX_TV_PHOTO_PATH.test(pathname)))
+    hostname === PLEX_TV_HOST &&
+    PLEX_TV_IMAGE_PATHS.some((prefix) => decoded.startsWith(prefix))
   )
 }
 

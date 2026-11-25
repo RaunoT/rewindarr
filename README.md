@@ -28,6 +28,7 @@ With Tracearr, plays on more than one server can count together, Plex and Jellyf
 - 👀 Dashboard - provides an easily glanceable overview of activity on your server for all your libraries, personalized or general.
 - ⚡ Activity - see what's happening on your server in real time.
 - 🕘 History - browse and search past plays and requests, with binges grouped together.
+- ✉️ Email - send users their Rewind, and a weekly or monthly newsletter with their own and the server's stats.
 - 📊 Fuelled by data from [Tautulli](https://tautulli.com) or [Tracearr](https://github.com/connorgallopo/Tracearr) - the backbone responsible for the heavy lifting regarding statistics.
 - 🔗 Integrates with [Seerr](https://seerr.dev) - show request breakdowns and totals and display request buttons next to deleted fan-favorite media items.
 - 🍅 Ratings from TMDB, IMDb and Rotten Tomatoes.

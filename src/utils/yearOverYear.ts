@@ -15,7 +15,7 @@ import {
 } from './rewindPeriod'
 import { toDateKey } from './timeZone'
 
-const DAY = 24 * 60 * 60 * 1000
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/
 // With fewer plays that count in the earlier period, or on fewer days, the
 // change says more about a few evenings than about the user
 const MIN_PREVIOUS_PLAYS = 10
@@ -202,10 +202,6 @@ export function compareYears(
   }
 }
 
-function toDateString(time: number): string {
-  return new Date(time).toISOString().slice(0, 10)
-}
-
 // Episodes go by their show
 function toPreviousFavorite({
   play,
@@ -252,10 +248,11 @@ export async function getYearOverYear(
   }
 
   const t = await getTranslations()
+  const dateZone = DATE_ONLY.test(period.since) ? 'UTC' : timeZone
 
   return {
-    since: toDateString(comparison.previous.since),
-    until: toDateString(since - DAY),
+    since: toDateKey(comparison.previous.since, dateZone),
+    until: toDateKey(comparison.previous.until - 1, dateZone),
     isYear: getRewindPeriodType(settings) !== 'custom',
     isSoFar: isEditionOngoing(period, now),
     duration: secondsToTime(comparison.previousDuration, t),

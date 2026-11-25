@@ -5,6 +5,8 @@ import { instantTransition } from '@/utils/motion'
 import clsx from 'clsx'
 import { motion } from 'motion/react'
 import { useFormatter } from 'next-intl'
+import { useLayoutEffect, useRef, useState } from 'react'
+import { fitSpanLabels, SpanLabelFit } from './spanLabels'
 
 type Props = {
   data: number[]
@@ -12,6 +14,9 @@ type Props = {
   labels?: (string | null)[]
   // In place of the labels on wider screens, where the bars have more room
   wideLabels?: (string | null)[]
+  // A second row under the labels, from the bar each one starts at, such as
+  // the year of each January
+  yearLabels?: (string | null)[] | null
   ariaLabel: string
   axisLabel: string
   className?: string
@@ -93,11 +98,82 @@ function BarLabels({ labels, peakIndex, className }: BarLabelsProps) {
   )
 }
 
+// Each starts at its bar's left edge, with a tick there, so it marks where
+// what it names begins. They're measured once laid out, so one that would run
+// past the plot's end is set against it, without the tick, and one that would
+// run into the next is hidden, at any width and in any language.
+function SpanLabels({ labels }: { labels: (string | null)[] }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [fits, setFits] = useState<SpanLabelFit[] | null>(null)
+  const spans = labels.flatMap((label, index) =>
+    label ? [{ label, start: index / labels.length }] : [],
+  )
+
+  useLayoutEffect(() => {
+    const container = ref.current
+
+    if (!container) {
+      return
+    }
+
+    function measure() {
+      if (!container) {
+        return
+      }
+
+      const plotWidth = container.clientWidth
+      const boxes = [...container.children].map((child, index) => ({
+        start: spans[index].start * plotWidth,
+        width: (child as HTMLElement).offsetWidth,
+      }))
+
+      setFits(fitSpanLabels(boxes, plotWidth))
+    }
+
+    measure()
+
+    const observer = new ResizeObserver(measure)
+
+    observer.observe(container)
+
+    return () => observer.disconnect()
+    // The spans are new on every render, and only change with the labels
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [labels])
+
+  return (
+    <div ref={ref} className='relative mt-1 h-4'>
+      {spans.map(({ label, start }, index) => {
+        const fit = fits?.[index]
+
+        return (
+          <span
+            key={index}
+            className={clsx(
+              'absolute top-0 border-l pl-1 text-xs whitespace-nowrap text-neutral-500 tabular-nums',
+              // As wide either way, so it measures the same
+              fit?.isEndAligned
+                ? 'right-0 border-transparent'
+                : 'border-white/25',
+              // Measured before it's shown
+              (!fit || fit.isHidden) && 'invisible',
+            )}
+            style={fit?.isEndAligned ? undefined : { left: `${start * 100}%` }}
+          >
+            {label}
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function RewindBarChart({
   data,
   peakIndex,
   labels,
   wideLabels,
+  yearLabels,
   ariaLabel,
   axisLabel,
   className,
@@ -198,6 +274,12 @@ export default function RewindBarChart({
                 />
               )}
             </div>
+            {yearLabels && (
+              <>
+                <div aria-hidden />
+                <SpanLabels labels={yearLabels} />
+              </>
+            )}
           </>
         )}
       </div>

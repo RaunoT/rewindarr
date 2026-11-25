@@ -124,3 +124,8 @@ export function FilterGroup({
     </section>
   )
 }
+
+// A line under the filters about how what they show is counted
+export function FilterNote({ children }: { children: ReactNode }) {
+  return <p className='text-xs text-pretty text-neutral-400'>{children}</p>
+}

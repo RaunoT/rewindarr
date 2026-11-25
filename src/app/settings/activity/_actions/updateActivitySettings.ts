@@ -17,7 +17,7 @@ export default async function saveActivitySettings(
   prevState: SettingsFormInitialState<Partial<ActivitySettings>>,
   formData: FormData,
 ) {
-  const denied = await denySettingsAccess(prevState)
+  const denied = await denySettingsAccess(prevState, 'activity')
 
   if (denied) {
     return denied

@@ -498,10 +498,31 @@ describe('getYearOverYear', () => {
 
     expect(yearOverYear).toMatchObject({
       since: '2025-01-01',
+      until: '2025-11-04',
       isYear: true,
       isSoFar: true,
       difference: 0,
     })
+  })
+
+  it('formats comparison dates in the viewer timezone instead of UTC', async () => {
+    for (const timeZone of ['Europe/Tallinn', 'America/New_York']) {
+      const yearOverYear = await getYearOverYear(
+        [
+          ...daily('before', '2024-01-10T20:00:00Z', 10),
+          ...daily('now', '2025-06-01T20:00:00Z', 10),
+        ],
+        getEditionPeriod(2025, timeZone),
+        timeZone,
+      )
+
+      expect(yearOverYear).toMatchObject({
+        since: '2024-01-01',
+        until: '2024-12-31',
+        isYear: true,
+        isSoFar: false,
+      })
+    }
   })
 
   it('compares an excluded user with their own plays', async () => {

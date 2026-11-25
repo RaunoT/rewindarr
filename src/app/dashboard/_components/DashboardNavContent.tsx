@@ -1,25 +1,29 @@
 'use client'
 
+import { GlobalContext } from '@/app/_components/GlobalContextProvider'
 import TitleMenu from '@/components/TitleMenu'
-import { getLibrarySlug } from '@/utils/helpers'
+import { getDashboardQuery, getLibrarySlug } from '@/utils/helpers'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { usePathname } from 'next/navigation'
+import { useContext } from 'react'
 import { DashboardNavProps } from './DashboardNav'
 
 export default function DashboardNavContent({
   libraries,
   isUsersPageActive,
+  filterAccess,
   isMenu,
 }: DashboardNavProps) {
   const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const params = new URLSearchParams(searchParams.toString())
-
-  // The filters carry over, but another list starts from its first rows
-  params.delete('limit')
-
-  const query = params.size ? `?${params}` : ''
+  const {
+    dashboard: { isPersonal: personal, period, sortBy },
+  } = useContext(GlobalContext)
+  // The saved filters, like the sidebar's links. Another list starts from its
+  // first rows.
+  const filters = { personal, period, sortBy }
+  const query = getDashboardQuery(filters, filterAccess)
+  const usersQuery = getDashboardQuery(filters, filterAccess, true)
   const t = useTranslations('DashboardNavContent')
 
   if (isMenu) {
@@ -35,7 +39,7 @@ export default function DashboardNavContent({
           ...(isUsersPageActive
             ? [
                 {
-                  href: `/dashboard/users${query}`,
+                  href: `/dashboard/users${usersQuery}`,
                   label: t('users'),
                   isCurrent: pathname === '/dashboard/users',
                 },
@@ -65,7 +69,7 @@ export default function DashboardNavContent({
         {isUsersPageActive && (
           <li>
             <Link
-              href={`/dashboard/users${query}`}
+              href={`/dashboard/users${usersQuery}`}
               className='nav-link'
               aria-current={pathname === '/dashboard/users' && 'page'}
             >

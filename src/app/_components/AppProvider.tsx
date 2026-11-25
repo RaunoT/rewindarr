@@ -10,7 +10,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import clsx from 'clsx'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { ReactNode, useEffect } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import stars from '../_assets/stars.png'
 import GlobalContextProvider from './GlobalContextProvider'
 import HeaderControls, {
@@ -41,7 +41,6 @@ const SIDEBAR_ROUTES = [
   '/history',
   '/settings',
 ]
-const queryClient = new QueryClient()
 
 export default function AppProvider({
   children,
@@ -53,6 +52,7 @@ export default function AppProvider({
   isRewindOnly,
   isActivityDetailsHidden,
 }: Props) {
+  const [queryClient] = useState(() => new QueryClient())
   const pathname = usePathname()
   const router = useRouter()
   // Not during setup or before logging in, when there's nothing to browse yet
@@ -63,8 +63,9 @@ export default function AppProvider({
       SIDEBAR_ROUTES.some((route) => pathname.startsWith(route)))
   const hasSidebar = isBrowsing && !isRewindOnly
 
-  // Saved on every page, so it's there by the time Rewind is opened. A Rewind
-  // rendered without it, or with an old one, is rendered again once it's saved.
+  // Saved on every page, so it's there by the time a timezone-aware page is
+  // opened. A page rendered without it, or with an old one, is rendered again
+  // once it's saved.
   useEffect(() => {
     const { timeZone } = Intl.DateTimeFormat().resolvedOptions()
 
@@ -74,14 +75,16 @@ export default function AppProvider({
 
     setCookie(TIME_ZONE_COOKIE_NAME, timeZone)
 
+    const usesTimeZone =
+      (pathname === '/' && isBrowsing) ||
+      pathname.startsWith('/history') ||
+      pathname.startsWith('/rewind')
+
     // With cookies blocked, rendering again would change nothing
-    if (
-      pathname.startsWith('/rewind') &&
-      getCookie(TIME_ZONE_COOKIE_NAME) === timeZone
-    ) {
+    if (usesTimeZone && getCookie(TIME_ZONE_COOKIE_NAME) === timeZone) {
       router.refresh()
     }
-  }, [pathname, router])
+  }, [isBrowsing, pathname, router])
 
   useEffect(() => {
     if (!pathname.startsWith('/settings')) {
@@ -109,9 +112,7 @@ export default function AppProvider({
                 // container and keep sticky things inside from sticking.
                 'group/main flex h-full min-h-dvh flex-col items-center overflow-x-clip p-4 pt-(--page-top)',
                 {
-                  'justify-center':
-                    (pathname === '/' && !isBrowsing) ||
-                    pathname === '/~offline',
+                  'justify-center': pathname === '/' && !isBrowsing,
                   'lg:pl-68': hasSidebar,
                 },
               )}

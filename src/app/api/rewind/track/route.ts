@@ -1,8 +1,6 @@
-import { authOptions } from '@/lib/auth'
+import { canPlayRewind } from '@/lib/access'
 import getSettings from '@/utils/getSettings'
-import { canViewFeature, getViewer } from '@/utils/helpers'
 import { isSignedTrack, streamPlexAudio } from '@/utils/plexAudio'
-import { getServerSession } from 'next-auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,12 +8,11 @@ export const dynamic = 'force-dynamic'
 // can't have
 export async function GET(request: Request) {
   const settings = getSettings()
-  const session = await getServerSession(authOptions)
   const { searchParams } = new URL(request.url)
   const ratingKey = searchParams.get('key') ?? ''
 
   if (
-    !canViewFeature(settings, 'rewind', getViewer(session)) ||
+    !(await canPlayRewind(settings)) ||
     !settings.rewind.isThemeMusicActive ||
     !/^\d+$/.test(ratingKey) ||
     !isSignedTrack(ratingKey, searchParams.get('sig') ?? '')

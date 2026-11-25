@@ -2,10 +2,13 @@ import { createTranslator } from 'next-intl'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import en from '../../messages/en-GB.json'
 import {
+  bytesToSize,
   calculateETA,
   formatBitrate,
   formatChannels,
+  formatClockTime,
   formatCodec,
+  formatDateTime,
   formatDevice,
   formatDynamicRange,
   formatMonthYear,
@@ -22,6 +25,43 @@ const t: TranslateFunction = (key, params) => translator(key as never, params)
 const MINUTE = 60
 const HOUR = 60 * MINUTE
 const DAY = 24 * HOUR
+
+describe('bytesToSize', () => {
+  const GB = 1024 ** 3
+  const TB = 1024 ** 4
+
+  it('keeps values under 1000 in their unit', () => {
+    expect(bytesToSize(999 * GB, 2, t)).toBe('999 GB')
+    expect(bytesToSize(3.82 * TB, 2, t)).toBe('3.82 TB')
+    expect(bytesToSize(512, 2, t)).toBe('512 Bytes')
+  })
+
+  it('moves to the next unit from 1000', () => {
+    expect(bytesToSize(1004.39 * GB, 2, t)).toBe('0.98 TB')
+    expect(bytesToSize(1000 * GB, 2, t)).toBe('0.98 TB')
+    expect(bytesToSize(1010 * 1024 ** 2, 0, t)).toBe('1 GB')
+    expect(bytesToSize(1000, 2, t)).toBe('0.98 KB')
+  })
+
+  it('moves on when rounding reaches 1000', () => {
+    expect(bytesToSize(999.996 * GB, 2, t)).toBe('0.98 TB')
+  })
+
+  it('stops at the largest unit', () => {
+    expect(bytesToSize(1024 ** 9, 2, t)).toBe('1,024 YB')
+  })
+
+  it('returns nothing for no size or a size that makes no sense', () => {
+    expect(bytesToSize(0, 2, t)).toBeUndefined()
+    expect(bytesToSize(-1024, 2, t)).toBeUndefined()
+    expect(bytesToSize(Infinity, 2, t)).toBeUndefined()
+    expect(bytesToSize(NaN, 2, t)).toBeUndefined()
+  })
+
+  it('keeps a fraction of a byte in bytes', () => {
+    expect(bytesToSize(0.5, 2, t)).toBe('0.5 Bytes')
+  })
+})
 
 describe('secondsToTime', () => {
   it('returns the zero label for zero, negative or non-finite input', () => {
@@ -118,6 +158,35 @@ describe('calculateETA', () => {
     expect(calculateETA(undefined, '0', 'en')).toBeNull()
     expect(calculateETA('abc', '0', 'en')).toBeNull()
     expect(calculateETA('1000', '1000', 'en')).toBeNull()
+  })
+
+  it('writes the time like the other clocks', () => {
+    vi.setSystemTime(new Date(2026, 0, 1, 8, 10, 0))
+
+    expect(calculateETA(String(30 * 60 * 1000), '0', 'en-GB')).toBe('08:40')
+  })
+})
+
+describe('formatClockTime', () => {
+  const time = new Date('2026-11-25T08:40:00Z')
+
+  it('writes the time the way the locale does', () => {
+    expect(formatClockTime(time, 'en-GB', 'UTC')).toBe('08:40')
+    expect(formatClockTime(time, 'et', 'UTC')).toBe('08:40')
+    expect(formatClockTime(time, 'de', 'UTC')).toBe('08:40')
+    expect(formatClockTime(time, 'en-US', 'UTC')).toMatch(/^8:40\sAM$/)
+  })
+
+  it('uses the time zone it gets', () => {
+    expect(formatClockTime(time, 'en-GB', 'Europe/Tallinn')).toBe('10:40')
+  })
+})
+
+describe('formatDateTime', () => {
+  it('writes the date with the same time as formatClockTime', () => {
+    const time = new Date('2026-11-25T08:40:00Z')
+
+    expect(formatDateTime(time, 'en-GB', 'UTC')).toBe('25 Nov 2026, 08:40')
   })
 })
 

@@ -20,6 +20,8 @@ const USER_RETRY_INTERVAL = 5 * 60 * 1000
 
 export const MAX_CACHED_CHECKS = 500
 
+const PLEX_USER_TIMEOUT_MS = 15_000
+
 type PlexUser = {
   id: number
   title: string
@@ -35,9 +37,11 @@ async function getPlexUser(authToken: string): Promise<PlexUser | null> {
         'X-Plex-Token': authToken,
       },
       cache: 'no-store',
+      signal: AbortSignal.timeout(PLEX_USER_TIMEOUT_MS),
     })
 
     if (!res.ok) {
+      await res.body?.cancel()
       console.error(
         '[AUTH] - Failed to fetch user!',
         res.status,

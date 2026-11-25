@@ -56,6 +56,13 @@ beforeEach(() => {
   settings.general.excludedUsers = ['3']
   vi.resetAllMocks()
   vi.mocked(getSettings).mockReturnValue(settings)
+
+  const { rewindarrDownServices } = globalThis as {
+    rewindarrDownServices?: Map<string, unknown>
+  }
+
+  // A host marked down by another test would otherwise fail reachability checks
+  rewindarrDownServices?.clear()
   // The libraries are kept on globalThis, which would leak between tests
   delete (globalThis as { rewindarrTautulliLibraries?: unknown })
     .rewindarrTautulliLibraries
@@ -419,6 +426,22 @@ describe('getLibraries', () => {
     ])
     expect(countRequests()).toBe(2)
   })
+
+  it('is unreachable immediately when the host is backed off, even with cached libraries', async () => {
+    vi.mocked(getSettings)().connection.tautulliUrl = 'http://tautulli:8181'
+
+    const { markHostDown } = await import('./hostBackoff')
+
+    fetchMock.mockResolvedValue(tautulliData(libraries))
+    await tautulliSource.getLibraries()
+
+    await expect(tautulliSource.isReachable()).resolves.toBe(true)
+
+    markHostDown('http://tautulli:8181')
+
+    await expect(tautulliSource.isReachable()).resolves.toBe(false)
+    expect(countRequests()).toBe(1)
+  })
 })
 
 describe('getTotalDuration', () => {
@@ -470,7 +493,7 @@ describe('getTopItems', () => {
     ])
 
     const { items } = await tautulliSource.getTopItems(library('1', 'movie'), {
-      period: 3650,
+      since: '2026-01-01',
       count: 5,
     })
 
@@ -481,7 +504,7 @@ describe('getTopItems', () => {
     mockServer([play('1'), play('5'), play('5')])
 
     const { items } = await tautulliSource.getTopItems(library('1', 'movie'), {
-      period: 3650,
+      since: '2026-01-01',
       count: 5,
     })
 
@@ -493,10 +516,10 @@ describe('getTopItems', () => {
 
     const twoOfThree = await tautulliSource.getTopItems(
       library('3', 'artist'),
-      { period: 3650, count: 2 },
+      { since: '2026-01-01', count: 2 },
     )
     const all = await tautulliSource.getTopItems(library('3', 'artist'), {
-      period: 3650,
+      since: '2026-01-01',
       count: 3,
     })
 

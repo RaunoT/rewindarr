@@ -162,26 +162,83 @@ function getRequestedMedia(request: SeerrRequestItem) {
 // ID. The TMDB ID only stands in without one, as it can't tell a 4K copy from
 // the other. Tautulli's plays carry no TMDB ID, and Tracearr's episodes carry
 // their own, so only movies match by it. IDs are compared as strings.
-function isRequestedTitle(
-  request: SeerrRequestItem,
-  play: HistoryPlay,
-): boolean {
-  if (play.mediaType !== REQUEST_PLAY_TYPES[request.type]) {
-    return false
+type PlayIndex = {
+  byKey: Map<string, HistoryPlay[]>
+  byMovieTmdb: Map<number, HistoryPlay[]>
+}
+
+function addToIndex<K>(map: Map<K, HistoryPlay[]>, key: K, play: HistoryPlay) {
+  const list = map.get(key)
+
+  if (list) {
+    list.push(play)
+  } else {
+    map.set(key, [play])
+  }
+}
+
+function indexPlays(plays: HistoryPlay[]): PlayIndex {
+  const byKey = new Map<string, HistoryPlay[]>()
+  const byMovieTmdb = new Map<number, HistoryPlay[]>()
+
+  for (const play of plays) {
+    if (play.mediaType !== 'movie' && play.mediaType !== 'episode') {
+      continue
+    }
+
+    const ratingKey = getRatingKey(play)
+
+    if (ratingKey) {
+      addToIndex(
+        byKey,
+        `${play.mediaType}|${normalizeJellyfinId(ratingKey)}`,
+        play,
+      )
+    }
+
+    if (play.mediaType === 'movie' && play.tmdbId) {
+      addToIndex(byMovieTmdb, play.tmdbId, play)
+    }
   }
 
-  const ratingKey = getRatingKey(play)
+  return { byKey, byMovieTmdb }
+}
+
+function findRequestPlays(
+  index: PlayIndex,
+  request: SeerrRequestItem,
+): HistoryPlay[] {
+  const mediaType = REQUEST_PLAY_TYPES[request.type]
+
+  if (!mediaType) {
+    return []
+  }
+
   const requestKeys = getRequestedMedia(request).keys
 
-  if (requestKeys.length) {
-    return !!ratingKey && requestKeys.includes(normalizeJellyfinId(ratingKey))
+  if (requestKeys.length === 1) {
+    return index.byKey.get(`${mediaType}|${requestKeys[0]}`) ?? []
   }
 
-  return (
-    play.mediaType === 'movie' &&
-    !!play.tmdbId &&
-    play.tmdbId === request.media?.tmdbId
-  )
+  if (requestKeys.length > 1) {
+    const seen = new Set<HistoryPlay>()
+    const matches: HistoryPlay[] = []
+
+    for (const key of requestKeys) {
+      for (const play of index.byKey.get(`${mediaType}|${key}`) ?? []) {
+        if (!seen.has(play)) {
+          seen.add(play)
+          matches.push(play)
+        }
+      }
+    }
+
+    return matches
+  }
+
+  return mediaType === 'movie' && request.media?.tmdbId
+    ? (index.byMovieTmdb.get(request.media.tmdbId) ?? [])
+    : []
 }
 
 // A request for a show's new seasons didn't bring the ones it already had
@@ -206,6 +263,7 @@ export function getRequestsReach(
   userId: string,
   minPercent: number,
 ): RequestsReach | null {
+  const playIndex = indexPlays(plays)
   const reached = requests
     .filter(
       (request) =>
@@ -217,9 +275,8 @@ export function getRequestsReach(
       const requestedAt = new Date(request.createdAt).getTime()
       // Each play is matched on its own, as two shows with one name share a
       // title in the stats
-      const requestedPlays = plays.filter(
-        (play) =>
-          isRequestedTitle(request, play) && isRequestedSeason(request, play),
+      const requestedPlays = findRequestPlays(playIndex, request).filter(
+        (play) => isRequestedSeason(request, play),
       )
       const othersPlays = requestedPlays.filter(
         (play) => play.userId !== userId && play.startedAt >= requestedAt,
@@ -288,13 +345,14 @@ export function getRequestsWatched(
     return null
   }
 
-  const ownPlays = plays.filter(
-    (play) => play.userId === userId && isCountedPlay(play, minPercent),
+  const ownPlayIndex = indexPlays(
+    plays.filter(
+      (play) => play.userId === userId && isCountedPlay(play, minPercent),
+    ),
   )
   const watched = added.filter((request) =>
-    ownPlays.some(
-      (play) =>
-        isRequestedTitle(request, play) && isRequestedSeason(request, play),
+    findRequestPlays(ownPlayIndex, request).some((play) =>
+      isRequestedSeason(request, play),
     ),
   )
 

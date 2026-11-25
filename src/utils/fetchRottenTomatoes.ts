@@ -1,4 +1,5 @@
 import { isTimeoutError } from './connectionErrors'
+import { isGatewayError, isHostDown, markHostDown } from './hostBackoff'
 
 // Rotten Tomatoes has no public API, so this asks the search its own site uses,
 // with the search-only key from that site, the way Seerr does. It's
@@ -16,6 +17,7 @@ const CACHE_SECONDS = 24 * 60 * 60
 
 type SearchHit = {
   title: string
+  type?: string
   releaseYear?: number | string | null
   vanity: string
   rottenTomatoes?: {
@@ -34,19 +36,36 @@ export type RottenTomatoesScores = {
   audience: number | null
 }
 
+function normalizeTitle(title: string): string {
+  return title.trim().toLowerCase()
+}
+
 function findMatch(
   hits: SearchHit[],
   title: string,
   year: number | null,
+  type: 'movie' | 'tv',
 ): SearchHit | undefined {
+  const candidates = hits.filter(
+    (hit) =>
+      !hit.type ||
+      (type === 'movie' ? hit.type === 'movie' : hit.type !== 'movie'),
+  )
+  const needle = normalizeTitle(title)
   const isYear = (hit: SearchHit) => !!year && Number(hit.releaseYear) === year
-  const isTitle = (hit: SearchHit) => hit.title === title
+  const isCloseYear = (hit: SearchHit) => {
+    const hitYear = Number(hit.releaseYear)
+
+    return !year || !hitYear || Math.abs(hitYear - year) <= 1
+  }
+  const isExactTitle = (hit: SearchHit) => normalizeTitle(hit.title) === needle
+  const isPartialTitle = (hit: SearchHit) =>
+    normalizeTitle(hit.title).includes(needle)
 
   return (
-    hits.find((hit) => isYear(hit) && isTitle(hit)) ??
-    hits.find((hit) => isYear(hit) && hit.title.includes(title)) ??
-    hits.find(isYear) ??
-    hits.find(isTitle)
+    candidates.find((hit) => isYear(hit) && isExactTitle(hit)) ??
+    candidates.find((hit) => isYear(hit) && isPartialTitle(hit)) ??
+    candidates.find((hit) => isExactTitle(hit) && isCloseYear(hit))
   )
 }
 
@@ -60,8 +79,14 @@ export default async function fetchRottenTomatoes(
   year: number | null,
   type: 'movie' | 'tv',
 ): Promise<RottenTomatoesScores | null> {
+  if (isHostDown(SEARCH_URL)) {
+    return null
+  }
+
+  let res: Response | undefined
+
   try {
-    const res = await fetch(SEARCH_URL, {
+    res = await fetch(SEARCH_URL, {
       method: 'POST',
       headers: SEARCH_HEADERS,
       body: JSON.stringify({
@@ -79,6 +104,12 @@ export default async function fetchRottenTomatoes(
     })
 
     if (!res.ok) {
+      await res.body?.cancel()
+
+      if (isGatewayError(res.status)) {
+        markHostDown(SEARCH_URL)
+      }
+
       console.error(
         `[ROTTEN TOMATOES] - Search failed for '${title}'.\n`,
         res.status,
@@ -91,7 +122,7 @@ export default async function fetchRottenTomatoes(
     const data: SearchResponse = await res.json()
     const hits =
       data.results?.find((result) => result.index === 'content_rt')?.hits ?? []
-    const match = findMatch(hits, title, year)
+    const match = findMatch(hits, title, year, type)
 
     if (!match?.vanity) {
       return null
@@ -103,6 +134,10 @@ export default async function fetchRottenTomatoes(
       audience: getScore(match.rottenTomatoes?.audienceScore),
     }
   } catch (error) {
+    if (!res) {
+      markHostDown(SEARCH_URL)
+    }
+
     if (isTimeoutError(error)) {
       console.error(
         `[ROTTEN TOMATOES] - Search timed out after ${REQUEST_TIMEOUT_MS / 1000}s for '${title}'.`,
