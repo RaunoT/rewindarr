@@ -32,7 +32,10 @@ export default function SettingsForm({
   const t = useTranslations('Settings')
   const toastKey = useRef<string>(null)
   const formRef = useRef<HTMLFormElement>(null)
-  const { isChanged, markSaved } = useFormChanges(formRef, orderedFields)
+  const { isChanged, markSubmitted, markSaved } = useFormChanges(
+    formRef,
+    orderedFields,
+  )
   // Without a save button there's nothing to save
   const hasUnsavedChanges = isChanged && !hideSubmit
 
@@ -70,6 +73,8 @@ export default function SettingsForm({
         ref={formRef}
         className='glass-sheet'
         action={formAction}
+        // Runs before the action, with the values it's sent
+        onSubmit={markSubmitted}
         // React resets a form after its action, and React Aria then sets its
         // fields back to their first value: a multi-select to none and a
         // controlled switch to how it was on load. Fields that were saved

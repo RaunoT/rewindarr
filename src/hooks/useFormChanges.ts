@@ -1,6 +1,6 @@
 'use client'
 
-import { getFormSnapshot } from '@/utils/unsavedChanges'
+import { getFormSnapshot, getSavedSnapshot } from '@/utils/unsavedChanges'
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react'
 
 // Whether a form's values differ from the ones it was saved with. The fields
@@ -13,6 +13,9 @@ export default function useFormChanges(
 ) {
   const [isChanged, setIsChanged] = useState(false)
   const savedRef = useRef<string>(null)
+  // The form as it was sent, until its save is done
+  const submittedRef = useRef<string>(null)
+  const isEditedSinceSubmitRef = useRef(false)
   const orderedKey = orderedNames?.join()
   const read = useCallback(() => {
     const form = formRef.current
@@ -21,10 +24,22 @@ export default function useFormChanges(
       ? getFormSnapshot(new FormData(form), orderedKey?.split(','))
       : null
   }, [formRef, orderedKey])
-  // Takes the form as it is now as saved
+  const markSubmitted = useCallback(() => {
+    submittedRef.current = read()
+    isEditedSinceSubmitRef.current = false
+  }, [read])
   const markSaved = useCallback(() => {
-    savedRef.current = read()
-    setIsChanged(false)
+    const current = read()
+
+    savedRef.current = current
+      ? getSavedSnapshot({
+          submitted: submittedRef.current,
+          current,
+          isEditedSinceSubmit: isEditedSinceSubmitRef.current,
+        })
+      : null
+    submittedRef.current = null
+    setIsChanged(current !== savedRef.current)
   }, [read])
 
   useEffect(() => {
@@ -46,10 +61,24 @@ export default function useFormChanges(
       })
     }
 
+    // Anything done in the form while a save is on its way
+    function noteEdit() {
+      if (submittedRef.current !== null) {
+        isEditedSinceSubmitRef.current = true
+      }
+    }
+
+    function handleEdit() {
+      noteEdit()
+      check()
+    }
+
     const observer = new MutationObserver(check)
 
-    form.addEventListener('input', check)
-    form.addEventListener('change', check)
+    form.addEventListener('input', handleEdit)
+    form.addEventListener('change', handleEdit)
+    form.addEventListener('keydown', noteEdit)
+    form.addEventListener('pointerdown', noteEdit)
     observer.observe(form, {
       subtree: true,
       childList: true,
@@ -60,10 +89,12 @@ export default function useFormChanges(
     return () => {
       cancelAnimationFrame(frame)
       observer.disconnect()
-      form.removeEventListener('input', check)
-      form.removeEventListener('change', check)
+      form.removeEventListener('input', handleEdit)
+      form.removeEventListener('change', handleEdit)
+      form.removeEventListener('keydown', noteEdit)
+      form.removeEventListener('pointerdown', noteEdit)
     }
   }, [formRef, read])
 
-  return { isChanged, markSaved }
+  return { isChanged, markSubmitted, markSaved }
 }

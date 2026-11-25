@@ -25,6 +25,25 @@ export function getFormSnapshot(
   )
 }
 
+type SaveResult = {
+  // As sent, or null when it wasn't read
+  submitted: string | null
+  // As the form is once the save is done
+  current: string
+  isEditedSinceSubmit: boolean
+}
+
+// What a finished save counts as saved: the form as it is then, with any value
+// the save changed, like a masked API key. If it was edited while the save was
+// on its way, what was sent instead, so those edits still count as unsaved.
+export function getSavedSnapshot({
+  submitted,
+  current,
+  isEditedSinceSubmit,
+}: SaveResult) {
+  return isEditedSinceSubmit && submitted !== null ? submitted : current
+}
+
 type LinkClick = {
   href: string
   target?: string | null
@@ -66,7 +85,9 @@ export function getLeavingPath(click: LinkClick, location: URL) {
   return url.pathname + url.search + url.hash
 }
 
-type LeaveGuard = (leave: () => void) => void
+type Leave = () => unknown
+
+type LeaveGuard = (leave: Leave) => void
 
 let leaveGuard: LeaveGuard | null = null
 
@@ -76,7 +97,7 @@ export function setLeaveGuard(guard: LeaveGuard | null) {
 }
 
 // For navigation that isn't a link click, like a menu or signing out
-export function guardLeave(leave: () => void) {
+export function guardLeave(leave: Leave) {
   if (leaveGuard) {
     leaveGuard(leave)
   } else {

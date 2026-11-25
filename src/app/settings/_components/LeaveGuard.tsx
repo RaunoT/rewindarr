@@ -10,6 +10,7 @@ import {
   Heading,
   Modal,
   ModalOverlay,
+  Text,
 } from 'react-aria-components'
 
 type Props = {
@@ -23,9 +24,14 @@ type Props = {
 export default function LeaveGuard({ isActive }: Props) {
   const t = useTranslations('Settings')
   const router = useRouter()
-  const [pendingLeave, setPendingLeave] = useState<(() => void) | null>(null)
+  const [pendingLeave, setPendingLeave] = useState<(() => unknown) | null>(null)
   // Once leaving is confirmed, a reload it causes doesn't ask again
   const isLeavingRef = useRef(false)
+
+  // A save that finishes while it asks leaves nothing to lose
+  if (!isActive && pendingLeave) {
+    setPendingLeave(null)
+  }
 
   useEffect(() => {
     if (!isActive) {
@@ -86,12 +92,18 @@ export default function LeaveGuard({ isActive }: Props) {
     }
   }, [isActive, router])
 
-  function leave() {
+  async function leave() {
     const proceed = pendingLeave
 
     isLeavingRef.current = true
     setPendingLeave(null)
-    proceed?.()
+
+    try {
+      await proceed?.()
+    } finally {
+      // Still here, so leaving didn't happen, or happened within the app
+      isLeavingRef.current = false
+    }
   }
 
   return (
@@ -107,13 +119,21 @@ export default function LeaveGuard({ isActive }: Props) {
             <Heading slot='title' className='text-lg font-semibold'>
               {t('leaveTitle')}
             </Heading>
-            <p className='text-sm text-neutral-300'>{t('leaveDescription')}</p>
+            <Text
+              slot='description'
+              elementType='p'
+              className='text-sm text-neutral-300'
+            >
+              {t('leaveDescription')}
+            </Text>
           </div>
-          {/* Staying comes first, so it has the focus when the dialog opens */}
           <div className='flex gap-3'>
             <Button
               className='data-focus-visible:focus-ring flex-1 rounded-full px-6 py-2.5 font-semibold ring-1 ring-white/20 transition-colors ring-inset hover:bg-white/10'
               onPress={() => setPendingLeave(null)}
+              // Staying is the safe answer, so Enter gives it
+              // oxlint-disable-next-line jsx-a11y/no-autofocus
+              autoFocus
             >
               {t('stay')}
             </Button>

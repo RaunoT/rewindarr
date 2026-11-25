@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   getFormSnapshot,
   getLeavingPath,
+  getSavedSnapshot,
   guardLeave,
   setLeaveGuard,
 } from './unsavedChanges'
@@ -77,6 +78,39 @@ describe('getFormSnapshot', () => {
         ['$ACTION_ID_abc', ''],
       ]),
     ).toBe(getFormSnapshot([['serverName', 'Home']]))
+  })
+})
+
+describe('getSavedSnapshot', () => {
+  it('takes the form as it is after the save', () => {
+    // A new API key comes back masked
+    expect(
+      getSavedSnapshot({
+        submitted: 'new-key',
+        current: 'masked',
+        isEditedSinceSubmit: false,
+      }),
+    ).toBe('masked')
+  })
+
+  it('takes what was sent when the form was edited during the save', () => {
+    expect(
+      getSavedSnapshot({
+        submitted: 'sent',
+        current: 'edited',
+        isEditedSinceSubmit: true,
+      }),
+    ).toBe('sent')
+  })
+
+  it('takes the form as it is when what was sent is unknown', () => {
+    expect(
+      getSavedSnapshot({
+        submitted: null,
+        current: 'current',
+        isEditedSinceSubmit: true,
+      }),
+    ).toBe('current')
   })
 })
 
