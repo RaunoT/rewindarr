@@ -63,6 +63,7 @@ import {
 } from '@/utils/rewindPersonality'
 import { isRewindShareKey } from '@/utils/rewindShare'
 import { getTopPercent } from '@/utils/rewindTotal'
+import { getRewindUserName } from '@/utils/rewindUser'
 import {
   getActiveUsers,
   getHistoryProgress,
@@ -70,6 +71,7 @@ import {
   getLibraries,
   getMediaServer,
   getStatsSource,
+  getUsers,
 } from '@/utils/statsSource'
 import { toDateKey, toTimeZone } from '@/utils/timeZone'
 import { getTitleMoments } from '@/utils/titleMoments'
@@ -113,12 +115,7 @@ async function RewindContent({
     return notFound()
   }
 
-  let user: RewindUser | undefined = session?.user && {
-    id: session.user.id,
-    name: session.user.name ?? '',
-    image: session.user.image,
-    isAdmin: session.user.isAdmin,
-  }
+  let user: RewindUser | undefined
 
   // Only admins can open another user's rewind, or a link the admin shared
   if ((session?.user.isAdmin || isShared) && userId) {
@@ -128,13 +125,22 @@ async function RewindContent({
     if (queriedUser) {
       user = {
         image: queriedUser.thumb,
-        name: queriedUser.friendly_name,
+        name: getRewindUserName(queriedUser),
         id: userId,
         isAdmin: false,
       }
     } else if (isShared) {
       // Not whoever happens to be signed in
       return notFound()
+    }
+  }
+
+  if (!user && session?.user) {
+    user = {
+      id: session.user.id,
+      name: await getOwnName(session.user.id, session.user.name ?? ''),
+      image: session.user.image,
+      isAdmin: session.user.isAdmin,
     }
   }
 
@@ -186,6 +192,24 @@ async function RewindContent({
       rewind={rewind}
     />
   )
+}
+
+// As the user picker names them. Excluded users are looked up too, as they
+// still see their own Rewind, and the account's name stands in when the source
+// can't be read.
+async function getOwnName(userId: string, accountName: string) {
+  try {
+    const users = await getUsers()
+
+    return getRewindUserName(
+      users.find((u) => String(u.user_id) === userId),
+      accountName,
+    )
+  } catch (error) {
+    console.error("[REWIND] - Error reading the user's name!", error)
+
+    return accountName
+  }
 }
 
 // The total story's, which only need the plays, so they're in long before the

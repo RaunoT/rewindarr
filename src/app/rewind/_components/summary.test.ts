@@ -45,51 +45,75 @@ describe('getSummaryTops', () => {
   })
 })
 
+// Intl sets a range's dash between thin spaces
 describe('getSummaryTitle', () => {
   const now = new Date('2026-11-04T12:00:00Z')
 
-  it('names this year for the default past year', () => {
-    expect(getSummaryTitle('', { editionYear: null }, now)).toEqual({
+  it('names the past year after its months', () => {
+    expect(
+      getSummaryTitle('', { since: '2025-11-04', year: null }, 'en-GB', now),
+    ).toEqual({
       type: 'default',
-      years: '2026',
+      period: 'Nov 2025\u2009–\u2009Nov 2026',
     })
   })
 
-  it('adds the earlier year of a start date the admin set in one', () => {
+  it("names a custom period after its months, in the viewer's language", () => {
     expect(
-      getSummaryTitle(
-        '',
-        { customStartDate: '2026-01-01', editionYear: null },
-        now,
-      ),
+      getSummaryTitle('', { since: '2026-01-15', year: null }, 'en-GB', now),
     ).toEqual({
       type: 'default',
-      years: '2026',
+      period: 'Jan\u2009–\u2009Nov 2026',
     })
     expect(
-      getSummaryTitle(
-        '',
-        { customStartDate: '2024-11-04', editionYear: null },
-        now,
-      ),
+      getSummaryTitle('', { since: '2024-11-04', year: null }, 'de', now),
     ).toEqual({
       type: 'default',
-      years: '2024–2026',
+      period: 'Nov. 2024\u2009–\u2009Nov. 2026',
+    })
+  })
+
+  it('names a period that began this month, or has yet to, after one month', () => {
+    expect(
+      getSummaryTitle('', { since: '2026-11-01', year: null }, 'en-GB', now),
+    ).toEqual({
+      type: 'default',
+      period: 'Nov 2026',
+    })
+    expect(
+      getSummaryTitle('', { since: '2027-02-01', year: null }, 'en-GB', now),
+    ).toEqual({
+      type: 'default',
+      period: 'Feb 2027',
     })
   })
 
   it("names an edition after its year, even once it's over", () => {
-    expect(getSummaryTitle('', { editionYear: 2025 }, now)).toEqual({
+    expect(
+      getSummaryTitle(
+        '',
+        { since: '2024-12-31T22:00:00.000Z', year: 2025 },
+        'en-GB',
+        now,
+      ),
+    ).toEqual({
       type: 'default',
-      years: '2025',
+      period: '2025',
     })
   })
 
   it("uses the server's name when the admin set one", () => {
-    expect(getSummaryTitle('Home Cinema', { editionYear: null }, now)).toEqual({
+    expect(
+      getSummaryTitle(
+        'Home Cinema',
+        { since: '2025-12-31T22:00:00.000Z', year: 2026 },
+        'en-GB',
+        now,
+      ),
+    ).toEqual({
       type: 'server',
       serverName: 'Home Cinema',
-      years: '2026',
+      period: '2026',
     })
   })
 })
@@ -182,8 +206,8 @@ describe('getSummaryFileName', () => {
     expect(getSummaryFileName('My Plex', 'Rewind', 'Jüri')).toBe(
       'my-plex-rewind-juri.png',
     )
-    expect(getSummaryFileName('Rewind 2025–2026', 'R. T.')).toBe(
-      'rewind-2025-2026-r-t.png',
+    expect(getSummaryFileName('Rewind Nov. 2025 – Nov. 2026', 'R. T.')).toBe(
+      'rewind-nov-2025-nov-2026-r-t.png',
     )
   })
 

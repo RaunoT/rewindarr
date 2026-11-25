@@ -726,8 +726,8 @@
     },
     "Summary": {
       "title": {
-        "server": "{serverName} Rewind {years}",
-        "default": "Rewind {years}"
+        "server": "{serverName} Rewind {period}",
+        "default": "Rewind {period}"
       },
       "top": {
         "show": "Lemmiksari",

@@ -3,7 +3,6 @@ import { PublicSettings } from '@/types/settings'
 import { ItemRow } from '@/types/statsSource'
 import { formatMonthYear, secondsToTime } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
-import { getRewindPeriodType } from '@/utils/rewindPeriod'
 import {
   CalendarDaysIcon,
   ChartBarIcon,
@@ -81,13 +80,11 @@ export default function useRewindSummary(
   const tRoot = useTranslations()
   const locale = useLocale()
   const { user, personality } = userRewind
-  const titleParts = getSummaryTitle(settings.general.serverName, {
-    customStartDate:
-      getRewindPeriodType(settings) === 'custom'
-        ? settings.rewind.startDate
-        : undefined,
-    editionYear: userRewind.period.year,
-  })
+  const titleParts = getSummaryTitle(
+    settings.general.serverName,
+    userRewind.period,
+    locale,
+  )
   const title = t(`title.${titleParts.type}`, titleParts)
 
   function toStat(highlight: SummaryHighlight): SummaryStat {

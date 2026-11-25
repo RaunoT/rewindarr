@@ -12,6 +12,9 @@ type Props = {
   labels?: (string | null)[]
   // In place of the labels on wider screens, where the bars have more room
   wideLabels?: (string | null)[]
+  // A second row under the labels, from the bar each one starts at, such as
+  // the year of each January
+  yearLabels?: (string | null)[] | null
   ariaLabel: string
   axisLabel: string
   className?: string
@@ -93,11 +96,46 @@ function BarLabels({ labels, peakIndex, className }: BarLabelsProps) {
   )
 }
 
+// Each starts at its bar's left edge, with a tick there, so it marks where
+// what it names begins. One on the last bar, which can be narrower than the
+// label, ends at the plot's right edge instead, so it isn't clipped.
+function SpanLabels({ labels }: { labels: (string | null)[] }) {
+  return (
+    <div className='relative mt-1 h-4'>
+      {labels.map((label, index) => {
+        if (!label) {
+          return null
+        }
+
+        const isAtEnd = index === labels.length - 1
+
+        return (
+          <span
+            key={index}
+            className={clsx(
+              'absolute top-0 border-white/25 text-xs whitespace-nowrap text-neutral-500 tabular-nums',
+              isAtEnd ? 'right-0 border-r pr-1' : 'border-l pl-1',
+            )}
+            style={
+              isAtEnd
+                ? undefined
+                : { left: `${(index / labels.length) * 100}%` }
+            }
+          >
+            {label}
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function RewindBarChart({
   data,
   peakIndex,
   labels,
   wideLabels,
+  yearLabels,
   ariaLabel,
   axisLabel,
   className,
@@ -198,6 +236,12 @@ export default function RewindBarChart({
                 />
               )}
             </div>
+            {yearLabels && (
+              <>
+                <div aria-hidden />
+                <SpanLabels labels={yearLabels} />
+              </>
+            )}
           </>
         )}
       </div>

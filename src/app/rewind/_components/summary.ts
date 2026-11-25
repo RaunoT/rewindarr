@@ -1,4 +1,4 @@
-import { UserRewind } from '@/types/rewind'
+import { RewindPeriod, UserRewind } from '@/types/rewind'
 import { PersonalityType } from '@/types/rewindPersonality'
 import { ItemRow } from '@/types/statsSource'
 
@@ -7,12 +7,13 @@ export type SummaryTop = {
   item: ItemRow
 }
 
-// What the summary is called, with the years it covers, like "2026" or
-// "2025–2026". The media server's name would read as if it made the image, so
+// What the summary is called, with the period it covers: an edition's year,
+// like "2026", or the months of a period that runs to now, like "Nov 2025 –
+// Nov 2026". The media server's name would read as if it made the image, so
 // only a name the admin gave the server is used.
 export type SummaryTitle =
-  | { type: 'server'; serverName: string; years: string }
-  | { type: 'default'; years: string }
+  | { type: 'server'; serverName: string; period: string }
+  | { type: 'default'; period: string }
 
 // An overall stat beside the total time
 export type SummaryHighlight =
@@ -53,28 +54,30 @@ export function getSummaryTops({
   return tops.filter((top): top is SummaryTop => !!top.item)
 }
 
-// An edition is named after its year. The other periods run to now, so
-// they're named after this year, like other years in review, even when the
-// default past year began in the last one. A YYYY-MM-DD start date the admin
-// set in an earlier year adds that year.
+// An edition is named after its year. The past year and a custom period run
+// to now, so they're named after their months, as a year alone would read as
+// the calendar year, in the story and in the saved image seen long after.
+// Their YYYY-MM-DD start dates are read in UTC, as the welcome reads them,
+// and one set after today is all there is of the period.
 export function getSummaryTitle(
   serverName: string,
-  {
-    customStartDate,
-    editionYear,
-  }: { customStartDate?: string; editionYear: number | null },
+  { since, year }: Pick<RewindPeriod, 'since' | 'year'>,
+  locale: string,
   now = new Date(),
 ): SummaryTitle {
-  const end = editionYear ?? now.getUTCFullYear()
-  const start =
-    customStartDate && editionYear === null
-      ? new Date(customStartDate).getUTCFullYear()
-      : end
-  const years = start < end ? `${start}–${end}` : `${end}`
+  const start = new Date(since)
+  const period =
+    year === null
+      ? new Intl.DateTimeFormat(locale, {
+          month: 'short',
+          year: 'numeric',
+          timeZone: 'UTC',
+        }).formatRange(start, start > now ? start : now)
+      : String(year)
 
   return serverName
-    ? { type: 'server', serverName, years }
-    : { type: 'default', years }
+    ? { type: 'server', serverName, period }
+    : { type: 'default', period }
 }
 
 // The viewer's most telling overall stats, leaving out those they don't have:
@@ -127,7 +130,7 @@ export function getSummaryHighlights(
 }
 
 // Lowercase letters and digits joined by dashes, which any system takes, like
-// "rewind-2025-2026-rauno.png"
+// "rewind-nov-2025-nov-2026-rauno.png"
 export function getSummaryFileName(...words: string[]): string {
   const name = words
     .join(' ')
