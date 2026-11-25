@@ -79,14 +79,14 @@ export default function HistorySkeleton({
                       width='w-32'
                     />
                   )}
-                  {/* The user, the time and, from sm up, how far it got. Pills
+                  {/* The time, from sm up how far it got, and the user. Pills
                       from sm up, a line of text on phones. */}
                   <div className='icon-stats-container mt-2 max-sm:gap-x-2.5'>
+                    <div className='skeleton h-4 w-16 sm:h-6 sm:w-28' />
+                    <div className='skeleton h-6 w-24 max-sm:hidden' />
                     {isUserShown && (
                       <div className='skeleton h-4 w-20 sm:h-6 sm:w-24' />
                     )}
-                    <div className='skeleton h-4 w-16 sm:h-6 sm:w-28' />
-                    <div className='skeleton h-6 w-24 max-sm:hidden' />
                   </div>
                 </div>
                 {/* Wide cards have the time with the links under it */}

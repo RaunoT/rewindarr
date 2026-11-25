@@ -121,7 +121,7 @@
     "kindLabel": "Tipo",
     "plays": "Riproduzioni",
     "requests": "Richieste",
-    "request": "Richiesta",
+    "requested": "Richiesta",
     "unknownTitle": "Titolo sconosciuto",
     "season": "Stagione {season}",
     "seasonCount": "{count, plural, one {# stagione} other {# stagioni}}",
@@ -808,6 +808,7 @@
     "labelRequests": "Richieste",
     "you": "(tu)",
     "requestLabel": "Richiedi {title}",
+    "openRequestLabel": "Apri la richiesta di {title} in Seerr",
     "externalLinkLabel": "{title} su {site}",
     "externalSearchLabel": "Cerca {title} su {site}"
   },

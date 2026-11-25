@@ -1,5 +1,5 @@
 import { STAT_ICONS } from '@/components/icons'
-import MediaCard from '@/components/MediaCard'
+import MediaCard, { STAT_PILL } from '@/components/MediaCard'
 import SeerrButton from '@/components/MediaItem/SeerrButton'
 import { HistoryRequest } from '@/types/history'
 import { PublicSettings } from '@/types/settings'
@@ -19,9 +19,9 @@ type Props = {
   timeZone?: string
 }
 
-// Built like a play's card, with the request's status in Seerr among its
-// links when Seerr's statuses are chosen. The poster opens the request, or once some of
-// it is there, the item in the media server.
+// Built like a play's card, labelled as a request among the stats, with its
+// status in Seerr among the links when Seerr's statuses are chosen. The poster
+// opens the request, or once some of it is there, the item in the media server.
 export default function HistoryRequestItem({
   request,
   item,
@@ -64,18 +64,6 @@ export default function HistoryRequestItem({
       detail={detail}
       fullTitle={detail ? `${title} · ${detail}` : title}
       posters={[request.poster]}
-      // Tells it apart from the plays, like a stream's pause on the activity
-      posterOverlay={
-        <span
-          // An <img> can't hold the icon
-          // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
-          role='img'
-          aria-label={t('History.request')}
-          className='poster-overlay'
-        >
-          <STAT_ICONS.requests className='size-7 drop-shadow' />
-        </span>
-      }
       user={
         isUserShown
           ? {
@@ -87,6 +75,14 @@ export default function HistoryRequestItem({
             }
           : null
       }
+      // Where a play has its watch time, so it reads as a request whether or
+      // not its status is shown
+      stats={
+        <li className={STAT_PILL}>
+          <STAT_ICONS.requests />
+          {t('History.requested')}
+        </li>
+      }
       seerrAction={
         isStatusShown && (
           <SeerrButton
@@ -97,7 +93,7 @@ export default function HistoryRequestItem({
           </SeerrButton>
         )
       }
-      deeplink={serverLink ?? { requestUrl }}
+      deeplink={serverLink ?? { requestUrl, isRequested: true }}
       aside={
         <HistoryTime time={new Date(request.createdAt)} timeZone={timeZone} />
       }

@@ -121,7 +121,7 @@
     "kindLabel": "Art",
     "plays": "Wiedergaben",
     "requests": "Anfragen",
-    "request": "Anfrage",
+    "requested": "Anfrage",
     "unknownTitle": "Unbekannter Titel",
     "season": "Staffel {season}",
     "seasonCount": "{count, plural, one {# Staffel} other {# Staffeln}}",
@@ -808,6 +808,7 @@
     "labelRequests": "Anfragen",
     "you": "(du)",
     "requestLabel": "Anfrage für {title}",
+    "openRequestLabel": "Anfrage für {title} in Seerr öffnen",
     "externalLinkLabel": "{title} auf {site}",
     "externalSearchLabel": "{title} auf {site} suchen"
   },
