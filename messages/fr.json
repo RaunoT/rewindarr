@@ -104,7 +104,7 @@
     "onlyMine": "Seulement les miennes",
     "search": "Rechercher un titre",
     "clearSearch": "Effacer la recherche",
-    "noMatches": "Aucune lecture ne correspond aux filtres",
+    "noMatches": "Aucune lecture ne correspond à la recherche ou aux filtres",
     "pagination": "Pages",
     "page": "Page {page}",
     "pageOf": "{page} sur {pageCount}",

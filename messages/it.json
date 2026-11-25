@@ -104,7 +104,7 @@
     "onlyMine": "Solo le mie",
     "search": "Cerca titoli",
     "clearSearch": "Cancella ricerca",
-    "noMatches": "Nessuna riproduzione corrisponde ai filtri",
+    "noMatches": "Nessuna riproduzione corrisponde alla ricerca o ai filtri",
     "pagination": "Pagine",
     "page": "Pagina {page}",
     "pageOf": "{page} di {pageCount}",

@@ -104,7 +104,7 @@
     "onlyMine": "Nur meine",
     "search": "Titel suchen",
     "clearSearch": "Suche löschen",
-    "noMatches": "Keine Wiedergaben passen zu den Filtern",
+    "noMatches": "Keine Wiedergaben passen zur Suche oder zu den Filtern",
     "pagination": "Seiten",
     "page": "Seite {page}",
     "pageOf": "{page} von {pageCount}",

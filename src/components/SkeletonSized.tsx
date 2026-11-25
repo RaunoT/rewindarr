@@ -8,11 +8,15 @@ type Props = {
 }
 
 // Over a hidden copy of the skeleton, so the card keeps the size it had while
-// loading, whatever the settings and the screen width make it
+// loading, whatever the settings and the screen width make it. A long list's
+// copy is cut short, or the message would sit in a blank card below the fold.
 export default function SkeletonSized({ skeleton, children }: Props) {
   return (
     <div className='grid flex-1'>
-      <div className='invisible col-start-1 row-start-1' aria-hidden='true'>
+      <div
+        className='invisible col-start-1 row-start-1 max-h-96 overflow-hidden'
+        aria-hidden='true'
+      >
         {skeleton}
       </div>
       <div className='col-start-1 row-start-1 flex flex-col'>{children}</div>
