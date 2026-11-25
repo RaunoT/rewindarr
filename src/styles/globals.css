@@ -339,6 +339,18 @@
     }
   }
 
+  /* A story taller than a phone's screen fades out at the bottom while
+     there's more below, the fade shrinking away as it reaches the end */
+  .story-slide {
+    @variant max-sm {
+      mask-image: linear-gradient(
+        to top,
+        transparent,
+        #000 min(4rem, var(--more-below, 0px))
+      );
+    }
+  }
+
   .poster {
     @apply relative aspect-2/3 w-16 shrink-0 overflow-hidden rounded-md! shadow-lg shadow-black/40 sm:w-18;
   }

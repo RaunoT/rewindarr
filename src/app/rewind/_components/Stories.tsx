@@ -39,6 +39,7 @@ import StoriesIntro from './StoriesIntro'
 import StoryBackdrop from './StoryBackdrop'
 import { getStepMusic, StepMusic } from './storyMusic'
 import useAutoplay from './useAutoplay'
+import useSlideFade from './useSlideFade'
 
 type StoryStep = {
   // The latest statement shown, by its step in the story
@@ -617,6 +618,8 @@ export default function Stories({
     slideRef.current?.scrollTo({ top: 0 })
   }, [currentIndex])
 
+  useSlideFade(slideRef, !!currentStory)
+
   const storyStep = useMemo(
     () => ({ step, registerStep }),
     [step, registerStep],
@@ -711,9 +714,10 @@ export default function Stories({
           tabIndex={-1}
           inert={!!isIntroShown}
           // A phone's screen can be shorter than a story, which then scrolls
-          // between the progress bar and the buttons. Its padding keeps the
-          // rings and shadows at the sides from being cut off.
-          className='relative w-full flex-1 pt-8 outline-none select-none [-webkit-touch-callout:none] max-sm:-mx-2 max-sm:min-h-0 max-sm:w-auto max-sm:overflow-y-auto max-sm:overscroll-contain max-sm:px-2 sm:flex sm:flex-col sm:justify-center'
+          // between the progress bar and the buttons, fading out at the bottom
+          // while there's more below. Its padding keeps the rings and shadows
+          // at the sides from being cut off.
+          className='story-slide relative w-full flex-1 pt-8 outline-none select-none [-webkit-touch-callout:none] max-sm:-mx-2 max-sm:min-h-0 max-sm:w-auto max-sm:overflow-y-auto max-sm:overscroll-contain max-sm:px-2 sm:flex sm:flex-col sm:justify-center'
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
           onFocus={handleFocus}
