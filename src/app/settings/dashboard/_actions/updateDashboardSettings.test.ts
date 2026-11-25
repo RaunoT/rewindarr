@@ -94,15 +94,20 @@ describe('saveDashboardSettings', () => {
   })
 
   it('reports a malformed custom period as such', async () => {
-    const result = await saveDashboardSettings(
-      initialState,
-      formDataFrom({ customPeriod: '7.5' }),
-    )
+    // ' 7 ' and '7.0' read as 7, but the format error comes first
+    for (const customPeriod of ['7.5', ' 7 ', '7.0']) {
+      const result = await saveDashboardSettings(
+        initialState,
+        formDataFrom({ customPeriod }),
+      )
 
-    expect(result).toMatchObject({
-      status: 'error',
-      message: 'customPeriodError',
-    })
+      expect(result).toMatchObject({
+        status: 'error',
+        message: 'customPeriodError',
+      })
+    }
+
+    expect(writeSettings).not.toHaveBeenCalled()
   })
 
   it('accepts other custom periods', async () => {
