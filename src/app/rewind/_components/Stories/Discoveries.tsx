@@ -45,35 +45,46 @@ export default function StoryDiscoveries({
             </p>
           </RewindStat>
 
-          <RewindStat step={TITLE_STEPS.discovery} noScale>
-            <p className='mb-2'>
-              {t.rich(
-                discoveries.shows + discoveries.artists > 1 ? 'top' : 'only',
-                {
-                  titleValue: discoveries.top.item.title,
-                  title: (chunks) => (
-                    <RewindCat icon={<SparklesIcon />}>{chunks}</RewindCat>
-                  ),
-                  durationValue: discoveries.top.duration,
-                  duration: (chunks) => (
-                    <span className='rewind-stat'>{chunks}</span>
-                  ),
-                },
-              )}
-            </p>
+          {/* A find the stories before have shown isn't shown again */}
+          {discoveries.top && (
+            <RewindStat step={TITLE_STEPS.discovery} noScale>
+              <p className='mb-2'>
+                {t.rich(
+                  discoveries.after
+                    ? 'after'
+                    : discoveries.shows + discoveries.artists > 1
+                      ? 'top'
+                      : 'only',
+                  {
+                    headlineValue: discoveries.after ?? '',
+                    headline: (chunks) => (
+                      <span className='rewind-cat'>{chunks}</span>
+                    ),
+                    titleValue: discoveries.top.item.title,
+                    title: (chunks) => (
+                      <RewindCat icon={<SparklesIcon />}>{chunks}</RewindCat>
+                    ),
+                    durationValue: discoveries.top.duration,
+                    duration: (chunks) => (
+                      <span className='rewind-stat'>{chunks}</span>
+                    ),
+                  },
+                )}
+              </p>
 
-            <TitleMomentCard
-              card={discoveries.top}
-              mediaServer={userRewind.media_server}
-              settings={settings}
-            />
-          </RewindStat>
+              <TitleMomentCard
+                card={discoveries.top}
+                mediaServer={userRewind.media_server}
+                settings={settings}
+              />
+            </RewindStat>
+          )}
         </>
       )}
 
       {/* It can be all there is to tell, as the first statement */}
       {gaveUp && (
-        <RewindStat step={discoveries ? 2 : 0}>
+        <RewindStat step={discoveries ? (discoveries.top ? 2 : 1) : 0}>
           <p>
             {t.rich('gaveUp', {
               percentValue: gaveUp.percent,

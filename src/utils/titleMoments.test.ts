@@ -2,7 +2,7 @@ import { Play } from '@/types/playHistory'
 import { cloneDeep } from 'lodash'
 import { getTranslations } from 'next-intl/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { DEFAULT_SETTINGS } from './constants'
+import { DEFAULT_SETTINGS, RewindStoryId } from './constants'
 import getSettings from './getSettings'
 import { EMPTY_ROW } from './playStats'
 import { getStatsSource } from './statsSource'
@@ -12,6 +12,7 @@ import {
   getGaveUp,
   getTimeTravel,
   getTitleMoments,
+  getTopHeadlines,
 } from './titleMoments'
 
 vi.mock('next-intl/server', () => ({ getTranslations: vi.fn() }))
@@ -307,7 +308,48 @@ describe('getDiscoveries', () => {
       shows: 2,
       artists: 1,
       top: { play: plays[4], durationMs: 90 * MINUTE },
+      after: null,
     })
+  })
+
+  it('skips a find another story already headlines', () => {
+    const allPlays = [...earlierPlays, ...plays]
+    const severance = { type: 'show', title: 'Severance' } as const
+
+    expect(getDiscoveries(plays, allPlays, MIN_PERCENT, [severance])).toEqual({
+      shows: 2,
+      artists: 1,
+      top: { play: plays[5], durationMs: 7 * MINUTE },
+      after: 'Severance',
+    })
+    // An artist of the same name is another title
+    expect(
+      getDiscoveries(plays, allPlays, MIN_PERCENT, [
+        { type: 'artist', title: 'Severance' },
+      ])?.top?.play,
+    ).toBe(plays[4])
+  })
+
+  it('matches a headline by its media id', () => {
+    const withIds = plays.map((p) =>
+      p.showTitle === 'Severance' ? { ...p, showMediaId: 'sev' } : p,
+    )
+
+    expect(
+      getDiscoveries(withIds, [...earlierPlays, ...withIds], MIN_PERCENT, [
+        { type: 'show', title: 'Severance (2022)', media_id: 'sev' },
+      ]),
+    ).toMatchObject({ top: { play: withIds[5] }, after: 'Severance (2022)' })
+  })
+
+  it('has no top find when every find is headlined', () => {
+    const newPlays = plays.slice(0, 5)
+
+    expect(
+      getDiscoveries(newPlays, [...earlierPlays, ...newPlays], MIN_PERCENT, [
+        { type: 'show', title: 'Severance' },
+      ]),
+    ).toEqual({ shows: 1, artists: 0, top: null, after: 'Severance' })
   })
 
   it('leaves it out for a user without plays before the period', () => {
@@ -382,6 +424,42 @@ describe('getGaveUp', () => {
     const earlier = unfinished('dune', '2024-03-01', 40)
 
     expect(getGaveUp([], [earlier], MIN_PERCENT, NOW)).toBeNull()
+  })
+})
+
+describe('getTopHeadlines', () => {
+  const row = (title: string) => ({ ...EMPTY_ROW, title })
+  const top = {
+    shows: [row('Severance'), row('Andor')],
+    movies: [row('Heat')],
+    audio: [row('ABBA')],
+  }
+
+  it("headlines each top list's first place", () => {
+    expect(getTopHeadlines(top, [])).toEqual([
+      { ...top.shows[0], type: 'show' },
+      { ...top.movies[0], type: 'movie' },
+      { ...top.audio[0], type: 'artist' },
+    ])
+  })
+
+  it('leaves out a first place whose stories are all hidden', () => {
+    const titles = (hidden: RewindStoryId[]) =>
+      getTopHeadlines(top, hidden).map(({ title }) => title)
+
+    // The countdown still ends on it
+    expect(titles(['shows'])).toContain('Severance')
+    expect(titles(['shows', 'shows_top'])).not.toContain('Severance')
+    // A single movie has no countdown
+    expect(titles(['movies'])).not.toContain('Heat')
+    expect(titles(['audio'])).toContain('ABBA')
+    expect(titles(['audio', 'audio_top'])).not.toContain('ABBA')
+  })
+
+  it('has nothing to headline without plays', () => {
+    expect(getTopHeadlines({ shows: [], movies: [], audio: [] }, [])).toEqual(
+      [],
+    )
   })
 })
 
@@ -472,6 +550,48 @@ describe('getTitleMoments', () => {
       total_plays: 3,
       total_duration: 3 * 90 * 60,
     })
+  })
+
+  it('skips the finds the stories before it headline', async () => {
+    const earlier = episode('friends-old', '2025-06-01', 'Friends', [1, 2])
+    const top = {
+      shows: [{ ...EMPTY_ROW, title: 'Severance' }],
+      movies: [],
+      audio: [],
+    }
+
+    expect(
+      (await getTitleMoments(plays, [earlier, ...plays], undefined, top))
+        .discoveries,
+    ).toMatchObject({ shows: 1, top: null, after: 'Severance' })
+  })
+
+  it("skips the comfort watch's show unless its story is hidden", async () => {
+    const severancePlays = [
+      episode('sev-1', '2026-03-01', 'Severance', [1, 1]),
+      episode('sev-2', '2026-04-01', 'Severance', [1, 1]),
+      episode('bluey', '2026-05-01', 'Bluey', [1, 1]),
+    ]
+    const allPlays = [
+      episode('friends-old', '2025-06-01', 'Friends', [1, 2]),
+      ...severancePlays,
+    ]
+
+    expect(
+      (await getTitleMoments(severancePlays, allPlays)).discoveries,
+    ).toMatchObject({
+      top: { item: { title: 'Bluey' } },
+      after: 'Severance',
+    })
+
+    const settings = cloneDeep(DEFAULT_SETTINGS)
+
+    settings.rewind.hiddenStories = ['comfort_watch']
+    vi.mocked(getSettings).mockReturnValue(settings)
+
+    expect(
+      (await getTitleMoments(severancePlays, allPlays)).discoveries,
+    ).toMatchObject({ top: { item: { title: 'Severance' } }, after: null })
   })
 
   it('waits for the whole history for what came before the period', async () => {

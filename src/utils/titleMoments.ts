@@ -1,11 +1,17 @@
 import { Play, PlayMediaType } from '@/types/playHistory'
+import { ItemRow, TopMediaItems } from '@/types/statsSource'
 import { TitleCard, TitleMoments } from '@/types/titleMoments'
 import { groupBy, mapValues, minBy, orderBy, sumBy } from 'lodash'
 import { getTranslations } from 'next-intl/server'
-import { PLAY_LIBRARY_TYPES } from './constants'
+import { PLAY_LIBRARY_TYPES, RewindStoryId } from './constants'
 import { secondsToTime } from './formatting'
 import getSettings from './getSettings'
-import { getItemTotals, groupPlays, isCountedPlay } from './playStats'
+import {
+  getItemTotals,
+  groupPlays,
+  isCountedPlay,
+  isPlayOfItem,
+} from './playStats'
 import { getStatsSource } from './statsSource'
 
 // The media whose release year is worth travelling to
@@ -39,8 +45,15 @@ export type TimeTravel = {
 export type Discoveries = {
   shows: number
   artists: number
-  top: { play: Play; durationMs: number }
+  // Null when each find is a title another story already headlines
+  top: { play: Play; durationMs: number } | null
+  // The headlined title the biggest find was, when the top one comes after it
+  after: string | null
 }
+
+// A title a story before the discoveries makes its headline
+export type Headline = Pick<ItemRow, 'title'> &
+  Partial<Pick<ItemRow, 'media_id' | 'year'>> & { type: TitleCard['type'] }
 
 export type GaveUp = {
   play: Play
@@ -181,13 +194,15 @@ export function getTimeTravel(
 }
 
 // The shows and artists the user played for the first time in the period,
-// with a play that counts, and the one they spent the most time on. All the
-// user's plays include those in the period. A user without plays before the
-// period would find everything new, so there's nothing to tell them.
+// with a play that counts, and the one they spent the most time on that no
+// story before has headlined. All the user's plays include those in the
+// period. A user without plays before the period would find everything new,
+// so there's nothing to tell them.
 export function getDiscoveries(
   plays: Play[],
   allPlays: Play[],
   minPercent: number,
+  headlines: Headline[] = [],
 ): Discoveries | null {
   const periodIds = new Set(plays.map((play) => play.id))
   const isInPeriod = (play: Play) => periodIds.has(play.id)
@@ -217,23 +232,81 @@ export function getDiscoveries(
       .map((group) => group.filter(isInPeriod))
   }
 
+  function getHeadline(group: Play[]): Headline | undefined {
+    return headlines.find(
+      (headline) =>
+        headline.type === PLAY_LIBRARY_TYPES[group[0].mediaType] &&
+        isPlayOfItem(group[0], { year: null, ...headline }),
+    )
+  }
+
   const shows = getNew('episode')
   const artists = getNew('track')
-  const [top] = orderBy(
+  const finds = orderBy(
     [...shows, ...artists],
     (group) => sumBy(group, 'durationMs'),
     'desc',
   )
 
-  if (!top) {
+  if (!finds.length) {
     return null
   }
+
+  const after = getHeadline(finds[0])?.title ?? null
+  const top = finds.find((group) => !getHeadline(group))
 
   return {
     shows: shows.length,
     artists: artists.length,
-    top: { play: getNewest(top), durationMs: sumBy(top, 'durationMs') },
+    top: top
+      ? { play: getNewest(top), durationMs: sumBy(top, 'durationMs') }
+      : null,
+    after,
   }
+}
+
+// Each top list's first place, which its story and the countdown after it
+// headline, unless the admin hid them. A countdown needs two places.
+export function getTopHeadlines(
+  top: TopMediaItems,
+  hiddenStories: readonly RewindStoryId[],
+): Headline[] {
+  const lists: [TitleCard['type'], ItemRow[], RewindStoryId[]][] = [
+    [
+      'show',
+      top.shows,
+      ['shows', ...(top.shows.length > 1 ? ['shows_top' as const] : [])],
+    ],
+    [
+      'movie',
+      top.movies,
+      ['movies', ...(top.movies.length > 1 ? ['movies_top' as const] : [])],
+    ],
+    // The top artists show even when there's only one
+    ['artist', top.audio, ['audio', 'audio_top']],
+  ]
+
+  return lists.flatMap(([type, items, stories]) =>
+    items[0] && stories.some((story) => !hiddenStories.includes(story))
+      ? [{ ...items[0], type }]
+      : [],
+  )
+}
+
+// The comfort watch's card is its movie, or an episode's show
+function getComfortHeadline({ play, isEpisode }: ComfortWatch): Headline {
+  return isEpisode
+    ? {
+        type: 'show',
+        title: play.showTitle ?? play.title,
+        media_id: play.showMediaId,
+      }
+    : {
+        type: 'movie',
+        title: play.title,
+        year: play.year,
+        media_id: play.mediaId,
+      }
 }
 
 // A movie the user played in the period but has never finished, the one they
@@ -277,14 +350,24 @@ export async function getTitleMoments(
   plays: Play[],
   allPlays: Play[] | null,
   until?: string,
+  topItems: TopMediaItems = { shows: [], movies: [], audio: [] },
 ): Promise<TitleMoments> {
   const t = await getTranslations()
   const settings = getSettings()
   const source = getStatsSource(settings)
   const minPercent = settings.general.minPlayPercent
+  const { hiddenStories } = settings.rewind
   const comfortWatch = getComfortWatch(plays, minPercent)
   const timeTravel = getTimeTravel(plays, minPercent)
-  const discoveries = allPlays && getDiscoveries(plays, allPlays, minPercent)
+  // The discoveries come after these, so they don't show the same card again
+  const headlines = [
+    ...getTopHeadlines(topItems, hiddenStories),
+    ...(comfortWatch && !hiddenStories.includes('comfort_watch')
+      ? [getComfortHeadline(comfortWatch)]
+      : []),
+  ]
+  const discoveries =
+    allPlays && getDiscoveries(plays, allPlays, minPercent, headlines)
   const gaveUp =
     allPlays &&
     getGaveUp(
@@ -323,7 +406,7 @@ export async function getTitleMoments(
             },
       ),
     timeTravel && getCard(timeTravel.oldest.play),
-    discoveries && getCard(discoveries.top.play),
+    discoveries?.top && getCard(discoveries.top.play),
   ])
 
   return {
@@ -343,17 +426,18 @@ export async function getTitleMoments(
             oldest: { ...oldestCard, year: timeTravel.oldest.year },
           }
         : null,
-    discoveries:
-      discoveries && discoveryCard
-        ? {
-            shows: discoveries.shows,
-            artists: discoveries.artists,
-            top: {
+    discoveries: discoveries && {
+      shows: discoveries.shows,
+      artists: discoveries.artists,
+      top:
+        discoveries.top && discoveryCard
+          ? {
               ...discoveryCard,
               duration: secondsToTime(discoveries.top.durationMs / 1000, t),
-            },
-          }
-        : null,
+            }
+          : null,
+      after: discoveries.after,
+    },
     gaveUp: gaveUp && { title: gaveUp.play.title, percent: gaveUp.percent },
   }
 }

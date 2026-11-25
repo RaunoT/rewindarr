@@ -372,7 +372,12 @@ async function getRewind(
         })
       : null,
   ])
-  const titleMoments = await getTitleMoments(plays, allPlays, until)
+  const titleMoments = await getTitleMoments(
+    plays,
+    allPlays,
+    until,
+    topMediaItems,
+  )
   const yearOverYear = await getYearOverYear(allPlays, period, timeZone, {
     shows: topMediaItems.shows[0],
     movies: topMediaItems.movies[0],
