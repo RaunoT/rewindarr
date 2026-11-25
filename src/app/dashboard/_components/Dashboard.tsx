@@ -21,7 +21,9 @@ type Props = {
   totalSize?: string | number
   type: 'movie' | 'show' | 'artist' | 'users'
   mediaServer?: MediaServer | null
-  count?: string
+  count?: number
+  // The totals are one user's, which changes what the count is
+  isPersonal?: boolean
   settings: PublicSettings
   // The limit "Show more" leads to, left out when there's nothing more
   nextLimit?: number
@@ -37,6 +39,7 @@ export default async function Dashboard({
   type,
   mediaServer = null,
   count,
+  isPersonal = false,
   settings,
   nextLimit,
   status,
@@ -64,12 +67,12 @@ export default async function Dashboard({
     })
   }
 
-  if (count && type !== 'users') {
+  if (count !== undefined && type !== 'users') {
     totals.push({
       key: 'count',
       icon: <MediaIcon type={type} />,
-      label: getTotalLabel('count', type, t),
-      value: count,
+      label: getTotalLabel('count', type, t, isPersonal),
+      value: format.number(count),
     })
   }
 

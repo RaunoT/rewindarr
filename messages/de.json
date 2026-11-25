@@ -817,7 +817,10 @@
     "listenTime": "Hörzeit",
     "movies": "Filme",
     "episodes": "Episoden",
-    "tracks": "Titel"
+    "tracks": "Titel",
+    "moviesWatched": "Gesehene Filme",
+    "episodesWatched": "Gesehene Episoden",
+    "tracksPlayed": "Gehörte Titel"
   },
   "Filters": {
     "title": "Filter",

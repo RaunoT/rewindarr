@@ -4,6 +4,7 @@ import { sum } from 'lodash'
 import { describe, expect, it, vi } from 'vitest'
 import getSettings from './getSettings'
 import {
+  countPlayedTitles,
   createPlayStats,
   filterPlays,
   getExcludedIdentityIds,
@@ -318,6 +319,119 @@ describe('getTopItems', () => {
 
   it('leaves out plays before the exact period start date', async () => {
     expect(await rank('duration', '2026-03-02')).toEqual(['Heat', 'Alien'])
+  })
+})
+
+describe('countPlayedTitles', () => {
+  it('counts each movie once, however often it was played', () => {
+    expect(
+      countPlayedTitles(
+        [
+          play('heat 1', '2026-03-01T20:00:00Z', { title: 'Heat', year: 1995 }),
+          play('heat 2', '2026-03-02T20:00:00Z', { title: 'Heat', year: 1995 }),
+          play('dune', '2026-03-03T20:00:00Z', { title: 'Dune', year: 2021 }),
+        ],
+        50,
+      ),
+    ).toBe(2)
+  })
+
+  it("counts a show's episodes by their numbers", () => {
+    function episode(id: string, season: number, number: number, title = id) {
+      return play(id, '2026-03-01T20:00:00Z', {
+        mediaType: 'episode',
+        title,
+        showTitle: 'Severance',
+        seasonNumber: season,
+        episodeNumber: number,
+      })
+    }
+
+    expect(
+      countPlayedTitles(
+        [
+          episode('pilot', 1, 1),
+          // Renamed since, but the same episode
+          episode('pilot again', 1, 1, 'Good News About Hell'),
+          episode('second', 1, 2),
+          episode('premiere', 2, 1),
+          play('other show', '2026-03-01T20:00:00Z', {
+            mediaType: 'episode',
+            title: 'Pilot',
+            showTitle: 'Andor',
+            seasonNumber: 1,
+            episodeNumber: 1,
+          }),
+        ],
+        50,
+      ),
+    ).toBe(4)
+  })
+
+  it('counts tracks by their title within the artist', () => {
+    function track(id: string, title: string, artistName: string) {
+      return play(id, '2026-03-01T20:00:00Z', {
+        mediaType: 'track',
+        title,
+        artistName,
+        durationMs: 3 * 60 * 1000,
+      })
+    }
+
+    expect(
+      countPlayedTitles(
+        [
+          track('1', 'Intro', 'The xx'),
+          track('2', 'intro ', 'The xx'),
+          track('3', 'Intro', 'M83'),
+          track('4', 'Angels', 'The xx'),
+        ],
+        50,
+      ),
+    ).toBe(3)
+  })
+
+  it('leaves out titles without a play that counts', () => {
+    expect(
+      countPlayedTitles(
+        [
+          play('given up', '2026-03-01T20:00:00Z', {
+            title: 'Alien',
+            percentComplete: 10,
+          }),
+          play('watched', '2026-03-01T20:00:00Z', { title: 'Heat' }),
+        ],
+        50,
+      ),
+    ).toBe(1)
+  })
+})
+
+describe('getPlayedCount', () => {
+  it("counts only the user's plays in the period", async () => {
+    vi.mocked(getSettings).mockReturnValue({
+      general: { excludedUsers: ['2'], minPlayPercent: 50 },
+    } as unknown as ReturnType<typeof getSettings>)
+
+    const count = await createPlayStats({
+      getPlays: async () => [
+        play('heat', '2026-03-02T20:00:00Z', { title: 'Heat' }),
+        play('dune', '2026-03-03T20:00:00Z', { title: 'Dune' }),
+        play('before', '2026-02-01T20:00:00Z', { title: 'Alien' }),
+        play('bob', '2026-03-03T20:00:00Z', {
+          title: 'Up',
+          identityId: 'bob',
+        }),
+      ],
+      // The user's own count, even when they're excluded from the server's
+      getUsers: async () => [user('2', 'alice'), user('3', 'bob')],
+      getMediaData: async () => ({ thumb: '', isDeleted: false }),
+    }).getPlayedCount({ section_type: 'movie' } as Library, {
+      since: '2026-03-01',
+      userId: '2',
+    })
+
+    expect(count).toBe(2)
   })
 })
 

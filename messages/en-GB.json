@@ -817,7 +817,10 @@
     "listenTime": "Listening time",
     "movies": "Movies",
     "episodes": "Episodes",
-    "tracks": "Tracks"
+    "tracks": "Tracks",
+    "moviesWatched": "Movies watched",
+    "episodesWatched": "Episodes watched",
+    "tracksPlayed": "Tracks played"
   },
   "Filters": {
     "title": "Filters",

@@ -817,7 +817,10 @@
     "listenTime": "Kuulamisaeg",
     "movies": "Filmid",
     "episodes": "Episoodid",
-    "tracks": "Lood"
+    "tracks": "Lood",
+    "moviesWatched": "Vaadatud filmid",
+    "episodesWatched": "Vaadatud episoodid",
+    "tracksPlayed": "Kuulatud lood"
   },
   "Filters": {
     "title": "Filtrid",
