@@ -33,27 +33,22 @@ export default function EmailTryIt({ previewHref, send }: Props) {
   }
 
   return (
-    <div className='input-wrapper'>
-      <div className='flex min-w-0 flex-1 flex-wrap gap-2'>
-        <a
-          href={previewHref}
-          target='_blank'
-          className='button button-sm button--glass'
-        >
-          {t('preview')}
-        </a>
-        <button
-          type='button'
-          className='button button-sm button--glass'
-          onClick={sendToMe}
-          disabled={isSending}
-        >
-          {isSending ? t('sending') : t('sendToMe')}
-        </button>
-      </div>
-      <span className='label label--start'>
-        <span className='label-wrapper'>{t('tryIt')}</span>
-      </span>
+    <div className='flex flex-wrap gap-2'>
+      <a
+        href={previewHref}
+        target='_blank'
+        className='button button-sm button--glass'
+      >
+        {t('preview')}
+      </a>
+      <button
+        type='button'
+        className='button button-sm button--glass'
+        onClick={sendToMe}
+        disabled={isSending}
+      >
+        {isSending ? t('sending') : t('sendToMe')}
+      </button>
     </div>
   )
 }

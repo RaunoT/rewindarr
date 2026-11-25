@@ -144,11 +144,10 @@ export function pickRecipients(
   })
 }
 
-// `fallbackAddress` stands in where a user has none, as in pickRecipients
+// Each of the users asked for a link to their Rewind
 export async function sendRewindEmails(
   settings: Settings,
   userIds: string[],
-  fallbackAddress?: string,
 ): Promise<SendReport> {
   if (!canShareRewind(settings)) {
     return { status: 'error', error: 'rewindNotShared' }
@@ -161,7 +160,6 @@ export async function sendRewindEmails(
     const recipients = pickRecipients(
       await getEmailRecipients(settings),
       userIds,
-      fallbackAddress,
     )
 
     return buildAndSend(settings, recipients, (recipient) =>
