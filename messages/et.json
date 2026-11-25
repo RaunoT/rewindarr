@@ -135,8 +135,7 @@
       "partiallyAvailable": "Osaliselt saadaval",
       "available": "Saadaval"
     },
-    "requestStatusLabel": "{status}: ava {title} Seerris",
-    "playThreshold": "Siin loetakse iga mängimine. Mujal loetakse mängimine, kui {percent, number, percent} on vaadatud."
+    "requestStatusLabel": "{status}: ava {title} Seerris"
   },
   "MediaServerDeeplink": {
     "openLabel": "Ava {title} {server}is"

@@ -135,8 +135,7 @@
       "partiallyAvailable": "Disponible en partie",
       "available": "Disponible"
     },
-    "requestStatusLabel": "{status} : ouvrir {title} dans Seerr",
-    "playThreshold": "Ici, chaque lecture compte. Ailleurs, une lecture compte à partir de {percent, number, percent} visionnés."
+    "requestStatusLabel": "{status} : ouvrir {title} dans Seerr"
   },
   "MediaServerDeeplink": {
     "openLabel": "Ouvrir {title} dans {server}"

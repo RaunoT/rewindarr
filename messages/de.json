@@ -135,8 +135,7 @@
       "partiallyAvailable": "Teilweise verfügbar",
       "available": "Verfügbar"
     },
-    "requestStatusLabel": "{status}: {title} in Seerr öffnen",
-    "playThreshold": "Hier zählt jede Wiedergabe. Anderswo zählt eine Wiedergabe, sobald {percent, number, percent} gesehen sind."
+    "requestStatusLabel": "{status}: {title} in Seerr öffnen"
   },
   "MediaServerDeeplink": {
     "openLabel": "{title} in {server} öffnen"

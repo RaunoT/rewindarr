@@ -2,10 +2,7 @@
 
 import PeriodFilter from '@/app/dashboard/_components/PeriodFilter'
 import ChipGroup from '@/components/filters/ChipGroup'
-import FilterSheet, {
-  FilterGroup,
-  FilterNote,
-} from '@/components/filters/FilterSheet'
+import FilterSheet, { FilterGroup } from '@/components/filters/FilterSheet'
 import SearchPill from '@/components/filters/SearchPill'
 import SegmentedControl from '@/components/filters/SegmentedControl'
 import { UserList } from '@/components/filters/UserPicker'
@@ -81,7 +78,6 @@ export default function HistoryFilters({
   const canClear =
     activeCount > 0 || !!searchParam || periodParams.searchParams.has('period')
   const hasMoreFilters = hasRequests || libraries.length > 1 || users.length > 0
-  const { minPlayPercent } = settings.general
 
   if (searchParam !== shownSearchParam) {
     const pendingIndex = pendingSearches.indexOf(searchParam)
@@ -270,13 +266,6 @@ export default function HistoryFilters({
                 />
               </FilterGroup>
             )
-          )}
-          {/* Its totals count every play, unlike the dashboard and Rewind,
-              where a short one on this list doesn't count */}
-          {minPlayPercent > 0 && (
-            <FilterNote>
-              {t('playThreshold', { percent: minPlayPercent / 100 })}
-            </FilterNote>
           )}
         </FilterSheet>
       )}

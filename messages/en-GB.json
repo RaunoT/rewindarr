@@ -135,8 +135,7 @@
       "partiallyAvailable": "Partly available",
       "available": "Available"
     },
-    "requestStatusLabel": "{status}: open {title} in Seerr",
-    "playThreshold": "Every play counts here. Elsewhere, a play counts once {percent, number, percent} is watched."
+    "requestStatusLabel": "{status}: open {title} in Seerr"
   },
   "MediaServerDeeplink": {
     "openLabel": "Open {title} in {server}"

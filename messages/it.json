@@ -135,8 +135,7 @@
       "partiallyAvailable": "Disponibile in parte",
       "available": "Disponibile"
     },
-    "requestStatusLabel": "{status}: apri {title} in Seerr",
-    "playThreshold": "Qui conta ogni riproduzione. Altrove, una riproduzione conta una volta visto il {percent, number, percent}."
+    "requestStatusLabel": "{status}: apri {title} in Seerr"
   },
   "MediaServerDeeplink": {
     "openLabel": "Apri {title} in {server}"
