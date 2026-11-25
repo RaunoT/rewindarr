@@ -313,8 +313,9 @@ export function getAverageShares<K extends string>(
 }
 
 // The user's time split by media type next to the average user's, most played
-// by the user first. Types nobody played are left out, and without any time
-// of the user's own there is nothing to split.
+// by the user first. The story is about the user, so a type they didn't play
+// is left out even when others did, and without any time of the user's own
+// there is nothing to split.
 export function getRewindBreakdown({
   shows,
   movies,
@@ -324,7 +325,7 @@ export function getRewindBreakdown({
     { type: 'show' as const, ...shows },
     { type: 'movie' as const, ...movies },
     { type: 'artist' as const, ...audio },
-  ].filter((item) => item.duration_value || item.average_share)
+  ].filter((item) => item.duration_value)
   const total = types.reduce((sum, item) => sum + (item.duration_value ?? 0), 0)
 
   if (!total) {
@@ -342,8 +343,9 @@ export function getRewindBreakdown({
 }
 
 // The user's requests split by type next to the average user's, like the
-// breakdown of the time. Without requests of the user's own, every user's are
-// split together instead, to go with their counts.
+// breakdown of the time, leaving out a type the user didn't request. Without
+// requests of the user's own, every user's are split together instead, to go
+// with their counts.
 export function getRequestsBreakdown(
   requests: NonNullable<UserRewind['requests']>,
 ): (Omit<RewindBreakdownItem, 'value' | 'type'> & {
@@ -364,19 +366,21 @@ export function getRequestsBreakdown(
       userCount: user.shows,
       averageShare: averageShares?.shows ?? null,
     },
-  ].filter((item) => item.count)
+  ]
   // Split over the listed types only, like the average user's, so requests of
   // any other type don't shrink one side's bars
   const userTotal = user.movies + user.shows
   const total = requests.movies + requests.shows
 
   return sortBreakdown(
-    types.map((item) => ({
-      type: item.type,
-      count: userTotal ? item.userCount : item.count,
-      share: userTotal ? item.userCount / userTotal : null,
-      otherShare: userTotal ? item.averageShare : item.count / total,
-    })),
+    types
+      .map((item) => ({
+        type: item.type,
+        count: userTotal ? item.userCount : item.count,
+        share: userTotal ? item.userCount / userTotal : null,
+        otherShare: userTotal ? item.averageShare : item.count / total,
+      }))
+      .filter((item) => item.count),
   )
 }
 
