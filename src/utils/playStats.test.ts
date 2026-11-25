@@ -368,6 +368,50 @@ describe('countPlayedTitles', () => {
     ).toBe(4)
   })
 
+  it('tells specials apart from the first season', () => {
+    function episode(id: string, season: number, number: number) {
+      return play(id, '2026-03-01T20:00:00Z', {
+        mediaType: 'episode',
+        title: 'Episode',
+        showTitle: 'Doctor Who',
+        seasonNumber: season,
+        episodeNumber: number,
+      })
+    }
+
+    expect(
+      countPlayedTitles(
+        [
+          episode('special', 0, 1),
+          episode('first', 1, 1),
+          episode('again', 0, 1),
+        ],
+        50,
+      ),
+    ).toBe(2)
+  })
+
+  it('counts episodes without numbers by their title', () => {
+    function episode(id: string, title: string) {
+      return play(id, '2026-03-01T20:00:00Z', {
+        mediaType: 'episode',
+        title,
+        showTitle: 'Severance',
+      })
+    }
+
+    expect(
+      countPlayedTitles(
+        [
+          episode('1', 'Good News About Hell'),
+          episode('2', 'good news about hell'),
+          episode('3', 'Half Loop'),
+        ],
+        50,
+      ),
+    ).toBe(2)
+  })
+
   it('counts tracks by their title within the artist', () => {
     function track(id: string, title: string, artistName: string) {
       return play(id, '2026-03-01T20:00:00Z', {
