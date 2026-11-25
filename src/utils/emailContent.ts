@@ -9,10 +9,11 @@ import {
 import { APP_NAME } from './constants'
 import { EmailBlock, ListItem, renderEmail } from './emailHtml'
 import { EmailIntl } from './emailIntl'
-import { getRewindShareUrl, getUnsubscribeUrl, toAppUrl } from './emailLinks'
+import { getRewindShareUrl, getUnsubscribeUrl } from './emailLinks'
 import { EmailRecipient } from './emailRecipients'
 import { getInitials, secondsToTime } from './formatting'
 import { OutgoingEmail } from './mailer'
+import { searchArtistPicture } from './musicPreviewSources'
 import { getRewindPeriod } from './rewindPeriod'
 import { getStatsSource } from './statsSource'
 
@@ -46,8 +47,13 @@ function getTotals(stats: MediaStats) {
   }
 }
 
-// Mail apps can't sign in to the media server, so only TMDB's posters show
-function toListItem(item: ItemRow, intl: EmailIntl): ListItem {
+// Mail apps can't sign in to the media server, so only TMDB's posters show,
+// and Deezer's pictures for artists
+function toListItem(
+  item: ItemRow,
+  intl: EmailIntl,
+  imageUrl: string | null = item.tmdb_poster || null,
+): ListItem {
   const { t } = intl
 
   return {
@@ -60,23 +66,67 @@ function toListItem(item: ItemRow, intl: EmailIntl): ListItem {
     ]
       .filter(Boolean)
       .join(' · '),
-    imageUrl: item.tmdb_poster || null,
+    imageUrl,
   }
 }
 
-// The lists with anything in them, two to a row
-function getItemColumns(
-  lists: { heading: string; items: ItemRow[] }[],
+// The same artists come up in many readers' emails, so each is looked up once
+const globalForEmails = globalThis as typeof globalThis & {
+  rewindarrArtistPictures?: Map<string, string | null>
+}
+const artistPictures = (globalForEmails.rewindarrArtistPictures ??= new Map())
+
+async function getArtistPicture(name: string): Promise<string | null> {
+  if (artistPictures.has(name)) {
+    return artistPictures.get(name) ?? null
+  }
+
+  try {
+    const picture = await searchArtistPicture(name)
+
+    artistPictures.set(name, picture)
+
+    return picture
+  } catch {
+    // Not kept, so it's tried again with the next email
+    return null
+  }
+}
+
+async function toArtistItems(
+  items: ItemRow[],
   intl: EmailIntl,
-): EmailBlock[] {
-  const blocks = lists
-    .filter(({ items }) => items.length)
+): Promise<ListItem[]> {
+  return Promise.all(
+    items.map(async (item) =>
+      toListItem(item, intl, await getArtistPicture(item.title)),
+    ),
+  )
+}
+
+// The lists with anything in them, two to a row
+// Shows and movies first, then artists, as in the app
+async function getItemColumns(
+  lists: { shows: ItemRow[]; movies: ItemRow[]; audio: ItemRow[] },
+  headings: { shows: string; movies: string; audio: string },
+  intl: EmailIntl,
+): Promise<EmailBlock[]> {
+  const items = [
+    {
+      heading: headings.shows,
+      items: lists.shows.map((item) => toListItem(item, intl)),
+    },
+    {
+      heading: headings.movies,
+      items: lists.movies.map((item) => toListItem(item, intl)),
+    },
+    { heading: headings.audio, items: await toArtistItems(lists.audio, intl) },
+  ]
+  const blocks = items
+    .filter((list) => list.items.length)
     .map(({ heading, items }): EmailBlock[] => [
       { type: 'heading', text: heading },
-      {
-        type: 'items',
-        items: items.map((item) => toListItem(item, intl)),
-      },
+      { type: 'items', items },
     ])
   const rows: EmailBlock[] = []
 
@@ -331,23 +381,19 @@ export async function buildNewsletter(
                 },
               ],
             },
-            ...getItemColumns(
-              [
-                {
-                  heading: t('Email.yourTopShows'),
-                  items: topItems.shows.slice(0, LIST_LENGTH),
-                },
-                {
-                  heading: t('Email.yourTopMovies'),
-                  items: topItems.movies.slice(0, LIST_LENGTH),
-                },
-                {
-                  heading: t('Email.yourTopArtists'),
-                  items: topItems.audio.slice(0, LIST_LENGTH),
-                },
-              ],
+            ...(await getItemColumns(
+              {
+                shows: topItems.shows.slice(0, LIST_LENGTH),
+                movies: topItems.movies.slice(0, LIST_LENGTH),
+                audio: topItems.audio.slice(0, LIST_LENGTH),
+              },
+              {
+                shows: t('Email.yourTopShows'),
+                movies: t('Email.yourTopMovies'),
+                audio: t('Email.yourTopArtists'),
+              },
               intl,
-            ),
+            )),
           ]
         : [
             ...intro,
@@ -384,23 +430,19 @@ export async function buildNewsletter(
           },
         ],
       },
-      ...getItemColumns(
-        [
-          {
-            heading: t('Email.Newsletter.topShows'),
-            items: server.topItems.shows.slice(0, SERVER_LIST_LENGTH),
-          },
-          {
-            heading: t('Email.Newsletter.topMovies'),
-            items: server.topItems.movies.slice(0, SERVER_LIST_LENGTH),
-          },
-          {
-            heading: t('Email.Newsletter.topArtists'),
-            items: server.topItems.audio.slice(0, SERVER_LIST_LENGTH),
-          },
-        ],
+      ...(await getItemColumns(
+        {
+          shows: server.topItems.shows.slice(0, SERVER_LIST_LENGTH),
+          movies: server.topItems.movies.slice(0, SERVER_LIST_LENGTH),
+          audio: server.topItems.audio.slice(0, SERVER_LIST_LENGTH),
+        },
+        {
+          shows: t('Email.Newsletter.topShows'),
+          movies: t('Email.Newsletter.topMovies'),
+          audio: t('Email.Newsletter.topArtists'),
+        },
         intl,
-      ),
+      )),
     ])
   }
 
@@ -448,7 +490,8 @@ export async function buildNewsletter(
 
   lastPanel.push({
     type: 'button',
-    href: settings.dashboard.isActive ? toAppUrl(appUrl, '/dashboard') : appUrl,
+    // The home page's overview, as each library has a dashboard of its own
+    href: appUrl,
     label: t('Email.Newsletter.button'),
   })
 
