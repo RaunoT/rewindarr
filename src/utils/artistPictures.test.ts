@@ -1,38 +1,43 @@
 import { ItemRow } from '@/types/statsSource'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { addArtistPictures } from './artistPictures'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  addArtistPictures,
+  getArtistPicture,
+  getArtistPictureUrl,
+  isSignedArtist,
+} from './artistPictures'
 import { searchArtistPicture } from './musicPreviewSources'
 
 vi.mock('./musicPreviewSources', () => ({ searchArtistPicture: vi.fn() }))
 
 const PICTURE = 'https://cdn-images.dzcdn.net/images/artist/abc/500x500.jpg'
 
-function artist(title: string) {
-  return { title } as ItemRow
-}
+beforeEach(() => {
+  vi.stubEnv('NEXTAUTH_SECRET', 'secret')
+})
 
-describe('addArtistPictures', () => {
-  beforeEach(() => {
-    vi.useRealTimers()
-    // The cache outlives each test, so each uses its own artist
-    vi.mocked(searchArtistPicture).mockReset()
-  })
+afterEach(() => {
+  vi.useRealTimers()
+  vi.unstubAllEnvs()
+  vi.mocked(searchArtistPicture).mockReset()
+})
 
-  it("adds Deezer's picture of each artist", async () => {
+// The cache outlives each test, so each uses its own artist
+describe('getArtistPicture', () => {
+  it("gives Deezer's picture, or null without one", async () => {
     vi.mocked(searchArtistPicture).mockImplementation(async (name) =>
-      name === 'Known' ? PICTURE : null,
+      name === 'known' ? PICTURE : null,
     )
 
-    const items = await addArtistPictures([artist('Known'), artist('Unknown')])
-
-    expect(items.map((item) => item.fallback_poster)).toEqual([PICTURE, null])
+    await expect(getArtistPicture('Known')).resolves.toBe(PICTURE)
+    await expect(getArtistPicture('Unknown')).resolves.toBeNull()
   })
 
-  it('looks each artist up once', async () => {
+  it('looks each artist up once, whatever the case and spacing', async () => {
     vi.mocked(searchArtistPicture).mockResolvedValue(PICTURE)
 
-    await addArtistPictures([artist('Cached')])
-    await addArtistPictures([artist('Cached')])
+    await Promise.all([getArtistPicture('Cached'), getArtistPicture('cached ')])
+    await getArtistPicture('CACHED')
 
     expect(searchArtistPicture).toHaveBeenCalledTimes(1)
   })
@@ -41,9 +46,9 @@ describe('addArtistPictures', () => {
     vi.useFakeTimers()
     vi.mocked(searchArtistPicture).mockResolvedValue(null)
 
-    await addArtistPictures([artist('Later')])
+    await getArtistPicture('Later')
     vi.advanceTimersByTime(25 * 60 * 60 * 1000)
-    await addArtistPictures([artist('Later')])
+    await getArtistPicture('Later')
 
     expect(searchArtistPicture).toHaveBeenCalledTimes(2)
   })
@@ -53,10 +58,41 @@ describe('addArtistPictures', () => {
       .mockRejectedValueOnce(new Error('down'))
       .mockResolvedValueOnce(PICTURE)
 
-    const [first] = await addArtistPictures([artist('Flaky')])
-    const [second] = await addArtistPictures([artist('Flaky')])
+    await expect(getArtistPicture('Flaky')).resolves.toBeNull()
+    await expect(getArtistPicture('Flaky')).resolves.toBe(PICTURE)
+  })
 
-    expect(first.fallback_poster).toBeNull()
-    expect(second.fallback_poster).toBe(PICTURE)
+  it("doesn't search for an empty name", async () => {
+    await expect(getArtistPicture('  ')).resolves.toBeNull()
+
+    expect(searchArtistPicture).not.toHaveBeenCalled()
+  })
+})
+
+describe('getArtistPictureUrl', () => {
+  it('signs the artist, so no other name is searched for', () => {
+    const url = new URL(getArtistPictureUrl('Albert King')!, 'http://app')
+    const sig = url.searchParams.get('sig')!
+
+    expect(url.pathname).toBe('/api/image')
+    expect(url.searchParams.get('artist')).toBe('Albert King')
+    expect(isSignedArtist('Albert King', sig)).toBe(true)
+    expect(isSignedArtist('B.B. King', sig)).toBe(false)
+  })
+
+  it('gives nothing without a secret to sign with', () => {
+    vi.stubEnv('NEXTAUTH_SECRET', '')
+
+    expect(getArtistPictureUrl('Albert King')).toBeNull()
+    expect(isSignedArtist('Albert King', '')).toBe(false)
+  })
+})
+
+describe('addArtistPictures', () => {
+  it("links each artist's picture without searching for it yet", () => {
+    const [item] = addArtistPictures([{ title: 'Albert King' } as ItemRow])
+
+    expect(item.fallback_poster).toBe(getArtistPictureUrl('Albert King'))
+    expect(searchArtistPicture).not.toHaveBeenCalled()
   })
 })

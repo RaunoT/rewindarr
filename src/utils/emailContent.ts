@@ -6,6 +6,7 @@ import {
   PlayPeriod,
   TopMediaItems,
 } from '@/types/statsSource'
+import { getArtistPicture } from './artistPictures'
 import { APP_NAME } from './constants'
 import { EmailBlock, EmailIcon, ListItem, renderEmail } from './emailHtml'
 import { EmailIntl } from './emailIntl'
@@ -106,15 +107,36 @@ function toTitleItems(
   )
 }
 
+// The app's link to Deezer's picture can't be loaded from an email, so it's
+// looked up here
+async function toArtistItems(
+  items: ItemRow[],
+  intl: EmailIntl,
+  pictures: Pictures,
+  isServer: boolean,
+): Promise<ListItem[]> {
+  return Promise.all(
+    items.map(async (item) =>
+      toListItem(
+        item,
+        intl,
+        getAppPicture(pictures, item.thumb) ??
+          (await getArtistPicture(item.title)),
+        isServer,
+      ),
+    ),
+  )
+}
+
 // The lists with anything in them, two to a row
 // Shows and movies first, then artists, as in the app
-function getItemColumns(
+async function getItemColumns(
   lists: { shows: ItemRow[]; movies: ItemRow[]; audio: ItemRow[] },
   headings: { shows: string; movies: string; audio: string },
   intl: EmailIntl,
   pictures: Pictures,
   isServer: boolean,
-): EmailBlock[] {
+): Promise<EmailBlock[]> {
   const items: { heading: string; icon: EmailIcon; items: ListItem[] }[] = [
     {
       heading: headings.shows,
@@ -129,7 +151,7 @@ function getItemColumns(
     {
       heading: headings.audio,
       icon: 'artist',
-      items: toTitleItems(lists.audio, intl, pictures, isServer),
+      items: await toArtistItems(lists.audio, intl, pictures, isServer),
     },
   ]
   const blocks = items
@@ -395,7 +417,7 @@ export async function buildNewsletter(
                 },
               ],
             },
-            ...getItemColumns(
+            ...(await getItemColumns(
               {
                 shows: topItems.shows.slice(0, LIST_LENGTH),
                 movies: topItems.movies.slice(0, LIST_LENGTH),
@@ -409,7 +431,7 @@ export async function buildNewsletter(
               intl,
               pictures,
               false,
-            ),
+            )),
           ]
         : [
             ...intro,
@@ -446,7 +468,7 @@ export async function buildNewsletter(
           },
         ],
       },
-      ...getItemColumns(
+      ...(await getItemColumns(
         {
           shows: server.topItems.shows.slice(0, SERVER_LIST_LENGTH),
           movies: server.topItems.movies.slice(0, SERVER_LIST_LENGTH),
@@ -460,7 +482,7 @@ export async function buildNewsletter(
         intl,
         pictures,
         true,
-      ),
+      )),
     ])
   }
 

@@ -1,6 +1,11 @@
 // Plex image paths are served through Tautulli by /api/image; full URLs
 // (plex.tv avatars, Tracearr images) are proxied as-is if allowed.
 export function getImageProxyUrl(image: string | null | undefined): string {
+  // Already the proxy's, like an artist's picture from Deezer
+  if (image?.startsWith('/api/image?')) {
+    return image
+  }
+
   if (image?.startsWith('http')) {
     return `/api/image?url=${encodeURIComponent(image)}`
   }

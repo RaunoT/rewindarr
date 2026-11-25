@@ -252,7 +252,7 @@ describe('getTopTrack', () => {
     return {
       mediaType: 'track',
       startedAt: 0,
-      ratingKey: title,
+      ratingKey: title as string | null,
       mediaId: null,
       title,
       artistName: 'Artist',
@@ -332,9 +332,9 @@ describe('getTopTrack', () => {
 
   it("adds up a re-added track's plays under its newest rating key", async () => {
     mockPlays([
-      { ...track('Song', 3), ratingKey: '2', startedAt: 2 },
       { ...track('Song', 3), ratingKey: '1', startedAt: 1 },
       { ...track('song ', 3), ratingKey: '1', startedAt: 1 },
+      { ...track('Song', 3), ratingKey: '2', startedAt: 2 },
       track('Other', 3),
       track('Other', 3),
     ])
@@ -345,12 +345,26 @@ describe('getTopTrack', () => {
       plays: 3,
     })
   })
+
+  it('keeps the newest rating key when a newer play has none', async () => {
+    mockPlays([
+      { ...track('Song', 3), ratingKey: '2', startedAt: 2 },
+      { ...track('Song', 3), ratingKey: null, startedAt: 3 },
+      { ...track('Song', 3), ratingKey: '1', startedAt: 1 },
+    ])
+
+    await expect(getTopTrack('1', LIBRARIES, PERIOD)).resolves.toMatchObject({
+      ratingKey: '2',
+      plays: 3,
+    })
+  })
 })
 
 describe('getArtistTopTracks', () => {
   function track(title: string, artistName: string, percentComplete = 100) {
     return {
       mediaType: 'track',
+      startedAt: 0,
       ratingKey: title,
       mediaId: null,
       title,
@@ -382,6 +396,18 @@ describe('getArtistTopTracks', () => {
       'Single',
       'Hit',
       null,
+    ])
+  })
+
+  it("gives an artist's re-added track its newest rating key", () => {
+    const plays = [
+      { ...track('Hit', 'Artist'), ratingKey: 'old', startedAt: 1 },
+      { ...track('Hit', 'Artist'), ratingKey: 'new', startedAt: 2 },
+      track('Deep cut', 'Artist'),
+    ]
+
+    expect(getArtistTopTracks(plays, [artist('Artist')], 50)).toEqual([
+      expect.objectContaining({ title: 'Hit', ratingKey: 'new', plays: 2 }),
     ])
   })
 

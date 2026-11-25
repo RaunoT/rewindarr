@@ -1,6 +1,7 @@
 import { orderBy } from 'lodash'
 import qs from 'qs'
 import { isGatewayError, isHostDown, markHostDown } from './hostBackoff'
+import { isDeezerArtistPicture } from './imageUpstream'
 import {
   getSongName,
   isAlbumCandidate,
@@ -455,7 +456,7 @@ export async function fetchDeezerPreview(id: number): Promise<string | null> {
 
 // The artist's picture, which anyone can load, for when the media server has
 // none or emails can't load it. Only for the same name, as a close one is
-// someone else.
+// someone else, and only from where the image proxy loads it.
 export async function searchArtistPicture(
   name: string,
 ): Promise<string | null> {
@@ -468,7 +469,7 @@ export async function searchArtistPicture(
   const picture = artist?.picture_big
 
   // Deezer's stand-in for an artist without a picture leaves its ID out
-  return isPreviewUrl(picture) && !picture.includes('/artist//')
+  return isDeezerArtistPicture(picture) && !picture.includes('/artist//')
     ? picture
     : null
 }

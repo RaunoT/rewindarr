@@ -5,6 +5,7 @@ import {
   fetchDeezerPreview,
   isPreviewUrl,
   MusicPreviewError,
+  searchArtistPicture,
   searchSong,
   searchSoundtrack,
 } from './musicPreviewSources'
@@ -396,5 +397,50 @@ describe('fetchDeezerPreview', () => {
     await expect(first).resolves.toBe(DEEZER_PREVIEW)
     await expect(second).resolves.toBeInstanceOf(MusicPreviewError)
     expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('searchArtistPicture', () => {
+  const PICTURE =
+    'https://cdn-images.dzcdn.net/images/artist/abc/500x500-000000-80-0-0.jpg'
+
+  function answer(name: string, picture_big: string) {
+    mockServices({ '/search/artist': { data: [{ name, picture_big }] } })
+  }
+
+  it('gives the picture of the artist of the same name, in any case', async () => {
+    answer('Albert King', PICTURE)
+
+    await expect(settle(searchArtistPicture('albert king'))).resolves.toBe(
+      PICTURE,
+    )
+  })
+
+  it('gives nothing for another artist with a close name', async () => {
+    answer('Albert Kingsley', PICTURE)
+
+    await expect(settle(searchArtistPicture('Albert King'))).resolves.toBeNull()
+  })
+
+  it("gives nothing for Deezer's stand-in picture", async () => {
+    answer(
+      'Albert King',
+      'https://cdn-images.dzcdn.net/images/artist//500x500-000000-80-0-0.jpg',
+    )
+
+    await expect(settle(searchArtistPicture('Albert King'))).resolves.toBeNull()
+  })
+
+  it('gives nothing from where the image proxy would refuse it', async () => {
+    for (const picture of [
+      'https://e-cdns-images.dzcdn.net/images/artist/abc/500x500.jpg',
+      'https://cdn-images.dzcdn.net/images/cover/abc/500x500.jpg',
+    ]) {
+      answer('Albert King', picture)
+
+      await expect(
+        settle(searchArtistPicture('Albert King')),
+      ).resolves.toBeNull()
+    }
   })
 })

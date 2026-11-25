@@ -170,6 +170,17 @@ function isPublicImageUrl({
   )
 }
 
+// Deezer's picture of an artist, the only kind the app shows from Deezer
+export function isDeezerArtistPicture(url: unknown): url is string {
+  const parsed = typeof url === 'string' ? parseUrl(url) : null
+
+  return (
+    !!parsed &&
+    parsed.hostname === DEEZER_IMAGE_HOST &&
+    isPublicImageUrl(parsed)
+  )
+}
+
 // Where an image may be requested from directly
 export function isAllowedImageUrl(url: string, settings: Settings): boolean {
   const parsed = parseUrl(url)
