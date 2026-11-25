@@ -88,6 +88,23 @@ describe('GET /api/image', () => {
     )
   })
 
+  it('follows plex.tv to an uploaded avatar', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        redirect(
+          'https://assets.plex.tv/avatars/0123456789abcdef0123456789abcdef01234567.?1700000000',
+        ),
+      )
+      .mockResolvedValueOnce(image())
+
+    const res = await GET(
+      request({ url: 'https://plex.tv/users/abc/avatar?c=1' }),
+    )
+
+    expect(res.status).toBe(200)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
   it("follows Tautulli's own redirect to HTTPS", async () => {
     fetchMock
       .mockResolvedValueOnce(redirect('https://tautulli:8181/api/v2?x=1'))

@@ -26,6 +26,8 @@ const TMDB_IMAGE_HOST = 'image.tmdb.org'
 // only explicit avatar paths on plex.tv are allowed directly.
 const PLEX_TV_HOST = 'plex.tv'
 const PLEX_TV_IMAGE_PATHS = ['/users/', '/avatars/']
+// Where plex.tv redirects uploaded avatars to
+const PLEX_ASSETS_HOST = 'assets.plex.tv'
 // Plex avatars redirect through Gravatar, which serves the plex.tv fallback
 // through WordPress's image proxy. Both fetch other URLs too, so they're only
 // followed as redirects, and the proxy only to plex.tv.
@@ -130,8 +132,15 @@ function decodeSafePath(pathname: string): string | null {
   }
 }
 
-function isPublicImageUrl({ protocol, hostname, pathname }: URL): boolean {
-  if (protocol !== 'https:') {
+function isPublicImageUrl({
+  protocol,
+  hostname,
+  pathname,
+  port,
+  username,
+  password,
+}: URL): boolean {
+  if (protocol !== 'https:' || port || username || password) {
     return false
   }
 
@@ -143,6 +152,10 @@ function isPublicImageUrl({ protocol, hostname, pathname }: URL): boolean {
 
   if (hostname === TMDB_IMAGE_HOST) {
     return decoded.startsWith('/t/p/')
+  }
+
+  if (hostname === PLEX_ASSETS_HOST) {
+    return decoded.startsWith('/avatars/')
   }
 
   return (

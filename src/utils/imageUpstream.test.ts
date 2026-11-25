@@ -107,6 +107,7 @@ describe('getTautulliImageUrl', () => {
 describe('isAllowedImageUrl', () => {
   it.each([
     'https://plex.tv/users/abc/avatar?c=1',
+    'https://assets.plex.tv/avatars/0123456789abcdef0123456789abcdef01234567.?1700000000',
     'https://image.tmdb.org/t/p/w300/poster.jpg',
   ])('allows %s', (url) => {
     expect(isAllowedImageUrl(url, tautulliSettings())).toBe(true)
@@ -117,6 +118,12 @@ describe('isAllowedImageUrl', () => {
     'https://plex.tv.attacker.example/x.png',
     'https://images.plex.tv/photo?url=https://attacker.example/x.png',
     'https://images.plex.tv/users/abc/avatar',
+    'http://assets.plex.tv/avatars/abc',
+    'https://assets.plex.tv/other/x.png',
+    'https://assets.plex.tv/avatars/..%2fother/x.png',
+    'https://assets.plex.tv:8443/avatars/abc',
+    'https://user:pass@assets.plex.tv/avatars/abc',
+    'https://plex.tv:8443/users/abc/avatar',
     'https://plex.tv/photo/:/transcode?url=https://attacker.example/x.png',
     'https://plex.tv/Photo/:/transcode?url=https://attacker.example/x.png',
     'https://plex.tv//photo/:/transcode?url=https://attacker.example/x.png',
