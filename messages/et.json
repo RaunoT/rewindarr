@@ -800,6 +800,7 @@
     "labelRequests": "Tellimused",
     "you": "(sina)",
     "requestLabel": "Telli {title}",
+    "openRequestLabel": "Ava {title} soov Seerris",
     "externalLinkLabel": "{title} saidil {site}",
     "externalSearchLabel": "Otsi {title} saidilt {site}"
   },

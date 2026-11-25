@@ -25,7 +25,12 @@ export default function MediaLink({ title, link, className, children }: Props) {
     'requestUrl' in link
       ? {
           href: link.requestUrl,
-          label: t('MediaItem.requestLabel', { title }),
+          label: t(
+            link.isRequested
+              ? 'MediaItem.openRequestLabel'
+              : 'MediaItem.requestLabel',
+            { title },
+          ),
         }
       : {
           href: generateDeeplinkUrl(link.ratingKey, link.mediaServer, isIos),
@@ -50,10 +55,13 @@ export default function MediaLink({ title, link, className, children }: Props) {
 }
 
 // Inside the poster, which sets its size and shape. While the poster is
-// hovered, it says where it goes: out to the media server, or to a request.
+// hovered, it says where it goes: to request it, or out to the media server or
+// an existing request.
 export function MediaLinkIcon({ link }: { link: Deeplink }) {
   const Icon =
-    'requestUrl' in link ? STAT_ICONS.requests : ArrowTopRightOnSquareIcon
+    'requestUrl' in link && !link.isRequested
+      ? STAT_ICONS.requests
+      : ArrowTopRightOnSquareIcon
 
   return (
     <span aria-hidden='true' className='poster-overlay media-link-icon'>

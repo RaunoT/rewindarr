@@ -93,7 +93,7 @@ export default function HistoryRequestItem({
           </SeerrButton>
         )
       }
-      deeplink={serverLink ?? { requestUrl }}
+      deeplink={serverLink ?? { requestUrl, isRequested: true }}
       aside={
         <HistoryTime time={new Date(request.createdAt)} timeZone={timeZone} />
       }

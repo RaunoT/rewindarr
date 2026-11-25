@@ -36,10 +36,10 @@ export function getDeeplinkRatingKeyFromSession(
 }
 
 // What a poster's link opens: the item in the media server, or Seerr, where it
-// can be requested
+// can be requested or, for a request, where it already is
 export type Deeplink =
   | { mediaServer: MediaServer; ratingKey: number | string }
-  | { requestUrl: string }
+  | { requestUrl: string; isRequested?: boolean }
 
 export function getDeeplinkRatingKeyFromRow(
   item: ItemRow,

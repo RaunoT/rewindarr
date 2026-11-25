@@ -800,6 +800,7 @@
     "labelRequests": "Richieste",
     "you": "(tu)",
     "requestLabel": "Richiedi {title}",
+    "openRequestLabel": "Apri la richiesta di {title} in Seerr",
     "externalLinkLabel": "{title} su {site}",
     "externalSearchLabel": "Cerca {title} su {site}"
   },
