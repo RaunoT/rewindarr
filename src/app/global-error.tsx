@@ -1,8 +1,9 @@
 'use client'
 
 import StatusMessage from '@/components/StatusMessage'
+import { isLocale, matchLocale } from '@/i18n/matchLocale'
 import '@/styles/globals.css'
-import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, LOCALES } from '@/utils/constants'
+import { DEFAULT_LOCALE, Locale, LOCALE_COOKIE_NAME } from '@/utils/constants'
 import { getCookie } from '@/utils/cookies'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import {
@@ -14,7 +15,6 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 
 type Props = {
   error: Error
-  reset: () => void
 }
 
 // Other locales load on demand, so they don't add to every page's bundle.
@@ -30,14 +30,27 @@ function subscribe() {
 }
 
 // The root layout, and with it the locale provider, is gone, so the locale
-// cookie is read directly.
-function getLocale() {
+// cookie and browser languages are read directly.
+function getLocale(): Locale {
   const locale = getCookie(LOCALE_COOKIE_NAME)
 
-  return locale && LOCALES.includes(locale) ? locale : DEFAULT_LOCALE
+  if (isLocale(locale)) {
+    return locale
+  }
+
+  const browserLanguages =
+    typeof navigator !== 'undefined'
+      ? navigator.languages?.length
+        ? navigator.languages
+        : navigator.language
+          ? [navigator.language]
+          : []
+      : []
+
+  return matchLocale(browserLanguages) ?? DEFAULT_LOCALE
 }
 
-function ErrorContent({ error, reset }: Props) {
+function ErrorContent({ error }: Props) {
   const t = useTranslations('Error')
 
   useEffect(() => {
@@ -54,7 +67,7 @@ function ErrorContent({ error, reset }: Props) {
           <button
             type='button'
             className='button w-full'
-            onClick={() => reset()}
+            onClick={() => window.location.reload()}
           >
             {t('cta')}
           </button>
@@ -64,7 +77,7 @@ function ErrorContent({ error, reset }: Props) {
   )
 }
 
-export default function GlobalError({ error, reset }: Props) {
+export default function GlobalError({ error }: Props) {
   const locale = useSyncExternalStore(
     subscribe,
     getLocale,
@@ -88,7 +101,7 @@ export default function GlobalError({ error, reset }: Props) {
     <html lang={locale}>
       <body className='h-full min-h-dvh bg-black text-white'>
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <ErrorContent error={error} reset={reset} />
+          <ErrorContent error={error} />
         </NextIntlClientProvider>
       </body>
     </html>

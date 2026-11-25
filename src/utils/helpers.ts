@@ -1,6 +1,6 @@
 import { DashboardSearchParams } from '@/types/dashboard'
 import { RewindTotals, UserRewind } from '@/types/rewind'
-import { Settings, StatisticsSource } from '@/types/settings'
+import { PublicSettings, Settings, StatisticsSource } from '@/types/settings'
 import { Library } from '@/types/statsSource'
 import kebabCase from 'lodash/kebabCase'
 import { Session } from 'next-auth'
@@ -68,7 +68,7 @@ export function getViewer(session: Session | null): Viewer {
 // and server actions check this too. A rewind is always someone's, so outside
 // access doesn't open it up.
 export function canViewFeature(
-  settings: Pick<Settings, 'general' | Feature>,
+  settings: Pick<PublicSettings, 'general' | Feature>,
   feature: Feature,
   viewer: Viewer,
 ): boolean {
@@ -93,6 +93,18 @@ export function canViewFeature(
   )
 }
 
+function isOwnOnlyViewer<F extends OwnOnlyFeature>(
+  settings: Pick<PublicSettings, F>,
+  feature: F,
+  viewer: Viewer,
+): boolean {
+  const { isOwnOnly, isOwnOnlyForAdmin } = settings[feature]
+
+  return (
+    viewer.isLoggedIn && isOwnOnly && (!viewer.isAdmin || isOwnOnlyForAdmin)
+  )
+}
+
 // A rewind is always the viewer's own
 export type OwnOnlyFeature = Exclude<Feature, 'rewind'>
 
@@ -103,13 +115,11 @@ function isOwnOnlyFeature(feature: Feature): feature is OwnOnlyFeature {
 // The user whose own stats, streams or plays alone the page shows, or none
 // for everyone's
 export function getOwnOnlyUserId<F extends OwnOnlyFeature>(
-  settings: Pick<Settings, F>,
+  settings: Pick<PublicSettings, F>,
   feature: F,
   session: Session | null | undefined,
 ): string | undefined {
-  const { isOwnOnly, isOwnOnlyForAdmin } = settings[feature]
-
-  if (!session || !isOwnOnly || (session.user.isAdmin && !isOwnOnlyForAdmin)) {
+  if (!session || !isOwnOnlyViewer(settings, feature, getViewer(session))) {
     return undefined
   }
 
@@ -121,7 +131,7 @@ const FEATURES: Feature[] = ['rewind', 'dashboard', 'activity', 'history']
 // The users page is all about everyone else, so a viewer who only sees their
 // own stats doesn't get it
 export function isUsersPageVisible(
-  settings: Pick<Settings, 'dashboard'>,
+  settings: Pick<PublicSettings, 'dashboard'>,
   session: Session | null | undefined,
 ): boolean {
   return (
@@ -150,7 +160,7 @@ export function isLoginRequired(settings: Settings, pathname: string): boolean {
 
 // The home page's tiles, so it knows when it has none to show
 export function getHomeTiles(
-  settings: Pick<Settings, 'general' | Feature>,
+  settings: Pick<PublicSettings, 'general' | Feature>,
   viewer: Viewer,
   libraryCount: number,
 ) {
@@ -164,24 +174,28 @@ export function getHomeTiles(
 }
 
 // The pages a viewer can open. A dashboard with no libraries and no users
-// page has nothing in it.
+// page for that viewer has nothing in it.
 export function getOpenPages(
-  settings: Pick<Settings, 'general' | Feature>,
+  settings: Pick<PublicSettings, 'general' | Feature>,
   viewer: Viewer,
 ): Feature[] {
+  const hasUsersPage =
+    settings.dashboard.isUsersPageActive &&
+    !isOwnOnlyViewer(settings, 'dashboard', viewer)
+
   return FEATURES.filter(
     (feature) =>
       canViewFeature(settings, feature, viewer) &&
       (feature !== 'dashboard' ||
         settings.general.activeLibraries.length > 0 ||
-        settings.dashboard.isUsersPageActive),
+        hasUsersPage),
   )
 }
 
 // With nothing else to show, the home page would only lead to Rewind, so
 // Rewind takes its place
 export function isRewindOnly(
-  settings: Pick<Settings, 'general' | Feature>,
+  settings: Pick<PublicSettings, 'general' | Feature>,
   viewer: Viewer,
 ): boolean {
   const pages = getOpenPages(settings, viewer)

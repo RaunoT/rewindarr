@@ -7,14 +7,13 @@ import { useTranslations } from 'next-intl'
 type Props = {
   // MM-DD
   defaultValue: string
+  year: number
 }
 
 // Every year's edition comes out on the same day, so only its day and month
 // show. The picker opens on this year's release.
-export default function RewindReleaseDate({ defaultValue }: Props) {
+export default function RewindReleaseDate({ defaultValue, year }: Props) {
   const t = useTranslations('Settings.Rewind')
-  // oxlint-disable-next-line react/purity
-  const year = new Date().getFullYear()
 
   return (
     <DatePicker

@@ -19,6 +19,8 @@ type Props = {
   >
   // For Seerr's link, which only shows while it's set up
   isSeerrActive?: boolean
+  // Left out of one user's history, where it's the same on every card
+  isUserShown?: boolean
 }
 
 // Built like the cards, a play of an episode with ratings, so little moves
@@ -27,6 +29,7 @@ export default function HistorySkeleton({
   rows = HISTORY_PAGE_SIZES[0],
   general = DEFAULT_SETTINGS.general,
   isSeerrActive = false,
+  isUserShown = true,
 }: Props) {
   const { activeExternalLinks, activeItemStatistics } = general
   const hasRatings = RATING_STATISTICS.some((rating) =>
@@ -79,7 +82,9 @@ export default function HistorySkeleton({
                   {/* The user, the time and, from sm up, how far it got. Pills
                       from sm up, a line of text on phones. */}
                   <div className='icon-stats-container mt-2 max-sm:gap-x-2.5'>
-                    <div className='skeleton h-4 w-20 sm:h-6 sm:w-24' />
+                    {isUserShown && (
+                      <div className='skeleton h-4 w-20 sm:h-6 sm:w-24' />
+                    )}
                     <div className='skeleton h-4 w-16 sm:h-6 sm:w-28' />
                     <div className='skeleton h-6 w-24 max-sm:hidden' />
                   </div>
@@ -103,6 +108,15 @@ export default function HistorySkeleton({
           </li>
         ))}
       </ul>
+      <div className='mt-3 flex items-center justify-between gap-4 border-t border-white/10 pt-3'>
+        <div className='max-sm:hidden sm:flex-1' />
+        <div className='flex items-center justify-center gap-1'>
+          <div className='skeleton h-8 w-28 sm:w-52' />
+        </div>
+        <div className='ml-auto flex justify-end sm:flex-1'>
+          <div className='skeleton h-8 w-24' />
+        </div>
+      </div>
     </div>
   )
 }

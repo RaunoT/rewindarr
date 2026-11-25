@@ -3,7 +3,7 @@
 import usePlexAuth from '@/hooks/usePlexAuth'
 import { MediaServerType } from '@/types/settings'
 import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { Button, Dialog, DialogTrigger, Popover } from 'react-aria-components'
 import JellyfinLoginForm from './JellyfinLoginForm'
 import LoginWithJellyfinLabel from './LoginWithJellyfinLabel'
 import LoginWithPlexLabel from './LoginWithPlexLabel'
@@ -15,26 +15,25 @@ type Props = {
 
 export default function LoginButton({ siteUrl, mediaServerType }: Props) {
   const { isLoading, error, handleLogin } = usePlexAuth(siteUrl)
-  const [isFormOpen, setIsFormOpen] = useState<boolean>(false)
   const t = useTranslations('Home')
 
   if (mediaServerType === 'jellyfin') {
     return (
-      <div className='relative'>
-        <button
-          className='button button--jellyfin button-sm'
-          onClick={() => setIsFormOpen(!isFormOpen)}
-          aria-expanded={isFormOpen}
-        >
+      <DialogTrigger>
+        <Button className='button button--jellyfin button-sm'>
           <LoginWithJellyfinLabel />
-        </button>
+        </Button>
         {/* Below the button, so the header keeps its layout */}
-        {isFormOpen && (
-          <div className='glass absolute top-full right-0 z-10 mt-2 w-72 rounded-2xl p-4'>
+        <Popover
+          placement='bottom end'
+          offset={8}
+          className='glass-sheet w-72 bg-neutral-900/80'
+        >
+          <Dialog className='outline-none'>
             <JellyfinLoginForm />
-          </div>
-        )}
-      </div>
+          </Dialog>
+        </Popover>
+      </DialogTrigger>
     )
   }
 
@@ -51,7 +50,7 @@ export default function LoginButton({ siteUrl, mediaServerType }: Props) {
       {error && (
         <p
           role='alert'
-          className='glass text-danger absolute top-full right-0 z-10 mt-2 w-64 rounded-2xl p-3 text-sm'
+          className='glass-sheet text-danger absolute top-full right-0 z-10 mt-2 w-64 rounded-2xl bg-neutral-900/80 p-3 text-sm'
         >
           {t(`loginError.${error}`)}
         </p>

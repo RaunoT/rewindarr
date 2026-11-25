@@ -46,11 +46,15 @@ export default function PlayHistory({
   useEffect(() => {
     let isCurrent = true
 
-    getHistoryStatus(source).then((nextStatus) => {
-      if (isCurrent && nextStatus) {
-        setStatus(nextStatus)
-      }
-    })
+    getHistoryStatus(source)
+      .then((nextStatus) => {
+        if (isCurrent && nextStatus) {
+          setStatus(nextStatus)
+        }
+      })
+      .catch((error) => {
+        console.error('[HISTORY] - Failed to read status!', error)
+      })
 
     return () => {
       isCurrent = false
@@ -62,23 +66,74 @@ export default function PlayHistory({
       return
     }
 
-    const timer = setInterval(async () => {
-      const nextStatus = await getHistoryStatus(source)
+    const interval = pollInterval
 
-      if (nextStatus) {
-        setStatus(nextStatus)
+    let isCurrent = true
+    let timer: ReturnType<typeof setTimeout> | undefined
+
+    function clearTimer() {
+      if (timer !== undefined) {
+        clearTimeout(timer)
+        timer = undefined
       }
-    }, pollInterval)
+    }
 
-    return () => clearInterval(timer)
+    function scheduleNext() {
+      clearTimer()
+
+      if (!isCurrent || document.hidden) {
+        return
+      }
+
+      timer = setTimeout(poll, interval)
+    }
+
+    async function poll() {
+      if (!isCurrent || document.hidden) {
+        return
+      }
+
+      try {
+        const nextStatus = await getHistoryStatus(source)
+
+        if (isCurrent && nextStatus) {
+          setStatus(nextStatus)
+        }
+      } catch (error) {
+        console.error('[HISTORY] - Failed to poll status!', error)
+      }
+
+      scheduleNext()
+    }
+
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        clearTimer()
+      } else {
+        poll()
+      }
+    }
+
+    scheduleNext()
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      isCurrent = false
+      clearTimer()
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [pollInterval, source])
 
   function readAgain() {
     startTransition(async () => {
-      const nextStatus = await readHistoryAgain(source)
+      try {
+        const nextStatus = await readHistoryAgain(source)
 
-      if (nextStatus) {
-        setStatus(nextStatus)
+        if (nextStatus) {
+          setStatus(nextStatus)
+        }
+      } catch (error) {
+        console.error('[HISTORY] - Failed to start reread!', error)
       }
     })
   }

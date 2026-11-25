@@ -42,6 +42,10 @@ export default function MultiSelect({
 }: Props) {
   const [value, setValue] = useState(defaultValue)
   const ref = useRef<HTMLDivElement>(null)
+  // In the list's order rather than the order they were picked
+  const selectedOptions = options.filter((option) =>
+    value.includes(option.value),
+  )
 
   // Options are picked in a popover outside the form, so the form hears of
   // the change from the field instead, like it would from an input
@@ -68,23 +72,20 @@ export default function MultiSelect({
         <Button className='peer input input--select flex min-h-10 min-w-0 flex-wrap items-center text-left'>
           <SelectValue className='flex min-w-0 flex-wrap gap-1.5'>
             {({ isPlaceholder }) =>
-              isPlaceholder ? (
+              isPlaceholder || selectedOptions.length === 0 ? (
                 <span className='text-neutral-400'>{placeholder}</span>
               ) : (
-                // In the list's order rather than the order they were picked
-                options
-                  .filter((option) => value.includes(option.value))
-                  .map((option) => (
-                    <span
-                      key={option.value}
-                      className='icon-stat-wrapper text-sm'
-                    >
-                      {option.icon && (
-                        <span className='option-icon'>{option.icon}</span>
-                      )}
-                      <span className='truncate'>{option.label}</span>
-                    </span>
-                  ))
+                selectedOptions.map((option) => (
+                  <span
+                    key={option.value}
+                    className='icon-stat-wrapper text-sm'
+                  >
+                    {option.icon && (
+                      <span className='option-icon'>{option.icon}</span>
+                    )}
+                    <span className='truncate'>{option.label}</span>
+                  </span>
+                ))
               )
             }
           </SelectValue>

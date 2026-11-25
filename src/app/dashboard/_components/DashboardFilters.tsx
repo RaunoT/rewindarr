@@ -12,7 +12,7 @@ import { getDashboardSort } from '@/utils/helpers'
 import { BarsArrowDownIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useContext, useEffect } from 'react'
+import { useCallback, useContext, useEffect, useRef } from 'react'
 import PeriodFilter from './PeriodFilter'
 
 type Props = {
@@ -57,6 +57,7 @@ export default function DashboardFilters({
     dashboard: { setIsPersonal, setSortBy },
   } = useContext(GlobalContext)
   const t = useTranslations('DashboardFilters')
+  const isRestoringRef = useRef(false)
 
   // oxlint-disable-next-line @stylistic/padding-line-between-statements
   const getUrl = useCallback(
@@ -75,7 +76,10 @@ export default function DashboardFilters({
         params.delete('personal')
       }
 
-      const availableSort = getAvailableSort(personal, sort)
+      const availableSort = getAvailableSort(
+        isOwnOnly ? 'true' : personal,
+        sort,
+      )
 
       if (availableSort) {
         params.set('sortBy', availableSort)
@@ -87,19 +91,23 @@ export default function DashboardFilters({
 
       return query ? `${pathname}?${query}` : pathname
     },
-    [pathname, searchParams],
+    [isOwnOnly, pathname, searchParams],
   )
 
   function handlePersonalChange(value: string) {
+    isRestoringRef.current = false
     router.push(getUrl(value === 'true' ? 'true' : undefined, sortBy))
   }
 
   function handleSortChange(value: string) {
+    isRestoringRef.current = false
     router.push(getUrl(isPersonal, getDashboardSort(value)))
   }
 
   // Back to the defaults, the period too
   function handleClear() {
+    isRestoringRef.current = false
+
     const params = new URLSearchParams(searchParams.toString())
 
     for (const name of ['period', 'personal', 'sortBy', 'limit']) {
@@ -119,13 +127,25 @@ export default function DashboardFilters({
         personalFilter && readStorage('dashboardPersonal') === 'true'
           ? 'true'
           : undefined
-      const savedSort = getDashboardSort(readStorage('dashboardSort'))
+      const savedSort = getAvailableSort(
+        isOwnOnly ? 'true' : savedPersonal,
+        getDashboardSort(readStorage('dashboardSort')),
+      )
 
       if (!hasUrlFilters && (savedPersonal || savedSort)) {
+        isRestoringRef.current = true
         router.replace(getUrl(savedPersonal, savedSort))
 
         return
       }
+    }
+
+    if (isRestoringRef.current) {
+      if (!hasUrlFilters) {
+        return
+      }
+
+      isRestoringRef.current = false
     }
 
     // Remembered for the next visit and for the links on the home page
@@ -134,6 +154,7 @@ export default function DashboardFilters({
   }, [
     getUrl,
     hasUrlFilters,
+    isOwnOnly,
     isPersonal,
     personalFilter,
     router,

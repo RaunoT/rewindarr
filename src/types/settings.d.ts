@@ -176,7 +176,7 @@ export type Settings = {
   setupComplete: boolean
 }
 
-// What may be sent to the browser: no API keys or internal service URLs.
+// What may be sent to the browser: no API keys, internal URLs or excluded users.
 export type PublicConnectionSettings = Pick<
   ConnectionSettings,
   'statisticsSource' | 'mediaServerType' | 'complete'
@@ -185,6 +185,9 @@ export type PublicConnectionSettings = Pick<
   isSeerrActive: boolean
 }
 
-export type PublicSettings = Omit<Settings, 'connection'> & {
+export type PublicGeneralSettings = Omit<GeneralSettings, 'excludedUsers'>
+
+export type PublicSettings = Omit<Settings, 'connection' | 'general'> & {
   connection: PublicConnectionSettings
+  general: PublicGeneralSettings
 }

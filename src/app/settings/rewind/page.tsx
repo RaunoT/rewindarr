@@ -53,10 +53,12 @@ export default async function RewindSettingsPage() {
   const settings = getSettings()
   // Not during the setup, when there's no one to share with yet
   const canShare = !checkRequiredSettings(settings) && canShareRewind(settings)
+  const currentYear = new Date().getFullYear()
 
   return (
     <RewindSettingsForm
       settings={toPublicSettings(settings)}
+      currentYear={currentYear}
       // Not waited for, so the form shows while they're read
       shareUsers={canShare ? getShareUsers() : undefined}
     />

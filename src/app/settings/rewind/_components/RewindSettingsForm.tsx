@@ -44,6 +44,7 @@ import RewindShareLinks, { ShareUser } from './RewindShareLinks'
 
 type Props = {
   settings: PublicSettings
+  currentYear: number
   // Each user's shared link, while users can see their own Rewind
   shareUsers?: Promise<ShareUser[] | null>
 }
@@ -98,7 +99,11 @@ const REQUEST_STORIES: RewindStoryId[] = ['requests', 'requests_reach']
 // Where users start depends on what they can open
 const USER: Viewer = { isLoggedIn: true, isAdmin: false }
 
-export default function RewindSettingsForm({ settings, shareUsers }: Props) {
+export default function RewindSettingsForm({
+  settings,
+  currentYear,
+  shareUsers,
+}: Props) {
   const [isActive, setIsActive] = useState<boolean>(settings.rewind.isActive)
   const [period, setPeriod] = useState<RewindPeriodType>(
     getRewindPeriodType(settings),
@@ -114,8 +119,6 @@ export default function RewindSettingsForm({ settings, shareUsers }: Props) {
   const openPages = getOpenPages(settings, USER).filter(
     (page) => page !== 'rewind',
   )
-  // oxlint-disable-next-line react/purity
-  const thisYear = new Date().getFullYear()
   const storyOptions = REWIND_STORIES.filter(
     (story) =>
       settings.connection.isSeerrActive || !REQUEST_STORIES.includes(story),
@@ -295,6 +298,7 @@ export default function RewindSettingsForm({ settings, shareUsers }: Props) {
               <RewindReleaseDate
                 key={`release-date-${rewindSettings.releaseDate}`}
                 defaultValue={rewindSettings.releaseDate}
+                year={currentYear}
               />
             )}
             {period === 'specificYear' && (
@@ -305,9 +309,9 @@ export default function RewindSettingsForm({ settings, shareUsers }: Props) {
                   className='input'
                   name='year'
                   // Last year's is the one most likely to be over
-                  defaultValue={rewindSettings.year ?? thisYear - 1}
+                  defaultValue={rewindSettings.year ?? currentYear - 1}
                   min={FIRST_YEAR}
-                  max={thisYear}
+                  max={currentYear}
                   required
                 />
                 <span className='label'>

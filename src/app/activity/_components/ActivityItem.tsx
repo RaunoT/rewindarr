@@ -290,18 +290,22 @@ export default function ActivityItem({
           </Detail>
           {isAdmin && !settings.general.isAnonymized && location && (
             <Detail label={t('location')}>
-              {`${toUpper(location)} · `}
-              {location === 'wan' ? (
-                <a
-                  href={`https://ipinfo.io/${ip_address_public}`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='underline decoration-white/30 underline-offset-2 transition-colors hover:decoration-white'
-                >
-                  {ip_address_public}
-                </a>
+              {location === 'wan' && ip_address_public ? (
+                <>
+                  {`${toUpper(location)} · `}
+                  <a
+                    href={`https://ipinfo.io/${encodeURIComponent(ip_address_public)}`}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='underline decoration-white/30 underline-offset-2 transition-colors hover:decoration-white'
+                  >
+                    {ip_address_public}
+                  </a>
+                </>
+              ) : ip_address ? (
+                `${toUpper(location)} · ${ip_address}`
               ) : (
-                ip_address
+                toUpper(location)
               )}
             </Detail>
           )}

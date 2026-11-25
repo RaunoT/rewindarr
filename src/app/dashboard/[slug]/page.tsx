@@ -41,11 +41,22 @@ export async function generateMetadata({
   }>
 }): Promise<Metadata> {
   const { slug } = await params
+  const settings = getSettings()
+  const session = await getServerSession(authOptions)
+
+  if (!canViewFeature(settings, 'dashboard', getViewer(session))) {
+    return {}
+  }
+
   const libraries = await getLibraries()
   const library = libraries.find((library) => getLibrarySlug(library) === slug)
 
+  if (!library || !library.is_active) {
+    return {}
+  }
+
   return {
-    title: library?.section_name,
+    title: library.section_name,
   }
 }
 
@@ -152,10 +163,20 @@ export default async function DashboardPage({ searchParams, params }: Props) {
   const { slug } = await params
   const settings = getSettings()
   const session = await getServerSession(authOptions)
+
+  if (!canViewFeature(settings, 'dashboard', getViewer(session))) {
+    return notFound()
+  }
+
   // Already fetched by the layout, so this doesn't hold up the loader
   const library = (await getLibraries()).find(
     (library) => getLibrarySlug(library) === slug,
   )
+
+  if (!library || !library.is_active) {
+    return notFound()
+  }
+
   const itemsLimit = getItemsLimit(limit)
   const publicSettings = toPublicSettings(settings)
   const isOwnOnly = !!getOwnOnlyUserId(settings, 'dashboard', session)
@@ -170,7 +191,7 @@ export default async function DashboardPage({ searchParams, params }: Props) {
       <Suspense
         fallback={
           <DashboardLoader
-            type={library?.section_type ?? 'movie'}
+            type={library.section_type}
             settings={publicSettings}
             rows={itemsLimit}
           />

@@ -146,6 +146,7 @@ export default function Sidebar({ libraries, settings }: Props) {
                 <a
                   href='https://github.com/RaunoT/rewindarr/releases'
                   target='_blank'
+                  rel='noopener noreferrer'
                   className='sidebar-link'
                 >
                   <ArrowPathIcon />

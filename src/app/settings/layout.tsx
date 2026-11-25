@@ -52,6 +52,7 @@ export default async function SettingsLayout({ children }: Props) {
         <a
           href='https://buymeacoffee.com/fr9lzfrhdh'
           target='_blank'
+          rel='noopener noreferrer'
           className='link-light inline-flex items-center gap-2'
         >
           <BeerIcon className='size-6 text-amber-400' />
@@ -60,6 +61,7 @@ export default async function SettingsLayout({ children }: Props) {
         <a
           href='https://github.com/sponsors/RaunoT'
           target='_blank'
+          rel='noopener noreferrer'
           className='link-light inline-flex items-center gap-2'
         >
           <HeartIcon className='size-6 text-red-500' />
@@ -68,6 +70,7 @@ export default async function SettingsLayout({ children }: Props) {
         <a
           href='https://github.com/RaunoT/rewindarr/issues'
           target='_blank'
+          rel='noopener noreferrer'
           className='link-light inline-flex items-center gap-2'
         >
           <Image src={githubSvg} alt='GitHub' className='size-6 p-0.5' />

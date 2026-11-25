@@ -13,6 +13,7 @@ import {
   getFirstHeaderValue,
   getHomeTiles,
   getLibrarySlug,
+  getOpenPages,
   getOwnOnlyUserId,
   getRequestsBreakdown,
   getRewindBreakdown,
@@ -607,6 +608,24 @@ describe('isRewindOnly', () => {
     settings.dashboard.isUsersPageActive = true
 
     expect(isRewindOnly(settings, user)).toBe(false)
+    expect(getOpenPages(settings, user)).toEqual(['rewind', 'dashboard'])
+
+    settings.dashboard.isOwnOnly = true
+
+    expect(isRewindOnly(settings, user)).toBe(true)
+    expect(getOpenPages(settings, user)).toEqual(['rewind'])
+    expect(isRewindOnly(settings, admin)).toBe(false)
+    expect(getOpenPages(settings, admin)).toEqual(['rewind', 'dashboard'])
+
+    settings.dashboard.isOwnOnlyForAdmin = true
+
+    expect(isRewindOnly(settings, admin)).toBe(true)
+    expect(getOpenPages(settings, admin)).toEqual(['rewind'])
+
+    settings.general.activeLibraries = ['movies']
+
+    expect(isRewindOnly(settings, user)).toBe(false)
+    expect(isRewindOnly(settings, admin)).toBe(false)
   })
 
   it('goes by what each viewer can see', () => {

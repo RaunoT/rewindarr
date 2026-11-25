@@ -52,11 +52,14 @@ export default function HistoryFilters({
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const searchParam = searchParams.get('q') ?? ''
+  const query = searchParams.toString()
   const [search, setSearch] = useState(searchParam)
   // Back and the other filters change the URL too
   const [shownSearchParam, setShownSearchParam] = useState(searchParam)
   // Searches sent to the URL that it hasn't shown yet, oldest first
   const [pendingSearches, setPendingSearches] = useState<string[]>([])
+  const [clearedFromQuery, setClearedFromQuery] = useState<string | null>(null)
+  const isClearing = clearedFromQuery === query
   // Ones in the URL that aren't among the options don't count
   const pickedLibraries = getPicked('library', libraries)
   const pickedUsers = getPicked('user', users)
@@ -113,13 +116,15 @@ export default function HistoryFilters({
     const rows = searchParams.get('rows')
 
     setSearch('')
+    setPendingSearches(searchParam ? [''] : [])
+    setClearedFromQuery(searchParam ? query : null)
     router.push(rows ? `${pathname}?rows=${rows}` : pathname)
   }
 
   useEffect(() => {
     const value = search.trim()
 
-    if (value === shownSearchParam) {
+    if (isClearing || value === shownSearchParam) {
       return
     }
 
@@ -143,7 +148,7 @@ export default function HistoryFilters({
     }, SEARCH_DELAY)
 
     return () => clearTimeout(timer)
-  }, [search, shownSearchParam, pathname, router])
+  }, [isClearing, search, shownSearchParam, pathname, router])
 
   function getKind() {
     return (
@@ -204,7 +209,10 @@ export default function HistoryFilters({
       <SearchPill
         label={t('search')}
         value={search}
-        onChange={setSearch}
+        onChange={(value) => {
+          setClearedFromQuery(null)
+          setSearch(value)
+        }}
         clearLabel={t('clearSearch')}
         className='min-w-40 flex-1'
       />
