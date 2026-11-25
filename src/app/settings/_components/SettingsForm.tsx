@@ -8,6 +8,8 @@ import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { ReactNode, useEffect, useRef } from 'react'
 import LeaveGuard from './LeaveGuard'
+import { useDiscard } from './SettingsDiscard'
+import SettingsDiscardButton from './SettingsDiscardButton'
 import SettingsSaveButton from './SettingsSaveButton'
 
 type Props = {
@@ -38,6 +40,26 @@ export default function SettingsForm({
   )
   // Without a save button there's nothing to save
   const hasUnsavedChanges = isChanged && !hideSubmit
+  const discard = useDiscard()
+  const takeIsDiscarded = discard?.takeIsDiscarded
+
+  // After a discard the page starts over, which leaves nothing focused
+  useEffect(() => {
+    if (takeIsDiscarded?.()) {
+      formRef.current
+        ?.querySelector<HTMLButtonElement>('button[type="submit"]')
+        ?.focus({ preventScroll: true })
+    }
+  }, [takeIsDiscarded])
+
+  function handleDiscard() {
+    // An error about the values being discarded no longer applies
+    if (toastKey.current) {
+      toastQueue.close(toastKey.current)
+    }
+
+    discard?.discard()
+  }
 
   // Each save returns a new state, so this runs once per save. A new result
   // replaces the last one rather than stacking up.
@@ -90,20 +112,30 @@ export default function SettingsForm({
             <div
               className={clsx(
                 'flex items-center justify-end gap-3',
-                hasUnsavedChanges && 'save-bar',
+                hasUnsavedChanges && 'save-bar min-w-0 max-sm:pl-2',
               )}
             >
               <output
                 className={clsx(
                   'min-w-0 flex-1 text-sm text-neutral-200',
-                  !hasUnsavedChanges && 'sr-only',
+                  // On phones the two buttons fill the bar, as the label
+                  // doesn't fit beside them in every language
+                  hasUnsavedChanges ? 'max-sm:sr-only' : 'sr-only',
                 )}
               >
                 {hasUnsavedChanges && t('unsavedChanges')}
               </output>
+              {hasUnsavedChanges && discard && (
+                <SettingsDiscardButton
+                  onPress={handleDiscard}
+                  isDiscarding={discard.isDiscarding}
+                />
+              )}
               <SettingsSaveButton
                 isSetup={isSetup}
                 isCompact={hasUnsavedChanges}
+                // A disabled save button also stops Enter from submitting
+                isDisabled={discard?.isDiscarding}
               />
             </div>
           )}

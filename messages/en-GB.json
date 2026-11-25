@@ -168,6 +168,7 @@
     "save": "Save",
     "continue": "Continue",
     "unsavedChanges": "Unsaved changes",
+    "discardChanges": "Discard",
     "leaveTitle": "Leave without saving?",
     "leaveDescription": "Your changes on this page haven't been saved.",
     "leave": "Leave",

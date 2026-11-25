@@ -168,6 +168,7 @@
     "save": "Enregistrer",
     "continue": "Continuer",
     "unsavedChanges": "Modifications non enregistrées",
+    "discardChanges": "Annuler",
     "leaveTitle": "Quitter sans enregistrer ?",
     "leaveDescription": "Vos modifications sur cette page n'ont pas été enregistrées.",
     "leave": "Quitter",
