@@ -274,14 +274,30 @@ export type RewindBreakdownItem = {
   otherShare: number | null
 }
 
-function sortBreakdown<T extends Omit<RewindBreakdownItem, 'value'>>(
+// A type the user has nothing in is left out, so the other side is split again
+// over the listed types, and both add up over the same ones. The user's
+// biggest first.
+function toBreakdown<T extends Omit<RewindBreakdownItem, 'value'>>(
   items: T[],
 ): T[] {
-  return items.sort(
-    (a, b) =>
-      (b.share ?? 0) - (a.share ?? 0) ||
-      (b.otherShare ?? 0) - (a.otherShare ?? 0),
+  const otherTotal = items.reduce(
+    (sum, item) => sum + (item.otherShare ?? 0),
+    0,
   )
+
+  return items
+    .map((item) => ({
+      ...item,
+      otherShare:
+        item.otherShare !== null && otherTotal
+          ? item.otherShare / otherTotal
+          : item.otherShare,
+    }))
+    .sort(
+      (a, b) =>
+        (b.share ?? 0) - (a.share ?? 0) ||
+        (b.otherShare ?? 0) - (a.otherShare ?? 0),
+    )
 }
 
 // Each user's split of their own total, averaged over the users with any, so
@@ -332,7 +348,7 @@ export function getRewindBreakdown({
     return []
   }
 
-  return sortBreakdown(
+  return toBreakdown(
     types.map((item) => ({
       type: item.type,
       value: item.duration,
@@ -372,7 +388,11 @@ export function getRequestsBreakdown(
   const userTotal = user.movies + user.shows
   const total = requests.movies + requests.shows
 
-  return sortBreakdown(
+  if (!total) {
+    return []
+  }
+
+  return toBreakdown(
     types
       .map((item) => ({
         type: item.type,

@@ -214,27 +214,31 @@ describe('getRewindBreakdown', () => {
     ])
   })
 
-  it('leaves out a type only other users played', () => {
-    expect(
-      getRewindBreakdown({
-        shows: {
-          ...none,
-          duration: '1 hr',
-          duration_value: 3600,
-          average_share: 0.5,
-        },
-        movies: {
-          ...none,
-          duration: '1 hr',
-          duration_value: 3600,
-          average_share: 0.25,
-        },
-        audio: { ...none, average_share: 0.25 },
-      }),
-    ).toEqual([
-      { type: 'show', value: '1 hr', share: 0.5, otherShare: 0.5 },
-      { type: 'movie', value: '1 hr', share: 0.5, otherShare: 0.25 },
+  it("leaves out a type only other users played, splitting the average user's over the rest", () => {
+    const breakdown = getRewindBreakdown({
+      shows: {
+        ...none,
+        duration: '1 hr',
+        duration_value: 3600,
+        average_share: 0.5,
+      },
+      movies: {
+        ...none,
+        duration: '1 hr',
+        duration_value: 3600,
+        average_share: 0.25,
+      },
+      audio: { ...none, average_share: 0.25 },
+    })
+
+    expect(breakdown).toEqual([
+      { type: 'show', value: '1 hr', share: 0.5, otherShare: 2 / 3 },
+      { type: 'movie', value: '1 hr', share: 0.5, otherShare: 1 / 3 },
     ])
+    expect(breakdown.reduce((sum, item) => sum + item.share!, 0)).toBe(1)
+    expect(
+      breakdown.reduce((sum, item) => sum + item.otherShare!, 0),
+    ).toBeCloseTo(1)
   })
 
   it('leaves a single type when the user played nothing else', () => {
@@ -249,7 +253,7 @@ describe('getRewindBreakdown', () => {
         movies: { ...none, average_share: 0.3 },
         audio: { ...none, average_share: 0.2 },
       }),
-    ).toEqual([{ type: 'show', value: '1 hr', share: 1, otherShare: 0.5 }])
+    ).toEqual([{ type: 'show', value: '1 hr', share: 1, otherShare: 1 }])
   })
 
   it('leaves out types without a library', () => {
@@ -319,7 +323,31 @@ describe('getRequestsBreakdown', () => {
         ...requests,
         user: { total: 2, movies: 2, shows: 0 },
       }),
-    ).toEqual([{ type: 'movie', count: 2, share: 1, otherShare: 0.7 }])
+    ).toEqual([{ type: 'movie', count: 2, share: 1, otherShare: 1 }])
+  })
+
+  it('is empty when nobody requested a movie or show', () => {
+    expect(
+      getRequestsBreakdown({
+        ...requests,
+        total: 2,
+        movies: 0,
+        shows: 0,
+        user: { total: 0, movies: 0, shows: 0 },
+        averageShares: null,
+      }),
+    ).toEqual([])
+  })
+
+  it("only splits every user's requests when they were all of one type", () => {
+    expect(
+      getRequestsBreakdown({
+        ...requests,
+        total: 6,
+        shows: 0,
+        user: { total: 0, movies: 0, shows: 0 },
+      }),
+    ).toEqual([{ type: 'movie', count: 6, share: null, otherShare: 1 }])
   })
 
   it('leaves out types nobody requested', () => {
