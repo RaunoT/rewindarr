@@ -60,6 +60,14 @@ describe('createPlexAuthUrl', () => {
     expect(clientId).toMatch(UUID_V4)
     expect(url).toContain(`clientID=${clientId}`)
   })
+
+  it('throws when Plex rejects the PIN request', async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 503 }))
+
+    await expect(createPlexAuthUrl('https://rewind.example')).rejects.toThrow(
+      '503',
+    )
+  })
 })
 
 describe('getPlexAuthToken', () => {
@@ -67,14 +75,25 @@ describe('getPlexAuthToken', () => {
     storage.set('plexClientId', 'existing-id')
     fetchMock.mockResolvedValue(Response.json({ authToken: 'secret-token' }))
 
-    await expect(getPlexAuthToken('42')).resolves.toBe('secret-token')
+    await expect(getPlexAuthToken('42/evil')).resolves.toBe('secret-token')
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://plex.tv/api/v2/pins/42',
+      'https://plex.tv/api/v2/pins/42%2Fevil',
       expect.objectContaining({
         headers: expect.objectContaining({
           'X-Plex-Client-Identifier': 'existing-id',
         }),
       }),
     )
+  })
+
+  it('returns null when the PIN is unconfirmed, fails HTTP, or rejects', async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ authToken: null }))
+    await expect(getPlexAuthToken('1')).resolves.toBeNull()
+
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 404 }))
+    await expect(getPlexAuthToken('2')).resolves.toBeNull()
+
+    fetchMock.mockRejectedValueOnce(new Error('network'))
+    await expect(getPlexAuthToken('3')).resolves.toBeNull()
   })
 })

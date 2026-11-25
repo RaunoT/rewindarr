@@ -33,9 +33,23 @@ if [ -z "$(getent passwd "$PUID")" ]; then
   adduser -D -H -u "$PUID" -G "$group" -s /sbin/nologin rewind
 fi
 
-# Existing installs have a root-owned config directory
-chown -R "$PUID:$PGID" /app/config /app/.next/cache ||
-  echo "Could not fix ownership of /app/config, the app may not be able to save settings" >&2
+# Existing installs have a root-owned config directory; skip recursive chown
+# when ownership already matches so large config volumes start fast
+fix_ownership() {
+  dir="$1"
+  mismatch="$(find "$dir" \( ! -user "$PUID" -o ! -group "$PGID" \) -print -quit 2>/dev/null)"
+
+  if [ -n "$mismatch" ] && ! chown -R "$PUID:$PGID" "$dir" 2>/dev/null; then
+    if ! su-exec "$PUID:$PGID" test -w "$dir" 2>/dev/null || {
+      [ -e "$dir/settings.json" ] && ! su-exec "$PUID:$PGID" test -w "$dir/settings.json" 2>/dev/null
+    }; then
+      echo "Could not fix ownership of $dir, the app may not be able to write to it" >&2
+    fi
+  fi
+}
+
+fix_ownership /app/config
+fix_ownership /app/.next/cache
 
 HOME="$(getent passwd "$PUID" | cut -d: -f6)"
 export HOME
