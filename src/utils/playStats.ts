@@ -104,6 +104,7 @@ export type PlayStats = Pick<
   StatsSource,
   | 'getTotalDuration'
   | 'getTopItems'
+  | 'getPlayedCount'
   | 'getTopUsers'
   | 'getMediaStats'
   | 'getTopMediaItems'
@@ -305,6 +306,31 @@ function toItemRow(plays: Play[], minPercent: number): ItemRow {
   }
 }
 
+// An episode is told apart within its show by its numbers, and a track within
+// its artist by its title, as their IDs change when they're re-added
+function getKeyWithinItem(play: Play): string {
+  if (
+    play.mediaType === 'episode' &&
+    play.seasonNumber !== null &&
+    play.episodeNumber !== null
+  ) {
+    return `${play.seasonNumber}x${play.episodeNumber}`
+  }
+
+  return play.mediaType === 'movie' ? '' : play.title.trim().toLowerCase()
+}
+
+// How many different movies, episodes or tracks have a play that counts,
+// grouped like the rankings' items
+export function countPlayedTitles(plays: Play[], minPercent: number): number {
+  const countedPlays = plays.filter((play) => isCountedPlay(play, minPercent))
+
+  return sumBy(
+    groupPlays(countedPlays),
+    (group) => new Set(group.map(getKeyWithinItem)).size,
+  )
+}
+
 const COMPARE_ITEMS: Record<TopItemsSort, (a: ItemRow, b: ItemRow) => number> =
   {
     duration: (a, b) => b.total_duration - a.total_duration,
@@ -402,6 +428,15 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
       items: await addAdditionalData(items, mediaType),
       hasMore: topItems.length > count,
     }
+  }
+
+  async function getPlayedCount(
+    library: Library,
+    query: PlayPeriod & { userId: string },
+  ): Promise<number> {
+    const plays = await getPlays({ ...query, libraries: [library] })
+
+    return countPlayedTitles(plays, getMinPlayPercent())
   }
 
   async function getTotalDuration(query: DurationQuery): Promise<number> {
@@ -664,6 +699,7 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
   return {
     getTotalDuration,
     getTopItems,
+    getPlayedCount,
     getTopUsers,
     getMediaStats,
     getTopMediaItems,

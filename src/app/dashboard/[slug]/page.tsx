@@ -5,6 +5,7 @@ import {
   getItems,
   getItemsLimit,
   getNextItemsLimit,
+  getTotalCount,
   getTotalDuration,
   getTotalRequests,
   getTotalSize,
@@ -27,7 +28,6 @@ import {
 } from '@/utils/statsSource'
 import { Metadata } from 'next'
 import { getServerSession } from 'next-auth'
-import { getLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import Dashboard from '../_components/Dashboard'
@@ -115,6 +115,7 @@ async function DashboardContent({
     totalDuration,
     totalRequests,
     totalSize,
+    count,
     mediaServer,
   ] = await Promise.all([
     getItems(library, {
@@ -125,17 +126,10 @@ async function DashboardContent({
     }),
     getTotalDuration(library, period.string, settings, personalUserId),
     getTotalRequests(period.string, settings, library, personalUserId),
-    getTotalSize(library, settings),
+    getTotalSize(library, settings, personalUserId),
+    getTotalCount(library, period.string, settings, personalUserId),
     getMediaServer(),
   ])
-  const isCountActive =
-    settings.dashboard.activeTotalStatistics.includes('count')
-  const countValue =
-    library.section_type === 'movie'
-      ? Number(library.count)
-      : Number(library.child_count)
-  const locale = await getLocale()
-  const count = isCountActive ? countValue.toLocaleString(locale) : undefined
 
   return (
     <Dashboard
@@ -146,6 +140,7 @@ async function DashboardContent({
       type={library.section_type}
       mediaServer={mediaServer}
       count={count}
+      isPersonal={!!personalUserId}
       settings={toPublicSettings(settings)}
       nextLimit={getNextItemsLimit(limit, hasMore)}
     />
@@ -184,6 +179,8 @@ export default async function DashboardPage({ searchParams, params }: Props) {
     settings,
     session,
   )
+  // As the content works it out, so the loader shows the same totals
+  const isPersonal = isOwnOnly || (personalFilter && personal === 'true')
 
   return (
     <>
@@ -198,6 +195,7 @@ export default async function DashboardPage({ searchParams, params }: Props) {
             type={library.section_type}
             settings={publicSettings}
             rows={itemsLimit}
+            isPersonal={isPersonal}
           />
         }
         // Without the limit, so "Show more" keeps the list up while it loads

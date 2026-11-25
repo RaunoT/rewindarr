@@ -13,6 +13,8 @@ type Props = {
   type: LibraryType | 'users'
   settings: PublicSettings
   rows?: number
+  // One user's totals, which have their own count and no size
+  isPersonal?: boolean
 }
 
 // Built like the real rows for this library and the chosen statistics, so
@@ -21,6 +23,7 @@ export default function DashboardLoader({
   type,
   settings,
   rows = DASHBOARD_PAGE_SIZE,
+  isPersonal = false,
 }: Props) {
   const t = useTranslations()
   const { activeTotalStatistics } = settings.dashboard
@@ -34,15 +37,20 @@ export default function DashboardLoader({
       'requests',
     activeTotalStatistics.includes('count') &&
       (type === 'users' ? 'users' : 'count'),
-    activeTotalStatistics.includes('size') && type !== 'users' && 'size',
+    activeTotalStatistics.includes('size') &&
+      type !== 'users' &&
+      !isPersonal &&
+      'size',
   ].filter((key): key is TotalKey => !!key)
 
   return (
     <div className='flex flex-1 flex-col'>
       <TotalsSkeleton
         totals={totalKeys.map((key) => ({
-          label: getTotalLabel(key, type, t),
-          kind: SKELETON_KINDS[key],
+          label: getTotalLabel(key, type, t, isPersonal),
+          // What one user played is a far smaller number than a library
+          kind:
+            key === 'count' && isPersonal ? 'smallCount' : SKELETON_KINDS[key],
         }))}
       />
 
@@ -67,6 +75,7 @@ export function getTotalLabel(
   key: TotalKey,
   type: Props['type'],
   t: TranslateFunction,
+  isPersonal = false,
 ) {
   switch (key) {
     case 'duration':
@@ -79,6 +88,14 @@ export function getTotalLabel(
     case 'requests':
       return t('Common.requests')
     case 'count':
+      if (isPersonal) {
+        return type === 'movie'
+          ? t('Totals.moviesWatched')
+          : type === 'show'
+            ? t('Totals.episodesWatched')
+            : t('Totals.tracksPlayed')
+      }
+
       return type === 'movie'
         ? t('Totals.movies')
         : type === 'show'

@@ -315,6 +315,11 @@ export type StatsSource = {
   // In seconds. Excluded users are left out unless the query is for one user.
   getTotalDuration: (query: DurationQuery) => Promise<number>
   getTopItems: (library: Library, query: TopItemsQuery) => Promise<TopItems>
+  // How many of the library's movies, episodes or tracks the user played
+  getPlayedCount: (
+    library: Library,
+    query: PlayPeriod & { userId: string },
+  ) => Promise<number>
   // Ranked by watch time with each user's play counts, without excluded users
   getTopUsers: (query: TopUsersQuery) => Promise<ItemRow[] | null>
   // A user with no plays in the period

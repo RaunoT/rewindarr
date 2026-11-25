@@ -156,6 +156,24 @@ describe('getTopItems', () => {
   })
 })
 
+describe('getPlayedCount', () => {
+  it("counts only the library's media type", async () => {
+    vi.mocked(getTracearrPlays).mockResolvedValue([
+      play({ title: 'Dune' }),
+      play({ title: 'Heat' }),
+      play({ mediaType: 'episode', title: 'Pilot', showTitle: 'Andor' }),
+      play({ mediaType: 'track', title: 'Song', artistName: 'Smilers' }),
+    ])
+
+    const count = await tracearrSource.getPlayedCount(library('movie'), {
+      since: '2026-01-01',
+      userId: '1',
+    })
+
+    expect(count).toBe(2)
+  })
+})
+
 describe('getTopMediaItems', () => {
   async function getTop(plays: Play[]) {
     vi.mocked(getTracearrPlays).mockResolvedValue(plays)

@@ -97,8 +97,37 @@ export async function getTotalRequests(
     : requests.length
 }
 
-export async function getTotalSize(library: Library, settings: Settings) {
-  if (settings.dashboard.activeTotalStatistics.includes('size')) {
+// The library's movies, episodes or tracks, or for one user how many of them
+// they played in the period
+export async function getTotalCount(
+  library: Library,
+  period: string,
+  settings: Settings,
+  userId?: string,
+) {
+  if (!settings.dashboard.activeTotalStatistics.includes('count')) {
+    return undefined
+  }
+
+  if (userId) {
+    return getStatsSource(settings).getPlayedCount(library, {
+      since: period,
+      userId,
+    })
+  }
+
+  return Number(
+    library.section_type === 'movie' ? library.count : library.child_count,
+  )
+}
+
+// A library's size says nothing about one user, so it's left out for them
+export async function getTotalSize(
+  library: Library,
+  settings: Settings,
+  userId?: string,
+) {
+  if (settings.dashboard.activeTotalStatistics.includes('size') && !userId) {
     const t = await getTranslations()
     const { size, isPartial } = await getStatsSource(settings).getLibrariesSize(
       [library],

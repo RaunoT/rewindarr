@@ -817,7 +817,10 @@
     "listenTime": "Durée d'écoute",
     "movies": "Films",
     "episodes": "Épisodes",
-    "tracks": "Morceaux"
+    "tracks": "Morceaux",
+    "moviesWatched": "Films vus",
+    "episodesWatched": "Épisodes vus",
+    "tracksPlayed": "Morceaux écoutés"
   },
   "Filters": {
     "title": "Filtres",
