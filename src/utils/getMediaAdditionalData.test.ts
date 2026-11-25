@@ -308,7 +308,7 @@ describe('getMediaAdditionalData', () => {
 
     const [item] = await getMediaAdditionalData([row()], 'movie', getSourceData)
 
-    expect(item.thumb).toBe('https://image.tmdb.org/t/p/w300//dune.jpg')
+    expect(item.thumb).toBe('https://image.tmdb.org/t/p/w300/dune.jpg')
   })
 
   it('prefers the TMDB poster when set to', async () => {
@@ -322,7 +322,7 @@ describe('getMediaAdditionalData', () => {
 
     const [item] = await getMediaAdditionalData([row()], 'movie', getSourceData)
 
-    expect(item.thumb).toBe('https://image.tmdb.org/t/p/w300//dune.jpg')
+    expect(item.thumb).toBe('https://image.tmdb.org/t/p/w300/dune.jpg')
   })
 
   it("keeps TMDB's backdrop", async () => {

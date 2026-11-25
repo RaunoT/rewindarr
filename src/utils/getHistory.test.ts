@@ -511,6 +511,8 @@ describe('getHistoryPage', () => {
 
     expect(result.totals.plays).toBe(29)
     expect(result.progress).toBe(status)
+    // Only the widest ready window (4 weeks) is fetched once, after checking `since`
+    expect(getHistoryPlays).toHaveBeenCalledTimes(1)
   })
 
   it('reads no further back than the period while the history is read', async () => {

@@ -10,6 +10,10 @@ import { getTautulliHistoryReaders, toTautulliPlay } from './tautulliHistory'
 
 vi.mock('./fetchTautulli', () => ({ default: vi.fn() }))
 vi.mock('./getSettings', () => ({ default: vi.fn() }))
+vi.mock('./sourceSnapshot', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./sourceSnapshot')>()),
+  dropStaleSnapshots: vi.fn(),
+}))
 
 const fetchMock = vi.mocked(fetchTautulli)
 const started = Date.parse('2026-10-01T20:00:00Z') / 1000

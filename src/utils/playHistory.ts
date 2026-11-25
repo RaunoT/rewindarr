@@ -843,3 +843,25 @@ export async function dropStaleHistories(
 export function getStoredPlays(keys: string[]): Play[] {
   return keys.flatMap((key) => state.stores.get(key)?.plays ?? [])
 }
+
+// Each history's plays in memory only when every key has already been read
+// back to its oldest play (-Infinity), or null while any is still unread.
+export function getCompleteStoredPlays(keys: string[]): Play[][] | null {
+  if (!keys.length) {
+    return null
+  }
+
+  const plays: Play[][] = []
+
+  for (const key of keys) {
+    const store = state.stores.get(key)
+
+    if (!store || store.readTo !== -Infinity) {
+      return null
+    }
+
+    plays.push(store.plays)
+  }
+
+  return plays
+}

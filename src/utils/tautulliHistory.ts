@@ -11,6 +11,7 @@ import {
   readPlays,
 } from './playHistory'
 import { LIBRARY_PLAY_TYPES, PLAY_MEDIA_TYPES } from './playStats'
+import { dropStaleSnapshots } from './sourceSnapshot'
 
 type HistoryResponse = {
   data: TautulliHistoryRow[]
@@ -207,6 +208,7 @@ export function getTautulliHistoryReaders(
   const keyPrefix = `${getTautulliKey()}|`
 
   void dropStaleHistories(keyPrefix)
+  void dropStaleSnapshots(keyPrefix)
 
   return libraries
     .filter((library) => library.section_type in LIBRARY_PLAY_TYPES)

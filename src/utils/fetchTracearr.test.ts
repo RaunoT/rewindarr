@@ -14,6 +14,7 @@ vi.mock('./hostBackoff', async (importOriginal) => ({
 }))
 vi.mock('./sourceSnapshot', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./sourceSnapshot')>()),
+  dropStaleSnapshots: vi.fn(),
   getSnapshot: vi.fn(),
   hasSnapshot: vi.fn(),
   saveSnapshot: vi.fn(),
@@ -110,6 +111,7 @@ beforeEach(async () => {
   vi.mocked(backoff.markHostDown).mockReset()
   vi.mocked(snapshot.getSnapshot).mockReset()
   vi.mocked(snapshot.saveSnapshot).mockReset()
+  vi.mocked(snapshot.dropStaleSnapshots).mockReset()
   vi.stubGlobal('fetch', fetchMock)
   vi.spyOn(console, 'error').mockImplementation(() => {})
   vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -731,6 +733,20 @@ describe('isTracearrReachable', () => {
     expect(requestsTo('servers')).toHaveLength(1)
     expect(requestsTo('libraries')).toHaveLength(1)
   })
+
+  it('is unreachable immediately when the host is backed off', async () => {
+    route({ servers, libraries })
+
+    const { isHostDown } = await import('./hostBackoff')
+    const { getTracearrLibraries, isTracearrReachable } = await load()
+
+    await getTracearrLibraries()
+    vi.mocked(isHostDown).mockReturnValue(true)
+
+    await expect(isTracearrReachable()).resolves.toBe(false)
+    expect(requestsTo('servers')).toHaveLength(1)
+    expect(requestsTo('libraries')).toHaveLength(1)
+  })
 })
 
 describe('malformed responses', () => {
@@ -1237,6 +1253,87 @@ describe('getTracearrFirstPlay', () => {
 
     await expect(getTracearrFirstPlay('42')).resolves.toBeNull()
     expect(historyRequests(true)).toHaveLength(2)
+  })
+
+  it('deduplicates concurrent first-play lookups for the same user', async () => {
+    route(historyRoute(dailyPlays))
+
+    const { getTracearrFirstPlay } = await load()
+    const [first, second] = await Promise.all([
+      getTracearrFirstPlay('42'),
+      getTracearrFirstPlay('42'),
+    ])
+
+    expect(first).toEqual(second)
+    expect(first).toMatchObject({ date: '2021-03-15T20:00:00.000Z' })
+
+    const singleLookupCalls = requestsTo('history').length
+
+    delete (globalThis as { rewindarrTracearr?: unknown }).rewindarrTracearr
+    vi.resetModules()
+    route(historyRoute(dailyPlays))
+
+    const fresh = await load()
+
+    await fresh.getTracearrFirstPlay('42')
+    expect(requestsTo('history').length - singleLookupCalls).toBe(
+      singleLookupCalls,
+    )
+  })
+
+  it('reads the first play from complete stored history without querying Tracearr', async () => {
+    const completeHistory = [
+      { ...record(firstPlayAt, 'Oldest Movie'), id: 'p-old', rating_key: '10' },
+      { ...record(firstPlayAt + DAY, 'Newer Movie'), id: 'p-new' },
+    ]
+
+    route({
+      ...historyRoute([]),
+      history: () => ({
+        data: completeHistory,
+        meta: { nextCursor: null, pageSize: 100 },
+      }),
+    })
+
+    const { getTracearrFirstPlay, getTracearrPlays } = await load('s1')
+
+    await getTracearrPlays('2020-01-01')
+
+    const historyCallsAfterSync = requestsTo('history').length
+
+    await expect(getTracearrFirstPlay('42')).resolves.toMatchObject({
+      date: '2021-03-15T20:00:00.000Z',
+      title: 'Oldest Movie',
+      play: { id: 'p-old', ratingKey: '10' },
+    })
+    expect(requestsTo('history')).toHaveLength(historyCallsAfterSync)
+  })
+
+  it('reads from complete stored history when tracearrServerId is unset', async () => {
+    const completeHistory = [
+      { ...record(firstPlayAt, 'Oldest Movie'), id: 'p-old', rating_key: '10' },
+    ]
+
+    route({
+      ...historyRoute([]),
+      history: () => ({
+        data: completeHistory,
+        meta: { nextCursor: null, pageSize: 100 },
+      }),
+    })
+
+    const { getTracearrFirstPlay, getTracearrPlays } = await load('')
+
+    await getTracearrPlays('2020-01-01')
+
+    const historyCallsAfterSync = requestsTo('history').length
+
+    await expect(getTracearrFirstPlay('42')).resolves.toMatchObject({
+      date: '2021-03-15T20:00:00.000Z',
+      title: 'Oldest Movie',
+      play: { id: 'p-old', ratingKey: '10' },
+    })
+    expect(requestsTo('history')).toHaveLength(historyCallsAfterSync)
   })
 })
 
@@ -2026,6 +2123,41 @@ describe('other servers', () => {
       play: { id: 'p2', ratingKey: null },
     })
     expect(historyServerIds()).not.toContain('s3')
+  })
+
+  it('reads the earliest play on another server from complete stored history without rating keys', async () => {
+    route(historyRoute())
+
+    const { getTracearrFirstPlay, getTracearrPlays } = await load('s1', ['s2'])
+
+    await getTracearrPlays('2026-01-01')
+
+    const historyCallsAfterSync = requestsTo('history').length
+
+    await expect(getTracearrFirstPlay('42')).resolves.toMatchObject({
+      date: '2026-10-02T00:00:00.000Z',
+      play: { id: 'p2', ratingKey: null },
+    })
+    expect(requestsTo('history')).toHaveLength(historyCallsAfterSync)
+  })
+
+  it('falls back to querying Tracearr when another counted server history is incomplete', async () => {
+    route(historyRoute())
+
+    const { default: getSettings } = await import('./getSettings')
+    const { getTracearrFirstPlay, getTracearrPlays } = await load('s1')
+
+    await getTracearrPlays('2026-01-01')
+
+    const historyCallsAfterSync = requestsTo('history').length
+
+    vi.mocked(getSettings).mockReturnValue(setup('s1', ['s2']))
+
+    await expect(getTracearrFirstPlay('42')).resolves.toMatchObject({
+      date: '2026-10-02T00:00:00.000Z',
+      play: { id: 'p2', ratingKey: null },
+    })
+    expect(requestsTo('history').length).toBeGreaterThan(historyCallsAfterSync)
   })
 
   it('is not removed while another chosen server still has it, and opens on the chosen one only', async () => {

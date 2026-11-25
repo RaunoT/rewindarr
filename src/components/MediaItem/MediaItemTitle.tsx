@@ -3,7 +3,6 @@
 import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion'
 import { ItemRow } from '@/types/statsSource'
 import clsx from 'clsx'
-import { debounce } from 'lodash'
 import { motion, useAnimation } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { ReactNode, RefObject, useEffect, useRef } from 'react'
@@ -83,7 +82,12 @@ export default function MediaItemTitle({
       checkWidth()
     }
 
-    const debouncedRestartAnimation = debounce(restartAnimation, 250)
+    let resizeTimer: ReturnType<typeof setTimeout> | undefined
+
+    function debouncedRestartAnimation() {
+      clearTimeout(resizeTimer)
+      resizeTimer = setTimeout(restartAnimation, 250)
+    }
 
     window.addEventListener('resize', debouncedRestartAnimation)
     checkWidth()
@@ -91,7 +95,7 @@ export default function MediaItemTitle({
     return () => {
       controls.stop()
       window.removeEventListener('resize', debouncedRestartAnimation)
-      debouncedRestartAnimation.cancel()
+      clearTimeout(resizeTimer)
     }
   }, [controls, parentRef, shouldReduceMotion])
 

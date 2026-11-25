@@ -91,7 +91,7 @@ export default function useStoryMusic({
 
   useEffect(() => {
     for (const [url, player] of playersRef.current) {
-      if (url !== current || !isPlaying) {
+      if ((url !== current || !isPlaying) && shouldFadeOut(player)) {
         fadeTo(player, 0, () => player.audio.pause())
       }
     }
@@ -125,13 +125,39 @@ export default function useStoryMusic({
   return { unlock }
 }
 
-// iOS ignores the volume, so there the music only stops after the fade
-function fadeTo(player: Player, target: number, onDone?: () => void) {
+export function shouldFadeOut(player: Pick<Player, 'audio' | 'fade'>): boolean {
+  return !player.audio.paused || !!player.fade || player.audio.volume > 0
+}
+
+// iOS ignores writes to `audio.volume`, leaving it at 1
+function canControlVolume(audio: HTMLAudioElement): boolean {
+  const before = audio.volume
+  const probe = before > 0.5 ? before - 0.01 : before + 0.01
+
+  audio.volume = probe
+
+  const changed = Math.abs(audio.volume - before) > 0.001
+
+  audio.volume = before
+
+  return changed
+}
+
+export function fadeTo(player: Player, target: number, onDone?: () => void) {
   if (player.fade) {
     clearInterval(player.fade)
+    player.fade = null
   }
 
   const from = player.audio.volume
+
+  if (Math.abs(from - target) < 0.001 || !canControlVolume(player.audio)) {
+    player.audio.volume = target
+    onDone?.()
+
+    return
+  }
+
   const start = performance.now()
   const fade = setInterval(() => {
     const progress = Math.min((performance.now() - start) / FADE_DURATION, 1)

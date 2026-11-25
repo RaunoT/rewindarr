@@ -17,6 +17,7 @@ import {
 } from './historyRequests'
 import { EMPTY_ROW } from './playStats'
 import { getHistoryProgress, getStatsSource } from './statsSource'
+import { LOOKUP_CONCURRENCY, mapWithLimit } from './topPeople'
 
 const DAY = 24 * 60 * 60 * 1000
 // The plays are looked for in the past week first, and in a window four times
@@ -145,17 +146,20 @@ async function getMatchingPlays(
     (window) => new Date(window).getTime() > sinceTime,
   )
 
-  let plays: HistoryPlay[] = []
+  let readyWindow: string | null = null
 
   for (const window of [...windows, since]) {
     if (await getHistoryProgress(window, libraries, 0)) {
       break
     }
 
-    plays = await getPlays(window)
+    readyWindow = window
   }
 
-  return { plays, progress }
+  return {
+    plays: readyWindow ? await getPlays(readyWindow) : [],
+    progress,
+  }
 }
 
 // The requests matching the filter, newest first, but for the search, which
@@ -206,8 +210,10 @@ async function addItems(entries: HistoryEntry[]): Promise<HistoryEntry[]> {
     return lookup
   }
 
-  return Promise.all(
-    entries.map(async (entry): Promise<HistoryEntry> => {
+  return mapWithLimit(
+    entries,
+    LOOKUP_CONCURRENCY,
+    async (entry): Promise<HistoryEntry> => {
       if (entry.kind === 'request') {
         const { request } = entry
 
@@ -257,7 +263,7 @@ async function addItems(entries: HistoryEntry[]): Promise<HistoryEntry[]> {
           () => source.getPlayItem(play),
         ),
       }
-    }),
+    },
   )
 }
 
@@ -270,19 +276,30 @@ export function groupBinges(
 ): HistoryEntry[] {
   const grouped: HistoryEntry[] = []
 
+  let isOwnedBinge = false
+
   for (const entry of entries) {
     const last = grouped.at(-1)
 
     if (entry.kind === 'play' && last?.kind === 'play') {
-      const binge = last.binge ?? [last.play]
+      const prevPlay = last.binge?.at(-1) ?? last.play
 
-      if (isSameBinge(entry.play, binge[binge.length - 1], timeZone)) {
-        grouped[grouped.length - 1] = { ...last, binge: [...binge, entry.play] }
+      if (isSameBinge(entry.play, prevPlay, timeZone)) {
+        if (isOwnedBinge && last.binge) {
+          last.binge.push(entry.play)
+        } else {
+          grouped[grouped.length - 1] = {
+            ...last,
+            binge: [...(last.binge ?? [last.play]), entry.play],
+          }
+          isOwnedBinge = true
+        }
 
         continue
       }
     }
 
+    isOwnedBinge = false
     grouped.push(entry)
   }
 

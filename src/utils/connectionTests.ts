@@ -43,14 +43,15 @@ async function testRequest(
   }
 }
 
-function getResponseError(
+async function getResponseError(
   service: string,
   response: Response,
-): ConnectionError | null {
+): Promise<ConnectionError | null> {
   if (response.ok) {
     return null
   }
 
+  await response.body?.cancel()
   console.error(
     `[CONFIG] - Error testing ${service} connection!`,
     response.status,
@@ -88,7 +89,7 @@ export async function testTautulli(
     return error
   }
 
-  const responseError = getResponseError('Tautulli', response)
+  const responseError = await getResponseError('Tautulli', response)
 
   if (responseError) {
     return responseError
@@ -134,7 +135,7 @@ export async function testTracearr(
     return { error }
   }
 
-  const responseError = getResponseError('Tracearr', response)
+  const responseError = await getResponseError('Tracearr', response)
 
   if (responseError) {
     return { error: responseError }
@@ -176,7 +177,7 @@ export async function testSeerr(
     return error
   }
 
-  const responseError = getResponseError('Seerr', response)
+  const responseError = await getResponseError('Seerr', response)
 
   if (responseError) {
     return responseError
@@ -207,7 +208,7 @@ export async function testMediaServerUrl(
     return error
   }
 
-  const responseError = getResponseError(serverName, response)
+  const responseError = await getResponseError(serverName, response)
 
   if (responseError) {
     return responseError
@@ -243,8 +244,18 @@ export async function testPlexToken(
   }
 
   if (response.status === 401 || response.status === 403) {
+    await response.body?.cancel()
+
     return { key: 'invalidToken' }
   }
 
-  return getResponseError('Plex', response)
+  const responseError = await getResponseError('Plex', response)
+
+  if (responseError) {
+    return responseError
+  }
+
+  await response.body?.cancel()
+
+  return null
 }

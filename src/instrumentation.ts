@@ -21,4 +21,9 @@ export async function register() {
     // Settings that can't be read are reported by the pages that need them
     console.error('[HISTORY] - Unable to start reading the history!', error)
   }
+
+  // Warm the release version cache in the background so SSR never blocks on GitHub
+  void import('./utils/getVersion')
+    .then(({ default: getVersion }) => getVersion())
+    .catch(() => {})
 }

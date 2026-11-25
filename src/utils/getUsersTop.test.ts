@@ -4,11 +4,7 @@ import { Library } from '@/types/statsSource'
 import { cloneDeep } from 'lodash'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
-import {
-  fetchSeerrStats,
-  fetchSeerrUserId,
-  SeerrRequestItem,
-} from './fetchSeerr'
+import { fetchSeerrStats, SeerrRequestItem } from './fetchSeerr'
 import fetchTautulli from './fetchTautulli'
 import getSettings from './getSettings'
 import getUsersTop from './getUsersTop'
@@ -21,7 +17,6 @@ vi.mock('./fetchTautulli', () => ({ default: vi.fn() }))
 vi.mock('./fetchSeerr', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./fetchSeerr')>()),
   fetchSeerrStats: vi.fn(),
-  fetchSeerrUserId: vi.fn(),
 }))
 vi.mock('./getSettings', () => ({ default: vi.fn() }))
 vi.mock('./sourceSnapshot', async (importOriginal) => ({
@@ -142,17 +137,11 @@ function request(userId: number, ratingKey: string): SeerrRequestItem {
   }
 }
 
-// Each user's Seerr ID is their Plex ID plus 10
 function mockSeerr(settings: Settings, requests: SeerrRequestItem[]) {
   settings.connection.seerrUrl = 'http://seerr'
   settings.connection.seerrApiKey = 'key'
-  vi.mocked(fetchSeerrUserId).mockImplementation(
-    async (userId) => Number(userId) + 10,
-  )
   vi.mocked(fetchSeerrStats).mockImplementation(async (endpoint) =>
-    requests.filter(
-      ({ requestedBy }) => endpoint === `user/${requestedBy.id}/requests`,
-    ),
+    endpoint === 'request' ? requests : [],
   )
 }
 
@@ -163,6 +152,7 @@ describe('getUsersTop with Tautulli', () => {
     settings = cloneDeep(DEFAULT_SETTINGS)
     playCount = 0
     fetchMock.mockReset()
+    vi.mocked(fetchSeerrStats).mockReset()
     vi.mocked(getTautulliPlays).mockReset()
     vi.mocked(getSettings).mockReturnValue(settings)
     vi.mocked(getLibraries).mockResolvedValue([...movies, ...shows])
@@ -384,5 +374,86 @@ describe('getUsersTop with Tautulli', () => {
     expect(users?.[0]).toMatchObject({ requests: 1 })
     expect(users?.[0].requests_watched_share).toBeUndefined()
     expect(getTautulliPlays).toHaveBeenCalledTimes(1)
+  })
+
+  it('fetches Seerr requests once across all listed users', async () => {
+    mockSeerr(settings, [
+      request(1, '100'),
+      request(2, '200'),
+      request(3, '300'),
+    ])
+    mockTautulli({}, rankedPlays([300, 200, 100]))
+
+    const users = (await getUsersTop('1', '2026-03-01'))?.items
+
+    expect(users).toMatchObject([
+      { user_id: 1, requests: 1 },
+      { user_id: 2, requests: 1 },
+      { user_id: 3, requests: 1 },
+    ])
+    expect(fetchSeerrStats).toHaveBeenCalledTimes(1)
+    expect(fetchSeerrStats).toHaveBeenCalledWith(
+      'request',
+      '2026-03-01',
+      undefined,
+    )
+  })
+
+  it('matches normalized Jellyfin requester IDs and dual Plex/Jellyfin accounts', async () => {
+    const jellyfinUserId = 'eeccd0072d56458298fc1eb02f4ac421'
+
+    mockSeerr(settings, [
+      {
+        id: 1,
+        createdAt: '2026-03-02T00:00:00Z',
+        type: 'movie',
+        status: 5,
+        media: { tmdbId: null, status: 5, ratingKey: '100' },
+        requestedBy: {
+          id: 11,
+          plexId: 999,
+          jellyfinUserId: 'EECCD007-2D56-4582-98FC-1EB02F4AC421',
+        },
+      },
+    ])
+    vi.mocked(getTautulliPlays).mockResolvedValue([
+      {
+        ...play(1, 'movie', 300),
+        identityId: jellyfinUserId,
+        ratingKey: '100',
+      },
+    ])
+    fetchMock.mockImplementation(async (query) => {
+      if (query === 'get_users') {
+        return {
+          response: {
+            data: [
+              {
+                user_id: jellyfinUserId,
+                username: 'jane',
+                friendly_name: 'Jane',
+                is_active: 1,
+              },
+            ],
+          },
+        } as never
+      }
+
+      return null
+    })
+
+    const users = (
+      await getUsersTop(jellyfinUserId, '2026-03-01', {
+        withRequestsWatched: true,
+      })
+    )?.items
+
+    expect(users).toMatchObject([
+      {
+        user_id: jellyfinUserId,
+        requests: 1,
+        requests_watched_share: 1,
+      },
+    ])
   })
 })

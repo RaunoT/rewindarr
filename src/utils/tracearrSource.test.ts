@@ -25,6 +25,7 @@ vi.mock('./getSettings', () => ({ default: vi.fn() }))
 vi.mock('./fetchTmdb', () => ({ default: vi.fn() }))
 vi.mock('./sourceSnapshot', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./sourceSnapshot')>()),
+  dropStaleSnapshots: vi.fn(),
   getSnapshot: vi.fn(),
   hasSnapshot: vi.fn(),
   saveSnapshot: vi.fn(),
