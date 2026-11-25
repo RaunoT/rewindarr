@@ -13,6 +13,7 @@ import getPeriod from '@/utils/getPeriod'
 import getSettings from '@/utils/getSettings'
 import {
   canViewFeature,
+  getDashboardFilterAccess,
   getDashboardSort,
   getLibrarySlug,
   getOwnOnlyUserId,
@@ -179,13 +180,16 @@ export default async function DashboardPage({ searchParams, params }: Props) {
 
   const itemsLimit = getItemsLimit(limit)
   const publicSettings = toPublicSettings(settings)
-  const isOwnOnly = !!getOwnOnlyUserId(settings, 'dashboard', session)
+  const { personalFilter, isOwnOnly } = getDashboardFilterAccess(
+    settings,
+    session,
+  )
 
   return (
     <>
       <DashboardToolbar
         settings={publicSettings}
-        personalFilter={!!session?.user.id && !isOwnOnly}
+        personalFilter={personalFilter}
         isOwnOnly={isOwnOnly}
       />
       <Suspense

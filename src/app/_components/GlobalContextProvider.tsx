@@ -17,6 +17,8 @@ type GlobalContextProps = {
     setPeriod: (period: DashboardSearchParams['period']) => void
     sortBy: DashboardSearchParams['sortBy']
     setSortBy: (sortBy: DashboardSearchParams['sortBy']) => void
+    // Whether the saved ones have been read, after the first render
+    isLoaded: boolean
   }
   activity: {
     isDetailsHidden: boolean
@@ -32,6 +34,7 @@ export const GlobalContext = createContext<GlobalContextProps>({
     setPeriod: () => {},
     sortBy: undefined,
     setSortBy: () => {},
+    isLoaded: false,
   },
   activity: {
     isDetailsHidden: true,
@@ -138,6 +141,7 @@ export default function GlobalContextProvider({
           setPeriod,
           sortBy,
           setSortBy,
+          isLoaded: isHydrated,
         },
         activity: {
           isDetailsHidden,

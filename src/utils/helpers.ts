@@ -418,3 +418,41 @@ export function getDashboardSort(
 ): DashboardSearchParams['sortBy'] {
   return value === 'duration' || value === 'users' ? value : undefined
 }
+
+export type DashboardFilterAccess = {
+  // Signed in, so "Just me" has someone to show
+  personalFilter: boolean
+  // Only the viewer's own stats, whatever the URL asks for
+  isOwnOnly: boolean
+}
+
+export function getDashboardFilterAccess(
+  settings: Pick<PublicSettings, 'dashboard'>,
+  session: Session | null | undefined,
+): DashboardFilterAccess {
+  const isOwnOnly = !!getOwnOnlyUserId(settings, 'dashboard', session)
+
+  return { personalFilter: !!session?.user.id && !isOwnOnly, isOwnOnly }
+}
+
+// The saved filters for a link to a dashboard, the ones the viewer can use.
+// The users dashboard only has the period.
+export function getDashboardQuery(
+  { personal, period, sortBy }: DashboardSearchParams,
+  { personalFilter, isOwnOnly }: DashboardFilterAccess,
+  isUsers = false,
+): string {
+  const isPersonal = !isUsers && personalFilter && personal === 'true'
+  // Every title on a personal dashboard has the same one user
+  const sort =
+    isUsers || ((isPersonal || isOwnOnly) && sortBy === 'users')
+      ? undefined
+      : sortBy
+  const params = new URLSearchParams({
+    ...(isPersonal && { personal: 'true' }),
+    ...(period && { period }),
+    ...(sort && { sortBy: sort }),
+  })
+
+  return params.size ? `?${params.toString()}` : ''
+}

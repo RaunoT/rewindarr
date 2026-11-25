@@ -1,6 +1,12 @@
 import { getNextFilterUrl } from '@/utils/dashboardFilters'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { startTransition, useCallback, useMemo, useOptimistic } from 'react'
+import {
+  startTransition,
+  useCallback,
+  useMemo,
+  useOptimistic,
+  useState,
+} from 'react'
 
 export type FilterParams = {
   // The URL's, or the last change to them while its page loads
@@ -8,6 +14,9 @@ export type FilterParams = {
   // Only the URL's. A change still loading can be canceled, by Back or
   // another link, so it's what's saved.
   committedSearchParams: URLSearchParams
+  // Whether the URL is the one the last change made here went to, so the
+  // change has loaded and wasn't canceled
+  isChangeLoaded: boolean
   navigate: (
     update: (params: URLSearchParams) => void,
     options?: { replace?: boolean },
@@ -23,6 +32,7 @@ export default function useFilterParams(): FilterParams {
   const urlSearchParams = useSearchParams()
   const committedQuery = urlSearchParams.toString()
   const [query, setQuery] = useOptimistic(committedQuery)
+  const [changedQuery, setChangedQuery] = useState<string | null>(null)
   const searchParams = useMemo(() => new URLSearchParams(query), [query])
   const committedSearchParams = useMemo(
     () => new URLSearchParams(committedQuery),
@@ -46,9 +56,15 @@ export default function useFilterParams(): FilterParams {
           router.push(url)
         }
       })
+      setChangedQuery(nextQuery)
     },
     [pathname, query, router, setQuery],
   )
 
-  return { searchParams, committedSearchParams, navigate }
+  return {
+    searchParams,
+    committedSearchParams,
+    isChangeLoaded: changedQuery === committedQuery,
+    navigate,
+  }
 }

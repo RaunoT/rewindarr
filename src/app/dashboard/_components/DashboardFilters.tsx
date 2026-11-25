@@ -18,7 +18,7 @@ import {
 import { getDashboardSort } from '@/utils/helpers'
 import { BarsArrowDownIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
-import { useContext, useEffect, useRef } from 'react'
+import { useContext, useEffect } from 'react'
 import PeriodFilter from './PeriodFilter'
 
 type Props = {
@@ -29,8 +29,8 @@ type Props = {
 }
 
 // Saved filters are applied once per page load, when a dashboard is opened
-// without any in its URL. After that the URL is the only source of truth, so
-// Back and Forward keep working.
+// without any in its URL. After that the links to the dashboards carry them,
+// and the URL is the only source of truth, so Back and Forward keep working.
 let hasRestoredSavedFilters = false
 
 // The period stays in sight. On wider screens the other filters sit across
@@ -42,29 +42,32 @@ export default function DashboardFilters({
 }: Props) {
   // Shared with the period, so a change to either builds on the other's
   const filterParams = useFilterParams()
-  const { searchParams, committedSearchParams, navigate } = filterParams
+  const { searchParams, committedSearchParams, isChangeLoaded, navigate } =
+    filterParams
+  // Only for a viewer who has the choice, as the server ignores it otherwise
   const isPersonal: DashboardSearchParams['personal'] =
-    searchParams.get('personal') === 'true' ? 'true' : undefined
+    personalFilter && searchParams.get('personal') === 'true'
+      ? 'true'
+      : undefined
   const sortBy = getAvailableSort(
     isOwnOnly ? 'true' : isPersonal,
     getDashboardSort(searchParams.get('sortBy')),
   )
   const committed = getDashboardFilters(committedSearchParams)
-  const committedPersonal = committed.personal
+  const committedPersonal = personalFilter ? committed.personal : undefined
   const committedSort = getAvailableSort(
     isOwnOnly ? 'true' : committedPersonal,
     committed.sortBy,
   )
   const hasUrlFilters =
-    committedSearchParams.has('personal') || committedSearchParams.has('sortBy')
+    (personalFilter && committedSearchParams.has('personal')) ||
+    committedSearchParams.has('sortBy')
   const {
     dashboard: { setIsPersonal, setSortBy },
   } = useContext(GlobalContext)
   const t = useTranslations('DashboardFilters')
-  const isRestoringRef = useRef(false)
 
   function handlePersonalChange(value: string) {
-    isRestoringRef.current = false
     navigate((params) =>
       setDashboardFilters(
         params,
@@ -75,18 +78,20 @@ export default function DashboardFilters({
   }
 
   function handleSortChange(value: string) {
-    isRestoringRef.current = false
     navigate((params) =>
       setDashboardFilters(
         params,
-        { sortBy: getDashboardSort(value) },
+        {
+          sortBy: getDashboardSort(value),
+          // One in the URL that the viewer can't use goes
+          ...(!personalFilter && { personal: undefined }),
+        },
         isOwnOnly,
       ),
     )
   }
 
   function handleClear() {
-    isRestoringRef.current = false
     navigate(clearDashboardFilters)
   }
 
@@ -107,7 +112,6 @@ export default function DashboardFilters({
     )
 
     if (!hasUrlFilters && (savedPersonal || savedSort)) {
-      isRestoringRef.current = true
       navigate(
         (params) =>
           setDashboardFilters(
@@ -120,23 +124,25 @@ export default function DashboardFilters({
     }
   }, [hasUrlFilters, isOwnOnly, navigate, personalFilter])
 
-  // Remembered for the next visit and for the links on the home page, once
-  // the URL has them
+  // Remembered for the next visit and for the links to the dashboards. Only a
+  // change made here is, not the filters of a link or of Back and Forward, and
+  // only once its page has loaded, as Back or a link can cancel it.
   useEffect(() => {
-    if (isRestoringRef.current) {
-      if (!hasUrlFilters) {
-        return
-      }
-
-      isRestoringRef.current = false
+    if (!isChangeLoaded) {
+      return
     }
 
-    setIsPersonal(committedPersonal)
+    if (personalFilter) {
+      setIsPersonal(committedPersonal)
+    }
+
+    // The period, which Clear all resets too, is saved by its own filter
     setSortBy(committedSort)
   }, [
     committedPersonal,
     committedSort,
-    hasUrlFilters,
+    isChangeLoaded,
+    personalFilter,
     setIsPersonal,
     setSortBy,
   ])
