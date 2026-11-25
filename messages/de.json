@@ -168,6 +168,7 @@
     "save": "Speichern",
     "continue": "Weiter",
     "unsavedChanges": "Ungespeicherte Änderungen",
+    "discardChanges": "Verwerfen",
     "leaveTitle": "Ohne Speichern verlassen?",
     "leaveDescription": "Deine Änderungen auf dieser Seite wurden nicht gespeichert.",
     "leave": "Verlassen",

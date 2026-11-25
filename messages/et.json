@@ -168,6 +168,7 @@
     "save": "Salvesta",
     "continue": "Jätka",
     "unsavedChanges": "Salvestamata muudatused",
+    "discardChanges": "Loobu",
     "leaveTitle": "Lahkud salvestamata?",
     "leaveDescription": "Sinu muudatused sellel lehel pole salvestatud.",
     "leave": "Lahku",

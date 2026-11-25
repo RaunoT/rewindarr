@@ -168,6 +168,7 @@
     "save": "Salva",
     "continue": "Continua",
     "unsavedChanges": "Modifiche non salvate",
+    "discardChanges": "Annulla",
     "leaveTitle": "Uscire senza salvare?",
     "leaveDescription": "Le modifiche in questa pagina non sono state salvate.",
     "leave": "Esci",

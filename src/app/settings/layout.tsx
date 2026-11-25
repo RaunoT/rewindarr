@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { redirect } from 'next/navigation'
 import { ReactNode, SVGProps } from 'react'
 import PageTitle from '../_components/PageTitle'
+import SettingsDiscard from './_components/SettingsDiscard'
 import SettingsNav from './_components/SettingsNav'
 import SettingsVersion from './_components/SettingsVersion'
 
@@ -46,7 +47,7 @@ export default async function SettingsLayout({ children }: Props) {
           missingSetting={missingSetting}
         />
       </PageTitle>
-      {children}
+      <SettingsDiscard>{children}</SettingsDiscard>
 
       <div className='glass-sheet mt-4 flex flex-col flex-wrap justify-between gap-3 sm:flex-row'>
         <a
