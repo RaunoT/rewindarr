@@ -244,6 +244,7 @@
     "Dashboard": {
       "title": "Dashboard Einstellungen",
       "customPeriodError": "Der benutzerdefinierte Zeitraum muss eine ganze Zahl von 1 bis 3000 sein.",
+      "customPeriodBuiltInError": "Der Zeitraumfilter hat bereits 7 Tage und das letzte Jahr (365 Tage). Wähle eine andere Anzahl an Tagen.",
       "startDateError": "Prüfe das Startdatum.",
       "usersPage": "Benutzerseite",
       "statistics": "Statistiken",

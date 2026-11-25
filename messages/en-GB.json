@@ -244,6 +244,7 @@
     "Dashboard": {
       "title": "Dashboard settings",
       "customPeriodError": "The custom period must be a whole number from 1 to 3000.",
+      "customPeriodBuiltInError": "The period filter already has 7 days and the past year (365 days). Choose another number of days.",
       "startDateError": "Check the start date.",
       "usersPage": "Users page",
       "statistics": "Statistics",

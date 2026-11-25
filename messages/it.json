@@ -244,6 +244,7 @@
     "Dashboard": {
       "title": "Impostazioni della dashboard",
       "customPeriodError": "Il periodo personalizzato deve essere un numero intero da 1 a 3000.",
+      "customPeriodBuiltInError": "Il filtro del periodo ha già 7 giorni e l'ultimo anno (365 giorni). Scegli un altro numero di giorni.",
       "startDateError": "Controlla la data di inizio.",
       "usersPage": "Pagina degli utenti",
       "statistics": "Statistiche",
