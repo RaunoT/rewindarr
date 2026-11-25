@@ -121,7 +121,7 @@
     "kindLabel": "Art",
     "plays": "Wiedergaben",
     "requests": "Anfragen",
-    "request": "Anfrage",
+    "requested": "Anfrage",
     "unknownTitle": "Unbekannter Titel",
     "season": "Staffel {season}",
     "seasonCount": "{count, plural, one {# Staffel} other {# Staffeln}}",

@@ -121,7 +121,7 @@
     "kindLabel": "Type",
     "plays": "Lectures",
     "requests": "Demandes",
-    "request": "Demande",
+    "requested": "Demande",
     "unknownTitle": "Titre inconnu",
     "season": "Saison {season}",
     "seasonCount": "{count, plural, one {# saison} other {# saisons}}",

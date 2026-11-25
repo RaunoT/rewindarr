@@ -121,7 +121,7 @@
     "kindLabel": "Tüüp",
     "plays": "Esitused",
     "requests": "Soovid",
-    "request": "Soov",
+    "requested": "Soov",
     "unknownTitle": "Tundmatu pealkiri",
     "season": "{season}. hooaeg",
     "seasonCount": "{count, plural, one {# hooaeg} other {# hooaega}}",

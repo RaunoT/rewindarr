@@ -53,7 +53,10 @@ type Props = {
   progress?: number | null
   // Left out when it's the same on every card, as in one user's history
   user?: BadgeUser | null
-  // After the user's, such as the watch time and how it played
+  // Before the stats, where a stream's viewer leads. Otherwise the user ends
+  // them, like the users count on the dashboard.
+  isUserFirst?: boolean
+  // Such as the watch time and how it played
   stats?: ReactNode
   // Seerr's link with what it says about the title, such as a request's
   // status, in place of the plain one
@@ -91,6 +94,7 @@ export default function MediaCard({
   isPriority,
   progress,
   user,
+  isUserFirst,
   stats,
   seerrAction,
   deeplink,
@@ -133,6 +137,11 @@ export default function MediaCard({
       />
     ))
   const hasLinks = !!serverLink || !!seerrLink || links.length > 0
+  const userStat = user && (
+    <li className={STAT_PILL}>
+      <UserBadge user={user} />
+    </li>
+  )
   // Above the name on phones, ending with the aside unless they show it
   // elsewhere
   const phoneNotes = [
@@ -291,12 +300,9 @@ export default function MediaCard({
                     />
                   ))}
             <ul className='icon-stats-container mt-2 max-sm:gap-x-2.5'>
-              {user && (
-                <li className={STAT_PILL}>
-                  <UserBadge user={user} />
-                </li>
-              )}
+              {isUserFirst && userStat}
               {stats}
+              {!isUserFirst && userStat}
             </ul>
           </div>
           {/* Wide cards have a column for the aside with the links under it.

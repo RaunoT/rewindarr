@@ -121,7 +121,7 @@
     "kindLabel": "Type",
     "plays": "Plays",
     "requests": "Requests",
-    "request": "Request",
+    "requested": "Requested",
     "unknownTitle": "Unknown title",
     "season": "Season {season}",
     "seasonCount": "{count, plural, one {# season} other {# seasons}}",

@@ -121,7 +121,7 @@
     "kindLabel": "Tipo",
     "plays": "Reproducciones",
     "requests": "Solicitudes",
-    "request": "Solicitud",
+    "requested": "Solicitud",
     "unknownTitle": "Título desconocido",
     "season": "Temporada {season}",
     "seasonCount": "{count, plural, one {# temporada} other {# temporadas}}",

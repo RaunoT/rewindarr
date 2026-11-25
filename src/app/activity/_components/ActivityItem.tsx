@@ -334,6 +334,7 @@ export default function ActivityItem({
         avatar: session.user_thumb,
         isAnonymous,
       }}
+      isUserFirst
       stats={
         <>
           {device && (
