@@ -1,5 +1,5 @@
 import { Play, PlayMediaType } from '@/types/playHistory'
-import { ItemRow, Library, TopItemsSort } from '@/types/statsSource'
+import { ItemRow, Library, TopItemsSort, TopPerson } from '@/types/statsSource'
 import { sum } from 'lodash'
 import { describe, expect, it, vi } from 'vitest'
 import getSettings from './getSettings'
@@ -694,7 +694,7 @@ describe('getTopPeople', () => {
     })
   })
 
-  it('leaves out titles without a play that counts, before their credits', async () => {
+  async function getPeople(plays: Play[], cast: Record<string, string[]>) {
     vi.mocked(getSettings).mockReturnValue({
       general: { excludedUsers: [], minPlayPercent: 50 },
     } as unknown as ReturnType<typeof getSettings>)
@@ -702,27 +702,99 @@ describe('getTopPeople', () => {
     const getMediaData = vi.fn(async (item: ItemRow) => ({
       thumb: '',
       isDeleted: false,
-      credits: { directors: [], actors: casts[item.title] },
+      credits: { directors: [], actors: cast[item.title] },
     }))
-    const { movieActors } = await createPlayStats({
-      getPlays: async () => history,
+    const people = await createPlayStats({
+      getPlays: async () => plays,
       getUsers: async () => [user('1', 'alice')],
       getMediaData,
-    }).getTopPeople('1', [{ section_type: 'movie' } as Library], {
-      since: '2026-01-01',
+    }).getTopPeople(
+      '1',
+      [
+        { section_type: 'movie' } as Library,
+        { section_type: 'show' } as Library,
+      ],
+      { since: '2026-01-01' },
+    )
+
+    return {
+      people,
+      lookups: getMediaData.mock.calls.map(([item]) => item.title),
+    }
+  }
+
+  function summarize(people: TopPerson[]) {
+    return people.map(({ name, count, duration }) => ({
+      name,
+      count,
+      duration,
+    }))
+  }
+
+  it('leaves out titles without a play that counts, before their credits', async () => {
+    const { people, lookups } = await getPeople(history, casts)
+
+    expect(lookups).toEqual(['Gladiator', 'A Beautiful Mind'])
+    expect(summarize(people.movieActors)).toEqual([
+      { name: 'Russell Crowe', count: 2, duration: 2 * 140 * 60 },
+    ])
+  })
+
+  it('looks nothing up when every title was only sampled', async () => {
+    const sampled = history.filter(
+      (play) => casts[play.title][0] === 'Charlize Theron',
+    )
+    const { people, lookups } = await getPeople(sampled, casts)
+
+    expect(lookups).toEqual([])
+    expect(people).toEqual({ directors: [], movieActors: [], showActors: [] })
+  })
+
+  it("counts a show once, with its sampled episodes' watch time", async () => {
+    const episodeLength = 50 * 60 * 1000
+
+    function episode(
+      id: string,
+      showTitle: string,
+      overrides: Partial<Play>,
+    ): Play {
+      return play(id, '2026-03-01T20:00:00Z', {
+        mediaType: 'episode',
+        showTitle,
+        lengthMs: episodeLength,
+        ...overrides,
+      })
+    }
+
+    // The same show on two servers, one episode watched and one sampled
+    const plays = [
+      episode('watched', 'Severance', {
+        title: 'Good News About Hell',
+        grandparentRatingKey: '10',
+        showMediaId: 'severance',
+        durationMs: episodeLength,
+      }),
+      episode('sampled', 'Severance', {
+        title: 'Half Loop',
+        grandparentRatingKey: '20',
+        showMediaId: 'severance',
+        durationMs: 3 * 60 * 1000,
+      }),
+      episode('other', 'Andor', {
+        title: 'Kassa',
+        showMediaId: 'andor',
+        durationMs: episodeLength,
+      }),
+    ]
+    const { people, lookups } = await getPeople(plays, {
+      Severance: ['Adam Scott'],
+      Andor: ['Adam Scott'],
     })
 
-    expect(getMediaData.mock.calls.map(([item]) => item.title)).toEqual([
-      'Gladiator',
-      'A Beautiful Mind',
+    expect(lookups).toEqual(['Severance', 'Andor'])
+    expect(summarize(people.showActors)).toEqual([
+      { name: 'Adam Scott', count: 2, duration: (2 * 50 + 3) * 60 },
     ])
-    expect(
-      movieActors.map(({ name, count, duration }) => ({
-        name,
-        count,
-        duration,
-      })),
-    ).toEqual([{ name: 'Russell Crowe', count: 2, duration: 2 * 140 * 60 }])
   })
 })
 
