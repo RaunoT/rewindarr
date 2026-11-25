@@ -189,12 +189,34 @@ export function calculateETA(
 
   if (remainingMs <= 0) return null
 
-  const eta = new Date(Date.now() + remainingMs)
+  return formatClockTime(new Date(Date.now() + remainingMs), locale)
+}
 
+// A time of day the way the locale writes it, such as "08:40" or "8:40 AM", so
+// every clock in the app reads the same. Without a time zone, in the one of
+// whoever runs it.
+export function formatClockTime(
+  time: Date,
+  locale: string,
+  timeZone?: string,
+): string {
   return new Intl.DateTimeFormat(locale, {
-    hour: 'numeric',
-    minute: '2-digit',
-  }).format(eta)
+    timeStyle: 'short',
+    timeZone,
+  }).format(time)
+}
+
+// The date and the time, for a time's hover title
+export function formatDateTime(
+  time: Date,
+  locale: string,
+  timeZone?: string,
+): string {
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone,
+  }).format(time)
 }
 
 // The app and the device it plays on, such as "Plex Web (Chrome)"

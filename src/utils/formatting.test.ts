@@ -5,7 +5,9 @@ import {
   calculateETA,
   formatBitrate,
   formatChannels,
+  formatClockTime,
   formatCodec,
+  formatDateTime,
   formatDevice,
   formatDynamicRange,
   formatMonthYear,
@@ -118,6 +120,35 @@ describe('calculateETA', () => {
     expect(calculateETA(undefined, '0', 'en')).toBeNull()
     expect(calculateETA('abc', '0', 'en')).toBeNull()
     expect(calculateETA('1000', '1000', 'en')).toBeNull()
+  })
+
+  it('writes the time like the other clocks', () => {
+    vi.setSystemTime(new Date(2026, 0, 1, 8, 10, 0))
+
+    expect(calculateETA(String(30 * 60 * 1000), '0', 'en-GB')).toBe('08:40')
+  })
+})
+
+describe('formatClockTime', () => {
+  const time = new Date('2026-11-25T08:40:00Z')
+
+  it('writes the time the way the locale does', () => {
+    expect(formatClockTime(time, 'en-GB', 'UTC')).toBe('08:40')
+    expect(formatClockTime(time, 'et', 'UTC')).toBe('08:40')
+    expect(formatClockTime(time, 'de', 'UTC')).toBe('08:40')
+    expect(formatClockTime(time, 'en-US', 'UTC')).toMatch(/^8:40\sAM$/)
+  })
+
+  it('uses the time zone it gets', () => {
+    expect(formatClockTime(time, 'en-GB', 'Europe/Tallinn')).toBe('10:40')
+  })
+})
+
+describe('formatDateTime', () => {
+  it('writes the date with the same time as formatClockTime', () => {
+    const time = new Date('2026-11-25T08:40:00Z')
+
+    expect(formatDateTime(time, 'en-GB', 'UTC')).toBe('25 Nov 2026, 08:40')
   })
 })
 

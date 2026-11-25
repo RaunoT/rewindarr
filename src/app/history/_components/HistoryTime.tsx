@@ -1,3 +1,4 @@
+import { formatClockTime, formatDateTime } from '@/utils/formatting'
 import { useLocale } from 'next-intl'
 
 type Props = {
@@ -14,17 +15,10 @@ export default function HistoryTime({ time, timeZone }: Props) {
   return (
     <time
       dateTime={time.toISOString()}
-      title={new Intl.DateTimeFormat(locale, {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-        timeZone,
-      }).format(time)}
+      title={formatDateTime(time, locale, timeZone)}
       className='whitespace-nowrap'
     >
-      {new Intl.DateTimeFormat(locale, {
-        timeStyle: 'short',
-        timeZone,
-      }).format(time)}
+      {formatClockTime(time, locale, timeZone)}
     </time>
   )
 }
