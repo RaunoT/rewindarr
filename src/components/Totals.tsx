@@ -106,7 +106,7 @@ export default function Totals({ totals }: { totals: Total[] }) {
 // skeleton wraps where the totals would. A size is usually the one value
 // wider than its label, so on phones around 390px it can decide alone
 // whether four totals fit on one row, as on the Shows page. The sample
-// matches a home server's usual 1 to 9.99 TB; wider sizes, such as 10 TB or
+// matches a home server's usual 0.98 to 9.99 TB; wider sizes, such as 10 TB or
 // more or hundreds of GB, still move the page there.
 const SAMPLE_VALUES = {
   duration: ['00d 00h', '00 days 00 hrs'],

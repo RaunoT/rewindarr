@@ -2,6 +2,7 @@ import { createTranslator } from 'next-intl'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import en from '../../messages/en-GB.json'
 import {
+  bytesToSize,
   calculateETA,
   formatBitrate,
   formatChannels,
@@ -24,6 +25,43 @@ const t: TranslateFunction = (key, params) => translator(key as never, params)
 const MINUTE = 60
 const HOUR = 60 * MINUTE
 const DAY = 24 * HOUR
+
+describe('bytesToSize', () => {
+  const GB = 1024 ** 3
+  const TB = 1024 ** 4
+
+  it('keeps values under 1000 in their unit', () => {
+    expect(bytesToSize(999 * GB, 2, t)).toBe('999 GB')
+    expect(bytesToSize(3.82 * TB, 2, t)).toBe('3.82 TB')
+    expect(bytesToSize(512, 2, t)).toBe('512 Bytes')
+  })
+
+  it('moves to the next unit from 1000', () => {
+    expect(bytesToSize(1004.39 * GB, 2, t)).toBe('0.98 TB')
+    expect(bytesToSize(1000 * GB, 2, t)).toBe('0.98 TB')
+    expect(bytesToSize(1010 * 1024 ** 2, 0, t)).toBe('1 GB')
+    expect(bytesToSize(1000, 2, t)).toBe('0.98 KB')
+  })
+
+  it('moves on when rounding reaches 1000', () => {
+    expect(bytesToSize(999.996 * GB, 2, t)).toBe('0.98 TB')
+  })
+
+  it('stops at the largest unit', () => {
+    expect(bytesToSize(1024 ** 9, 2, t)).toBe('1,024 YB')
+  })
+
+  it('returns nothing for no size or a size that makes no sense', () => {
+    expect(bytesToSize(0, 2, t)).toBeUndefined()
+    expect(bytesToSize(-1024, 2, t)).toBeUndefined()
+    expect(bytesToSize(Infinity, 2, t)).toBeUndefined()
+    expect(bytesToSize(NaN, 2, t)).toBeUndefined()
+  })
+
+  it('keeps a fraction of a byte in bytes', () => {
+    expect(bytesToSize(0.5, 2, t)).toBe('0.5 Bytes')
+  })
+})
 
 describe('secondsToTime', () => {
   it('returns the zero label for zero, negative or non-finite input', () => {

@@ -56,13 +56,23 @@ export function bytesToSize(
   decimals = 2,
   t: TranslateFunction,
 ): string | undefined {
-  if (!+bytes) return
+  if (!Number.isFinite(bytes) || bytes <= 0) return
 
   const k = 1024
   const dm = decimals < 0 ? 0 : decimals
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  const value = parseFloat((bytes / Math.pow(k, i)).toFixed(dm))
+
+  let i = Math.min(
+    Math.max(0, Math.floor(Math.log(bytes) / Math.log(k))),
+    sizes.length - 1,
+  )
+  let value = parseFloat((bytes / Math.pow(k, i)).toFixed(dm))
+
+  // From 1000 the next unit reads better: 0.98 TB, not 1,004.39 GB
+  if (value >= 1000 && i < sizes.length - 1) {
+    i++
+    value = parseFloat((bytes / Math.pow(k, i)).toFixed(dm))
+  }
 
   return t('Common.fileSize', {
     value,
