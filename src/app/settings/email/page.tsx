@@ -54,6 +54,7 @@ export default async function EmailSettingsPage() {
       adminAddress={session?.user.email ?? ''}
       adminId={session?.user.id ?? ''}
       timeZone={Intl.DateTimeFormat().resolvedOptions().timeZone}
+      now={new Date().toISOString()}
     />
   )
 }

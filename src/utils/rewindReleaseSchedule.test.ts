@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   getDueReleaseYear,
   getNextReleaseEmailTime,
+  isReleaseEmailOn,
   RELEASE_EMAIL_HOUR,
 } from './rewindReleaseSchedule'
 
@@ -72,5 +73,29 @@ describe('getNextReleaseEmailTime', () => {
     expect(
       getNextReleaseEmailTime(SETTINGS, 2025, new Date(2026, 9, 1)),
     ).toEqual(new Date(2026, 11, 1, RELEASE_EMAIL_HOUR))
+  })
+})
+
+describe('isReleaseEmailOn', () => {
+  const on = {
+    rewind: { ...SETTINGS.rewind, isActive: true, isReleaseEmailActive: true },
+  }
+
+  it('needs Rewind on, open to users and by the calendar year', () => {
+    expect(isReleaseEmailOn(on)).toBe(true)
+    expect(
+      isReleaseEmailOn({ rewind: { ...on.rewind, isActive: false } }),
+    ).toBe(false)
+    expect(
+      isReleaseEmailOn({ rewind: { ...on.rewind, isAdminOnly: true } }),
+    ).toBe(false)
+    expect(
+      isReleaseEmailOn({ rewind: { ...on.rewind, period: 'pastYear' } }),
+    ).toBe(false)
+    expect(
+      isReleaseEmailOn({
+        rewind: { ...on.rewind, isReleaseEmailActive: false },
+      }),
+    ).toBe(false)
   })
 })

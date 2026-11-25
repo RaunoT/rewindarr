@@ -90,8 +90,9 @@ export default async function RewindSettingsPage() {
       currentYear={currentYear}
       // Not waited for, so the form shows while they're read
       shareUsers={canShare ? getShareUsers() : undefined}
-      // Only once users can open their own Rewind, which the invites lead to
-      releaseEmail={canShare ? await getReleaseEmailStatus() : undefined}
+      // Always, as the form shows the switch as soon as users can open their
+      // own Rewind, and a save of a form without it would turn it off
+      releaseEmail={await getReleaseEmailStatus()}
     />
   )
 }

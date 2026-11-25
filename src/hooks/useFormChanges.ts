@@ -45,18 +45,26 @@ export default function useFormChanges(
     submittedRef.current = null
     setIsChanged(current !== savedRef.current)
   }, [read])
-  // Fields that appear once their data is read count as saved as they come.
-  // Before the form is first read, they're read with it.
-  const markLoaded = useCallback(() => {
-    const current = read()
+  // Fields that appear once their data is read count as saved as they come,
+  // the ones inside the element that loaded them. Before the form is first
+  // read, they're read with it.
+  const markLoaded = useCallback(
+    (container: Element) => {
+      const current = read()
 
-    if (current === null || savedRef.current === null) {
-      return
-    }
+      if (current === null || savedRef.current === null) {
+        return
+      }
 
-    savedRef.current = addLoadedFields(savedRef.current, current)
-    setIsChanged(current !== savedRef.current)
-  }, [read])
+      const names = [...container.querySelectorAll('[name]')].flatMap(
+        (field) => field.getAttribute('name') ?? [],
+      )
+
+      savedRef.current = addLoadedFields(savedRef.current, current, names)
+      setIsChanged(current !== savedRef.current)
+    },
+    [read],
+  )
 
   useEffect(() => {
     const form = formRef.current

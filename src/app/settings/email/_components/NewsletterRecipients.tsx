@@ -3,7 +3,7 @@
 import SelectionActions from '@/components/SelectionActions'
 import type { EmailRecipient } from '@/utils/emailRecipients'
 import { useTranslations } from 'next-intl'
-import { Suspense, use, useState } from 'react'
+import { Suspense, use, useRef, useState } from 'react'
 import { Switch } from 'react-aria-components'
 import { useLoadedFields } from '../../_components/SettingsForm'
 import UserSearchList from '../../_components/UserSearchList'
@@ -20,18 +20,30 @@ type Props = {
   isShownOnLoad: boolean
 }
 
+function getSubscribed(recipients: EmailRecipient[] | null): string[] {
+  return (
+    recipients
+      ?.filter((recipient) => recipient.isSubscribed)
+      .map(({ id }) => id) ?? []
+  )
+}
+
 function RecipientList({ recipients: request, isShownOnLoad }: Props) {
   const t = useTranslations('Settings.Email')
   const recipients = use(request)
-  // Kept as switched through saves, which send the same
-  const [subscribed, setSubscribed] = useState(
-    () =>
-      recipients
-        ?.filter((recipient) => recipient.isSubscribed)
-        .map(({ id }) => id) ?? [],
-  )
+  const ref = useRef<HTMLDivElement>(null)
+  const [subscribed, setSubscribed] = useState(() => getSubscribed(recipients))
+  const [shownRecipients, setShownRecipients] = useState(recipients)
 
-  useLoadedFields(isShownOnLoad)
+  // A save reads the users again, and the switches start over from them, like
+  // the fields they're compared with. Someone who unsubscribed meanwhile
+  // isn't subscribed again by the next save.
+  if (recipients !== shownRecipients) {
+    setShownRecipients(recipients)
+    setSubscribed(getSubscribed(recipients))
+  }
+
+  useLoadedFields(ref, isShownOnLoad)
 
   if (!recipients) {
     return (
@@ -42,7 +54,7 @@ function RecipientList({ recipients: request, isShownOnLoad }: Props) {
   }
 
   return (
-    <div className='grid gap-3'>
+    <div ref={ref} className='grid gap-3'>
       <UserSearchList
         users={recipients}
         searchLabel={t('recipientsSearch')}

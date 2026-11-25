@@ -8,9 +8,9 @@ import { isMailServerSet } from './mailer'
 import {
   getDueReleaseYear,
   getLatestReleaseYear,
+  isReleaseEmailOn,
   ReleaseSettings,
 } from './rewindReleaseSchedule'
-import { canShareRewind } from './rewindShare'
 
 export const REWIND_EMAILS_STATE_PATH = path.join(
   process.cwd(),
@@ -56,6 +56,12 @@ export async function readRewindEmailsState(): Promise<RewindEmailsState> {
   }
 }
 
+// The later of two handled editions, so a save or a slow run never makes an
+// edition that went out due again
+function laterYear(a: number | null, b: number | null): number | null {
+  return a === null ? b : b === null ? a : Math.max(a, b)
+}
+
 async function writeRewindEmailsState(state: RewindEmailsState) {
   await replaceFile(
     REWIND_EMAILS_STATE_PATH,
@@ -73,7 +79,10 @@ export async function passOverReleasedRewind(
 
   await writeRewindEmailsState({
     ...state,
-    handledYear: getLatestReleaseYear(settings, now),
+    handledYear: laterYear(
+      state.handledYear,
+      getLatestReleaseYear(settings, now),
+    ),
   })
 }
 
@@ -86,8 +95,7 @@ export async function checkRewindRelease(now: Date = new Date()) {
 
   if (
     !settings.setupComplete ||
-    !settings.rewind.isReleaseEmailActive ||
-    !canShareRewind(settings) ||
+    !isReleaseEmailOn(settings) ||
     !isMailServerSet(settings.email)
   ) {
     return
@@ -119,8 +127,9 @@ export async function checkRewindRelease(now: Date = new Date()) {
         console.error(
           `[REWIND EMAILS] - Unable to send the invites (${report.error}), trying again later.`,
         )
+        // Read again, as a save can pass the edition over while it ran
         await writeRewindEmailsState({
-          ...state,
+          ...(await readRewindEmailsState()),
           lastRun: {
             at: new Date().toISOString(),
             year,
@@ -158,7 +167,10 @@ export async function checkRewindRelease(now: Date = new Date()) {
       console.error(
         `[REWIND EMAILS] - Unable to send any of ${lastRun.failed}, trying again later.`,
       )
-      await writeRewindEmailsState({ ...state, lastRun })
+      await writeRewindEmailsState({
+        ...(await readRewindEmailsState()),
+        lastRun,
+      })
 
       return
     }
@@ -166,7 +178,13 @@ export async function checkRewindRelease(now: Date = new Date()) {
     console.log(
       `[REWIND EMAILS] - Sent ${lastRun.sent}, failed ${lastRun.failed}, skipped ${lastRun.skipped}.`,
     )
-    await writeRewindEmailsState({ handledYear: year, lastRun })
+
+    const latest = await readRewindEmailsState()
+
+    await writeRewindEmailsState({
+      handledYear: laterYear(latest.handledYear, year),
+      lastRun,
+    })
   } catch (error) {
     console.error('[REWIND EMAILS] - Unable to send the invites!', error)
   } finally {

@@ -6,25 +6,38 @@ import { SettingsFormInitialState } from '@/types/settings'
 import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { createContext, ReactNode, useContext, useEffect, useRef } from 'react'
+import {
+  createContext,
+  ReactNode,
+  RefObject,
+  useContext,
+  useEffect,
+  useRef,
+} from 'react'
 import LeaveGuard from './LeaveGuard'
 import { useDiscard } from './SettingsDiscard'
 import SettingsDiscardButton from './SettingsDiscardButton'
 import SettingsSaveButton from './SettingsSaveButton'
 
-const LoadedFieldsContext = createContext<() => void>(() => {})
+const LoadedFieldsContext = createContext<(container: Element) => void>(
+  () => {},
+)
 
-// For fields that are read after the form shows: called from the component
-// that renders them once they're there, so they don't count as a change. Off
-// for fields that only show because of an edit, which count as one.
-export function useLoadedFields(isActive = true) {
+// For fields that are read after the form shows, inside the element the ref
+// is on: called from the component that renders them once they're there, so
+// they don't count as a change. Off for fields that only show because of an
+// edit, which count as one.
+export function useLoadedFields(
+  ref: RefObject<Element | null>,
+  isActive = true,
+) {
   const markLoaded = useContext(LoadedFieldsContext)
 
   useEffect(() => {
-    if (isActive) {
-      markLoaded()
+    if (isActive && ref.current) {
+      markLoaded(ref.current)
     }
-  }, [isActive, markLoaded])
+  }, [isActive, markLoaded, ref])
 }
 
 type Props = {

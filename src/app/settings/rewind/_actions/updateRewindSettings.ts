@@ -15,6 +15,7 @@ import {
 import getSettings from '@/utils/getSettings'
 import { FIRST_YEAR, isReleaseDate } from '@/utils/rewindPeriod'
 import { passOverReleasedRewind } from '@/utils/rewindRelease'
+import { isReleaseEmailOn } from '@/utils/rewindReleaseSchedule'
 import { isCalendarDate } from '@/utils/timeZone'
 import { getTranslations } from 'next-intl/server'
 import { z } from 'zod'
@@ -118,11 +119,13 @@ export default async function saveRewindSettings(
   const state = await updateSettings(schema, data, 'rewind')
   const updated = getSettings().rewind
 
-  // An edition that's already out isn't emailed by a save, only the next one
+  // An edition that's already out isn't emailed by a save that turns the
+  // invites on, in any of the ways, or moves the release, only the next one
   if (
     state.status === 'success' &&
-    updated.isReleaseEmailActive &&
-    (!saved.isReleaseEmailActive || saved.releaseDate !== updated.releaseDate)
+    isReleaseEmailOn({ rewind: updated }) &&
+    (!isReleaseEmailOn({ rewind: saved }) ||
+      saved.releaseDate !== updated.releaseDate)
   ) {
     await passOverReleasedRewind({ rewind: updated }).catch((error) => {
       console.error('[REWIND EMAILS] - Unable to save the release!', error)

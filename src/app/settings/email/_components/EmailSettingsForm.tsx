@@ -44,6 +44,9 @@ type Props = {
   adminId: string
   // The server's, which the newsletter's hour is in
   timeZone: string
+  // ISO 8601, when the page was made, which the next send is worked out from,
+  // so the server's render and the browser's agree
+  now: string
 }
 
 type EmailFormState = SettingsFormInitialState<Partial<EmailSettings>>
@@ -72,6 +75,7 @@ export default function EmailSettingsForm({
   adminAddress,
   adminId,
   timeZone,
+  now,
 }: Props) {
   const t = useTranslations('Settings.Email')
   const tCommon = useTranslations('Common')
@@ -95,8 +99,6 @@ export default function EmailSettingsForm({
   const [weekday, setWeekday] = useState(settings.newsletterWeekday)
   const [monthDay, setMonthDay] = useState(settings.newsletterMonthDay)
   const [hour, setHour] = useState(settings.newsletterHour)
-  // When the page was opened, which the next send is worked out from
-  const [openedAt] = useState(() => new Date())
   // As picked, before it's saved, in the server's time zone like the schedule
   const nextSendTime = getNextSendTime(
     {
@@ -106,7 +108,7 @@ export default function EmailSettingsForm({
       newsletterMonthDay: monthDay,
       newsletterHour: hour,
     },
-    openedAt,
+    new Date(now),
     timeZone,
   )
   // The address the admin opened the settings from, until another is saved

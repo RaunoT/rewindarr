@@ -2,7 +2,7 @@
 
 import type { EmailRecipient } from '@/utils/emailRecipients'
 import { useTranslations } from 'next-intl'
-import { Suspense, use } from 'react'
+import { Suspense, use, useRef } from 'react'
 import { useLoadedFields } from '../../_components/SettingsForm'
 import UserSearchList from '../../_components/UserSearchList'
 import {
@@ -20,8 +20,9 @@ type Props = {
 function AddressList({ recipients: request, formKey }: Props) {
   const t = useTranslations('Settings.Email')
   const recipients = use(request)
+  const ref = useRef<HTMLDivElement>(null)
 
-  useLoadedFields()
+  useLoadedFields(ref)
 
   if (!recipients) {
     return (
@@ -32,32 +33,34 @@ function AddressList({ recipients: request, formKey }: Props) {
   }
 
   return (
-    <UserSearchList
-      users={recipients}
-      searchLabel={t('recipientsSearch')}
-      emptyLabel={t('recipientsNone')}
-    >
-      {(recipient) => (
-        <>
-          <input
-            type='hidden'
-            name={ADDRESS_USERS_FIELD}
-            value={recipient.id}
-          />
-          {/* Under the name on phones, beside it on wider screens */}
-          <input
-            key={`address-${formKey}-${recipient.customAddress}`}
-            type='email'
-            className='input order-last sm:order-none sm:w-72'
-            name={`${ADDRESS_FIELD_PREFIX}${recipient.id}`}
-            defaultValue={recipient.customAddress}
-            placeholder={recipient.foundAddress || t('noAddress')}
-            aria-label={t('addressLabel', { name: recipient.name })}
-            autoComplete='off'
-          />
-        </>
-      )}
-    </UserSearchList>
+    <div ref={ref}>
+      <UserSearchList
+        users={recipients}
+        searchLabel={t('recipientsSearch')}
+        emptyLabel={t('recipientsNone')}
+      >
+        {(recipient) => (
+          <>
+            <input
+              type='hidden'
+              name={ADDRESS_USERS_FIELD}
+              value={recipient.id}
+            />
+            {/* Under the name on phones, beside it on wider screens */}
+            <input
+              key={`address-${formKey}-${recipient.customAddress}`}
+              type='email'
+              className='input order-last sm:order-none sm:w-72'
+              name={`${ADDRESS_FIELD_PREFIX}${recipient.id}`}
+              defaultValue={recipient.customAddress}
+              placeholder={recipient.foundAddress || t('noAddress')}
+              aria-label={t('addressLabel', { name: recipient.name })}
+              autoComplete='off'
+            />
+          </>
+        )}
+      </UserSearchList>
+    </div>
   )
 }
 

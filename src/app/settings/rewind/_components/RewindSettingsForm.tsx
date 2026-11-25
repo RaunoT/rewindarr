@@ -48,7 +48,7 @@ type Props = {
   currentYear: number
   // Each user's shared link, while users can see their own Rewind
   shareUsers?: Promise<ShareUser[] | null>
-  releaseEmail?: ReleaseEmailStatus
+  releaseEmail: ReleaseEmailStatus
 }
 
 type RewindFormState = SettingsFormInitialState<Partial<RewindSettings>>
@@ -304,8 +304,8 @@ export default function RewindSettingsForm({
                 year={currentYear}
               />
             )}
-            {/* As saved, as the invites lead to their Rewind */}
-            {period === 'calendarYear' && !isAdminOnly && releaseEmail && (
+            {/* While users can open their own Rewind, which the invites lead to */}
+            {period === 'calendarYear' && !isAdminOnly && (
               <RewindReleaseEmail
                 key={`release-email-${rewindSettings.isReleaseEmailActive}`}
                 defaultSelected={rewindSettings.isReleaseEmailActive}

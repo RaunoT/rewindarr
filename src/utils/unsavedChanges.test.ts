@@ -201,7 +201,7 @@ describe('guardLeave', () => {
 })
 
 describe('addLoadedFields', () => {
-  it('counts fields that appeared as saved, and keeps the rest as saved', () => {
+  it('counts the loaded fields as saved, and keeps the rest as they were', () => {
     const saved = getFormSnapshot([['smtpHost', 'mail.example.com']])
     const loaded = addLoadedFields(
       saved,
@@ -209,7 +209,10 @@ describe('addLoadedFields', () => {
         ['smtpHost', 'smtp.example.com'],
         ['listedUsers', '2'],
         ['listedUsers', '1'],
+        // Shown by an edit while the list loaded
+        ['newsletterHour', '9'],
       ]),
+      ['listedUsers'],
     )
 
     expect(loaded).toBe(
