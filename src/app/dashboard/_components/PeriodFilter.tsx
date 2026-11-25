@@ -2,15 +2,19 @@
 
 import { GlobalContext } from '@/app/_components/GlobalContextProvider'
 import SegmentedControl from '@/components/filters/SegmentedControl'
+import useFilterParams, { FilterParams } from '@/hooks/useFilterParams'
 import { DashboardSearchParams } from '@/types/dashboard'
 import { PublicSettings } from '@/types/settings'
+import { setPeriodFilter } from '@/utils/dashboardFilters'
 import { parseCustomPeriod } from '@/utils/getPeriod'
 import { useTranslations } from 'next-intl'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useContext, useEffect } from 'react'
 
 type Props = {
   settings: PublicSettings
+  // The other filters', when there are any next to it
+  filterParams?: FilterParams
   className?: string
 }
 
@@ -30,12 +34,16 @@ function getPeriodValue(period: string, customPeriod: number): number {
 }
 
 // Always in sight, as every number on the page depends on it
-export default function PeriodFilter({ settings, className }: Props) {
+export default function PeriodFilter({
+  settings,
+  filterParams,
+  className,
+}: Props) {
   const t = useTranslations('PeriodSelectContent')
   const tFilters = useTranslations('Filters')
-  const router = useRouter()
   const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const ownFilterParams = useFilterParams()
+  const { searchParams, navigate } = filterParams ?? ownFilterParams
   const {
     dashboard: { setPeriod },
   } = useContext(GlobalContext)
@@ -58,29 +66,13 @@ export default function PeriodFilter({ settings, className }: Props) {
     )
   })
 
-  function getUpdatedQueryParams(newPeriod: string) {
-    const params = new URLSearchParams(searchParams.toString())
-
-    // A new list starts from its first rows again
-    params.delete('limit')
-    params.delete('page')
-
-    if (newPeriod) {
-      params.set('period', newPeriod)
-    } else {
-      params.delete('period')
-    }
-
-    return params.toString() ? `?${params.toString()}` : ''
-  }
-
   function handleChange(value: string) {
     const isDefault = value === 'custom'
 
     setPeriod(
       isDefault ? undefined : (value as DashboardSearchParams['period']),
     )
-    router.push(`${pathname}${getUpdatedQueryParams(isDefault ? '' : value)}`)
+    navigate((params) => setPeriodFilter(params, isDefault ? '' : value))
   }
 
   useEffect(() => {
