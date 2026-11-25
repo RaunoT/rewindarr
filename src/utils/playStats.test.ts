@@ -674,6 +674,58 @@ describe('plays short of the percent in the settings', () => {
   })
 })
 
+describe('getTopPeople', () => {
+  // Three movies with the same star sampled for minutes, two others watched
+  const runtime = 140 * 60 * 1000
+  const casts: Record<string, string[]> = {
+    'Mad Max: Fury Road': ['Charlize Theron'],
+    Prometheus: ['Charlize Theron'],
+    'Atomic Blonde': ['Charlize Theron'],
+    Gladiator: ['Russell Crowe'],
+    'A Beautiful Mind': ['Russell Crowe'],
+  }
+  const history = Object.keys(casts).map((title, i) => {
+    const isSampled = casts[title][0] === 'Charlize Theron'
+
+    return play(title, `2026-03-0${i + 1}T20:00:00Z`, {
+      title,
+      lengthMs: runtime,
+      durationMs: isSampled ? 7 * 60 * 1000 : runtime,
+    })
+  })
+
+  it('leaves out titles without a play that counts, before their credits', async () => {
+    vi.mocked(getSettings).mockReturnValue({
+      general: { excludedUsers: [], minPlayPercent: 50 },
+    } as unknown as ReturnType<typeof getSettings>)
+
+    const getMediaData = vi.fn(async (item: ItemRow) => ({
+      thumb: '',
+      isDeleted: false,
+      credits: { directors: [], actors: casts[item.title] },
+    }))
+    const { movieActors } = await createPlayStats({
+      getPlays: async () => history,
+      getUsers: async () => [user('1', 'alice')],
+      getMediaData,
+    }).getTopPeople('1', [{ section_type: 'movie' } as Library], {
+      since: '2026-01-01',
+    })
+
+    expect(getMediaData.mock.calls.map(([item]) => item.title)).toEqual([
+      'Gladiator',
+      'A Beautiful Mind',
+    ])
+    expect(
+      movieActors.map(({ name, count, duration }) => ({
+        name,
+        count,
+        duration,
+      })),
+    ).toEqual([{ name: 'Russell Crowe', count: 2, duration: 2 * 140 * 60 }])
+  })
+})
+
 describe('getPlaysByTime', () => {
   const movies = { section_type: 'movie' } as Library
 

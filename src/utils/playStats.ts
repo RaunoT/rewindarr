@@ -508,10 +508,12 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
     const plays = await getPlays({ ...period, userId, libraries })
     const minPercent = getMinPlayPercent()
 
+    // A title only brings its cast and crew in once it has a play that
+    // counts, or a few minutes of it would rank them
     function getTitles(mediaType: PlayMediaType) {
-      return groupPlays(
-        plays.filter((play) => play.mediaType === mediaType),
-      ).map((group) => toItemRow(group, minPercent))
+      return groupPlays(plays.filter((play) => play.mediaType === mediaType))
+        .map((group) => toItemRow(group, minPercent))
+        .filter((item) => item.total_plays > 0)
     }
 
     return findTopPeople(
