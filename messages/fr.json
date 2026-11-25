@@ -76,7 +76,8 @@
     "general": "Tout le monde",
     "personal": "Moi uniquement",
     "sortByLabel": "Trier par",
-    "sort": "Trier"
+    "sort": "Trier",
+    "playThreshold": "Les lectures sous {percent, number, percent} s'ajoutent à la durée mais pas au nombre de lectures."
   },
   "DashboardNavContent": {
     "label": "Navigation du tableau de bord",

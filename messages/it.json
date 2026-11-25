@@ -76,7 +76,8 @@
     "general": "Di tutti",
     "personal": "Solo le mie",
     "sortByLabel": "Ordina per",
-    "sort": "Ordina"
+    "sort": "Ordina",
+    "playThreshold": "Le riproduzioni sotto il {percent, number, percent} si aggiungono al tempo ma non al numero di riproduzioni."
   },
   "DashboardNavContent": {
     "label": "Navigazione della dashboard",

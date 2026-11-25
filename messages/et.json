@@ -76,7 +76,8 @@
     "general": "Kõigi",
     "personal": "Ainult minu",
     "sortByLabel": "Sorteerimisalus",
-    "sort": "Sorteerimine"
+    "sort": "Sorteerimine",
+    "playThreshold": "Alla {percent, number, percent} esitused lisavad aega, kuid esituste arvu hulka ei lähe."
   },
   "DashboardNavContent": {
     "label": "Edetabeli navigatsioon",

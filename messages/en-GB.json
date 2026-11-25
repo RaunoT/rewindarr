@@ -76,7 +76,8 @@
     "general": "Everyone",
     "personal": "Just me",
     "sortByLabel": "Sort by",
-    "sort": "Sort"
+    "sort": "Sort",
+    "playThreshold": "Plays under {percent, number, percent} add to the time but not to the play count."
   },
   "DashboardNavContent": {
     "label": "Dashboard navigation",

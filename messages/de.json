@@ -76,7 +76,8 @@
     "general": "Alle",
     "personal": "Nur mich",
     "sortByLabel": "Sortieren nach",
-    "sort": "Sortieren"
+    "sort": "Sortieren",
+    "playThreshold": "Wiedergaben unter {percent, number, percent} zählen zur Zeit, aber nicht zur Anzahl der Wiedergaben."
   },
   "DashboardNavContent": {
     "label": "Dashboard Navigation",

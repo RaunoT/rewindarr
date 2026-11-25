@@ -76,7 +76,8 @@
     "general": "Todos",
     "personal": "Solo yo",
     "sortByLabel": "Ordenar por",
-    "sort": "Ordenar"
+    "sort": "Ordenar",
+    "playThreshold": "Las reproducciones por debajo del {percent, number, percent} suman al tiempo pero no al número de reproducciones."
   },
   "DashboardNavContent": {
     "label": "Navegación del panel",
