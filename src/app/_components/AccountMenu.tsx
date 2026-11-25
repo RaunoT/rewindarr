@@ -3,6 +3,7 @@
 import Avatar from '@/components/Avatar'
 import { setUserLocale } from '@/i18n/locale'
 import { Locale, LOCALES } from '@/utils/constants'
+import { guardLeave } from '@/utils/unsavedChanges'
 import {
   ArrowRightStartOnRectangleIcon,
   CheckIcon,
@@ -139,7 +140,10 @@ export default function AccountMenu({ isCompact }: Props) {
           {user && (
             <>
               <Separator className='mx-2 my-1 h-px border-0 bg-white/10' />
-              <MenuItem onAction={signOutInPlace} className='menu-item'>
+              <MenuItem
+                onAction={() => guardLeave(signOutInPlace)}
+                className='menu-item'
+              >
                 <ArrowRightStartOnRectangleIcon />
                 {t('Home.signOut')}
               </MenuItem>

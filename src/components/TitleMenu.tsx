@@ -1,5 +1,6 @@
 'use client'
 
+import { guardLeave } from '@/utils/unsavedChanges'
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
 import { ReactNode } from 'react'
@@ -49,7 +50,17 @@ export default function TitleMenu({ label, items }: Props) {
           disabledKeys={items
             .filter((item) => item.isDisabled)
             .map((item) => item.href)}
-          onAction={(href) => router.push(String(href))}
+          onAction={(key) => {
+            const href = String(key)
+            const navigate = () => router.push(href)
+
+            // Picking the page that's open doesn't leave it
+            if (href === current?.href) {
+              navigate()
+            } else {
+              guardLeave(navigate)
+            }
+          }}
         >
           {items.map((item) => (
             <MenuItem

@@ -219,6 +219,7 @@ export default function GeneralSettingsForm({
       formState={formState}
       formAction={formAction}
       hideSubmit={!hasLibraries}
+      orderedFields={['activeLibraries']}
       isSetup={!generalSettings.complete}
     >
       <section className='group-settings group'>

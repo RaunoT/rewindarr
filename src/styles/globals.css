@@ -599,6 +599,32 @@
     }
   }
 
+  /* A question to answer: a sheet on phones, a card in the middle on wider
+     screens. Used with sheet. */
+  .sheet--dialog {
+    @apply sm:max-w-sm sm:rounded-3xl sm:pb-5;
+
+    @variant sm {
+      &[data-entering] {
+        animation: fade-up 0.2s ease-out;
+      }
+
+      &[data-exiting] {
+        animation: fade-in 0.15s ease-in reverse;
+      }
+    }
+  }
+
+  /* A form's save button while there are unsaved changes, kept in sight at the
+     bottom of the screen. The margins take back its padding, so nothing moves
+     when it turns into one. Darker than other glass, so the fields scrolling
+     under it don't show through. */
+  .save-bar {
+    @apply glass-pill sticky bottom-[max(--spacing(4),env(safe-area-inset-bottom))] z-20 -m-2 bg-neutral-900/85 p-2 pl-5;
+
+    animation: fade-up 0.2s ease-out;
+  }
+
   /* Used with glass-sheet, whose padding and radius it replaces */
   .menu {
     @apply bg-neutral-900/70 p-1.5 outline-none;
@@ -937,6 +963,10 @@
   }
 
   .animate-pulse {
+    animation: none;
+  }
+
+  .save-bar {
     animation: none;
   }
 
