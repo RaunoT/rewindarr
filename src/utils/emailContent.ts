@@ -30,8 +30,6 @@ export type BuiltEmail =
   | { status: 'skipped'; reason: SkipReason }
 
 const LIST_LENGTH = 3
-const SERVER_LIST_LENGTH = 5
-const RANKS_LENGTH = 5
 // From the project's site, not the app: mail apps load images through their
 // own servers, which can't reach an app that's only open at home or on a VPN
 const LOGO_URL = 'https://rewindarr.eu/assets/apple-icon.png'
@@ -326,7 +324,7 @@ export async function getServerRecap(
         name: user.friendly_name,
         duration: user.total_duration,
         avatarUrl:
-          i < RANKS_LENGTH ? await getPublicAvatar(user.user_thumb) : null,
+          i < LIST_LENGTH ? await getPublicAvatar(user.user_thumb) : null,
         thumb: user.user_thumb,
       })),
     ),
@@ -470,9 +468,9 @@ export async function buildNewsletter(
       },
       ...(await getItemColumns(
         {
-          shows: server.topItems.shows.slice(0, SERVER_LIST_LENGTH),
-          movies: server.topItems.movies.slice(0, SERVER_LIST_LENGTH),
-          audio: server.topItems.audio.slice(0, SERVER_LIST_LENGTH),
+          shows: server.topItems.shows.slice(0, LIST_LENGTH),
+          movies: server.topItems.movies.slice(0, LIST_LENGTH),
+          audio: server.topItems.audio.slice(0, LIST_LENGTH),
         },
         {
           shows: t('Email.Newsletter.topShows'),
@@ -495,7 +493,7 @@ export async function buildNewsletter(
       { type: 'heading', text: t('Email.Newsletter.topUsers'), icon: 'users' },
       {
         type: 'ranks',
-        rows: server.users.slice(0, RANKS_LENGTH).map((user, i) => {
+        rows: server.users.slice(0, LIST_LENGTH).map((user, i) => {
           const isHidden =
             settings.general.isAnonymized && user.id !== recipient.id
 
@@ -513,7 +511,7 @@ export async function buildNewsletter(
           }
         }),
       },
-      ...(readerRank >= RANKS_LENGTH
+      ...(readerRank >= LIST_LENGTH
         ? [
             {
               type: 'paragraph',
@@ -528,15 +526,6 @@ export async function buildNewsletter(
     ])
   }
 
-  const lastPanel = panels[panels.length - 1]
-
-  lastPanel.push({
-    type: 'button',
-    // The home page's overview, as each library has a dashboard of its own
-    href: appUrl,
-    label: t('Email.Newsletter.button'),
-  })
-
   const unsubscribeUrl = getUnsubscribeUrl(appUrl, recipient.id)
   const subject = t(`Email.Newsletter.subject.${frequency}`, {
     server: serverName,
@@ -549,6 +538,11 @@ export async function buildNewsletter(
     serverName,
     logoUrl,
     panels,
+    footerButton: {
+      // The home page's overview, as each library has a dashboard of its own
+      href: appUrl,
+      label: t('Email.Newsletter.button'),
+    },
     footer: t(`Email.Newsletter.footer.${frequency}`, { server: serverName }),
     footerLink: unsubscribeUrl
       ? { href: unsubscribeUrl, label: t('Email.Newsletter.unsubscribe') }
