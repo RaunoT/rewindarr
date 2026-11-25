@@ -292,9 +292,12 @@ export function title(text: string): Html {
 export type EmailIcon = 'movie' | 'show' | 'artist' | 'users'
 
 const ICON_SIZE = 20
+// Raise the version once changed icons are on the site: Apple Mail's proxy
+// keeps what it fetched for a URL, including a failure from before.
+const ICON_VERSION = 2
 
 function iconUrl(icon: EmailIcon): string {
-  return `https://rewindarr.eu/assets/email/${icon}.png`
+  return `https://rewindarr.eu/assets/email/${icon}.png?v=${ICON_VERSION}`
 }
 
 export function heading(text: string, icon?: EmailIcon): Html {
