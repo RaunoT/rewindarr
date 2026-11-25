@@ -714,9 +714,9 @@ export default function Stories({
           tabIndex={-1}
           inert={!!isIntroShown}
           // A phone's screen can be shorter than a story, which then scrolls
-          // between the progress bar and the buttons, fading out at the bottom
-          // while there's more below. Its padding keeps the rings and shadows
-          // at the sides from being cut off.
+          // between the progress bar and the buttons, fading out at the edges
+          // it's scrolled past. Its padding keeps the rings and shadows at the
+          // sides from being cut off.
           className='story-slide relative w-full flex-1 pt-8 outline-none select-none [-webkit-touch-callout:none] max-sm:-mx-2 max-sm:min-h-0 max-sm:w-auto max-sm:overflow-y-auto max-sm:overscroll-contain max-sm:px-2 sm:flex sm:flex-col sm:justify-center'
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}

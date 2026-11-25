@@ -1,5 +1,10 @@
 import { RefObject, useEffect } from 'react'
-import { getMoreBelow, getShownBottom, SlideLayout } from './slideFade'
+import {
+  getMoreBelow,
+  getScrolled,
+  getShownBottom,
+  SlideLayout,
+} from './slideFade'
 
 function getLayout(slide: HTMLElement): SlideLayout<HTMLElement> {
   return {
@@ -33,9 +38,9 @@ function getLayout(slide: HTMLElement): SlideLayout<HTMLElement> {
   }
 }
 
-// Keeps `--more-below` on a slide that scrolls up to date, which its fade at
-// the bottom is sized by. Set on the element rather than through state, so
-// scrolling doesn't re-render the stories.
+// Keeps `--scrolled` and `--more-below` on a slide that scrolls up to date,
+// which its fades at the top and the bottom are sized by. Set on the element
+// rather than through state, so scrolling doesn't re-render the stories.
 export default function useSlideFade(
   slideRef: RefObject<HTMLElement | null>,
   isMounted: boolean,
@@ -52,22 +57,24 @@ export default function useSlideFade(
     let shownBottom = 0
     let frame = 0
 
+    function setLength(property: string, pixels: number) {
+      if (pixels) {
+        slide?.style.setProperty(property, `${pixels}px`)
+      } else {
+        slide?.style.removeProperty(property)
+      }
+    }
+
     function update() {
       if (!slide) {
         return
       }
 
-      const moreBelow = getMoreBelow(
-        shownBottom,
-        slide.scrollTop,
-        slide.clientHeight,
+      setLength(
+        '--more-below',
+        getMoreBelow(shownBottom, slide.scrollTop, slide.clientHeight),
       )
-
-      if (moreBelow) {
-        slide.style.setProperty('--more-below', `${moreBelow}px`)
-      } else {
-        slide.style.removeProperty('--more-below')
-      }
+      setLength('--scrolled', getScrolled(slide.scrollTop))
     }
 
     function measure() {
@@ -139,6 +146,7 @@ export default function useSlideFade(
       mutationObserver.disconnect()
       slide.removeEventListener('scroll', update)
       slide.style.removeProperty('--more-below')
+      slide.style.removeProperty('--scrolled')
     }
   }, [slideRef, isMounted])
 }

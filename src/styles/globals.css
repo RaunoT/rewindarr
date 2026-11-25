@@ -340,13 +340,16 @@
   }
 
   /* A story taller than a phone's screen fades out at the bottom while
-     there's more below, the fade shrinking away as it reaches the end */
+     there's more below, the fade shrinking away as it reaches the end.
+     Scrolled down, it fades out at the top too, before reaching the
+     progress bar over it. */
   .story-slide {
     @variant max-sm {
       mask-image: linear-gradient(
-        to top,
-        transparent,
-        #000 min(4rem, var(--more-below, 0px))
+        transparent 1rem,
+        #000 calc(1rem + min(2rem, var(--scrolled, 0px))),
+        #000 calc(100% - min(4rem, var(--more-below, 0px))),
+        transparent
       );
     }
   }

@@ -9,6 +9,12 @@ export function getMoreBelow(
   return Math.max(0, Math.floor(shownBottom - scrollTop - clientHeight))
 }
 
+// How far a story is scrolled down, in whole pixels, leaving out the bounce
+// past its start
+export function getScrolled(scrollTop: number) {
+  return Math.max(0, Math.floor(scrollTop))
+}
+
 export type SlideLayout<T> = {
   getChildren: (element: T) => Iterable<T>
   // An element without a box of its own, such as one with `display:

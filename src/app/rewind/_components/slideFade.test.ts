@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { getMoreBelow, getShownBottom, SlideLayout } from './slideFade'
+import {
+  getMoreBelow,
+  getScrolled,
+  getShownBottom,
+  SlideLayout,
+} from './slideFade'
 
 type Box = {
   bottom: number
@@ -39,6 +44,20 @@ describe('getMoreBelow', () => {
 
   it('has nothing below while the scroll bounces past the end', () => {
     expect(getMoreBelow(800, 140, 680)).toBe(0)
+  })
+})
+
+describe('getScrolled', () => {
+  it('has nothing at the start of a story', () => {
+    expect(getScrolled(0)).toBe(0)
+  })
+
+  it('measures how far a story is scrolled', () => {
+    expect(getScrolled(42.6)).toBe(42)
+  })
+
+  it('has nothing while the scroll bounces past the start', () => {
+    expect(getScrolled(-12)).toBe(0)
   })
 })
 
