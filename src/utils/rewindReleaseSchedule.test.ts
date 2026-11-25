@@ -41,6 +41,15 @@ describe('getDueReleaseYear', () => {
     expect(getDueReleaseYear(SETTINGS, 2025, new Date(2027, 1, 1))).toBeNull()
   })
 
+  it('is due for a release date after January', () => {
+    const march = { rewind: { ...SETTINGS.rewind, releaseDate: '03-01' } }
+
+    // The 2026 edition comes out on 1 March 2027
+    expect(
+      getDueReleaseYear(march, 2025, new Date(2027, 2, 1, RELEASE_EMAIL_HOUR)),
+    ).toBe(2026)
+  })
+
   it('is only for yearly editions, which have a release day', () => {
     expect(
       getDueReleaseYear(

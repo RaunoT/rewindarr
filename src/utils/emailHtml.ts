@@ -60,6 +60,7 @@ export const COLORS = {
   border: '#262626',
   highlight: '#2a2a2a',
   buttonBorder: '#525252',
+  avatar: '#3f3f46',
   text: '#ffffff',
   body: '#d4d4d4',
   muted: '#a3a3a3',
@@ -469,8 +470,30 @@ export function itemList(items: ListItem[]): Html {
 
 export type RankRow = {
   name: string
+  // Their initials show without one
+  avatarUrl?: string | null
+  initials?: string
   value: string
   isReader: boolean
+}
+
+const AVATAR_SIZE = 28
+
+// Round, or the initials on a grey circle, like the app's avatars
+function avatar(row: RankRow): Html {
+  return row.avatarUrl
+    ? html`<img
+        src="${safeUrl(row.avatarUrl)}"
+        width="${AVATAR_SIZE}"
+        height="${AVATAR_SIZE}"
+        alt=""
+        style="display: block; border-radius: 50%;"
+      />`
+    : html`<div
+        style="width: ${AVATAR_SIZE}px; height: ${AVATAR_SIZE}px; border-radius: 50%; background: ${COLORS.avatar}; color: ${COLORS.body}; font-size: 11px; font-weight: 600; line-height: ${AVATAR_SIZE}px; text-align: center;"
+      >
+        ${row.initials ?? ''}
+      </div>`
 }
 
 // Who watched the most, with the reader's own row lit up
@@ -494,8 +517,15 @@ export function rankList(rows: RankRow[]): Html {
             ${i + 1}
           </td>
           <td
+            width="${AVATAR_SIZE}"
             bgcolor="${row.isReader ? COLORS.highlight : COLORS.panel}"
-            style="padding: 10px 8px; color: ${COLORS.text}; font-size: 15px; font-weight: ${row.isReader ? 700 : 500}; background: ${row.isReader ? COLORS.highlight : COLORS.panel};"
+            style="width: ${AVATAR_SIZE}px; padding: 6px 0 6px 4px; background: ${row.isReader ? COLORS.highlight : COLORS.panel};"
+          >
+            ${avatar(row)}
+          </td>
+          <td
+            bgcolor="${row.isReader ? COLORS.highlight : COLORS.panel}"
+            style="padding: 10px 8px 10px 12px; color: ${COLORS.text}; font-size: 15px; font-weight: ${row.isReader ? 700 : 500}; background: ${row.isReader ? COLORS.highlight : COLORS.panel};"
           >
             ${row.name}
           </td>

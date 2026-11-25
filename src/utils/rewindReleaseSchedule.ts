@@ -31,9 +31,11 @@ export function getLatestReleaseYear(
   return now >= getReleaseEmailTime(settings, year) ? year : year - 1
 }
 
-// The edition whose invites are due and haven't gone out, or null. Only while
-// it's new, until the end of the January after its year, so a server that was
-// off on the day doesn't send them months late.
+// How long after the release day invites still go out, for a server that was
+// off on the day, so they aren't sent months late
+const SEND_WINDOW_MONTHS = 2
+
+// The edition whose invites are due and haven't gone out, or null
 export function getDueReleaseYear(
   settings: ReleaseSettings,
   handledYear: number | null,
@@ -44,7 +46,14 @@ export function getDueReleaseYear(
   }
 
   const year = getLatestReleaseYear(settings, now)
-  const isNew = now < new Date(year + 1, 1, 1)
+  const sendTime = getReleaseEmailTime(settings, year)
+  const isNew =
+    now <
+    new Date(
+      sendTime.getFullYear(),
+      sendTime.getMonth() + SEND_WINDOW_MONTHS,
+      sendTime.getDate(),
+    )
 
   return isNew && (handledYear === null || year > handledYear) ? year : null
 }

@@ -11,7 +11,7 @@ import { EmailBlock, ListItem, renderEmail } from './emailHtml'
 import { EmailIntl } from './emailIntl'
 import { getRewindShareUrl, getUnsubscribeUrl, toAppUrl } from './emailLinks'
 import { EmailRecipient } from './emailRecipients'
-import { secondsToTime } from './formatting'
+import { getInitials, secondsToTime } from './formatting'
 import { OutgoingEmail } from './mailer'
 import { getRewindPeriod } from './rewindPeriod'
 import { getStatsSource } from './statsSource'
@@ -52,10 +52,14 @@ function toListItem(item: ItemRow, intl: EmailIntl): ListItem {
 
   return {
     title: item.title,
+    // The count only says something from 2 plays up. Under the play
+    // threshold, a partial watch adds time without a play.
     meta: [
-      t('Email.plays', { count: item.total_plays }),
+      item.total_plays > 1 && t('Email.plays', { count: item.total_plays }),
       secondsToTime(item.total_duration, t),
-    ].join(' · '),
+    ]
+      .filter(Boolean)
+      .join(' · '),
     imageUrl: item.tmdb_poster || null,
   }
 }
@@ -184,7 +188,36 @@ export type ServerRecap = {
   stats: MediaStats
   topItems: TopMediaItems
   // By watch time, with their IDs as strings
-  users: { id: string; name: string; duration: number }[]
+  users: {
+    id: string
+    name: string
+    duration: number
+    // Only a picture mail apps can load, for the ones ranked
+    avatarUrl: string | null
+  }[]
+}
+
+const AVATAR_TIMEOUT_MS = 5000
+
+// Plex's pictures are public, while Jellyfin's and Tracearr's are on servers
+// mail apps can't reach. Some Plex ones are gone, which would show broken.
+async function getPublicAvatar(url: string | undefined) {
+  if (!url?.startsWith('https://plex.tv/')) {
+    return null
+  }
+
+  try {
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(AVATAR_TIMEOUT_MS),
+    })
+
+    // Only whether it's there, so the picture itself isn't read
+    await response.body?.cancel()
+
+    return response.ok ? url : null
+  } catch {
+    return null
+  }
 }
 
 // An empty user ID counts every user's plays
@@ -203,11 +236,15 @@ export async function getServerRecap(
   return {
     stats,
     topItems,
-    users: (users ?? []).map((user) => ({
-      id: String(user.user_id),
-      name: user.friendly_name,
-      duration: user.total_duration,
-    })),
+    users: await Promise.all(
+      (users ?? []).map(async (user, i) => ({
+        id: String(user.user_id),
+        name: user.friendly_name,
+        duration: user.total_duration,
+        avatarUrl:
+          i < RANKS_LENGTH ? await getPublicAvatar(user.user_thumb) : null,
+      })),
+    ),
   }
 }
 
@@ -376,14 +413,21 @@ export async function buildNewsletter(
       { type: 'heading', text: t('Email.Newsletter.topUsers') },
       {
         type: 'ranks',
-        rows: server.users.slice(0, RANKS_LENGTH).map((user, i) => ({
-          name:
+        rows: server.users.slice(0, RANKS_LENGTH).map((user, i) => {
+          const isHidden =
             settings.general.isAnonymized && user.id !== recipient.id
+
+          return {
+            name: isHidden
               ? t('Email.anonymous', { number: i + 1 })
               : user.name,
-          value: formatDuration(user.duration, intl),
-          isReader: user.id === recipient.id,
-        })),
+            // Nothing that would tell a hidden user apart
+            avatarUrl: isHidden ? null : user.avatarUrl,
+            initials: isHidden ? '' : getInitials(user.name),
+            value: formatDuration(user.duration, intl),
+            isReader: user.id === recipient.id,
+          }
+        }),
       },
       ...(readerRank >= RANKS_LENGTH
         ? [
