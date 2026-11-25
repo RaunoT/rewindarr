@@ -100,7 +100,7 @@ export default function UserSearchList<T extends ListUser>({
         <div className='border-b border-white/10 p-2'>
           <input
             type='search'
-            className='input text-sm'
+            className='input text-base sm:text-sm'
             placeholder={searchLabel}
             aria-label={searchLabel}
             value={query}

@@ -30,8 +30,6 @@ export type BuiltEmail =
   | { status: 'skipped'; reason: SkipReason }
 
 const LIST_LENGTH = 3
-const SERVER_LIST_LENGTH = 5
-const RANKS_LENGTH = 5
 // From the project's site, not the app: mail apps load images through their
 // own servers, which can't reach an app that's only open at home or on a VPN
 const LOGO_URL = 'https://rewindarr.eu/assets/apple-icon.png'
@@ -64,12 +62,11 @@ function getAppPicture(pictures: Pictures, image: string | null | undefined) {
   return pictures.appUrl ? toAppImageUrl(pictures.appUrl, image) : null
 }
 
-// In the app's order: time, plays and, on the server's lists, viewers
+// In the app's order: time, then plays
 function toListItem(
   item: ItemRow,
   intl: EmailIntl,
   imageUrl: string | null,
-  isServer: boolean,
 ): ListItem {
   const { t } = intl
 
@@ -80,10 +77,6 @@ function toListItem(
       // The count only says something from 2 plays up. Under the play
       // threshold, a partial watch adds time without a play.
       item.total_plays > 1 && t('Email.plays', { count: item.total_plays }),
-      // A reader's own lists are only theirs
-      isServer &&
-        item.users_watched &&
-        t('MediaItem.statUsers', { count: item.users_watched }),
     ]
       .filter(Boolean)
       .join(' · '),
@@ -95,14 +88,12 @@ function toTitleItems(
   items: ItemRow[],
   intl: EmailIntl,
   pictures: Pictures,
-  isServer: boolean,
 ): ListItem[] {
   return items.map((item) =>
     toListItem(
       item,
       intl,
       getAppPicture(pictures, item.thumb) ?? (item.fallback_poster || null),
-      isServer,
     ),
   )
 }
@@ -113,7 +104,6 @@ async function toArtistItems(
   items: ItemRow[],
   intl: EmailIntl,
   pictures: Pictures,
-  isServer: boolean,
 ): Promise<ListItem[]> {
   return Promise.all(
     items.map(async (item) =>
@@ -122,7 +112,6 @@ async function toArtistItems(
         intl,
         getAppPicture(pictures, item.thumb) ??
           (await getArtistPicture(item.title)),
-        isServer,
       ),
     ),
   )
@@ -135,23 +124,22 @@ async function getItemColumns(
   headings: { shows: string; movies: string; audio: string },
   intl: EmailIntl,
   pictures: Pictures,
-  isServer: boolean,
 ): Promise<EmailBlock[]> {
   const items: { heading: string; icon: EmailIcon; items: ListItem[] }[] = [
     {
       heading: headings.shows,
       icon: 'show',
-      items: toTitleItems(lists.shows, intl, pictures, isServer),
+      items: toTitleItems(lists.shows, intl, pictures),
     },
     {
       heading: headings.movies,
       icon: 'movie',
-      items: toTitleItems(lists.movies, intl, pictures, isServer),
+      items: toTitleItems(lists.movies, intl, pictures),
     },
     {
       heading: headings.audio,
       icon: 'artist',
-      items: await toArtistItems(lists.audio, intl, pictures, isServer),
+      items: await toArtistItems(lists.audio, intl, pictures),
     },
   ]
   const blocks = items
@@ -326,7 +314,7 @@ export async function getServerRecap(
         name: user.friendly_name,
         duration: user.total_duration,
         avatarUrl:
-          i < RANKS_LENGTH ? await getPublicAvatar(user.user_thumb) : null,
+          i < LIST_LENGTH ? await getPublicAvatar(user.user_thumb) : null,
         thumb: user.user_thumb,
       })),
     ),
@@ -430,7 +418,6 @@ export async function buildNewsletter(
               },
               intl,
               pictures,
-              false,
             )),
           ]
         : [
@@ -470,9 +457,9 @@ export async function buildNewsletter(
       },
       ...(await getItemColumns(
         {
-          shows: server.topItems.shows.slice(0, SERVER_LIST_LENGTH),
-          movies: server.topItems.movies.slice(0, SERVER_LIST_LENGTH),
-          audio: server.topItems.audio.slice(0, SERVER_LIST_LENGTH),
+          shows: server.topItems.shows.slice(0, LIST_LENGTH),
+          movies: server.topItems.movies.slice(0, LIST_LENGTH),
+          audio: server.topItems.audio.slice(0, LIST_LENGTH),
         },
         {
           shows: t('Email.Newsletter.topShows'),
@@ -481,7 +468,6 @@ export async function buildNewsletter(
         },
         intl,
         pictures,
-        true,
       )),
     ])
   }
@@ -495,7 +481,7 @@ export async function buildNewsletter(
       { type: 'heading', text: t('Email.Newsletter.topUsers'), icon: 'users' },
       {
         type: 'ranks',
-        rows: server.users.slice(0, RANKS_LENGTH).map((user, i) => {
+        rows: server.users.slice(0, LIST_LENGTH).map((user, i) => {
           const isHidden =
             settings.general.isAnonymized && user.id !== recipient.id
 
@@ -513,7 +499,7 @@ export async function buildNewsletter(
           }
         }),
       },
-      ...(readerRank >= RANKS_LENGTH
+      ...(readerRank >= LIST_LENGTH
         ? [
             {
               type: 'paragraph',
@@ -528,15 +514,6 @@ export async function buildNewsletter(
     ])
   }
 
-  const lastPanel = panels[panels.length - 1]
-
-  lastPanel.push({
-    type: 'button',
-    // The home page's overview, as each library has a dashboard of its own
-    href: appUrl,
-    label: t('Email.Newsletter.button'),
-  })
-
   const unsubscribeUrl = getUnsubscribeUrl(appUrl, recipient.id)
   const subject = t(`Email.Newsletter.subject.${frequency}`, {
     server: serverName,
@@ -549,6 +526,11 @@ export async function buildNewsletter(
     serverName,
     logoUrl,
     panels,
+    footerButton: {
+      // The home page's overview, as each library has a dashboard of its own
+      href: appUrl,
+      label: t('Email.Newsletter.button'),
+    },
     footer: t(`Email.Newsletter.footer.${frequency}`, { server: serverName }),
     footerLink: unsubscribeUrl
       ? { href: unsubscribeUrl, label: t('Email.Newsletter.unsubscribe') }

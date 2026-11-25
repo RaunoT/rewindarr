@@ -78,6 +78,9 @@ const GAP = {
   section: 28,
   afterHeading: 16,
   beforeButton: 24,
+  // From the last panel, which has a gap under it already
+  beforeFooterButton: 12,
+  afterFooterButton: 24,
   default: 16,
 }
 const LIST_INSET = 8
@@ -343,8 +346,9 @@ export function paragraph(content: string | Html, isMuted = false): Html {
 // A round button like the app's glass ones. Not its white one: mail apps that
 // darken light colours for dark mode, like Gmail's, turn a white button grey
 // with light text, while dark colours and white text stay as they are.
-export function button(href: string, label: string): Html {
+export function button(href: string, label: string, isCentered = false): Html {
   return html`<table
+    ${isCentered && new Html('align="center"')}
     role="presentation"
     cellpadding="0"
     cellspacing="0"
@@ -646,6 +650,8 @@ export type EmailDocument = {
   logoUrl: string | null
   // Each is a panel of its own
   panels: EmailBlock[][]
+  // Under the panels, centred over the footer
+  footerButton?: { href: string; label: string }
   footer?: string
   footerLink?: { href: string; label: string }
 }
@@ -765,7 +771,7 @@ export function renderEmail(document: EmailDocument): {
   html: string
   text: string
 } {
-  const footer =
+  const footerText =
     document.footer || document.footerLink
       ? html`${document.footer}${
           document.footerLink &&
@@ -776,6 +782,13 @@ export function renderEmail(document: EmailDocument): {
           )}`
         }`
       : undefined
+  const footer = document.footerButton
+    ? html`${spacer(GAP.beforeFooterButton)}${button(
+        document.footerButton.href,
+        document.footerButton.label,
+        true,
+      )}${footerText && html`${spacer(GAP.afterFooterButton)}${footerText}`}`
+    : footerText
 
   return {
     html: renderLayout({
@@ -792,6 +805,8 @@ export function renderEmail(document: EmailDocument): {
     text: [
       document.serverName,
       ...document.panels.map((blocks) => blocks.map(blockToText).join('\n\n')),
+      document.footerButton &&
+        `${document.footerButton.label}: ${document.footerButton.href}`,
       [
         document.footer,
         document.footerLink &&

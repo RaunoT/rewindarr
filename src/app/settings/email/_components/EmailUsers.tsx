@@ -119,7 +119,7 @@ function UserList({
               <input
                 key={`address-${version}`}
                 type='email'
-                className='input order-last text-sm @lg:order-none @lg:w-56'
+                className='input order-last text-base sm:text-sm @lg:order-none @lg:w-56'
                 name={`${ADDRESS_FIELD_PREFIX}${recipient.id}`}
                 defaultValue={recipient.customAddress}
                 placeholder={recipient.foundAddress || t('noAddress')}
