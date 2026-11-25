@@ -9,6 +9,8 @@ import {
   checkRequiredSettings,
   getAverage,
   getAverageShares,
+  getDashboardFilterAccess,
+  getDashboardQuery,
   getDifference,
   getFirstHeaderValue,
   getHomeTiles,
@@ -720,5 +722,75 @@ describe('getLibrarySlug', () => {
     expect(getLibrarySlug({ section_name: name } as Library)).toBe(
       lodashKebabCase(name),
     )
+  })
+})
+
+describe('getDashboardQuery', () => {
+  const signedIn = { personalFilter: true, isOwnOnly: false }
+  const signedOut = { personalFilter: false, isOwnOnly: false }
+  const ownOnly = { personalFilter: false, isOwnOnly: true }
+
+  it('carries the saved filters', () => {
+    expect(
+      getDashboardQuery(
+        { personal: 'true', period: '7days', sortBy: 'duration' },
+        signedIn,
+      ),
+    ).toBe('?personal=true&period=7days&sortBy=duration')
+    expect(getDashboardQuery({}, signedIn)).toBe('')
+  })
+
+  it('only carries the period to the users dashboard', () => {
+    expect(
+      getDashboardQuery(
+        { personal: 'true', period: 'allTime', sortBy: 'duration' },
+        signedIn,
+        true,
+      ),
+    ).toBe('?period=allTime')
+    expect(getDashboardQuery({ personal: 'true' }, signedIn, true)).toBe('')
+  })
+
+  it('leaves out "Just me" for a viewer without it', () => {
+    expect(
+      getDashboardQuery({ personal: 'true', sortBy: 'duration' }, signedOut),
+    ).toBe('?sortBy=duration')
+    expect(getDashboardQuery({ personal: 'true' }, ownOnly)).toBe('')
+  })
+
+  it('leaves out the users sort when only one user is shown', () => {
+    expect(getDashboardQuery({ sortBy: 'users' }, ownOnly)).toBe('')
+    expect(
+      getDashboardQuery({ personal: 'true', sortBy: 'users' }, signedIn),
+    ).toBe('?personal=true')
+    expect(
+      getDashboardQuery({ personal: 'true', sortBy: 'users' }, signedOut),
+    ).toBe('?sortBy=users')
+  })
+})
+
+describe('getDashboardFilterAccess', () => {
+  const session = { user: { id: '1', isAdmin: false } } as Session
+
+  it('offers "Just me" to a signed-in viewer', () => {
+    expect(getDashboardFilterAccess(DEFAULT_SETTINGS, session)).toEqual({
+      personalFilter: true,
+      isOwnOnly: false,
+    })
+    expect(getDashboardFilterAccess(DEFAULT_SETTINGS, null)).toEqual({
+      personalFilter: false,
+      isOwnOnly: false,
+    })
+  })
+
+  it('has no choice when the viewer only sees their own', () => {
+    const settings = cloneDeep(DEFAULT_SETTINGS)
+
+    settings.dashboard.isOwnOnly = true
+
+    expect(getDashboardFilterAccess(settings, session)).toEqual({
+      personalFilter: false,
+      isOwnOnly: true,
+    })
   })
 })

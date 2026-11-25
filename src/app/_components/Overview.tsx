@@ -17,6 +17,8 @@ import { getItems } from '@/utils/getDashboard'
 import getPeriod, { parseCustomPeriod } from '@/utils/getPeriod'
 import getRewindEditions from '@/utils/getRewindEditions'
 import {
+  DashboardFilterAccess,
+  getDashboardFilterAccess,
   getHomeTiles,
   getLibrarySlug,
   getOwnOnlyUserId,
@@ -38,6 +40,7 @@ import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import ActivityTile from './ActivityTile'
+import DashboardLink from './DashboardLink'
 import EarlierRewinds from './EarlierRewinds'
 import HeaderControls from './HeaderControls'
 import HistoryTile, { HistoryTileSkeleton } from './HistoryTile'
@@ -317,7 +320,9 @@ async function LibraryTile({
       <TileHeading
         name={library.section_name}
         type={library.section_type}
-        href={`/dashboard/${getLibrarySlug(library)}${period ? `?period=${period}` : ''}`}
+        href={`/dashboard/${getLibrarySlug(library)}`}
+        period={period}
+        filterAccess={getDashboardFilterAccess(settings, session)}
       />
       {top ? (
         <div className='flex flex-col gap-3'>
@@ -416,9 +421,17 @@ type TileHeadingProps = {
   type?: string
   // The library's dashboard, once the tile has loaded
   href?: string
+  period?: DashboardSearchParams['period']
+  filterAccess?: DashboardFilterAccess
 }
 
-function TileHeading({ name, type, href }: TileHeadingProps) {
+function TileHeading({
+  name,
+  type,
+  href,
+  period,
+  filterAccess,
+}: TileHeadingProps) {
   const heading = name ? (
     <>
       {type && (
@@ -436,10 +449,15 @@ function TileHeading({ name, type, href }: TileHeadingProps) {
   return (
     <div className='flex items-center justify-between gap-3'>
       <h2 className='min-w-0 font-semibold'>
-        {href ? (
-          <Link href={href} className='tile-link flex items-center gap-2'>
+        {href && filterAccess ? (
+          <DashboardLink
+            href={href}
+            period={period}
+            filterAccess={filterAccess}
+            className='tile-link flex items-center gap-2'
+          >
             {heading}
-          </Link>
+          </DashboardLink>
         ) : (
           <span className='flex items-center gap-2'>{heading}</span>
         )}

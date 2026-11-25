@@ -3,11 +3,15 @@
 import AppIcon from '@/components/AppIcon'
 import { MediaIcon } from '@/components/icons'
 import SkeletonLine from '@/components/SkeletonLine'
+import { DashboardSearchParams } from '@/types/dashboard'
 import { PublicSettings } from '@/types/settings'
 import { Library } from '@/types/statsSource'
 import { APP_NAME, SETTINGS_HREF, STATS_SOURCE_NAMES } from '@/utils/constants'
 import {
   canViewFeature,
+  DashboardFilterAccess,
+  getDashboardFilterAccess,
+  getDashboardQuery,
   getLibrarySlug,
   isUsersPageVisible,
   Viewer,
@@ -40,7 +44,7 @@ export default function Sidebar({ libraries, settings }: Props) {
   const { data: session, status } = useSession()
   const { version } = useContext(AppInfoContext)
   const {
-    dashboard: { isPersonal, period, sortBy },
+    dashboard: { isPersonal: personal, period, sortBy },
   } = useContext(GlobalContext)
   const t = useTranslations()
   const isLoggedIn = status === 'authenticated'
@@ -48,14 +52,8 @@ export default function Sidebar({ libraries, settings }: Props) {
   const viewer: Viewer = { isLoggedIn, isAdmin }
   const isSettings = pathname.startsWith('/settings')
   const isUsersPageActive = isUsersPageVisible(settings, session)
-  const dashboardParams = new URLSearchParams({
-    ...(isPersonal && { personal: 'true' }),
-    ...(period && { period }),
-    ...(sortBy && { sortBy }),
-  })
-  const dashboardQuery = dashboardParams.size
-    ? `?${dashboardParams.toString()}`
-    : ''
+  const dashboardFilters = { personal, period, sortBy }
+  const dashboardFilterAccess = getDashboardFilterAccess(settings, session)
   // The history shares the dashboard's period
   const historyQuery = period ? `?period=${period}` : ''
 
@@ -123,7 +121,8 @@ export default function Sidebar({ libraries, settings }: Props) {
                 libraries={libraries}
                 settings={settings}
                 pathname={pathname}
-                query={dashboardQuery}
+                filters={dashboardFilters}
+                filterAccess={dashboardFilterAccess}
                 isUsersPageActive={isUsersPageActive}
               />
             </Suspense>
@@ -171,7 +170,8 @@ type DashboardLinksProps = {
   libraries: Promise<Library[] | null>
   settings: PublicSettings
   pathname: string
-  query: string
+  filters: DashboardSearchParams
+  filterAccess: DashboardFilterAccess
   isUsersPageActive: boolean
 }
 
@@ -179,7 +179,8 @@ function DashboardLinks({
   libraries: librariesPromise,
   settings,
   pathname,
-  query,
+  filters,
+  filterAccess,
   isUsersPageActive,
 }: DashboardLinksProps) {
   const libraries = use(librariesPromise)
@@ -206,7 +207,7 @@ function DashboardLinks({
             return (
               <SidebarLink
                 key={library.section_id}
-                href={`${href}${query}`}
+                href={`${href}${getDashboardQuery(filters, filterAccess)}`}
                 icon={<MediaIcon type={library.section_type} />}
                 isActive={pathname === href}
               >
@@ -216,7 +217,7 @@ function DashboardLinks({
           })}
           {isUsersPageActive && (
             <SidebarLink
-              href={`/dashboard/users${query}`}
+              href={`/dashboard/users${getDashboardQuery(filters, filterAccess, true)}`}
               icon={<UsersIcon />}
               isActive={pathname === '/dashboard/users'}
             >
