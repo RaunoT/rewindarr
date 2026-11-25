@@ -309,7 +309,7 @@ async function LibraryTile({
         })
       ).items
   const [top, ...rest] = items.slice(0, TILE_ITEM_COUNT)
-  const topPosters = top ? [getPoster(top), top.tmdb_poster] : []
+  const topPosters = top ? [getPoster(top), top.fallback_poster] : []
   const topLabel =
     library.section_type === 'artist'
       ? t('Home.mostListened')

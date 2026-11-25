@@ -109,6 +109,7 @@ describe('isAllowedImageUrl', () => {
     'https://plex.tv/users/abc/avatar?c=1',
     'https://assets.plex.tv/avatars/0123456789abcdef0123456789abcdef01234567.?1700000000',
     'https://image.tmdb.org/t/p/w300/poster.jpg',
+    'https://cdn-images.dzcdn.net/images/artist/abc/500x500-000000-80-0-0.jpg',
   ])('allows %s', (url) => {
     expect(isAllowedImageUrl(url, tautulliSettings())).toBe(true)
   })
@@ -133,6 +134,8 @@ describe('isAllowedImageUrl', () => {
     'https://plex.tv/users/..%2fphoto/x',
     'https://plex.tv/users/%ZZ/avatar',
     'https://image.tmdb.org/other/path.jpg',
+    'https://cdn-images.dzcdn.net/images/cover/abc/500x500.jpg',
+    'https://cdn-images.dzcdn.net/images/artist/..%2fcover/x.jpg',
     'https://attacker.example/x.svg',
     'http://127.0.0.1:32400/library/metadata/1/thumb',
     'http://tautulli:8181/api/v2?cmd=get_settings',

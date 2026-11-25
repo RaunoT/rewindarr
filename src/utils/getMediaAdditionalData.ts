@@ -208,7 +208,7 @@ export default async function getMediaAdditionalData(
         imdb_id: imdbId,
         tvdb_id: tvdbId,
         thumb: poster,
-        tmdb_poster: tmdbPoster,
+        fallback_poster: tmdbPoster,
         tmdb_backdrop: tmdbBackdrop,
       }
     },
@@ -227,7 +227,7 @@ export default async function getMediaAdditionalData(
     mediaItem.imdb_id = additionalData[i].imdb_id
     mediaItem.tvdb_id = additionalData[i].tvdb_id
     mediaItem.thumb = additionalData[i].thumb
-    mediaItem.tmdb_poster = additionalData[i].tmdb_poster
+    mediaItem.fallback_poster = additionalData[i].fallback_poster
     mediaItem.tmdb_backdrop = additionalData[i].tmdb_backdrop
 
     if (type === 'tv') {

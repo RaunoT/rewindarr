@@ -19,6 +19,7 @@ import {
   TopUsersQuery,
 } from '@/types/statsSource'
 import { countBy, groupBy, mapValues, orderBy, sumBy, uniqBy } from 'lodash'
+import { addArtistPictures } from './artistPictures'
 import getMediaAdditionalData, {
   GetSourceData,
   TmdbMediaType,
@@ -395,8 +396,12 @@ export function createPlayStats(provider: PlaysProvider): PlayStats {
     items: ItemRow[],
     mediaType: PlayMediaType,
   ): Promise<ItemRow[]> {
-    if (mediaType === 'track' || !items.length) {
+    if (!items.length) {
       return items
+    }
+
+    if (mediaType === 'track') {
+      return addArtistPictures(items)
     }
 
     return getMediaAdditionalData(

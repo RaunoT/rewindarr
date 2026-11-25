@@ -44,8 +44,9 @@ export type ItemRow = {
   // A number from Plex, a string from Jellyfin
   rating_key: number | string
   thumb: string
-  // TMDB's, for when the source can't serve its own
-  tmdb_poster?: string | null
+  // For when the source can't serve its own: TMDB's poster of a movie or
+  // show, Deezer's picture of an artist
+  fallback_poster?: string | null
   // TMDB's, for art behind the title
   tmdb_backdrop?: string | null
   is_deleted: boolean

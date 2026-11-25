@@ -6,6 +6,7 @@ import {
   PlayPeriod,
   TopMediaItems,
 } from '@/types/statsSource'
+import { getArtistPicture } from './artistPictures'
 import { APP_NAME } from './constants'
 import { EmailBlock, EmailIcon, ListItem, renderEmail } from './emailHtml'
 import { EmailIntl } from './emailIntl'
@@ -18,7 +19,6 @@ import {
 import { EmailRecipient } from './emailRecipients'
 import { getInitials, secondsToTime } from './formatting'
 import { OutgoingEmail } from './mailer'
-import { searchArtistPicture } from './musicPreviewSources'
 import { getRewindPeriod } from './rewindPeriod'
 import { getStatsSource } from './statsSource'
 
@@ -91,29 +91,6 @@ function toListItem(
   }
 }
 
-// The same artists come up in many readers' emails, so each is looked up once
-const globalForEmails = globalThis as typeof globalThis & {
-  rewindarrArtistPictures?: Map<string, string | null>
-}
-const artistPictures = (globalForEmails.rewindarrArtistPictures ??= new Map())
-
-async function getArtistPicture(name: string): Promise<string | null> {
-  if (artistPictures.has(name)) {
-    return artistPictures.get(name) ?? null
-  }
-
-  try {
-    const picture = await searchArtistPicture(name)
-
-    artistPictures.set(name, picture)
-
-    return picture
-  } catch {
-    // Not kept, so it's tried again with the next email
-    return null
-  }
-}
-
 function toTitleItems(
   items: ItemRow[],
   intl: EmailIntl,
@@ -124,12 +101,14 @@ function toTitleItems(
     toListItem(
       item,
       intl,
-      getAppPicture(pictures, item.thumb) ?? (item.tmdb_poster || null),
+      getAppPicture(pictures, item.thumb) ?? (item.fallback_poster || null),
       isServer,
     ),
   )
 }
 
+// The app's link to Deezer's picture can't be loaded from an email, so it's
+// looked up here
 async function toArtistItems(
   items: ItemRow[],
   intl: EmailIntl,
