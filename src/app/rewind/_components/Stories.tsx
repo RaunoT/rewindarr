@@ -175,6 +175,7 @@ export default function Stories({
   const soundButtonRef = useRef<HTMLButtonElement>(null)
   const shouldRestoreFocusRef = useRef(false)
   const shouldSeekToEndRef = useRef(false)
+  const stepsRef = useRef<number[]>([])
   const trackedIndexRef = useRef<number | null>(null)
   // Views wait here until every story is in, as each carries the count
   const untrackedViewsRef = useRef<StoryView[]>([])
@@ -255,6 +256,8 @@ export default function Stories({
   const canGoForward =
     isCurrentStoryIn &&
     (currentIndex < stories.length - 1 || nextStep !== undefined)
+  const isAtEnd = isComplete && !canGoForward
+  const isAutoplayActive = isAutoplayOn && !isAtEnd
   const goTo = useCallback(
     (index: number, isAtEnd = false) => {
       if (index < 0 || index >= stories.length || index === currentIndex) {
@@ -295,16 +298,22 @@ export default function Stories({
     }
   }, [goTo, currentIndex, shownSteps])
   const registerStep = useCallback((statementStep: number) => {
-    setSteps((prev) => [...prev, statementStep])
+    stepsRef.current = [...stepsRef.current, statementStep]
+    setSteps(stepsRef.current)
 
-    return () =>
-      setSteps((prev) => {
-        const index = prev.indexOf(statementStep)
+    return () => {
+      const index = stepsRef.current.indexOf(statementStep)
 
-        return index === -1
-          ? prev
-          : [...prev.slice(0, index), ...prev.slice(index + 1)]
-      })
+      if (index === -1) {
+        return
+      }
+
+      stepsRef.current = [
+        ...stepsRef.current.slice(0, index),
+        ...stepsRef.current.slice(index + 1),
+      ]
+      setSteps(stepsRef.current)
+    }
   }, [])
   const restart = useCallback(() => goTo(0), [goTo])
   // Moves on by itself, each statement staying up for as long as it takes to
@@ -315,7 +324,7 @@ export default function Stories({
     step,
     isStoryEnd: nextStep === undefined,
     isRunning:
-      isAutoplayOn &&
+      isAutoplayActive &&
       isCurrentStoryIn &&
       isIntroShown === false &&
       !isHidden &&
@@ -329,12 +338,30 @@ export default function Stories({
     onEnd: goToNext,
   })
   const toggleAutoplay = useCallback(() => {
+    if (isAtEnd) {
+      if (!canGoBack) {
+        return
+      }
+
+      setIsAutoplayOn(true)
+      setHeldStatement(null)
+      writeStorage(AUTOPLAY_KEY, 'on')
+
+      if (currentIndex === 0) {
+        setStep(0)
+      } else {
+        goTo(0)
+      }
+
+      return
+    }
+
     const isOn = !isAutoplayOn
 
     setIsAutoplayOn(isOn)
     setHeldStatement(null)
     writeStorage(AUTOPLAY_KEY, isOn ? 'on' : 'off')
-  }, [isAutoplayOn])
+  }, [canGoBack, currentIndex, goTo, isAtEnd, isAutoplayOn])
   const dismissIntro = useCallback(() => {
     // Still dismissed when storage is blocked, it just shows again next time
     writeStorage(INTRO_SEEN_KEY, 'true')
@@ -427,13 +454,13 @@ export default function Stories({
   )
 
   useEffect(() => {
-    // The new story's statements have registered by now
-    if (shouldSeekToEndRef.current) {
+    // The new story's statements have registered by now (including 0-step ones)
+    if (shouldSeekToEndRef.current && isCurrentStoryIn) {
       shouldSeekToEndRef.current = false
-      setStep(Math.max(0, ...steps))
+      setStep(Math.max(0, ...stepsRef.current))
       setIsSeekingToEnd(false)
     }
-  }, [steps])
+  }, [currentIndex, isCurrentStoryIn, steps])
 
   useEffect(() => {
     // oxlint-disable-next-line react-hooks/set-state-in-effect
@@ -509,6 +536,10 @@ export default function Stories({
   }, [isIntroShown])
 
   useEffect(() => {
+    if (isIntroShown !== false) {
+      return
+    }
+
     function handleKeyDown(e: KeyboardEvent) {
       if (
         e.defaultPrevented ||
@@ -539,7 +570,7 @@ export default function Stories({
     window.addEventListener('keydown', handleKeyDown)
 
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [goToNext, goToPrev, toggleAutoplay])
+  }, [goToNext, goToPrev, isIntroShown, toggleAutoplay])
 
   useEffect(() => {
     // The refs keep Strict Mode's second run, or a re-render, from counting
@@ -652,7 +683,7 @@ export default function Stories({
                 <span className='block h-1 overflow-hidden rounded-full bg-white/15 transition-colors group-hover:bg-white/30'>
                   {index < currentIndex ? (
                     <span className='link-dark block h-full w-full bg-white' />
-                  ) : index !== currentIndex ? null : isAutoplayOn ? (
+                  ) : index !== currentIndex ? null : isAutoplayActive ? (
                     <motion.span
                       className='link-dark block h-full w-full bg-white'
                       style={{ scaleX: autoplayProgress, originX: 0 }}
@@ -711,10 +742,11 @@ export default function Stories({
             <button
               className='icon-button'
               onClick={toggleAutoplay}
-              aria-pressed={isAutoplayOn}
+              disabled={isAtEnd && !canGoBack}
+              aria-pressed={isAutoplayActive}
               aria-label={t('autoplay')}
             >
-              {isAutoplayOn ? (
+              {isAutoplayActive ? (
                 <PauseIcon className='size-5' />
               ) : (
                 <PlayIcon className='size-5' />

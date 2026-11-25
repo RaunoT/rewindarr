@@ -30,7 +30,12 @@ export default function ActivityTile({ settings }: Props) {
   const { data: session } = useSession()
   const { data, isLoading, isError } = useQuery({
     // A change to who sees which streams doesn't show the old ones meanwhile
-    queryKey: ['activity', settings.activity],
+    queryKey: [
+      'activity',
+      settings.activity,
+      settings.general.isAnonymized,
+      session?.user.id ?? null,
+    ],
     queryFn: getActivity,
     refetchInterval: 5000,
     refetchIntervalInBackground: false,

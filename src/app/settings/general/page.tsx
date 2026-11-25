@@ -37,6 +37,7 @@ export default async function GeneralSettingsPage() {
       // A retry can bring in the libraries, which the form only reads once
       key={libraries?.map((library) => library.section_id).join()}
       settings={toPublicSettings(settings)}
+      excludedUsers={settings.general.excludedUsers}
       libraries={libraries}
       // Emails and other account details stay on the server.
       users={users.map(({ user_id, friendly_name, thumb, user_thumb }) => ({

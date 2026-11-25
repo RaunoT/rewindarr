@@ -12,6 +12,14 @@ type Props = {
   className?: string
 }
 
+export function toProgressPercent(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 0
+  }
+
+  return Math.round(Math.min(Math.max(value, 0), 1) * 100)
+}
+
 // Drawn like the playback progress on the activity page
 export default function ProgressBar({
   value,
@@ -19,7 +27,7 @@ export default function ProgressBar({
   isMuted,
   className,
 }: Props) {
-  const percent = Math.round(Math.min(Math.max(value, 0), 1) * 100)
+  const percent = toProgressPercent(value)
 
   return (
     <div

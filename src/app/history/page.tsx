@@ -263,11 +263,13 @@ function HistoryLoader({
   totalKeys,
   general,
   isSeerrActive,
+  isUserShown,
 }: {
   rows: number
   totalKeys: TotalKey[]
   general: ComponentProps<typeof HistorySkeleton>['general']
   isSeerrActive: boolean
+  isUserShown: boolean
 }) {
   const t = useTranslations()
 
@@ -284,6 +286,7 @@ function HistoryLoader({
           rows={rows}
           general={general}
           isSeerrActive={isSeerrActive}
+          isUserShown={isUserShown}
         />
       </CardWrapper>
     </>
@@ -340,6 +343,8 @@ async function HistoryContent({
       {t('requestsFailed')}
     </p>
   )
+  // One user's history would show them on every card
+  const isUserShown = filter.userIds?.length !== 1
 
   if (!entries.length) {
     return (
@@ -353,6 +358,7 @@ async function HistoryContent({
                 rows={pageSize}
                 general={settings.general}
                 isSeerrActive={isSeerrActive(settings)}
+                isUserShown={isUserShown}
               />
             }
           >
@@ -374,8 +380,6 @@ async function HistoryContent({
   const userId = session?.user.id
   const { isAnonymized } = settings.general
   const publicSettings = toPublicSettings(settings)
-  // One user's history would show them on every card
-  const isUserShown = filter.userIds?.length !== 1
   const [locale, now] = await Promise.all([getLocale(), getNow()])
 
   function getHref(page: number) {
@@ -520,6 +524,7 @@ export default async function HistoryPage({ searchParams }: Props) {
                 rows={pageSize}
                 general={settings.general}
                 isSeerrActive={isSeerrActive(settings)}
+                isUserShown={!ownUserId}
               />
             }
           >
@@ -582,6 +587,7 @@ export default async function HistoryPage({ searchParams }: Props) {
             rows={pageSize}
             general={settings.general}
             isSeerrActive={hasRequests}
+            isUserShown={filter.userIds?.length !== 1}
             totalKeys={getTotalKeys(filter, hasRequests)}
           />
         }

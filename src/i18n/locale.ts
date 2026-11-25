@@ -1,16 +1,8 @@
 'use server'
 
-import {
-  DEFAULT_LOCALE,
-  Locale,
-  LOCALE_COOKIE_NAME,
-  LOCALES,
-} from '@/utils/constants'
+import { DEFAULT_LOCALE, Locale, LOCALE_COOKIE_NAME } from '@/utils/constants'
 import { cookies, headers } from 'next/headers'
-
-function isLocale(value: string | undefined): value is Locale {
-  return LOCALES.includes(value as Locale)
-}
+import { isLocale, matchLocale } from './matchLocale'
 
 function getBrowserLocale(acceptLanguage: string | null): Locale | undefined {
   const languages = (acceptLanguage ?? '')
@@ -26,21 +18,10 @@ function getBrowserLocale(acceptLanguage: string | null): Locale | undefined {
         quality: quality ? parseFloat(quality.slice(2)) : 1,
       }
     })
-    .filter(({ quality }) => quality > 0)
+    .filter(({ quality }) => Number.isFinite(quality) && quality > 0)
     .sort((a, b) => b.quality - a.quality)
 
-  // An exact match first (`en-US`), then the first locale in the same
-  // language, so `en` and `en-AU` get `en-GB`
-  for (const { tag } of languages) {
-    const language = tag.split('-')[0]
-    const match =
-      LOCALES.find((locale) => locale.toLowerCase() === tag) ??
-      LOCALES.find((locale) => locale.split('-')[0] === language)
-
-    if (match) {
-      return match
-    }
-  }
+  return matchLocale(languages.map(({ tag }) => tag))
 }
 
 export async function getUserLocale() {
@@ -57,6 +38,10 @@ export async function getUserLocale() {
 }
 
 export async function setUserLocale(locale: Locale) {
+  if (!isLocale(locale)) {
+    return
+  }
+
   const cookieStore = await cookies()
 
   // Kept for a year, so a chosen language outlives the browser session and

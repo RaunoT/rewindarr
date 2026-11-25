@@ -2,7 +2,7 @@
 
 import clsx from 'clsx'
 import { useTranslations } from 'next-intl'
-import { RefObject, useId } from 'react'
+import { RefObject, useEffect, useId } from 'react'
 
 type Props = {
   buttonRef: RefObject<HTMLButtonElement | null>
@@ -38,6 +38,21 @@ function Tap({ isDelayed }: TapProps) {
 export default function StoriesIntro({ buttonRef, onDismiss }: Props) {
   const t = useTranslations('Rewind.Stories')
   const titleId = useId()
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.defaultPrevented || e.key !== 'Escape') {
+        return
+      }
+
+      e.preventDefault()
+      onDismiss()
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onDismiss])
 
   return (
     <div

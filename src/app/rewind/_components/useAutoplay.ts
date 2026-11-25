@@ -105,6 +105,29 @@ export default function useAutoplay({
   }, [onEnd])
 
   useEffect(() => {
+    const slide = slideRef.current
+
+    if (!slide || step <= 0) {
+      return
+    }
+
+    // A phone's screen can be shorter than a story, and the statements
+    // after the first can come in below it. A countdown's next place comes
+    // in at the top of its list, which its story starts with.
+    const statements = slide.querySelectorAll(`[data-story-step="${step}"]`)
+    const latest = statements[statements.length - 1]
+    const behavior = window.matchMedia(REDUCED_MOTION_QUERY).matches
+      ? 'auto'
+      : 'smooth'
+
+    if (latest) {
+      latest.scrollIntoView({ block: 'nearest', behavior })
+    } else {
+      slide.scrollTo({ top: 0, behavior })
+    }
+  }, [slideRef, storyIndex, step])
+
+  useEffect(() => {
     const key = `${storyIndex}:${step}`
     const slide = slideRef.current
 
@@ -119,22 +142,6 @@ export default function useAutoplay({
       const statements = slide.querySelectorAll(`[data-story-step="${step}"]`)
 
       timer.content = statements.length ? measure(statements) : null
-
-      // A phone's screen can be shorter than a story, and the statements
-      // after the first can come in below it. A countdown's next place comes
-      // in at the top of its list, which its story starts with.
-      if (step > 0) {
-        const latest = statements[statements.length - 1]
-        const behavior = window.matchMedia(REDUCED_MOTION_QUERY).matches
-          ? 'auto'
-          : 'smooth'
-
-        if (latest) {
-          latest.scrollIntoView({ block: 'nearest', behavior })
-        } else {
-          slide.scrollTo({ top: 0, behavior })
-        }
-      }
     }
 
     const duration =

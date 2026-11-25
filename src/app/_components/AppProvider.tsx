@@ -10,7 +10,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import clsx from 'clsx'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { ReactNode, useEffect } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import stars from '../_assets/stars.png'
 import GlobalContextProvider from './GlobalContextProvider'
 import HeaderControls, {
@@ -41,7 +41,6 @@ const SIDEBAR_ROUTES = [
   '/history',
   '/settings',
 ]
-const queryClient = new QueryClient()
 
 export default function AppProvider({
   children,
@@ -53,6 +52,7 @@ export default function AppProvider({
   isRewindOnly,
   isActivityDetailsHidden,
 }: Props) {
+  const [queryClient] = useState(() => new QueryClient())
   const pathname = usePathname()
   const router = useRouter()
   // Not during setup or before logging in, when there's nothing to browse yet
