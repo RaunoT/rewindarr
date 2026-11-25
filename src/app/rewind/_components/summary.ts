@@ -28,6 +28,11 @@ export type SummaryHighlight =
   // 0 is Sunday
   | { type: 'day'; day: number }
 
+const NO_BREAK_SPACE = '\u00a0'
+// As thin as the spaces Intl sets around a range's dash
+const NARROW_NO_BREAK_SPACE = '\u202f'
+// Lines can still break after a dash, even before a no-break space
+const WORD_JOINER = '\u2060'
 // With the total time, they fill two rows
 const MAX_HIGHLIGHTS = 3
 // The stat that earned a personality isn't repeated beside it
@@ -57,22 +62,29 @@ export function getSummaryTops({
 // An edition is named after its year. The past year and a custom period run
 // to now, so they're named after their months, as a year alone would read as
 // the calendar year, in the story and in the saved image seen long after.
-// Their YYYY-MM-DD start dates are read in UTC, as the welcome reads them,
-// and one set after today is all there is of the period.
+// Both ends are YYYY-MM-DD dates read in UTC: the start as the welcome reads
+// it, and the viewer's today, which their months are counted up to. A start
+// date set after today is all there is of the period. The months don't break
+// across lines, so a title that wraps keeps them together.
 export function getSummaryTitle(
   serverName: string,
-  { since, year }: Pick<RewindPeriod, 'since' | 'year'>,
+  { since, year, today }: Pick<RewindPeriod, 'since' | 'year' | 'today'>,
   locale: string,
   now = new Date(),
 ): SummaryTitle {
   const start = new Date(since)
+  const end = today ? new Date(today) : now
   const period =
     year === null
       ? new Intl.DateTimeFormat(locale, {
           month: 'short',
           year: 'numeric',
           timeZone: 'UTC',
-        }).formatRange(start, start > now ? start : now)
+        })
+          .formatRange(start, start > end ? start : end)
+          .replace(/ /g, NO_BREAK_SPACE)
+          .replace(/\u2009/g, NARROW_NO_BREAK_SPACE)
+          .replace(/[-–—]/g, `${WORD_JOINER}$&${WORD_JOINER}`)
       : String(year)
 
   return serverName

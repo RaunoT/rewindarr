@@ -3,6 +3,7 @@ import getSettings from '@/utils/getSettings'
 import { checkRequiredSettings } from '@/utils/helpers'
 import { toPublicSettings } from '@/utils/publicSettings'
 import { canShareRewind, getRewindSharePath } from '@/utils/rewindShare'
+import { getRewindUserName } from '@/utils/rewindUser'
 import { getActiveUsers } from '@/utils/statsSource'
 import { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
@@ -32,7 +33,7 @@ async function getShareUsers(): Promise<ShareUser[] | null> {
           ? [
               {
                 id,
-                name: user.friendly_name,
+                name: getRewindUserName(user),
                 thumb: user.user_thumb || user.thumb || null,
                 path,
               },

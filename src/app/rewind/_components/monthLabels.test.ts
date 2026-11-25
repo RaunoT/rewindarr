@@ -46,40 +46,46 @@ describe('getMonthLabels', () => {
   })
 })
 
+// The bars that have a label
+function labelled(labels: (string | null)[] | null) {
+  return labels?.flatMap((label, index) => (label ? [[index, label]] : []))
+}
+
 describe('getYearLabels', () => {
   it("marks the past year's first month and each January with its year", () => {
-    const labels = getYearLabels(getMonths('2025-11', 13), 'en-GB')
-
-    expect(labels).toEqual([
-      '2025',
-      null,
-      '2026',
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
+    expect(labelled(getYearLabels(getMonths('2025-11', 13), 'en-GB'))).toEqual([
+      [0, '2025'],
+      [2, '2026'],
     ])
   })
 
-  it("leaves out the first month's year when the next starts right after", () => {
-    const labels = getYearLabels(getMonths('2025-12', 13), 'en-GB')
+  it('marks the first month even when the next year starts right after', () => {
+    expect(labelled(getYearLabels(getMonths('2025-12', 13), 'en-GB'))).toEqual([
+      [0, '2025'],
+      [1, '2026'],
+    ])
+  })
 
-    expect(labels?.[0]).toBeNull()
-    expect(labels?.[1]).toBe('2026')
+  it('marks every year of up to 24 months', () => {
+    // 2 months of 2024, then a January 2 bars from the end
+    expect(labelled(getYearLabels(getMonths('2024-11', 24), 'en-GB'))).toEqual([
+      [0, '2024'],
+      [2, '2025'],
+      [14, '2026'],
+    ])
+    // 3 months of 2024, and a January on the last bar
+    expect(labelled(getYearLabels(getMonths('2024-10', 16), 'en-GB'))).toEqual([
+      [0, '2024'],
+      [3, '2025'],
+      [15, '2026'],
+    ])
   })
 
   it('marks a January on the last bar', () => {
-    const labels = getYearLabels(getMonths('2025-01', 13), 'en-GB')
-
-    expect(labels?.[0]).toBe('2025')
-    expect(labels?.[12]).toBe('2026')
-    expect(labels?.filter(Boolean)).toHaveLength(2)
+    expect(labelled(getYearLabels(getMonths('2025-01', 13), 'en-GB'))).toEqual([
+      [0, '2025'],
+      [12, '2026'],
+    ])
   })
 
   it('has none for months in one year', () => {
@@ -87,6 +93,7 @@ describe('getYearLabels', () => {
   })
 
   it('has none past 24 months, which are labelled with their years', () => {
+    expect(getYearLabels(getMonths('2024-03', 25), 'en-GB')).toBeNull()
     expect(getYearLabels(getMonths('2024-06', 30), 'en-GB')).toBeNull()
   })
 })

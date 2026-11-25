@@ -17,6 +17,9 @@ export type RewindPeriod = PlayPeriod & {
   until?: string
   // An edition's year, null for the other periods
   year: number | null
+  // The viewer's date, YYYY-MM-DD, that the periods running to now end on,
+  // which their months are counted in too
+  today?: string
 }
 
 export type RewindUser = {

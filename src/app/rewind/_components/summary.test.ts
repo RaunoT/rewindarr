@@ -45,17 +45,39 @@ describe('getSummaryTops', () => {
   })
 })
 
-// Intl sets a range's dash between thin spaces
+// Lines don't break in the months, around the dash Intl sets between thin
+// spaces either
+function unbroken(period: string) {
+  return period
+    .replace(/ – /g, '\u202f\u2060–\u2060\u202f')
+    .replace(/ /g, '\u00a0')
+}
+
 describe('getSummaryTitle', () => {
   const now = new Date('2026-11-04T12:00:00Z')
 
-  it('names the past year after its months', () => {
+  it("names the past year after its months, up to the viewer's today", () => {
     expect(
-      getSummaryTitle('', { since: '2025-11-04', year: null }, 'en-GB', now),
+      getSummaryTitle(
+        '',
+        { since: '2025-11-04', year: null, today: '2026-11-04' },
+        'en-GB',
+      ),
     ).toEqual({
       type: 'default',
-      period: 'Nov 2025\u2009–\u2009Nov 2026',
+      period: unbroken('Nov 2025 – Nov 2026'),
     })
+  })
+
+  it("ends in the viewer's month when it's ahead of UTC's", () => {
+    expect(
+      getSummaryTitle(
+        '',
+        { since: '2025-12-01', year: null, today: '2026-12-01' },
+        'en-GB',
+        new Date('2026-11-30T23:30:00Z'),
+      ).period,
+    ).toBe(unbroken('Dec 2025 – Dec 2026'))
   })
 
   it("names a custom period after its months, in the viewer's language", () => {
@@ -63,13 +85,13 @@ describe('getSummaryTitle', () => {
       getSummaryTitle('', { since: '2026-01-15', year: null }, 'en-GB', now),
     ).toEqual({
       type: 'default',
-      period: 'Jan\u2009–\u2009Nov 2026',
+      period: unbroken('Jan – Nov 2026'),
     })
     expect(
       getSummaryTitle('', { since: '2024-11-04', year: null }, 'de', now),
     ).toEqual({
       type: 'default',
-      period: 'Nov. 2024\u2009–\u2009Nov. 2026',
+      period: unbroken('Nov. 2024 – Nov. 2026'),
     })
   })
 
@@ -78,13 +100,13 @@ describe('getSummaryTitle', () => {
       getSummaryTitle('', { since: '2026-11-01', year: null }, 'en-GB', now),
     ).toEqual({
       type: 'default',
-      period: 'Nov 2026',
+      period: unbroken('Nov 2026'),
     })
     expect(
       getSummaryTitle('', { since: '2027-02-01', year: null }, 'en-GB', now),
     ).toEqual({
       type: 'default',
-      period: 'Feb 2027',
+      period: unbroken('Feb 2027'),
     })
   })
 

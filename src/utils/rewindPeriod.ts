@@ -165,6 +165,7 @@ export function getRewindPeriod(
       (type === 'custom' && settings.rewind.startDate) ||
       getPeriods(now).pastYear.string,
     year: null,
+    today: toDateKey(now.getTime(), timeZone),
   }
 }
 

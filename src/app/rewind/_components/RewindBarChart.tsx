@@ -5,6 +5,8 @@ import { instantTransition } from '@/utils/motion'
 import clsx from 'clsx'
 import { motion } from 'motion/react'
 import { useFormatter } from 'next-intl'
+import { useLayoutEffect, useRef, useState } from 'react'
+import { fitSpanLabels, SpanLabelFit } from './spanLabels'
 
 type Props = {
   data: number[]
@@ -97,30 +99,66 @@ function BarLabels({ labels, peakIndex, className }: BarLabelsProps) {
 }
 
 // Each starts at its bar's left edge, with a tick there, so it marks where
-// what it names begins. One on the last bar, which can be narrower than the
-// label, ends at the plot's right edge instead, so it isn't clipped.
+// what it names begins. They're measured once laid out, so one that would run
+// past the plot's end is set against it, without the tick, and one that would
+// run into the next is hidden, at any width and in any language.
 function SpanLabels({ labels }: { labels: (string | null)[] }) {
-  return (
-    <div className='relative mt-1 h-4'>
-      {labels.map((label, index) => {
-        if (!label) {
-          return null
-        }
+  const ref = useRef<HTMLDivElement>(null)
+  const [fits, setFits] = useState<SpanLabelFit[] | null>(null)
+  const spans = labels.flatMap((label, index) =>
+    label ? [{ label, start: index / labels.length }] : [],
+  )
 
-        const isAtEnd = index === labels.length - 1
+  useLayoutEffect(() => {
+    const container = ref.current
+
+    if (!container) {
+      return
+    }
+
+    function measure() {
+      if (!container) {
+        return
+      }
+
+      const plotWidth = container.clientWidth
+      const boxes = [...container.children].map((child, index) => ({
+        start: spans[index].start * plotWidth,
+        width: (child as HTMLElement).offsetWidth,
+      }))
+
+      setFits(fitSpanLabels(boxes, plotWidth))
+    }
+
+    measure()
+
+    const observer = new ResizeObserver(measure)
+
+    observer.observe(container)
+
+    return () => observer.disconnect()
+    // The spans are new on every render, and only change with the labels
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [labels])
+
+  return (
+    <div ref={ref} className='relative mt-1 h-4'>
+      {spans.map(({ label, start }, index) => {
+        const fit = fits?.[index]
 
         return (
           <span
             key={index}
             className={clsx(
-              'absolute top-0 border-white/25 text-xs whitespace-nowrap text-neutral-500 tabular-nums',
-              isAtEnd ? 'right-0 border-r pr-1' : 'border-l pl-1',
+              'absolute top-0 border-l pl-1 text-xs whitespace-nowrap text-neutral-500 tabular-nums',
+              // As wide either way, so it measures the same
+              fit?.isEndAligned
+                ? 'right-0 border-transparent'
+                : 'border-white/25',
+              // Measured before it's shown
+              (!fit || fit.isHidden) && 'invisible',
             )}
-            style={
-              isAtEnd
-                ? undefined
-                : { left: `${(index / labels.length) * 100}%` }
-            }
+            style={fit?.isEndAligned ? undefined : { left: `${start * 100}%` }}
           >
             {label}
           </span>

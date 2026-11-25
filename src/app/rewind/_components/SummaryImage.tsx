@@ -50,7 +50,8 @@ export default function SummaryImage({ summary, ref }: Props) {
         {/* As wide as it can be, as the image keeps each box's width, and a
             name that fits it exactly could wrap once drawn */}
         <div className='min-w-0 flex-1'>
-          <p className='truncate text-[0.8125rem] font-medium text-neutral-400'>
+          {/* Wraps rather than cut off the period, which stays whole */}
+          <p className='text-[0.8125rem] font-medium [overflow-wrap:anywhere] text-neutral-400'>
             {summary.title}
           </p>
           <p className='line-clamp-2 text-2xl leading-tight font-semibold [overflow-wrap:anywhere]'>
