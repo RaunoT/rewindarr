@@ -670,9 +670,9 @@
       "averageLess": "That's <difference>{percent, number, percent} fewer</difference> than the average user, who made <count>{countValue, plural, one {# request} other {# requests}}</count>",
       "averageSame": "That's <difference>about the same</difference> as the average user, who made <count>{countValue, plural, one {# request} other {# requests}}</count>",
       "countTotal": "Altogether there {countValue, plural, one {was} other {were}} <count>{countValue, plural, one {# request} other {# requests}}</count> during the same period",
-      "watchedSome": "You watched <count>{watchedValue, number}</count> of the <count>{addedValue, number}</count> that were added",
-      "watchedAll": "{addedValue, plural, one {You watched <count>the one</count> that was added} other {You watched <count>all #</count> that were added}} <emoji>🍿</emoji>",
-      "watchedNone": "{addedValue, plural, one {You didn't watch <count>the one</count> that was added} other {You didn't watch <count>any of the #</count> that were added}} <emoji>👀</emoji>",
+      "watchedSome": "<count>{addedValue, number}</count> of your requests were added, and you watched <count>{watchedValue, number}</count> of them",
+      "watchedAll": "{addedValue, plural, one {<count>One</count> of your requests was added, and you watched it} other {<count>#</count> of your requests were added, and you watched <count>all of them</count>}} <emoji>🍿</emoji>",
+      "watchedNone": "{addedValue, plural, one {<count>One</count> of your requests was added, but you didn't watch it} other {<count>#</count> of your requests were added, but you didn't watch <count>any of them</count>}} <emoji>👀</emoji>",
       "userBreakdown": "Here's what you asked for:",
       "breakdown": "Here's the breakdown:"
     },

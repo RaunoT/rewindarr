@@ -474,6 +474,56 @@ describe('getRequestsWatched', () => {
     )
   })
 
+  it("takes the other version's IDs when the one asked for has none", () => {
+    const requests = [
+      request(1, {
+        is4k: true,
+        type: 'tv',
+        status: 5,
+        media: { tmdbId: 1, status: 1, status4k: 5, ratingKey: '100' },
+      }),
+    ]
+    const plays = [
+      episode('dark', ALICE, 'Dark', { grandparentRatingKey: '100' }),
+    ]
+
+    expect(getRequestsWatched(requests, plays, '1', MIN_PERCENT, true)).toEqual(
+      { added: 1, watched: 1 },
+    )
+  })
+
+  it("matches a re-added movie by TMDB ID, but not the other copy's", () => {
+    const requests = [
+      request(1, {
+        status: 5,
+        media: { tmdbId: 1, status: 5, ratingKey: '100' },
+      }),
+      request(2, {
+        is4k: true,
+        status: 5,
+        media: { tmdbId: 2, status4k: 5, ratingKey: '200', ratingKey4k: '201' },
+      }),
+    ]
+    const plays = [
+      // Plex gave it a new rating key
+      play('arrival', ALICE, { ratingKey: '150', tmdbId: 1 }),
+      play('dune', ALICE, { ratingKey: '200', tmdbId: 2 }),
+    ]
+
+    expect(getRequestsWatched(requests, plays, '1', MIN_PERCENT, true)).toEqual(
+      { added: 2, watched: 1 },
+    )
+    expect(
+      getRequestsWatched(
+        requests,
+        [...plays, play('dune-4k', ALICE, { ratingKey: '250', tmdbId: 2 })],
+        '1',
+        MIN_PERCENT,
+        true,
+      ),
+    ).toEqual({ added: 2, watched: 2 })
+  })
+
   it('matches deleted movies by TMDB ID when the plays carry one', () => {
     const requests = [
       request(1, { status: 5, media: { tmdbId: 1, status: 7 } }),

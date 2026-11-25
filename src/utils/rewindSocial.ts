@@ -142,25 +142,44 @@ export function getOnlyYou(
   return { count: onlyYou.length, share: onlyYou.length / watched.length, top }
 }
 
-// The status and media server IDs of the version asked for, 4K or not.
-// Plex's rating keys and Jellyfin's IDs, which can't clash.
-function getRequestedMedia(request: SeerrRequestItem) {
-  const media = request.media
-  const keys = request.is4k
+// Plex's rating keys and Jellyfin's IDs of one version, 4K or not, which
+// can't clash
+function getVersionKeys(
+  media: SeerrRequestItem['media'],
+  is4k: boolean,
+): string[] {
+  const keys = is4k
     ? [media?.ratingKey4k, media?.jellyfinMediaId4k]
     : [media?.ratingKey, media?.jellyfinMediaId]
 
+  return keys
+    .filter((key) => !!key)
+    .map((key) => normalizeJellyfinId(String(key)))
+}
+
+// The status and media server IDs of the version asked for, 4K or not, and
+// the other copy's IDs. When one server holds both versions, Seerr can keep a
+// 4K copy's ID in the other's fields, so without IDs of its own the version
+// asked for takes the other's.
+function getRequestedMedia(request: SeerrRequestItem) {
+  const media = request.media
+  const is4k = !!request.is4k
+  const ownKeys = getVersionKeys(media, is4k)
+  const otherKeys = getVersionKeys(media, !is4k)
+  const keys = ownKeys.length ? ownKeys : otherKeys
+
   return {
-    status: request.is4k ? media?.status4k : media?.status,
-    keys: keys
-      .filter((key) => !!key)
-      .map((key) => normalizeJellyfinId(String(key))),
+    status: is4k ? media?.status4k : media?.status,
+    keys,
+    otherKeys: otherKeys.filter((key) => !keys.includes(key)),
   }
 }
 
 // Seerr knows a title's ID in the media server while it's there, and its TMDB
-// ID. The TMDB ID only stands in without one, as it can't tell a 4K copy from
-// the other. Tautulli's plays carry no TMDB ID, and Tracearr's episodes carry
+// ID. Plex gives an item a new rating key when it's re-added, which Seerr
+// doesn't learn, so a movie also matches by its TMDB ID. That can't tell a 4K
+// copy from the other, so the other copy's plays are left out when Seerr knows
+// its ID. Tautulli's plays carry no TMDB ID, and Tracearr's episodes carry
 // their own, so only movies match by it. IDs are compared as strings.
 type PlayIndex = {
   byKey: Map<string, HistoryPlay[]>
@@ -214,31 +233,29 @@ function findRequestPlays(
     return []
   }
 
-  const requestKeys = getRequestedMedia(request).keys
+  const { keys, otherKeys } = getRequestedMedia(request)
+  // A play can carry more than one of the request's IDs
+  const matches = new Set<HistoryPlay>()
 
-  if (requestKeys.length === 1) {
-    return index.byKey.get(`${mediaType}|${requestKeys[0]}`) ?? []
+  for (const key of keys) {
+    for (const play of index.byKey.get(`${mediaType}|${key}`) ?? []) {
+      matches.add(play)
+    }
   }
 
-  if (requestKeys.length > 1) {
-    const seen = new Set<HistoryPlay>()
-    const matches: HistoryPlay[] = []
+  const tmdbId = request.media?.tmdbId
 
-    for (const key of requestKeys) {
-      for (const play of index.byKey.get(`${mediaType}|${key}`) ?? []) {
-        if (!seen.has(play)) {
-          seen.add(play)
-          matches.push(play)
-        }
+  if (mediaType === 'movie' && tmdbId) {
+    for (const play of index.byMovieTmdb.get(tmdbId) ?? []) {
+      const ratingKey = getRatingKey(play)
+
+      if (!ratingKey || !otherKeys.includes(normalizeJellyfinId(ratingKey))) {
+        matches.add(play)
       }
     }
-
-    return matches
   }
 
-  return mediaType === 'movie' && request.media?.tmdbId
-    ? (index.byMovieTmdb.get(request.media.tmdbId) ?? [])
-    : []
+  return [...matches]
 }
 
 // A request for a show's new seasons didn't bring the ones it already had
