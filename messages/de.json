@@ -77,7 +77,8 @@
     "personal": "Nur mich",
     "sortByLabel": "Sortieren nach",
     "sort": "Sortieren",
-    "playThreshold": "Eine Wiedergabe zählt, sobald {percent, number, percent} gesehen sind. Die Wiedergabezeit enthält alles."
+    "playThreshold": "Kurze Wiedergaben, meist unter {percent, number, percent}, zählen zur Zeit, aber nicht zur Anzahl der Wiedergaben.",
+    "playThresholdZero": "Sehr kurze Wiedergaben zählen zur Zeit, aber nicht zur Anzahl der Wiedergaben."
   },
   "DashboardNavContent": {
     "label": "Dashboard Navigation",

@@ -77,7 +77,8 @@
     "personal": "Moi uniquement",
     "sortByLabel": "Trier par",
     "sort": "Trier",
-    "playThreshold": "Une lecture compte à partir de {percent, number, percent} visionnés. La durée de visionnage inclut tout."
+    "playThreshold": "Les lectures courtes, généralement sous {percent, number, percent}, s'ajoutent à la durée mais pas au nombre de lectures.",
+    "playThresholdZero": "Les lectures très courtes s'ajoutent à la durée mais pas au nombre de lectures."
   },
   "DashboardNavContent": {
     "label": "Navigation du tableau de bord",

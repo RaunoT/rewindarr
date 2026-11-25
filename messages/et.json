@@ -77,7 +77,8 @@
     "personal": "Ainult minu",
     "sortByLabel": "Sorteerimisalus",
     "sort": "Sorteerimine",
-    "playThreshold": "Mängimine loetakse, kui {percent, number, percent} on vaadatud. Vaatamisaeg sisaldab kõike."
+    "playThreshold": "Lühikesed esitused, tavaliselt alla {percent, number, percent}, lisavad aega, kuid esituste arvu hulka ei lähe.",
+    "playThresholdZero": "Väga lühikesed esitused lisavad aega, kuid esituste arvu hulka ei lähe."
   },
   "DashboardNavContent": {
     "label": "Edetabeli navigatsioon",

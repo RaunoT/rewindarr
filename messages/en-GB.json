@@ -77,7 +77,8 @@
     "personal": "Just me",
     "sortByLabel": "Sort by",
     "sort": "Sort",
-    "playThreshold": "Plays count once {percent, number, percent} is watched. Watch time includes everything."
+    "playThreshold": "Short plays, usually under {percent, number, percent}, add to the time but not to the play count.",
+    "playThresholdZero": "Very short plays add to the time but not to the play count."
   },
   "DashboardNavContent": {
     "label": "Dashboard navigation",

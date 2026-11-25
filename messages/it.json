@@ -77,7 +77,8 @@
     "personal": "Solo le mie",
     "sortByLabel": "Ordina per",
     "sort": "Ordina",
-    "playThreshold": "Una riproduzione conta una volta visto il {percent, number, percent}. Il tempo di visualizzazione include tutto."
+    "playThreshold": "Le riproduzioni brevi, di solito sotto il {percent, number, percent}, si aggiungono al tempo ma non al numero di riproduzioni.",
+    "playThresholdZero": "Le riproduzioni molto brevi si aggiungono al tempo ma non al numero di riproduzioni."
   },
   "DashboardNavContent": {
     "label": "Navigazione della dashboard",
