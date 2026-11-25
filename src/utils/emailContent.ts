@@ -7,7 +7,7 @@ import {
   TopMediaItems,
 } from '@/types/statsSource'
 import { APP_NAME } from './constants'
-import { EmailBlock, ListItem, renderEmail } from './emailHtml'
+import { EmailBlock, EmailIcon, ListItem, renderEmail } from './emailHtml'
 import { EmailIntl } from './emailIntl'
 import {
   getRewindShareUrl,
@@ -64,20 +64,26 @@ function getAppPicture(pictures: Pictures, image: string | null | undefined) {
   return pictures.appUrl ? toAppImageUrl(pictures.appUrl, image) : null
 }
 
+// In the app's order: time, plays and, on the server's lists, viewers
 function toListItem(
   item: ItemRow,
   intl: EmailIntl,
   imageUrl: string | null,
+  isServer: boolean,
 ): ListItem {
   const { t } = intl
 
   return {
     title: item.title,
-    // The count only says something from 2 plays up. Under the play
-    // threshold, a partial watch adds time without a play.
     meta: [
-      item.total_plays > 1 && t('Email.plays', { count: item.total_plays }),
       secondsToTime(item.total_duration, t),
+      // The count only says something from 2 plays up. Under the play
+      // threshold, a partial watch adds time without a play.
+      item.total_plays > 1 && t('Email.plays', { count: item.total_plays }),
+      // A reader's own lists are only theirs
+      isServer &&
+        item.users_watched &&
+        t('MediaItem.statUsers', { count: item.users_watched }),
     ]
       .filter(Boolean)
       .join(' · '),
@@ -112,12 +118,14 @@ function toTitleItems(
   items: ItemRow[],
   intl: EmailIntl,
   pictures: Pictures,
+  isServer: boolean,
 ): ListItem[] {
   return items.map((item) =>
     toListItem(
       item,
       intl,
       getAppPicture(pictures, item.thumb) ?? (item.tmdb_poster || null),
+      isServer,
     ),
   )
 }
@@ -126,6 +134,7 @@ async function toArtistItems(
   items: ItemRow[],
   intl: EmailIntl,
   pictures: Pictures,
+  isServer: boolean,
 ): Promise<ListItem[]> {
   return Promise.all(
     items.map(async (item) =>
@@ -134,6 +143,7 @@ async function toArtistItems(
         intl,
         getAppPicture(pictures, item.thumb) ??
           (await getArtistPicture(item.title)),
+        isServer,
       ),
     ),
   )
@@ -146,25 +156,29 @@ async function getItemColumns(
   headings: { shows: string; movies: string; audio: string },
   intl: EmailIntl,
   pictures: Pictures,
+  isServer: boolean,
 ): Promise<EmailBlock[]> {
-  const items = [
+  const items: { heading: string; icon: EmailIcon; items: ListItem[] }[] = [
     {
       heading: headings.shows,
-      items: toTitleItems(lists.shows, intl, pictures),
+      icon: 'show',
+      items: toTitleItems(lists.shows, intl, pictures, isServer),
     },
     {
       heading: headings.movies,
-      items: toTitleItems(lists.movies, intl, pictures),
+      icon: 'movie',
+      items: toTitleItems(lists.movies, intl, pictures, isServer),
     },
     {
       heading: headings.audio,
-      items: await toArtistItems(lists.audio, intl, pictures),
+      icon: 'artist',
+      items: await toArtistItems(lists.audio, intl, pictures, isServer),
     },
   ]
   const blocks = items
     .filter((list) => list.items.length)
-    .map(({ heading, items }): EmailBlock[] => [
-      { type: 'heading', text: heading },
+    .map(({ heading, icon, items }): EmailBlock[] => [
+      { type: 'heading', text: heading, icon },
       { type: 'items', items },
     ])
   const rows: EmailBlock[] = []
@@ -381,9 +395,10 @@ export async function buildNewsletter(
   }
 
   const intro: EmailBlock[] = [
+    // The period beside it, which saves a line under the title
     {
       type: 'eyebrow',
-      text: t(`Email.Newsletter.eyebrow.${frequency}`),
+      text: `${t(`Email.Newsletter.eyebrow.${frequency}`)} · ${range}`,
     },
     {
       type: 'title',
@@ -392,7 +407,6 @@ export async function buildNewsletter(
         month,
       }),
     },
-    { type: 'paragraph', text: range, isMuted: true },
   ]
 
   if (sections.includes('personal')) {
@@ -437,6 +451,7 @@ export async function buildNewsletter(
               },
               intl,
               pictures,
+              false,
             )),
           ]
         : [
@@ -487,6 +502,7 @@ export async function buildNewsletter(
         },
         intl,
         pictures,
+        true,
       )),
     ])
   }
@@ -497,7 +513,7 @@ export async function buildNewsletter(
     )
 
     panels.push([
-      { type: 'heading', text: t('Email.Newsletter.topUsers') },
+      { type: 'heading', text: t('Email.Newsletter.topUsers'), icon: 'users' },
       {
         type: 'ranks',
         rows: server.users.slice(0, RANKS_LENGTH).map((user, i) => {

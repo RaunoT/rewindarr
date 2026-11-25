@@ -233,7 +233,8 @@ export function renderLayout({
                 footer &&
                 html`<tr>
                   <td
-                    style="padding: 0 4px; color: ${COLORS.faint}; font-size: 12px; line-height: 18px;"
+                    align="center"
+                    style="padding: 0 4px; color: ${COLORS.faint}; font-size: 12px; line-height: 18px; text-align: center;"
                   >
                     ${footer}
                   </td>
@@ -286,12 +287,46 @@ export function title(text: string): Html {
   </h1>`
 }
 
-export function heading(text: string): Html {
-  return html`<h2
+// The app's icons for the headings, as pictures, since mail apps don't show
+// SVG. On the project's site, like the logo, so any mail app can load them.
+export type EmailIcon = 'movie' | 'show' | 'artist' | 'users'
+
+const ICON_SIZE = 20
+
+function iconUrl(icon: EmailIcon): string {
+  return `https://rewindarr.eu/assets/email/${icon}.png`
+}
+
+export function heading(text: string, icon?: EmailIcon): Html {
+  const h2 = html`<h2
     style="margin: 0; color: ${COLORS.text}; font-size: 18px; line-height: 24px; font-weight: 600;"
   >
     ${text}
   </h2>`
+
+  if (!icon) {
+    return h2
+  }
+
+  return html`<table
+    role="presentation"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+  >
+    <tr>
+      <td style="padding-right: 8px; vertical-align: middle;">
+        <img
+          src="${iconUrl(icon)}"
+          width="${ICON_SIZE}"
+          height="${ICON_SIZE}"
+          alt=""
+          style="display: block;"
+        />
+      </td>
+      <td style="vertical-align: middle;">${h2}</td>
+    </tr>
+  </table>`
 }
 
 export function paragraph(content: string | Html, isMuted = false): Html {
@@ -410,6 +445,14 @@ function getInitial(title: string): string {
   return Array.from(name)[0]?.toLocaleUpperCase() ?? ''
 }
 
+// Gold, silver and bronze for the top three, like the app's. Solid, as mail
+// apps don't clip a gradient to text.
+const RANK_COLORS = ['#facc15', '#e5e5e5', '#fb923c']
+
+function getRankColor(index: number): string {
+  return RANK_COLORS[index] ?? COLORS.faint
+}
+
 // A ranked list of titles with their posters
 export function itemList(items: ListItem[]): Html {
   return html`<table
@@ -424,7 +467,7 @@ export function itemList(items: ListItem[]): Html {
         html`<tr>
           <td
             width="24"
-            style="width: 24px; padding: 8px 0; color: ${COLORS.faint}; font-size: 13px; font-weight: 600; vertical-align: middle;"
+            style="width: 24px; padding: 8px 0; color: ${getRankColor(i)}; font-size: 13px; font-weight: 700; vertical-align: middle;"
           >
             ${i + 1}
           </td>
@@ -512,7 +555,7 @@ export function rankList(rows: RankRow[]): Html {
           <td
             width="32"
             bgcolor="${row.isReader ? COLORS.highlight : COLORS.panel}"
-            style="width: 32px; padding: 10px 0 10px 12px; color: ${COLORS.faint}; font-size: 13px; font-weight: 600; background: ${row.isReader ? COLORS.highlight : COLORS.panel}; border-radius: 12px 0 0 12px;"
+            style="width: 32px; padding: 10px 0 10px 12px; color: ${getRankColor(i)}; font-size: 13px; font-weight: 700; background: ${row.isReader ? COLORS.highlight : COLORS.panel}; border-radius: 12px 0 0 12px;"
           >
             ${i + 1}
           </td>
@@ -581,7 +624,8 @@ export function link(href: string, label: string): Html {
 // An email is described once in blocks, and rendered both as HTML and as the
 // plain text that goes with it
 export type EmailBlock =
-  | { type: 'eyebrow' | 'title' | 'heading'; text: string }
+  | { type: 'eyebrow' | 'title'; text: string }
+  | { type: 'heading'; text: string; icon?: EmailIcon }
   | { type: 'paragraph'; text: string; isMuted?: boolean }
   | { type: 'tiles'; tiles: StatTile[] }
   | { type: 'items'; items: ListItem[] }
@@ -610,7 +654,7 @@ function blockToHtml(block: EmailBlock): Html {
     case 'title':
       return title(block.text)
     case 'heading':
-      return heading(block.text)
+      return heading(block.text, block.icon)
     case 'paragraph':
       return paragraph(block.text, block.isMuted)
     case 'tiles':
@@ -722,7 +766,11 @@ export function renderEmail(document: EmailDocument): {
     document.footer || document.footerLink
       ? html`${document.footer}${
           document.footerLink &&
-          html` ${link(document.footerLink.href, document.footerLink.label)}`
+          // On a line of its own, after the text
+          html`${document.footer && html`<br />`}${link(
+            document.footerLink.href,
+            document.footerLink.label,
+          )}`
         }`
       : undefined
 
