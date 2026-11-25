@@ -203,7 +203,8 @@ export default function StorySummary({ userRewind, settings }: RewindStory) {
             <Avatar src={summary.image} name={summary.name} sizes='6rem' />
           </div>
           <div className='min-w-0'>
-            <p className='truncate text-sm font-medium text-neutral-400'>
+            {/* Wraps rather than cut off the period, which stays whole */}
+            <p className='text-sm font-medium [overflow-wrap:anywhere] text-neutral-400'>
               {summary.title}
             </p>
             <p className='truncate text-2xl leading-tight font-semibold tracking-tight text-white sm:text-3xl'>

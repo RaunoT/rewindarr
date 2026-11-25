@@ -11,16 +11,17 @@ export default function StoryWelcome({
   userRewind,
   settings,
 }: RewindStory<Pick<UserRewind, 'user' | 'period'>>) {
-  const { since, year } = userRewind.period
+  const { since, year, today } = userRewind.period
   const isPastYear = getRewindPeriodType(settings) === 'pastYear'
   const t = useTranslations('Rewind.Welcome')
   const tCommon = useTranslations('Common')
   const locale = useLocale()
   const formattedStartDate = formatMonthYear(since, locale)
-  // Only an edition ends, so the other periods' ranges end today
+  // Only an edition ends, so the other periods' ranges end on the viewer's
+  // today, as the summary's do
   const formattedEndDate = formatMonthYear(
     // oxlint-disable-next-line react/purity
-    new Date().toISOString().split('T')[0],
+    today ?? new Date().toISOString().split('T')[0],
     locale,
   )
 

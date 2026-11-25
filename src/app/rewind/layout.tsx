@@ -8,6 +8,7 @@ import getSettings from '@/utils/getSettings'
 import { canViewFeature, getViewer, isRewindOnly } from '@/utils/helpers'
 import { getLatestEditionYear, getRewindPeriodType } from '@/utils/rewindPeriod'
 import { REWIND_SHARE_HEADER } from '@/utils/rewindShare'
+import { getRewindUserName } from '@/utils/rewindUser'
 import { getActiveUsers } from '@/utils/statsSource'
 import { toTimeZone } from '@/utils/timeZone'
 import { XMarkIcon } from '@heroicons/react/24/outline'
@@ -134,11 +135,12 @@ async function RewindSelects({ userId, isAdmin, hasEditions }: SelectsProps) {
     <>
       {users && (
         <UserSelect
-          users={users.map(({ user_id, friendly_name, thumb, user_thumb }) => ({
-            user_id,
-            friendly_name,
-            thumb,
-            user_thumb,
+          users={users.map((user) => ({
+            user_id: user.user_id,
+            // As the stories name them
+            friendly_name: getRewindUserName(user),
+            thumb: user.thumb,
+            user_thumb: user.user_thumb,
           }))}
           defaultUserId={userId}
         />
