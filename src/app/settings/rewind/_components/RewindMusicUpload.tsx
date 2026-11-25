@@ -64,11 +64,19 @@ export default function RewindMusicUpload({ initialMusic }: Props) {
   }
 
   // A detached player keeps playing after the page is left
-  useEffect(() => () => release(audioRef.current), [])
+  useEffect(() => () => detach(), [])
+
+  // Clears the ref first, so a late event from the unloaded player doesn't
+  // count as the one in use
+  function detach() {
+    const audio = audioRef.current
+
+    audioRef.current = null
+    release(audio)
+  }
 
   function stop() {
-    release(audioRef.current)
-    audioRef.current = null
+    detach()
     setIsPlaying(false)
   }
 
