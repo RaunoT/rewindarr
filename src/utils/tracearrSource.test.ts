@@ -21,6 +21,9 @@ vi.mock('./fetchTracearr', async (importOriginal) => ({
   getTracearrUser: vi.fn(),
   getTracearrUsers: vi.fn(),
 }))
+vi.mock('./artistPictures', () => ({
+  addArtistPictures: async (items: unknown[]) => items,
+}))
 vi.mock('./getSettings', () => ({ default: vi.fn() }))
 vi.mock('./fetchTmdb', () => ({ default: vi.fn() }))
 vi.mock('./sourceSnapshot', async (importOriginal) => ({

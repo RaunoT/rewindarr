@@ -15,6 +15,9 @@ import {
   toSourceId,
 } from './playStats'
 
+vi.mock('./artistPictures', () => ({
+  addArtistPictures: async (items: unknown[]) => items,
+}))
 vi.mock('./getSettings', () => ({ default: vi.fn() }))
 vi.mock('./getMediaAdditionalData', () => ({
   default: async (items: ItemRow[]) => items,

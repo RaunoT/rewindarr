@@ -251,6 +251,7 @@ describe('getTopTrack', () => {
   function track(title: string, minutes: number, percentComplete = 100) {
     return {
       mediaType: 'track',
+      startedAt: 0,
       ratingKey: title,
       mediaId: null,
       title,
@@ -327,6 +328,22 @@ describe('getTopTrack', () => {
     mockPlays([track('Partial', 10, 40)])
 
     await expect(getTopTrack('1', LIBRARIES, PERIOD)).resolves.toBeNull()
+  })
+
+  it("adds up a re-added track's plays under its newest rating key", async () => {
+    mockPlays([
+      { ...track('Song', 3), ratingKey: '2', startedAt: 2 },
+      { ...track('Song', 3), ratingKey: '1', startedAt: 1 },
+      { ...track('song ', 3), ratingKey: '1', startedAt: 1 },
+      track('Other', 3),
+      track('Other', 3),
+    ])
+
+    await expect(getTopTrack('1', LIBRARIES, PERIOD)).resolves.toMatchObject({
+      title: 'Song',
+      ratingKey: '2',
+      plays: 3,
+    })
   })
 })
 

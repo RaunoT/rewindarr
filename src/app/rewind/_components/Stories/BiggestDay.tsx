@@ -64,7 +64,7 @@ export default function StoryBiggestDay({ userRewind, settings }: RewindStory) {
             const poster = (
               <div className='poster w-full sm:w-full'>
                 <PosterImage
-                  srcs={item ? [getPoster(item), item.tmdb_poster] : []}
+                  srcs={item ? [getPoster(item), item.fallback_poster] : []}
                   type={mediaType}
                   alt={title}
                   sizes='(min-width: 640px) 7rem, 25vw'

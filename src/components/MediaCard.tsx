@@ -26,7 +26,7 @@ export const STAT_PILL =
   'icon-stat-wrapper max-sm:bg-transparent max-sm:p-0 max-sm:ring-0'
 
 export type MediaCardItem = TitleDetailsData &
-  LinkedItem & { tmdb_poster?: string | null }
+  LinkedItem & { fallback_poster?: string | null }
 
 type Props = {
   // The dashboard's kind of item, for the links
@@ -192,8 +192,8 @@ export default function MediaCard({
     <MediaCardPoster
       srcs={
         isVideo && settings.general.isPostersTmdbOnly
-          ? [item?.tmdb_poster, ...posters]
-          : [...posters, item?.tmdb_poster]
+          ? [item?.fallback_poster, ...posters]
+          : [...posters, item?.fallback_poster]
       }
       type={mediaType}
       alt={t('History.poster', { title: name })}

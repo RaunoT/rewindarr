@@ -18,7 +18,6 @@ import {
 import { EmailRecipient } from './emailRecipients'
 import { getInitials, secondsToTime } from './formatting'
 import { OutgoingEmail } from './mailer'
-import { searchArtistPicture } from './musicPreviewSources'
 import { getRewindPeriod } from './rewindPeriod'
 import { getStatsSource } from './statsSource'
 
@@ -91,29 +90,6 @@ function toListItem(
   }
 }
 
-// The same artists come up in many readers' emails, so each is looked up once
-const globalForEmails = globalThis as typeof globalThis & {
-  rewindarrArtistPictures?: Map<string, string | null>
-}
-const artistPictures = (globalForEmails.rewindarrArtistPictures ??= new Map())
-
-async function getArtistPicture(name: string): Promise<string | null> {
-  if (artistPictures.has(name)) {
-    return artistPictures.get(name) ?? null
-  }
-
-  try {
-    const picture = await searchArtistPicture(name)
-
-    artistPictures.set(name, picture)
-
-    return picture
-  } catch {
-    // Not kept, so it's tried again with the next email
-    return null
-  }
-}
-
 function toTitleItems(
   items: ItemRow[],
   intl: EmailIntl,
@@ -124,40 +100,21 @@ function toTitleItems(
     toListItem(
       item,
       intl,
-      getAppPicture(pictures, item.thumb) ?? (item.tmdb_poster || null),
+      getAppPicture(pictures, item.thumb) ?? (item.fallback_poster || null),
       isServer,
-    ),
-  )
-}
-
-async function toArtistItems(
-  items: ItemRow[],
-  intl: EmailIntl,
-  pictures: Pictures,
-  isServer: boolean,
-): Promise<ListItem[]> {
-  return Promise.all(
-    items.map(async (item) =>
-      toListItem(
-        item,
-        intl,
-        getAppPicture(pictures, item.thumb) ??
-          (await getArtistPicture(item.title)),
-        isServer,
-      ),
     ),
   )
 }
 
 // The lists with anything in them, two to a row
 // Shows and movies first, then artists, as in the app
-async function getItemColumns(
+function getItemColumns(
   lists: { shows: ItemRow[]; movies: ItemRow[]; audio: ItemRow[] },
   headings: { shows: string; movies: string; audio: string },
   intl: EmailIntl,
   pictures: Pictures,
   isServer: boolean,
-): Promise<EmailBlock[]> {
+): EmailBlock[] {
   const items: { heading: string; icon: EmailIcon; items: ListItem[] }[] = [
     {
       heading: headings.shows,
@@ -172,7 +129,7 @@ async function getItemColumns(
     {
       heading: headings.audio,
       icon: 'artist',
-      items: await toArtistItems(lists.audio, intl, pictures, isServer),
+      items: toTitleItems(lists.audio, intl, pictures, isServer),
     },
   ]
   const blocks = items
@@ -438,7 +395,7 @@ export async function buildNewsletter(
                 },
               ],
             },
-            ...(await getItemColumns(
+            ...getItemColumns(
               {
                 shows: topItems.shows.slice(0, LIST_LENGTH),
                 movies: topItems.movies.slice(0, LIST_LENGTH),
@@ -452,7 +409,7 @@ export async function buildNewsletter(
               intl,
               pictures,
               false,
-            )),
+            ),
           ]
         : [
             ...intro,
@@ -489,7 +446,7 @@ export async function buildNewsletter(
           },
         ],
       },
-      ...(await getItemColumns(
+      ...getItemColumns(
         {
           shows: server.topItems.shows.slice(0, SERVER_LIST_LENGTH),
           movies: server.topItems.movies.slice(0, SERVER_LIST_LENGTH),
@@ -503,7 +460,7 @@ export async function buildNewsletter(
         intl,
         pictures,
         true,
-      )),
+      ),
     ])
   }
 

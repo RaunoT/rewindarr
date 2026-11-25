@@ -26,6 +26,11 @@ const nextConfig: NextConfig = {
         hostname: 'image.tmdb.org',
         pathname: '/t/p/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'cdn-images.dzcdn.net',
+        pathname: '/images/artist/**',
+      },
     ],
   },
   async headers() {

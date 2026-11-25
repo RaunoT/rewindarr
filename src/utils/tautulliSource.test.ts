@@ -14,6 +14,9 @@ import tautulliSource, { getTautulliMediaData } from './tautulliSource'
 vi.mock('@/lib/auth', () => ({ authOptions: {} }))
 vi.mock('next-auth', () => ({ getServerSession: vi.fn() }))
 vi.mock('./fetchTautulli', () => ({ default: vi.fn() }))
+vi.mock('./artistPictures', () => ({
+  addArtistPictures: async (items: unknown[]) => items,
+}))
 vi.mock('./getSettings', () => ({ default: vi.fn() }))
 vi.mock('./sourceSnapshot', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./sourceSnapshot')>()),

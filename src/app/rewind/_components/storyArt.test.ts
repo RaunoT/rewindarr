@@ -16,7 +16,7 @@ function item(overrides: Partial<ItemRow> = {}): ItemRow {
   return {
     title: 'Dark',
     thumb: '',
-    tmdb_poster: null,
+    fallback_poster: null,
     tmdb_backdrop: null,
     ...overrides,
   } as ItemRow
@@ -82,7 +82,7 @@ describe('getStoryArt', () => {
     const top = item({
       thumb: '/library/metadata/1/thumb/2',
       tmdb_backdrop: BACKDROP,
-      tmdb_poster: TMDB_POSTER,
+      fallback_poster: TMDB_POSTER,
     })
     const userRewind = rewind({ shows: { top: [top] } })
 
@@ -94,7 +94,7 @@ describe('getStoryArt', () => {
   })
 
   it('tries a poster from TMDB once, as it is', () => {
-    const top = item({ thumb: TMDB_POSTER, tmdb_poster: TMDB_POSTER })
+    const top = item({ thumb: TMDB_POSTER, fallback_poster: TMDB_POSTER })
     const userRewind = rewind({ movies: { top: [top] } })
 
     expect(getStoryArt('movies', userRewind)).toEqual([TMDB_POSTER])

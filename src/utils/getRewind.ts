@@ -194,24 +194,39 @@ export function getArtistTopTracks(
   })
 }
 
-// The plays of each track and its listening time
+// A track by its artist and title, like the played titles are counted. Plex
+// gives a re-added track a new rating key, which would split its plays.
+function getTrackKey(play: HistoryPlay): string {
+  return [play.artistName ?? '', play.title]
+    .map((text) => text.trim().toLowerCase())
+    .join('|')
+}
+
+// The plays of each track and its listening time. The rating key is the
+// newest play's, as an older one can be gone from Plex.
 function sumTracks(
   plays: HistoryPlay[],
   minPercent: number,
 ): Map<string, TopTrack> {
   const tracks = new Map<string, TopTrack>()
+  const keyTimes = new Map<string, number>()
 
   for (const play of plays) {
-    // Jellyfin's plays through Tracearr may have no rating key
-    const key =
-      play.ratingKey ?? play.mediaId ?? `${play.artistName}|${play.title}`
+    const key = getTrackKey(play)
     const track = tracks.get(key) ?? {
-      ratingKey: play.ratingKey,
+      ratingKey: null,
       title: play.title,
       artist: play.artistName,
       plays: 0,
       durationMs: 0,
       isOnly: false,
+    }
+    const keyTime = keyTimes.get(key)
+
+    // Jellyfin's plays through Tracearr may have no rating key
+    if (play.ratingKey && (keyTime === undefined || play.startedAt > keyTime)) {
+      track.ratingKey = play.ratingKey
+      keyTimes.set(key, play.startedAt)
     }
 
     if (isCountedPlay(play, minPercent)) {

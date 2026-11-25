@@ -66,7 +66,7 @@ export type RewindSummary = {
 // TMDB's posters go through the image proxy too, so the saved image has
 // nothing cross-origin in it
 function getPosterSrcs(item: ItemRow) {
-  return [item.thumb, item.tmdb_poster].map((src) =>
+  return [item.thumb, item.fallback_poster].map((src) =>
     src ? getImageProxyUrl(src) : null,
   )
 }
