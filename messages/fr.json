@@ -217,6 +217,8 @@
       "testService": "Tester {service}",
       "testing": "Test en cours…",
       "connected": "Connecté",
+      "connectedWithoutToken": "Connecté. Aucun jeton à tester.",
+      "connectedWithToken": "Connecté, et le jeton fonctionne.",
       "history": "Historique de lecture",
       "historyDescription": "Les nouvelles lectures sont ajoutées automatiquement",
       "historySyncing": "Synchronisation de l'historique…",

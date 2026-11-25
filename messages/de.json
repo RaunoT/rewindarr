@@ -217,6 +217,8 @@
       "testService": "{service} testen",
       "testing": "Wird getestet…",
       "connected": "Verbunden",
+      "connectedWithoutToken": "Verbunden. Kein Token zum Testen.",
+      "connectedWithToken": "Verbunden, und das Token funktioniert.",
       "history": "Wiedergabeverlauf",
       "historyDescription": "Neue Wiedergaben werden automatisch hinzugefügt",
       "historySyncing": "Verlauf wird synchronisiert…",
