@@ -76,7 +76,8 @@
     "general": "Todos",
     "personal": "Solo yo",
     "sortByLabel": "Ordenar por",
-    "sort": "Ordenar"
+    "sort": "Ordenar",
+    "playThreshold": "Una reproducción cuenta a partir del {percent, number, percent} visto. El tiempo de visualización lo incluye todo."
   },
   "DashboardNavContent": {
     "label": "Navegación del panel",
@@ -134,7 +135,8 @@
       "partiallyAvailable": "Disponible en parte",
       "available": "Disponible"
     },
-    "requestStatusLabel": "{status}: abrir {title} en Seerr"
+    "requestStatusLabel": "{status}: abrir {title} en Seerr",
+    "playThreshold": "Aquí cuenta cada reproducción. En otras partes, una reproducción cuenta a partir del {percent, number, percent} visto."
   },
   "MediaServerDeeplink": {
     "openLabel": "Abrir {title} en {server}"

@@ -76,7 +76,8 @@
     "general": "Tout le monde",
     "personal": "Moi uniquement",
     "sortByLabel": "Trier par",
-    "sort": "Trier"
+    "sort": "Trier",
+    "playThreshold": "Une lecture compte à partir de {percent, number, percent} visionnés. La durée de visionnage inclut tout."
   },
   "DashboardNavContent": {
     "label": "Navigation du tableau de bord",
@@ -134,7 +135,8 @@
       "partiallyAvailable": "Disponible en partie",
       "available": "Disponible"
     },
-    "requestStatusLabel": "{status} : ouvrir {title} dans Seerr"
+    "requestStatusLabel": "{status} : ouvrir {title} dans Seerr",
+    "playThreshold": "Ici, chaque lecture compte. Ailleurs, une lecture compte à partir de {percent, number, percent} visionnés."
   },
   "MediaServerDeeplink": {
     "openLabel": "Ouvrir {title} dans {server}"

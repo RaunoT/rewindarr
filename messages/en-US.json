@@ -76,7 +76,8 @@
     "general": "Everyone",
     "personal": "Just me",
     "sortByLabel": "Sort by",
-    "sort": "Sort"
+    "sort": "Sort",
+    "playThreshold": "Plays count once {percent, number, percent} is watched. Watch time includes everything."
   },
   "DashboardNavContent": {
     "label": "Dashboard navigation",
@@ -134,7 +135,8 @@
       "partiallyAvailable": "Partly available",
       "available": "Available"
     },
-    "requestStatusLabel": "{status}: open {title} in Seerr"
+    "requestStatusLabel": "{status}: open {title} in Seerr",
+    "playThreshold": "Every play counts here. Elsewhere, a play counts once {percent, number, percent} is watched."
   },
   "MediaServerDeeplink": {
     "openLabel": "Open {title} in {server}"

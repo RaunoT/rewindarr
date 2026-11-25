@@ -4,7 +4,10 @@ import {
   GlobalContext,
   readStorage,
 } from '@/app/_components/GlobalContextProvider'
-import FilterSheet, { FilterGroup } from '@/components/filters/FilterSheet'
+import FilterSheet, {
+  FilterGroup,
+  FilterNote,
+} from '@/components/filters/FilterSheet'
 import SegmentedControl from '@/components/filters/SegmentedControl'
 import useFilterParams from '@/hooks/useFilterParams'
 import { DashboardSearchParams } from '@/types/dashboard'
@@ -150,6 +153,7 @@ export default function DashboardFilters({
   const tCommon = useTranslations('Common')
   const activeCount = Number(personalFilter && !!isPersonal) + Number(!!sortBy)
   const canClear = activeCount > 0 || searchParams.has('period')
+  const { minPlayPercent } = settings.general
 
   function getAudience() {
     return (
@@ -202,6 +206,13 @@ export default function DashboardFilters({
           <FilterGroup label={t('type')}>{getAudience()}</FilterGroup>
         )}
         <FilterGroup label={t('sort')}>{getSort()}</FilterGroup>
+        {/* Viewers can't see the admin's threshold, and without it a title
+            with watch time but no plays looks wrong. Nothing to say at 0%. */}
+        {minPlayPercent > 0 && (
+          <FilterNote>
+            {t('playThreshold', { percent: minPlayPercent / 100 })}
+          </FilterNote>
+        )}
       </FilterSheet>
     </div>
   )

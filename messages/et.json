@@ -76,7 +76,8 @@
     "general": "Kõigi",
     "personal": "Ainult minu",
     "sortByLabel": "Sorteerimisalus",
-    "sort": "Sorteerimine"
+    "sort": "Sorteerimine",
+    "playThreshold": "Mängimine loetakse, kui {percent, number, percent} on vaadatud. Vaatamisaeg sisaldab kõike."
   },
   "DashboardNavContent": {
     "label": "Edetabeli navigatsioon",
@@ -134,7 +135,8 @@
       "partiallyAvailable": "Osaliselt saadaval",
       "available": "Saadaval"
     },
-    "requestStatusLabel": "{status}: ava {title} Seerris"
+    "requestStatusLabel": "{status}: ava {title} Seerris",
+    "playThreshold": "Siin loetakse iga mängimine. Mujal loetakse mängimine, kui {percent, number, percent} on vaadatud."
   },
   "MediaServerDeeplink": {
     "openLabel": "Ava {title} {server}is"

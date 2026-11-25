@@ -76,7 +76,8 @@
     "general": "Di tutti",
     "personal": "Solo le mie",
     "sortByLabel": "Ordina per",
-    "sort": "Ordina"
+    "sort": "Ordina",
+    "playThreshold": "Una riproduzione conta una volta visto il {percent, number, percent}. Il tempo di visualizzazione include tutto."
   },
   "DashboardNavContent": {
     "label": "Navigazione della dashboard",
@@ -134,7 +135,8 @@
       "partiallyAvailable": "Disponibile in parte",
       "available": "Disponibile"
     },
-    "requestStatusLabel": "{status}: apri {title} in Seerr"
+    "requestStatusLabel": "{status}: apri {title} in Seerr",
+    "playThreshold": "Qui conta ogni riproduzione. Altrove, una riproduzione conta una volta visto il {percent, number, percent}."
   },
   "MediaServerDeeplink": {
     "openLabel": "Apri {title} in {server}"
