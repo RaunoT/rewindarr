@@ -1,6 +1,7 @@
 import { Settings } from '@/types/settings'
 import { createHmac, timingSafeEqual } from 'crypto'
 import { getSiteUrl } from './constants'
+import { getImageProxyUrl } from './imageProxy'
 import { getRewindSharePath } from './rewindShare'
 import { normalizeUrl } from './url'
 
@@ -30,6 +31,82 @@ export function isWebUrl(value: string): boolean {
 
 export function toAppUrl(appUrl: string, path: string): string {
   return new URL(path, `${appUrl}/`).href
+}
+
+// Names that only resolve at home or on a tailnet
+const PRIVATE_SUFFIXES = [
+  '.localhost',
+  '.local',
+  '.lan',
+  '.home',
+  '.internal',
+  '.home.arpa',
+  '.ts.net',
+]
+
+function isPrivateIpv4(host: string): boolean {
+  const parts = host.split('.').map(Number)
+
+  if (
+    parts.length !== 4 ||
+    parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)
+  ) {
+    return false
+  }
+
+  const [a, b] = parts
+
+  return (
+    a === 10 ||
+    a === 127 ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168) ||
+    // Carrier-grade NAT, which Tailscale uses
+    (a === 100 && b >= 64 && b <= 127)
+  )
+}
+
+// Whether the address looks reachable from the internet, so mail apps that
+// load pictures through their own servers, like Gmail, can load the app's.
+// A domain that only resolves at home still looks public.
+export function isPublicUrl(url: string): boolean {
+  if (!URL.canParse(url)) {
+    return false
+  }
+
+  const host = new URL(url).hostname.toLowerCase().replace(/^\[|\]$/g, '')
+
+  if (host.includes(':')) {
+    return !(host === '::1' || /^f[cd]/.test(host) || host.startsWith('fe80'))
+  }
+
+  return (
+    host.includes('.') &&
+    host !== 'localhost' &&
+    !PRIVATE_SUFFIXES.some((suffix) => host.endsWith(suffix)) &&
+    !isPrivateIpv4(host)
+  )
+}
+
+// A picture as the app shows it: TMDB's as it is, and the rest through the
+// app's image route
+export function toAppImageUrl(
+  appUrl: string,
+  image: string | null | undefined,
+): string | null {
+  if (!image) {
+    return null
+  }
+
+  if (image.startsWith('https://image.tmdb.org')) {
+    return image
+  }
+
+  return toAppUrl(
+    appUrl,
+    image.startsWith('/api/image') ? image : getImageProxyUrl(image),
+  )
 }
 
 function signUnsubscribe(userId: string): Buffer | null {

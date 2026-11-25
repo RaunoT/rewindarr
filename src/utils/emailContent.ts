@@ -9,7 +9,12 @@ import {
 import { APP_NAME } from './constants'
 import { EmailBlock, ListItem, renderEmail } from './emailHtml'
 import { EmailIntl } from './emailIntl'
-import { getRewindShareUrl, getUnsubscribeUrl } from './emailLinks'
+import {
+  getRewindShareUrl,
+  getUnsubscribeUrl,
+  isPublicUrl,
+  toAppImageUrl,
+} from './emailLinks'
 import { EmailRecipient } from './emailRecipients'
 import { getInitials, secondsToTime } from './formatting'
 import { OutgoingEmail } from './mailer'
@@ -47,12 +52,22 @@ function getTotals(stats: MediaStats) {
   }
 }
 
-// Mail apps can't sign in to the media server, so only TMDB's posters show,
-// and Deezer's pictures for artists
+// Where the pictures come from: the app, as it shows them, when mail apps can
+// reach it, or else TMDB's posters and Deezer's artists, which anyone can load
+type Pictures = { appUrl: string | null }
+
+function getPictures(appUrl: string): Pictures {
+  return { appUrl: isPublicUrl(appUrl) ? appUrl : null }
+}
+
+function getAppPicture(pictures: Pictures, image: string | null | undefined) {
+  return pictures.appUrl ? toAppImageUrl(pictures.appUrl, image) : null
+}
+
 function toListItem(
   item: ItemRow,
   intl: EmailIntl,
-  imageUrl: string | null = item.tmdb_poster || null,
+  imageUrl: string | null,
 ): ListItem {
   const { t } = intl
 
@@ -93,13 +108,33 @@ async function getArtistPicture(name: string): Promise<string | null> {
   }
 }
 
+function toTitleItems(
+  items: ItemRow[],
+  intl: EmailIntl,
+  pictures: Pictures,
+): ListItem[] {
+  return items.map((item) =>
+    toListItem(
+      item,
+      intl,
+      getAppPicture(pictures, item.thumb) ?? (item.tmdb_poster || null),
+    ),
+  )
+}
+
 async function toArtistItems(
   items: ItemRow[],
   intl: EmailIntl,
+  pictures: Pictures,
 ): Promise<ListItem[]> {
   return Promise.all(
     items.map(async (item) =>
-      toListItem(item, intl, await getArtistPicture(item.title)),
+      toListItem(
+        item,
+        intl,
+        getAppPicture(pictures, item.thumb) ??
+          (await getArtistPicture(item.title)),
+      ),
     ),
   )
 }
@@ -110,17 +145,21 @@ async function getItemColumns(
   lists: { shows: ItemRow[]; movies: ItemRow[]; audio: ItemRow[] },
   headings: { shows: string; movies: string; audio: string },
   intl: EmailIntl,
+  pictures: Pictures,
 ): Promise<EmailBlock[]> {
   const items = [
     {
       heading: headings.shows,
-      items: lists.shows.map((item) => toListItem(item, intl)),
+      items: toTitleItems(lists.shows, intl, pictures),
     },
     {
       heading: headings.movies,
-      items: lists.movies.map((item) => toListItem(item, intl)),
+      items: toTitleItems(lists.movies, intl, pictures),
     },
-    { heading: headings.audio, items: await toArtistItems(lists.audio, intl) },
+    {
+      heading: headings.audio,
+      items: await toArtistItems(lists.audio, intl, pictures),
+    },
   ]
   const blocks = items
     .filter((list) => list.items.length)
@@ -242,8 +281,10 @@ export type ServerRecap = {
     id: string
     name: string
     duration: number
-    // Only a picture mail apps can load, for the ones ranked
+    // Plex's, checked to load, for the ones ranked
     avatarUrl: string | null
+    // As the source gives it, for the app to show
+    thumb: string
   }[]
 }
 
@@ -293,6 +334,7 @@ export async function getServerRecap(
         duration: user.total_duration,
         avatarUrl:
           i < RANKS_LENGTH ? await getPublicAvatar(user.user_thumb) : null,
+        thumb: user.user_thumb,
       })),
     ),
   }
@@ -324,6 +366,7 @@ export async function buildNewsletter(
   const isRanksShown = isOthersShown && sections.includes('topUsers')
   const serverTotals = getTotals(server.stats)
   const { serverName, logoUrl } = getBranding(settings)
+  const pictures = getPictures(appUrl)
   const panels: EmailBlock[][] = []
   const month = format.dateTime(new Date(period.since), { month: 'long' })
   const range = format.dateTimeRange(
@@ -393,6 +436,7 @@ export async function buildNewsletter(
                 audio: t('Email.yourTopArtists'),
               },
               intl,
+              pictures,
             )),
           ]
         : [
@@ -442,6 +486,7 @@ export async function buildNewsletter(
           audio: t('Email.Newsletter.topArtists'),
         },
         intl,
+        pictures,
       )),
     ])
   }
@@ -464,7 +509,9 @@ export async function buildNewsletter(
               ? t('Email.anonymous', { number: i + 1 })
               : user.name,
             // Nothing that would tell a hidden user apart
-            avatarUrl: isHidden ? null : user.avatarUrl,
+            avatarUrl: isHidden
+              ? null
+              : (user.avatarUrl ?? getAppPicture(pictures, user.thumb)),
             initials: isHidden ? '' : getInitials(user.name),
             value: formatDuration(user.duration, intl),
             isReader: user.id === recipient.id,

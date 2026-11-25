@@ -6,7 +6,9 @@ import {
   getAppUrl,
   getRewindShareUrl,
   getUnsubscribeUrl,
+  isPublicUrl,
   isUnsubscribeKey,
+  toAppImageUrl,
   toAppUrl,
 } from './emailLinks'
 
@@ -99,5 +101,49 @@ describe('getRewindShareUrl', () => {
     expect(
       getRewindShareUrl(settings, 'https://rewind.example.com', '42'),
     ).toBeNull()
+  })
+})
+
+describe('isPublicUrl', () => {
+  it('takes a domain as public', () => {
+    expect(isPublicUrl('https://rewind.example.com')).toBe(true)
+    expect(isPublicUrl('http://8.8.8.8:8383')).toBe(true)
+  })
+
+  it("doesn't take home, VPN or local addresses as public", () => {
+    for (const url of [
+      'http://localhost:3000',
+      'http://192.168.1.10:8383',
+      'http://10.0.0.5',
+      'http://172.20.1.1',
+      'http://100.101.102.103',
+      'http://nas:8383',
+      'http://rewind.local',
+      'https://nas.tail1234.ts.net',
+      'http://[::1]:3000',
+      'http://[fd00::1]',
+    ]) {
+      expect(isPublicUrl(url), url).toBe(false)
+    }
+  })
+})
+
+describe('toAppImageUrl', () => {
+  const appUrl = 'https://rewind.example.com'
+
+  it("goes through the app's image route, like the app", () => {
+    expect(toAppImageUrl(appUrl, '/library/metadata/1/thumb/2')).toBe(
+      'https://rewind.example.com/api/image?img=%2Flibrary%2Fmetadata%2F1%2Fthumb%2F2&width=300',
+    )
+    expect(toAppImageUrl(appUrl, 'https://plex.tv/users/1/avatar')).toBe(
+      'https://rewind.example.com/api/image?url=https%3A%2F%2Fplex.tv%2Fusers%2F1%2Favatar',
+    )
+  })
+
+  it("keeps TMDB's as they are, and nothing for no picture", () => {
+    expect(toAppImageUrl(appUrl, 'https://image.tmdb.org/t/p/w300/a.jpg')).toBe(
+      'https://image.tmdb.org/t/p/w300/a.jpg',
+    )
+    expect(toAppImageUrl(appUrl, '')).toBeNull()
   })
 })
