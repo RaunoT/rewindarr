@@ -5,9 +5,12 @@ on:
     branches:
       - develop
 
+# Queue instead of cancelling: the image is pushed before semantic-release
+# tags the release, so cancelling mid-run can leave a published image without
+# a matching release.
 concurrency:
   group: pre-release-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -110,6 +113,7 @@ jobs:
         develop
         ${{ needs.version.outputs.tag }}
       dockerhub: true
+      require-head: true
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -133,6 +137,7 @@ jobs:
           VERSION: ${{ needs.version.outputs.tag }}
           IMAGE_RESULT: ${{ needs.image.result }}
           PUBLISHED: ${{ needs.image.outputs.published }}
+          MOVED: ${{ needs.image.outputs.moved }}
         run: |
           if [ "$VERSION_RESULT" != 'success' ]; then
             echo "Determine version ended with: $VERSION_RESULT"
@@ -141,6 +146,11 @@ jobs:
 
           if [ -z "$VERSION" ]; then
             echo 'Nothing to release.'
+            exit 0
+          fi
+
+          if [ "$IMAGE_RESULT" = 'success' ] && [ "$MOVED" = 'true' ]; then
+            echo 'Branch moved past this commit; the newer run publishes the pre-release.'
             exit 0
           fi
 

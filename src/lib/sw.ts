@@ -1,3 +1,4 @@
+/// <reference lib="webworker" />
 import type { PrecacheEntry, SerwistGlobalConfig } from 'serwist'
 import {
   CacheFirst,

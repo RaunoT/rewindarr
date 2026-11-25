@@ -5,12 +5,16 @@ on:
     branches:
       - '*'
 
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
   test:
-    if: ${{ !(github.base_ref == 'main' && github.head_ref == 'develop') }}
+    if: ${{ !(github.base_ref == 'main' && github.head_ref == 'develop' && github.event.pull_request.head.repo.full_name == github.repository) }}
     name: Lint & test build
     runs-on: ubuntu-latest
     steps:
@@ -29,7 +33,9 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install
+        env:
+          HUSKY: 0
+        run: pnpm install --frozen-lockfile
 
       - name: Lint code and check formatting
         run: pnpm lint:all
