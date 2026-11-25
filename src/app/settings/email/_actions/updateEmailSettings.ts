@@ -41,7 +41,7 @@ async function validateAndSave(
   prevState: EmailFormState,
   formData: FormData,
 ): Promise<EmailFormState> {
-  const denied = await denySettingsAccess(prevState)
+  const denied = await denySettingsAccess(prevState, 'email')
 
   if (denied) {
     return denied

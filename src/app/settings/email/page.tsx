@@ -32,7 +32,7 @@ async function readRecipients(): Promise<EmailRecipient[] | null> {
 }
 
 export default async function EmailSettingsPage() {
-  await requireSettingsAccess()
+  await requireSettingsAccess('email')
 
   const settings = getSettings()
   const session = await getServerSession(authOptions)
