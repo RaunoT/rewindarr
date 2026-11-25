@@ -346,6 +346,45 @@ describe('getRequestsReach', () => {
     ).toMatchObject({ users: 1 })
   })
 
+  it("doesn't give a 4K request that isn't there the other copy's plays", () => {
+    const requests = [
+      request(1, {
+        is4k: true,
+        media: { tmdbId: 1, status: 5, ratingKey: '100', status4k: 3 },
+      }),
+    ]
+
+    expect(
+      getRequestsReach(
+        requests,
+        [play('arrival-bob', BOB, { ratingKey: '100', tmdbId: 1 })],
+        '1',
+        MIN_PERCENT,
+      ),
+    ).toBeNull()
+  })
+
+  it('follows a re-added movie by TMDB ID once it was asked for', () => {
+    const requests = [
+      request(1, { media: { tmdbId: 1, status: 5, ratingKey: '100' } }),
+    ]
+    const plays = [
+      // Matches by both IDs
+      play('arrival-bob', BOB, { ratingKey: '100', tmdbId: 1 }),
+      play('arrival-carol', CAROL, { ratingKey: '150', tmdbId: 1 }),
+      play('arrival-dave', DAVE, {
+        ratingKey: '150',
+        tmdbId: 1,
+        startedAt: new Date('2026-04-30T20:00:00Z').getTime(),
+      }),
+    ]
+
+    expect(getRequestsReach(requests, plays, '1', MIN_PERCENT)).toMatchObject({
+      users: 2,
+      duration: 2 * 3600,
+    })
+  })
+
   it("doesn't count someone whose plays don't count", () => {
     const requests = [request(1, { media: { tmdbId: 1, ratingKey: '100' } })]
     const plays = [
@@ -522,6 +561,40 @@ describe('getRequestsWatched', () => {
         true,
       ),
     ).toEqual({ added: 2, watched: 2 })
+  })
+
+  it("doesn't give a deleted copy or a non-4K request the other's IDs", () => {
+    const requests = [
+      // The 4K copy was deleted and the other is still there
+      request(1, {
+        is4k: true,
+        status: 5,
+        media: { tmdbId: 1, status: 5, ratingKey: '100', status4k: 7 },
+      }),
+      request(2, {
+        type: 'tv',
+        is4k: true,
+        status: 5,
+        media: { tmdbId: 2, status: 5, ratingKey: '200', status4k: 7 },
+      }),
+      // The other way round
+      request(3, {
+        status: 5,
+        media: { tmdbId: 3, status: 7, status4k: 5, ratingKey4k: '301' },
+      }),
+    ]
+    const plays = [
+      play('arrival', ALICE, { ratingKey: '100', tmdbId: 1 }),
+      episode('dark', ALICE, 'Dark', { grandparentRatingKey: '200' }),
+      play('coco-4k', ALICE, { ratingKey: '301', tmdbId: 3 }),
+    ]
+
+    expect(getRequestsWatched(requests, plays, '1', MIN_PERCENT, true)).toEqual(
+      { added: 2, watched: 0 },
+    )
+    expect(
+      getRequestsWatched(requests, plays, '1', MIN_PERCENT, false),
+    ).toBeNull()
   })
 
   it('matches deleted movies by TMDB ID when the plays carry one', () => {

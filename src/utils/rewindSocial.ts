@@ -68,9 +68,10 @@ const REQUEST_PLAY_TYPES: Record<string, PlayMediaType> = {
 const DECLINED_STATUS = 3
 // And for one whose title came to the media server
 const COMPLETED_STATUS = 5
-// Seerr's statuses for a title that came to the media server: partly or fully
-// there, or deleted since
-const ADDED_MEDIA_STATUSES = [4, 5, 7]
+// Seerr's statuses for a title that's in the media server, partly or fully
+const PRESENT_MEDIA_STATUSES = [4, 5]
+// And for one that came to it: there, or deleted since
+const ADDED_MEDIA_STATUSES = [...PRESENT_MEDIA_STATUSES, 7]
 
 function getDuration(plays: HistoryPlay[]): number {
   return Math.round(sumBy(plays, 'durationMs') / 1000)
@@ -159,17 +160,21 @@ function getVersionKeys(
 
 // The status and media server IDs of the version asked for, 4K or not, and
 // the other copy's IDs. When one server holds both versions, Seerr can keep a
-// 4K copy's ID in the other's fields, so without IDs of its own the version
-// asked for takes the other's.
+// 4K copy's ID in the other's fields, so a 4K copy that's there without IDs
+// of its own takes the other's.
 function getRequestedMedia(request: SeerrRequestItem) {
   const media = request.media
   const is4k = !!request.is4k
+  const status = is4k ? media?.status4k : media?.status
   const ownKeys = getVersionKeys(media, is4k)
   const otherKeys = getVersionKeys(media, !is4k)
-  const keys = ownKeys.length ? ownKeys : otherKeys
+  const keys =
+    !ownKeys.length && is4k && PRESENT_MEDIA_STATUSES.includes(status ?? 0)
+      ? otherKeys
+      : ownKeys
 
   return {
-    status: is4k ? media?.status4k : media?.status,
+    status,
     keys,
     otherKeys: otherKeys.filter((key) => !keys.includes(key)),
   }
