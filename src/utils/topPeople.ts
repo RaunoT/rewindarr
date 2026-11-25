@@ -13,7 +13,7 @@ import getSettings from './getSettings'
 // Bit parts and cameos would otherwise rank alongside the leads.
 const BILLED_ACTORS = 10
 const TOP_PEOPLE = 5
-// With one title each, everyone ties and the ranking says nothing.
+// Someone in a single title only repeats the top titles.
 const MIN_TITLES = 2
 
 // A year of movies and shows can be hundreds of lookups, which TMDB
