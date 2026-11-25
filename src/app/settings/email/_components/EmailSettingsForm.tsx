@@ -14,16 +14,16 @@ import { getLocaleName } from '@/utils/localeName'
 import type { NewsletterRun } from '@/utils/newsletter'
 import { getNextSendTime, MAX_MONTH_DAY } from '@/utils/newsletterSchedule'
 import { useFormatter, useTranslations } from 'next-intl'
+import Link from 'next/link'
 import { useActionState, useState, useSyncExternalStore } from 'react'
 import { Switch } from 'react-aria-components'
 import SettingsForm from '../../_components/SettingsForm'
-import { sendNewsletterToMe } from '../_actions/sendEmails'
+import { sendNewsletterToMe, sendRewindToMe } from '../_actions/sendEmails'
 import saveEmailSettings from '../_actions/updateEmailSettings'
 import EmailAddresses from './EmailAddresses'
 import EmailTest from './EmailTest'
 import EmailTryIt from './EmailTryIt'
 import NewsletterRecipients from './NewsletterRecipients'
-import RewindEmails from './RewindEmails'
 
 export type EmailFormSettings = Omit<
   EmailSettings,
@@ -440,7 +440,25 @@ export default function EmailSettingsForm({
       <section className='group-settings group'>
         <h2 className='heading-settings'>{t('rewind')}</h2>
         {isRewindShared ? (
-          <RewindEmails recipients={recipients} adminId={adminId} />
+          <>
+            {/* Sent from the list of users there, next to their links */}
+            <p className='text-sm text-neutral-400 sm:pl-50'>
+              {t.rich('rewindSendFrom', {
+                link: (chunks) => (
+                  <Link
+                    href='/settings/rewind'
+                    className='link-light text-neutral-200 underline underline-offset-2'
+                  >
+                    {chunks}
+                  </Link>
+                ),
+              })}
+            </p>
+            <EmailTryIt
+              previewHref={`/api/settings/email-preview?${new URLSearchParams({ type: 'rewind', userId: adminId })}`}
+              send={sendRewindToMe}
+            />
+          </>
         ) : (
           <p className='text-sm text-neutral-400 sm:pl-50'>
             {t('rewindNotShared')}
