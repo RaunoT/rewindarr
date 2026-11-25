@@ -47,8 +47,8 @@ export type Discoveries = {
   artists: number
   // Null when each find is a title another story already headlines
   top: { play: Play; durationMs: number } | null
-  // The headlined title the biggest find was, when the top one comes after it
-  after: string | null
+  // The headlined finds bigger than the top one, the biggest first
+  after: string[]
 }
 
 // A title a story before the discoveries makes its headline
@@ -232,11 +232,12 @@ export function getDiscoveries(
       .map((group) => group.filter(isInPeriod))
   }
 
+  // A title's plays can differ in whether they have a media id
   function getHeadline(group: Play[]): Headline | undefined {
     return headlines.find(
       (headline) =>
         headline.type === PLAY_LIBRARY_TYPES[group[0].mediaType] &&
-        isPlayOfItem(group[0], { year: null, ...headline }),
+        group.some((play) => isPlayOfItem(play, { year: null, ...headline })),
     )
   }
 
@@ -252,8 +253,20 @@ export function getDiscoveries(
     return null
   }
 
-  const after = getHeadline(finds[0])?.title ?? null
-  const top = finds.find((group) => !getHeadline(group))
+  const after: string[] = []
+
+  let top: Play[] | undefined
+
+  for (const group of finds) {
+    const headline = getHeadline(group)
+
+    if (!headline) {
+      top = group
+      break
+    }
+
+    after.push(headline.title)
+  }
 
   return {
     shows: shows.length,
@@ -265,31 +278,37 @@ export function getDiscoveries(
   }
 }
 
-// Each top list's first place, which its story and the countdown after it
-// headline, unless the admin hid them. A countdown needs two places.
+// Each top list's first place, when a story the admin hasn't hidden shows
+// it, as the stories decide: the shows and movies stories end on it, and
+// their countdowns need a second place. The music story names the top track
+// instead, when there is one, and the top artists show even when there's only
+// one.
 export function getTopHeadlines(
   top: TopMediaItems,
   hiddenStories: readonly RewindStoryId[],
+  hasTopTrack: boolean,
 ): Headline[] {
-  const lists: [TitleCard['type'], ItemRow[], RewindStoryId[]][] = [
+  const isShown = (story: RewindStoryId) => !hiddenStories.includes(story)
+  const lists: [TitleCard['type'], ItemRow[], boolean][] = [
     [
       'show',
       top.shows,
-      ['shows', ...(top.shows.length > 1 ? ['shows_top' as const] : [])],
+      isShown('shows') || (top.shows.length > 1 && isShown('shows_top')),
     ],
     [
       'movie',
       top.movies,
-      ['movies', ...(top.movies.length > 1 ? ['movies_top' as const] : [])],
+      isShown('movies') || (top.movies.length > 1 && isShown('movies_top')),
     ],
-    // The top artists show even when there's only one
-    ['artist', top.audio, ['audio', 'audio_top']],
+    [
+      'artist',
+      top.audio,
+      (!hasTopTrack && isShown('audio')) || isShown('audio_top'),
+    ],
   ]
 
-  return lists.flatMap(([type, items, stories]) =>
-    items[0] && stories.some((story) => !hiddenStories.includes(story))
-      ? [{ ...items[0], type }]
-      : [],
+  return lists.flatMap(([type, items, isHeadlined]) =>
+    items[0] && isHeadlined ? [{ ...items[0], type }] : [],
   )
 }
 
@@ -298,7 +317,7 @@ function getComfortHeadline({ play, isEpisode }: ComfortWatch): Headline {
   return isEpisode
     ? {
         type: 'show',
-        title: play.showTitle ?? play.title,
+        title: play.showTitle || play.title,
         media_id: play.showMediaId,
       }
     : {
@@ -350,7 +369,9 @@ export async function getTitleMoments(
   plays: Play[],
   allPlays: Play[] | null,
   until?: string,
-  topItems: TopMediaItems = { shows: [], movies: [], audio: [] },
+  // The titles the stories before the discoveries headline, besides the
+  // comfort watch
+  topHeadlines: Headline[] = [],
 ): Promise<TitleMoments> {
   const t = await getTranslations()
   const settings = getSettings()
@@ -361,7 +382,7 @@ export async function getTitleMoments(
   const timeTravel = getTimeTravel(plays, minPercent)
   // The discoveries come after these, so they don't show the same card again
   const headlines = [
-    ...getTopHeadlines(topItems, hiddenStories),
+    ...topHeadlines,
     ...(comfortWatch && !hiddenStories.includes('comfort_watch')
       ? [getComfortHeadline(comfortWatch)]
       : []),

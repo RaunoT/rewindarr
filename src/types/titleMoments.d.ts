@@ -33,9 +33,9 @@ export type TitleMoments = {
     // The one the user spent the most time on that no story before has
     // headlined. Null when they all have.
     top: (TitleCard & { duration: string }) | null
-    // The headlined title that was the biggest find, when the top one comes
-    // after it
-    after: string | null
+    // The finds other stories headlined that are bigger than the top one,
+    // the biggest first
+    after: string[]
   } | null
   // A movie started in the period that the user has never finished. Null
   // until the whole history has been read.

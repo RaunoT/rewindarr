@@ -1,6 +1,6 @@
 import { RewindStory } from '@/types/rewind'
 import { BookmarkIcon, SparklesIcon } from '@heroicons/react/24/outline'
-import { useTranslations } from 'next-intl'
+import { useFormatter, useTranslations } from 'next-intl'
 import RewindCat from '../RewindCat'
 import RewindStat from '../RewindStat'
 import { TITLE_STEPS } from '../storyMusic'
@@ -11,6 +11,7 @@ export default function StoryDiscoveries({
   settings,
 }: RewindStory) {
   const t = useTranslations('Rewind.Discoveries')
+  const format = useFormatter()
   const { discoveries, gaveUp } = userRewind.titleMoments
 
   return (
@@ -50,13 +51,15 @@ export default function StoryDiscoveries({
             <RewindStat step={TITLE_STEPS.discovery} noScale>
               <p className='mb-2'>
                 {t.rich(
-                  discoveries.after
+                  discoveries.after.length
                     ? 'after'
                     : discoveries.shows + discoveries.artists > 1
                       ? 'top'
                       : 'only',
                   {
-                    headlineValue: discoveries.after ?? '',
+                    headlineValue: format.list(discoveries.after, {
+                      type: 'conjunction',
+                    }),
                     headline: (chunks) => (
                       <span className='rewind-cat'>{chunks}</span>
                     ),

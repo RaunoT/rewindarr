@@ -308,7 +308,7 @@ describe('getDiscoveries', () => {
       shows: 2,
       artists: 1,
       top: { play: plays[4], durationMs: 90 * MINUTE },
-      after: null,
+      after: [],
     })
   })
 
@@ -320,7 +320,7 @@ describe('getDiscoveries', () => {
       shows: 2,
       artists: 1,
       top: { play: plays[5], durationMs: 7 * MINUTE },
-      after: 'Severance',
+      after: ['Severance'],
     })
     // An artist of the same name is another title
     expect(
@@ -330,16 +330,39 @@ describe('getDiscoveries', () => {
     ).toBe(plays[4])
   })
 
-  it('matches a headline by its media id', () => {
+  it('names each headlined find bigger than the one it shows', () => {
+    const allPlays = [...earlierPlays, ...plays]
+    const bluey = { type: 'show', title: 'Bluey' } as const
+    const daftPunk = { type: 'artist', title: 'Daft Punk' } as const
+
+    expect(
+      getDiscoveries(plays, allPlays, MIN_PERCENT, [
+        bluey,
+        { type: 'show', title: 'Severance' },
+      ]),
+    ).toMatchObject({ top: { play: plays[6] }, after: ['Severance', 'Bluey'] })
+    // A smaller one isn't in the way
+    expect(
+      getDiscoveries(plays, allPlays, MIN_PERCENT, [
+        daftPunk,
+        { type: 'show', title: 'Severance' },
+      ]),
+    ).toMatchObject({ top: { play: plays[5] }, after: ['Severance'] })
+  })
+
+  it('matches a headline by the media id of any of its plays', () => {
+    // An imported play can come without the media id the others have
     const withIds = plays.map((p) =>
-      p.showTitle === 'Severance' ? { ...p, showMediaId: 'sev' } : p,
+      p.showTitle === 'Severance' && p.id !== 'severance-1'
+        ? { ...p, showMediaId: 'sev' }
+        : p,
     )
 
     expect(
       getDiscoveries(withIds, [...earlierPlays, ...withIds], MIN_PERCENT, [
         { type: 'show', title: 'Severance (2022)', media_id: 'sev' },
       ]),
-    ).toMatchObject({ top: { play: withIds[5] }, after: 'Severance (2022)' })
+    ).toMatchObject({ top: { play: withIds[5] }, after: ['Severance (2022)'] })
   })
 
   it('has no top find when every find is headlined', () => {
@@ -349,7 +372,7 @@ describe('getDiscoveries', () => {
       getDiscoveries(newPlays, [...earlierPlays, ...newPlays], MIN_PERCENT, [
         { type: 'show', title: 'Severance' },
       ]),
-    ).toEqual({ shows: 1, artists: 0, top: null, after: 'Severance' })
+    ).toEqual({ shows: 1, artists: 0, top: null, after: ['Severance'] })
   })
 
   it('leaves it out for a user without plays before the period', () => {
@@ -434,9 +457,14 @@ describe('getTopHeadlines', () => {
     movies: [row('Heat')],
     audio: [row('ABBA')],
   }
+  const titles = (
+    hidden: RewindStoryId[],
+    hasTopTrack = false,
+    items: typeof top = top,
+  ) => getTopHeadlines(items, hidden, hasTopTrack).map(({ title }) => title)
 
   it("headlines each top list's first place", () => {
-    expect(getTopHeadlines(top, [])).toEqual([
+    expect(getTopHeadlines(top, [], false)).toEqual([
       { ...top.shows[0], type: 'show' },
       { ...top.movies[0], type: 'movie' },
       { ...top.audio[0], type: 'artist' },
@@ -444,22 +472,32 @@ describe('getTopHeadlines', () => {
   })
 
   it('leaves out a first place whose stories are all hidden', () => {
-    const titles = (hidden: RewindStoryId[]) =>
-      getTopHeadlines(top, hidden).map(({ title }) => title)
-
     // The countdown still ends on it
     expect(titles(['shows'])).toContain('Severance')
     expect(titles(['shows', 'shows_top'])).not.toContain('Severance')
-    // A single movie has no countdown
-    expect(titles(['movies'])).not.toContain('Heat')
     expect(titles(['audio'])).toContain('ABBA')
     expect(titles(['audio', 'audio_top'])).not.toContain('ABBA')
   })
 
+  it('needs a second place for a countdown', () => {
+    expect(titles(['movies'])).not.toContain('Heat')
+    expect(
+      titles(['shows'], false, { ...top, shows: [row('Severance')] }),
+    ).not.toContain('Severance')
+  })
+
+  it('leaves out the top artist when the music story names a track', () => {
+    // The top track can be by another artist
+    expect(titles(['audio_top'], true)).not.toContain('ABBA')
+    expect(titles(['audio_top'], false)).toContain('ABBA')
+    // The top artists show even when there's only one
+    expect(titles(['audio'], true)).toContain('ABBA')
+  })
+
   it('has nothing to headline without plays', () => {
-    expect(getTopHeadlines({ shows: [], movies: [], audio: [] }, [])).toEqual(
-      [],
-    )
+    expect(
+      getTopHeadlines({ shows: [], movies: [], audio: [] }, [], false),
+    ).toEqual([])
   })
 })
 
@@ -554,16 +592,15 @@ describe('getTitleMoments', () => {
 
   it('skips the finds the stories before it headline', async () => {
     const earlier = episode('friends-old', '2025-06-01', 'Friends', [1, 2])
-    const top = {
-      shows: [{ ...EMPTY_ROW, title: 'Severance' }],
-      movies: [],
-      audio: [],
-    }
+    const headlines = [{ type: 'show', title: 'Severance' }] as const
 
     expect(
-      (await getTitleMoments(plays, [earlier, ...plays], undefined, top))
-        .discoveries,
-    ).toMatchObject({ shows: 1, top: null, after: 'Severance' })
+      (
+        await getTitleMoments(plays, [earlier, ...plays], undefined, [
+          ...headlines,
+        ])
+      ).discoveries,
+    ).toMatchObject({ shows: 1, top: null, after: ['Severance'] })
   })
 
   it("skips the comfort watch's show unless its story is hidden", async () => {
@@ -581,7 +618,7 @@ describe('getTitleMoments', () => {
       (await getTitleMoments(severancePlays, allPlays)).discoveries,
     ).toMatchObject({
       top: { item: { title: 'Bluey' } },
-      after: 'Severance',
+      after: ['Severance'],
     })
 
     const settings = cloneDeep(DEFAULT_SETTINGS)
@@ -591,7 +628,7 @@ describe('getTitleMoments', () => {
 
     expect(
       (await getTitleMoments(severancePlays, allPlays)).discoveries,
-    ).toMatchObject({ top: { item: { title: 'Severance' } }, after: null })
+    ).toMatchObject({ top: { item: { title: 'Severance' } }, after: [] })
   })
 
   it('waits for the whole history for what came before the period', async () => {

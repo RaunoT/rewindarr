@@ -72,7 +72,7 @@ import {
   getStatsSource,
 } from '@/utils/statsSource'
 import { toDateKey, toTimeZone } from '@/utils/timeZone'
-import { getTitleMoments } from '@/utils/titleMoments'
+import { getTitleMoments, getTopHeadlines } from '@/utils/titleMoments'
 import { getYearOverYear } from '@/utils/yearOverYear'
 import { sumBy } from 'lodash'
 import { Metadata } from 'next'
@@ -376,7 +376,7 @@ async function getRewind(
     plays,
     allPlays,
     until,
-    topMediaItems,
+    getTopHeadlines(topMediaItems, settings.rewind.hiddenStories, !!topTrack),
   )
   const yearOverYear = await getYearOverYear(allPlays, period, timeZone, {
     shows: topMediaItems.shows[0],
