@@ -6,13 +6,19 @@ import {
 } from '@/app/_components/GlobalContextProvider'
 import FilterSheet, { FilterGroup } from '@/components/filters/FilterSheet'
 import SegmentedControl from '@/components/filters/SegmentedControl'
+import useFilterParams from '@/hooks/useFilterParams'
 import { DashboardSearchParams } from '@/types/dashboard'
 import { PublicSettings } from '@/types/settings'
+import {
+  clearDashboardFilters,
+  getAvailableSort,
+  getDashboardFilters,
+  setDashboardFilters,
+} from '@/utils/dashboardFilters'
 import { getDashboardSort } from '@/utils/helpers'
 import { BarsArrowDownIcon } from '@heroicons/react/24/outline'
 import { useTranslations } from 'next-intl'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useContext, useEffect, useRef } from 'react'
+import { useContext, useEffect, useRef } from 'react'
 import PeriodFilter from './PeriodFilter'
 
 type Props = {
@@ -27,14 +33,6 @@ type Props = {
 // Back and Forward keep working.
 let hasRestoredSavedFilters = false
 
-// Every title on a personal dashboard has the same one user
-function getAvailableSort(
-  personal: DashboardSearchParams['personal'],
-  sort: DashboardSearchParams['sortBy'],
-): DashboardSearchParams['sortBy'] {
-  return personal === 'true' && sort === 'users' ? undefined : sort
-}
-
 // The period stays in sight. On wider screens the other filters sit across
 // from it, on phones they're in a sheet.
 export default function DashboardFilters({
@@ -42,104 +40,89 @@ export default function DashboardFilters({
   personalFilter,
   isOwnOnly = false,
 }: Props) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  // Shared with the period, so a change to either builds on the other's
+  const filterParams = useFilterParams()
+  const { searchParams, committedSearchParams, navigate } = filterParams
   const isPersonal: DashboardSearchParams['personal'] =
     searchParams.get('personal') === 'true' ? 'true' : undefined
   const sortBy = getAvailableSort(
     isOwnOnly ? 'true' : isPersonal,
     getDashboardSort(searchParams.get('sortBy')),
   )
+  const committed = getDashboardFilters(committedSearchParams)
+  const committedPersonal = committed.personal
+  const committedSort = getAvailableSort(
+    isOwnOnly ? 'true' : committedPersonal,
+    committed.sortBy,
+  )
   const hasUrlFilters =
-    searchParams.has('personal') || searchParams.has('sortBy')
+    committedSearchParams.has('personal') || committedSearchParams.has('sortBy')
   const {
     dashboard: { setIsPersonal, setSortBy },
   } = useContext(GlobalContext)
   const t = useTranslations('DashboardFilters')
   const isRestoringRef = useRef(false)
 
-  // oxlint-disable-next-line @stylistic/padding-line-between-statements
-  const getUrl = useCallback(
-    (
-      personal: DashboardSearchParams['personal'],
-      sort: DashboardSearchParams['sortBy'],
-    ) => {
-      const params = new URLSearchParams(searchParams.toString())
-
-      // A new list starts from its first rows again
-      params.delete('limit')
-
-      if (personal === 'true') {
-        params.set('personal', 'true')
-      } else {
-        params.delete('personal')
-      }
-
-      const availableSort = getAvailableSort(
-        isOwnOnly ? 'true' : personal,
-        sort,
-      )
-
-      if (availableSort) {
-        params.set('sortBy', availableSort)
-      } else {
-        params.delete('sortBy')
-      }
-
-      const query = params.toString()
-
-      return query ? `${pathname}?${query}` : pathname
-    },
-    [isOwnOnly, pathname, searchParams],
-  )
-
   function handlePersonalChange(value: string) {
     isRestoringRef.current = false
-    router.push(getUrl(value === 'true' ? 'true' : undefined, sortBy))
+    navigate((params) =>
+      setDashboardFilters(
+        params,
+        { personal: value === 'true' ? 'true' : undefined },
+        isOwnOnly,
+      ),
+    )
   }
 
   function handleSortChange(value: string) {
     isRestoringRef.current = false
-    router.push(getUrl(isPersonal, getDashboardSort(value)))
+    navigate((params) =>
+      setDashboardFilters(
+        params,
+        { sortBy: getDashboardSort(value) },
+        isOwnOnly,
+      ),
+    )
   }
 
-  // Back to the defaults, the period too
   function handleClear() {
     isRestoringRef.current = false
-
-    const params = new URLSearchParams(searchParams.toString())
-
-    for (const name of ['period', 'personal', 'sortBy', 'limit']) {
-      params.delete(name)
-    }
-
-    const query = params.toString()
-
-    router.push(query ? `${pathname}?${query}` : pathname)
+    navigate(clearDashboardFilters)
   }
 
   useEffect(() => {
-    if (!hasRestoredSavedFilters) {
-      hasRestoredSavedFilters = true
-
-      const savedPersonal =
-        personalFilter && readStorage('dashboardPersonal') === 'true'
-          ? 'true'
-          : undefined
-      const savedSort = getAvailableSort(
-        isOwnOnly ? 'true' : savedPersonal,
-        getDashboardSort(readStorage('dashboardSort')),
-      )
-
-      if (!hasUrlFilters && (savedPersonal || savedSort)) {
-        isRestoringRef.current = true
-        router.replace(getUrl(savedPersonal, savedSort))
-
-        return
-      }
+    if (hasRestoredSavedFilters) {
+      return
     }
 
+    hasRestoredSavedFilters = true
+
+    const savedPersonal =
+      personalFilter && readStorage('dashboardPersonal') === 'true'
+        ? 'true'
+        : undefined
+    const savedSort = getAvailableSort(
+      isOwnOnly ? 'true' : savedPersonal,
+      getDashboardSort(readStorage('dashboardSort')),
+    )
+
+    if (!hasUrlFilters && (savedPersonal || savedSort)) {
+      isRestoringRef.current = true
+      navigate(
+        (params) =>
+          setDashboardFilters(
+            params,
+            { personal: savedPersonal, sortBy: savedSort },
+            isOwnOnly,
+          ),
+        { replace: true },
+      )
+    }
+  }, [hasUrlFilters, isOwnOnly, navigate, personalFilter])
+
+  // Remembered for the next visit and for the links on the home page, once
+  // the URL has them
+  useEffect(() => {
     if (isRestoringRef.current) {
       if (!hasUrlFilters) {
         return
@@ -148,19 +131,14 @@ export default function DashboardFilters({
       isRestoringRef.current = false
     }
 
-    // Remembered for the next visit and for the links on the home page
-    setIsPersonal(isPersonal)
-    setSortBy(sortBy)
+    setIsPersonal(committedPersonal)
+    setSortBy(committedSort)
   }, [
-    getUrl,
+    committedPersonal,
+    committedSort,
     hasUrlFilters,
-    isOwnOnly,
-    isPersonal,
-    personalFilter,
-    router,
     setIsPersonal,
     setSortBy,
-    sortBy,
   ])
 
   const tCommon = useTranslations('Common')
@@ -203,7 +181,11 @@ export default function DashboardFilters({
 
   return (
     <div className='mb-4 flex items-center gap-2'>
-      <PeriodFilter settings={settings} className='max-sm:flex-1' />
+      <PeriodFilter
+        settings={settings}
+        filterParams={filterParams}
+        className='max-sm:flex-1'
+      />
       <FilterSheet
         count={activeCount}
         canClear={canClear}
