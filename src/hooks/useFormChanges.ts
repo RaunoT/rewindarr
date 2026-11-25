@@ -1,6 +1,10 @@
 'use client'
 
-import { getFormSnapshot, getSavedSnapshot } from '@/utils/unsavedChanges'
+import {
+  addLoadedFields,
+  getFormSnapshot,
+  getSavedSnapshot,
+} from '@/utils/unsavedChanges'
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react'
 
 // Whether a form's values differ from the ones it was saved with. The fields
@@ -41,6 +45,26 @@ export default function useFormChanges(
     submittedRef.current = null
     setIsChanged(current !== savedRef.current)
   }, [read])
+  // Fields that appear once their data is read count as saved as they come,
+  // the ones inside the element that loaded them. Before the form is first
+  // read, they're read with it.
+  const markLoaded = useCallback(
+    (container: Element) => {
+      const current = read()
+
+      if (current === null || savedRef.current === null) {
+        return
+      }
+
+      const names = [...container.querySelectorAll('[name]')].flatMap(
+        (field) => field.getAttribute('name') ?? [],
+      )
+
+      savedRef.current = addLoadedFields(savedRef.current, current, names)
+      setIsChanged(current !== savedRef.current)
+    },
+    [read],
+  )
 
   useEffect(() => {
     const form = formRef.current
@@ -96,5 +120,5 @@ export default function useFormChanges(
     }
   }, [formRef, read])
 
-  return { isChanged, markSubmitted, markSaved }
+  return { isChanged, markSubmitted, markSaved, markLoaded }
 }

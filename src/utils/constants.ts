@@ -113,6 +113,7 @@ export const DEFAULT_SETTINGS: Settings = {
     autoplaySpeed: 'normal',
     period: 'calendarYear',
     releaseDate: '12-01',
+    isReleaseEmailActive: false,
     startDate: '',
     shareVersion: 0,
     complete: false,
@@ -142,6 +143,26 @@ export const DEFAULT_SETTINGS: Settings = {
     isOwnOnlyForAdmin: false,
     complete: false,
   },
+  email: {
+    smtpHost: '',
+    smtpPort: 587,
+    smtpSecurity: 'starttls',
+    smtpUser: '',
+    smtpPassword: '',
+    fromAddress: '',
+    fromName: APP_NAME,
+    appUrl: '',
+    locale: 'en-GB',
+    addresses: {},
+    unsubscribed: [],
+    isNewsletterActive: false,
+    newsletterFrequency: 'weekly',
+    newsletterWeekday: 1,
+    newsletterMonthDay: 1,
+    newsletterHour: 9,
+    newsletterSections: ['personal', 'server'],
+    complete: true,
+  },
   setupComplete: false,
 }
 
@@ -156,6 +177,8 @@ export const SETTINGS_PAGES = [
   { href: '/settings/dashboard', key: 'dashboard' },
   { href: '/settings/activity', key: 'activity' },
   { href: '/settings/history', key: 'history' },
+  // Optional, so it's left out of the setup's steps
+  { href: '/settings/email', key: 'email', isOptional: true },
 ]
 
 // Wherever they're opened from, the settings start on the first page
@@ -271,6 +294,26 @@ export type RewindStoryId = (typeof REWIND_STORIES)[number]
 export const AUTOPLAY_SPEEDS = ['slow', 'normal', 'fast'] as const
 
 export type AutoplaySpeed = (typeof AUTOPLAY_SPEEDS)[number]
+
+// How the app talks to the mail server: in the clear, upgraded to TLS after
+// connecting (usually port 587), or TLS from the start (usually 465)
+export const EMAIL_SECURITIES = ['none', 'starttls', 'tls'] as const
+
+export type EmailSecurity = (typeof EMAIL_SECURITIES)[number]
+
+export const NEWSLETTER_FREQUENCIES = [
+  'weekly',
+  'monthly',
+  'quarterly',
+] as const
+
+export type NewsletterFrequency = (typeof NEWSLETTER_FREQUENCIES)[number]
+
+// What a newsletter can show, in its order: the reader's own stats, the
+// server's, and who watched the most
+export const NEWSLETTER_SECTIONS = ['personal', 'server', 'topUsers'] as const
+
+export type NewsletterSection = (typeof NEWSLETTER_SECTIONS)[number]
 
 export const REWIND_MUSIC_MAX_BYTES = 50 * 1024 * 1024
 // What a Rewind track may be, by file extension, and the type it's served as

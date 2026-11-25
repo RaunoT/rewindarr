@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
+  addLoadedFields,
   getFormSnapshot,
   getLeavingPath,
   getSavedSnapshot,
@@ -196,5 +197,30 @@ describe('guardLeave', () => {
 
     expect(leave).not.toHaveBeenCalled()
     expect(guard).toHaveBeenCalledWith(leave)
+  })
+})
+
+describe('addLoadedFields', () => {
+  it('counts the loaded fields as saved, and keeps the rest as they were', () => {
+    const saved = getFormSnapshot([['smtpHost', 'mail.example.com']])
+    const loaded = addLoadedFields(
+      saved,
+      getFormSnapshot([
+        ['smtpHost', 'smtp.example.com'],
+        ['listedUsers', '2'],
+        ['listedUsers', '1'],
+        // Shown by an edit while the list loaded
+        ['newsletterHour', '9'],
+      ]),
+      ['listedUsers'],
+    )
+
+    expect(loaded).toBe(
+      getFormSnapshot([
+        ['smtpHost', 'mail.example.com'],
+        ['listedUsers', '1'],
+        ['listedUsers', '2'],
+      ]),
+    )
   })
 })

@@ -203,6 +203,7 @@
       "dashboard": "Dashboard",
       "activity": "Activity",
       "history": "History",
+      "email": "Email",
       "complete": "Complete",
       "incomplete": "Incomplete",
       "connectionRequired": "Finish the Connection settings first"
@@ -370,6 +371,9 @@
       "releaseDate": "Release date",
       "releaseDateDescription": "When the {year} edition comes out",
       "releaseDateError": "Check the release date.",
+      "releaseEmail": "Email invites",
+      "releaseEmailDescription": "On the release day, emails every user with an address an invite to their Rewind. The next ones go out on {date}.",
+      "releaseEmailNeedsMail": "Set up the mail server in the Email settings first.",
       "yearError": "Check the year.",
       "startDateError": "Check the start date.",
       "shareLinks": "Shared links",
@@ -389,6 +393,105 @@
       "shareLinksResetError": "Couldn't reset the links",
       "shareLinksUsers": "Users",
       "shareLinksResetButton": "Reset"
+    },
+    "Email": {
+      "title": "Email settings",
+      "mailServer": "Mail server",
+      "host": "Host",
+      "port": "Port",
+      "security": "Security",
+      "securities": {
+        "none": "None",
+        "starttls": "STARTTLS",
+        "tls": "TLS/SSL"
+      },
+      "user": "Username",
+      "password": "Password",
+      "fromAddress": "From address",
+      "fromName": "From name",
+      "testEmail": "Test email",
+      "testAddress": "Address to send the test email to",
+      "sendTest": "Send test email",
+      "sending": "Sending…",
+      "testSent": "Sent to {address}. If it isn't in the inbox, check the spam folder.",
+      "emails": "Emails",
+      "appUrl": "App address",
+      "appUrlDescription": "Where the links in the emails lead. Your users have to be able to open it.",
+      "language": "Language",
+      "addresses": "Addresses",
+      "recipients": "Recipients",
+      "recipientsDescription": "Users can unsubscribe any time",
+      "recipientsSearch": "Search users",
+      "recipientsNone": "No users found",
+      "recipientsError": "The users couldn't be read. Check the connection settings.",
+      "loading": "Loading users…",
+      "noAddress": "No address",
+      "addressLabel": "{name}'s email address",
+      "subscribedLabel": "Newsletter for {name}",
+      "newsletter": "Newsletter",
+      "newsletterDescription": "Sends each user a recap of what they and everyone else played",
+      "frequency": "Frequency",
+      "frequencies": {
+        "weekly": "Weekly",
+        "monthly": "Monthly",
+        "quarterly": "Quarterly"
+      },
+      "frequencyDescriptions": {
+        "weekly": "Covers the 7 days before the day it goes out",
+        "monthly": "Covers the month before",
+        "quarterly": "Goes out in Jan, Apr, Jul and Oct and covers the 3 months before"
+      },
+      "weekday": "Day",
+      "monthDay": "Day of the month",
+      "hour": "Time",
+      "sectionsLabel": "Content",
+      "sectionsOwnOnly": "Users see only their own stats on the dashboard, so the newsletter leaves out the server's stats and top users",
+      "sections": {
+        "personal": "Their own stats",
+        "server": "Server stats",
+        "topUsers": "Top users"
+      },
+      "nextSend": "The next one goes out on {date}.",
+      "lastRun": "Last sent on {date}: {sent} sent, {failed} failed, {skipped} skipped.",
+      "lastRunError": "Last tried on {date}: {error}",
+      "tryIt": "Try it",
+      "preview": "Preview",
+      "sendToMe": "Send to me",
+      "rewind": "Rewind",
+      "rewindUsers": "Send now",
+      "rewindUsersDescription": "To automatically invite everyone when it comes out, turn on email invites in the Rewind settings",
+      "rewindNotShared": "Rewind has to be on and open to users before it can be emailed.",
+      "sendToLabel": "Send to {name}",
+      "sendRewind": "{count, plural, =0 {Send} one {Send to # user} other {Send to # users}}",
+      "sendSummary": "{sent, plural, one {Sent # email} other {Sent # emails}}{failed, plural, =0 {} other {, # failed}}{skipped, plural, =0 {} other {, # skipped}}.",
+      "outcomes": {
+        "sent": "Sent",
+        "failed": "Failed",
+        "skipped": "Skipped"
+      },
+      "skipReasons": {
+        "noAddress": "No email address",
+        "noPlays": "Nothing played in the period",
+        "nothingToShow": "Nothing was played on the server in the period"
+      },
+      "mailAuthRequired": "The mail server needs a username and password",
+      "mailAuthFailed": "The mail server didn't accept the username or password",
+      "mailUnableToConnect": "Unable to connect to the mail server. Check the host, port and security.",
+      "mailCertificateError": "The mail server's TLS didn't work. Check the port and security.",
+      "mailRejected": "The mail server refused the address",
+      "mailFailed": "The mail server couldn't send it",
+      "mailServerMissing": "Fill in the mail server's host, port and from address first",
+      "appUrlMissing": "Set the app address first, so the emails can link to it",
+      "historyReading": "The play history is still being read. Try again in a few minutes.",
+      "sendFailed": "The emails couldn't be put together. Check that the statistics source can be reached.",
+      "reenterPassword": "Enter the password again, as the host or username changed",
+      "newsletterNeedsMailServer": "Set up the mail server before turning on the newsletter",
+      "portError": "The port has to be between 1 and 65535",
+      "fromAddressError": "The from address isn't a valid email address",
+      "appUrlError": "The app address isn't a valid URL",
+      "addressError": "An address isn't a valid email address",
+      "sectionsError": "Pick at least one thing for the newsletter to show",
+      "previewNoUser": "That user isn't on the server, or is excluded."
     }
   },
   "LocaleSelect": {
@@ -832,5 +935,86 @@
     "done": "Done",
     "period": "Period",
     "all": "All"
+  },
+  "Email": {
+    "plays": "{count, plural, one {# play} other {# plays}}",
+    "yourTopShows": "Your top shows",
+    "yourTopMovies": "Your top movies",
+    "yourTopArtists": "Your top artists",
+    "anonymous": "Anonymous #{number}",
+    "Rewind": {
+      "subject": "{name}, your Rewind is here",
+      "subjectYear": "{name}, your {year} Rewind is here",
+      "preheader": "See what you played",
+      "eyebrow": "Rewind",
+      "eyebrowYear": "Rewind {year}",
+      "title": "Your Rewind is here, {name}",
+      "intro": "Look back at what you played: your top shows, movies and music, your habits and a few surprises.",
+      "teaser": {
+        "watchTime": "Watch time",
+        "topShow": "Top show",
+        "personality": "Personality"
+      },
+      "button": "Watch my Rewind",
+      "footer": "This link opens your Rewind without signing in, so only share it with people you want to see it."
+    },
+    "Newsletter": {
+      "subject": {
+        "weekly": "Your week on {server}",
+        "monthly": "Your {month} on {server}",
+        "quarterly": "Your quarter on {server}"
+      },
+      "eyebrow": {
+        "weekly": "Weekly recap",
+        "monthly": "Monthly recap",
+        "quarterly": "Quarterly recap"
+      },
+      "title": {
+        "weekly": "Your week, {name}",
+        "monthly": "Your {month}, {name}",
+        "quarterly": "Your quarter, {name}"
+      },
+      "preheader": "What you and everyone else played on {server}",
+      "noPlays": {
+        "weekly": "You didn't play anything this week.",
+        "monthly": "You didn't play anything this month.",
+        "quarterly": "You didn't play anything this quarter."
+      },
+      "onServer": "On {server}",
+      "viewers": "Viewers",
+      "topShows": "Most watched shows",
+      "topMovies": "Most watched movies",
+      "topArtists": "Most played artists",
+      "topUsers": "Who watched the most",
+      "yourRank": "You're #{rank} of {count}.",
+      "button": "See more stats",
+      "footer": {
+        "weekly": "You get this weekly recap from {server}.",
+        "monthly": "You get this monthly recap from {server}.",
+        "quarterly": "You get this quarterly recap from {server}."
+      },
+      "unsubscribe": "Unsubscribe"
+    },
+    "Test": {
+      "subject": "Test email from {app}",
+      "title": "It works",
+      "body": "Your mail server is set up, so Rewind invites and newsletters can go out."
+    },
+    "Unsubscribe": {
+      "eyebrow": "Newsletter",
+      "button": "Unsubscribe",
+      "confirm": {
+        "title": "Unsubscribe?",
+        "body": "You'll stop getting the recaps from {server}."
+      },
+      "done": {
+        "title": "You're unsubscribed",
+        "body": "You won't get any more recaps from {server}. Ask its admin if you'd like them again."
+      },
+      "invalid": {
+        "title": "This link doesn't work",
+        "body": "It may have been cut short. Try the link in another email from {server}."
+      }
+    }
   }
 }

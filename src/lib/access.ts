@@ -26,6 +26,14 @@ export async function canManageSettings(
   return !!session?.user?.isAdmin
 }
 
+// Email connects to other servers and reaches people, so it needs an admin
+// who signed in, even during the first setup, when settings are open to anyone
+export async function canManageEmail(): Promise<boolean> {
+  const session = await getServerSession(authOptions)
+
+  return !!session?.user?.isAdmin
+}
+
 export async function requireSettingsAccess(pageKey?: string): Promise<void> {
   const settings = getSettings()
 

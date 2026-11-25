@@ -203,6 +203,7 @@
       "dashboard": "Panel",
       "activity": "Actividad",
       "history": "Historial",
+      "email": "Correo",
       "complete": "Completo",
       "incomplete": "Incompleto",
       "connectionRequired": "Completa primero los ajustes de conexión"
@@ -370,6 +371,9 @@
       "releaseDate": "Fecha de lanzamiento",
       "releaseDateDescription": "Cuándo sale la edición {year}",
       "releaseDateError": "Revisa la fecha de lanzamiento.",
+      "releaseEmail": "Invitaciones por correo",
+      "releaseEmailDescription": "El día del lanzamiento, envía a cada usuario con dirección una invitación a su Rewind. Las próximas salen el {date}.",
+      "releaseEmailNeedsMail": "Configura primero el servidor de correo en los ajustes de Correo.",
       "yearError": "Revisa el año.",
       "startDateError": "Revisa la fecha de inicio.",
       "shareLinks": "Enlaces compartidos",
@@ -389,6 +393,105 @@
       "shareLinksResetError": "No se pudieron restablecer los enlaces",
       "shareLinksUsers": "Usuarios",
       "shareLinksResetButton": "Restablecer"
+    },
+    "Email": {
+      "title": "Ajustes de correo",
+      "mailServer": "Servidor de correo",
+      "host": "Host",
+      "port": "Puerto",
+      "security": "Seguridad",
+      "securities": {
+        "none": "Ninguna",
+        "starttls": "STARTTLS",
+        "tls": "TLS/SSL"
+      },
+      "user": "Nombre de usuario",
+      "password": "Contraseña",
+      "fromAddress": "Dirección del remitente",
+      "fromName": "Nombre del remitente",
+      "testEmail": "Correo de prueba",
+      "testAddress": "Dirección a la que enviar el correo de prueba",
+      "sendTest": "Enviar correo de prueba",
+      "sending": "Enviando…",
+      "testSent": "Enviado a {address}. Si no está en la bandeja de entrada, revisa la carpeta de spam.",
+      "emails": "Correos",
+      "appUrl": "Dirección de la app",
+      "appUrlDescription": "Adónde llevan los enlaces de los correos. Tus usuarios tienen que poder abrirla.",
+      "language": "Idioma",
+      "addresses": "Direcciones",
+      "recipients": "Destinatarios",
+      "recipientsDescription": "Los usuarios pueden darse de baja en cualquier momento",
+      "recipientsSearch": "Buscar usuarios",
+      "recipientsNone": "No se encontraron usuarios",
+      "recipientsError": "No se pudieron leer los usuarios. Revisa los ajustes de conexión.",
+      "loading": "Cargando usuarios…",
+      "noAddress": "Sin dirección",
+      "addressLabel": "Dirección de correo de {name}",
+      "subscribedLabel": "Boletín para {name}",
+      "newsletter": "Boletín",
+      "newsletterDescription": "Envía a cada usuario un resumen de lo que reprodujeron él y todos los demás",
+      "frequency": "Frecuencia",
+      "frequencies": {
+        "weekly": "Semanal",
+        "monthly": "Mensual",
+        "quarterly": "Trimestral"
+      },
+      "frequencyDescriptions": {
+        "weekly": "Cubre los 7 días anteriores al día de envío",
+        "monthly": "Cubre el mes anterior",
+        "quarterly": "Sale en ene, abr, jul y oct y cubre los 3 meses anteriores"
+      },
+      "weekday": "Día",
+      "monthDay": "Día del mes",
+      "hour": "Hora",
+      "sectionsLabel": "Contenido",
+      "sectionsOwnOnly": "Los usuarios solo ven sus propias estadísticas en el panel, así que el boletín no incluye las estadísticas del servidor ni el top de usuarios",
+      "sections": {
+        "personal": "Sus propias estadísticas",
+        "server": "Estadísticas del servidor",
+        "topUsers": "Top de usuarios"
+      },
+      "nextSend": "El próximo sale el {date}.",
+      "lastRun": "Último envío el {date}: {sent, plural, one {# enviado} other {# enviados}}, {failed, plural, one {# fallido} other {# fallidos}}, {skipped, plural, one {# omitido} other {# omitidos}}.",
+      "lastRunError": "Último intento el {date}: {error}",
+      "tryIt": "Probar",
+      "preview": "Vista previa",
+      "sendToMe": "Enviármelo",
+      "rewind": "Rewind",
+      "rewindUsers": "Enviar ahora",
+      "rewindUsersDescription": "Para invitar automáticamente a todos cuando salga, activa las invitaciones por correo en los ajustes de Rewind",
+      "rewindNotShared": "Rewind tiene que estar activado y abierto a los usuarios antes de poder enviarlo por correo.",
+      "sendToLabel": "Enviar a {name}",
+      "sendRewind": "{count, plural, =0 {Enviar} one {Enviar a # usuario} other {Enviar a # usuarios}}",
+      "sendSummary": "{sent, plural, one {# correo enviado} other {# correos enviados}}{failed, plural, =0 {} one {, # fallido} other {, # fallidos}}{skipped, plural, =0 {} one {, # omitido} other {, # omitidos}}.",
+      "outcomes": {
+        "sent": "Enviado",
+        "failed": "Fallido",
+        "skipped": "Omitido"
+      },
+      "skipReasons": {
+        "noAddress": "Sin dirección de correo",
+        "noPlays": "No reprodujo nada en el periodo",
+        "nothingToShow": "No se reprodujo nada en el servidor en el periodo"
+      },
+      "mailAuthRequired": "El servidor de correo necesita un nombre de usuario y una contraseña",
+      "mailAuthFailed": "El servidor de correo no aceptó el nombre de usuario o la contraseña",
+      "mailUnableToConnect": "No se pudo conectar con el servidor de correo. Revisa el host, el puerto y la seguridad.",
+      "mailCertificateError": "El TLS del servidor de correo no funcionó. Revisa el puerto y la seguridad.",
+      "mailRejected": "El servidor de correo rechazó la dirección",
+      "mailFailed": "El servidor de correo no pudo enviarlo",
+      "mailServerMissing": "Rellena primero el host, el puerto y la dirección del remitente del servidor de correo",
+      "appUrlMissing": "Indica primero la dirección de la app, para que los correos puedan enlazar a ella",
+      "historyReading": "Todavía se está leyendo el historial de reproducciones. Inténtalo de nuevo en unos minutos.",
+      "sendFailed": "No se pudieron preparar los correos. Comprueba que la fuente de estadísticas está accesible.",
+      "reenterPassword": "Vuelve a introducir la contraseña, ya que el host o el nombre de usuario cambiaron",
+      "newsletterNeedsMailServer": "Configura el servidor de correo antes de activar el boletín",
+      "portError": "El puerto tiene que estar entre 1 y 65535",
+      "fromAddressError": "La dirección del remitente no es una dirección de correo válida",
+      "appUrlError": "La dirección de la app no es una URL válida",
+      "addressError": "Una dirección no es una dirección de correo válida",
+      "sectionsError": "Elige al menos una cosa para que el boletín la muestre",
+      "previewNoUser": "Ese usuario no está en el servidor o está excluido."
     }
   },
   "LocaleSelect": {
@@ -832,5 +935,86 @@
     "done": "Listo",
     "period": "Periodo",
     "all": "Todo"
+  },
+  "Email": {
+    "plays": "{count, plural, one {# reproducción} other {# reproducciones}}",
+    "yourTopShows": "Tus series favoritas",
+    "yourTopMovies": "Tus películas favoritas",
+    "yourTopArtists": "Tus artistas favoritos",
+    "anonymous": "Anónimo #{number}",
+    "Rewind": {
+      "subject": "{name}, ya está aquí tu Rewind",
+      "subjectYear": "{name}, ya está aquí tu Rewind {year}",
+      "preheader": "Mira lo que reprodujiste",
+      "eyebrow": "Rewind",
+      "eyebrowYear": "Rewind {year}",
+      "title": "Ya está aquí tu Rewind, {name}",
+      "intro": "Echa la vista atrás a lo que reprodujiste: tus series, películas y música favoritas, tus hábitos y algunas sorpresas.",
+      "teaser": {
+        "watchTime": "Tiempo de visualización",
+        "topShow": "Serie favorita",
+        "personality": "Perfil"
+      },
+      "button": "Ver mi Rewind",
+      "footer": "Este enlace abre tu Rewind sin iniciar sesión, así que compártelo solo con quien quieras que lo vea."
+    },
+    "Newsletter": {
+      "subject": {
+        "weekly": "Tu semana en {server}",
+        "monthly": "Tu {month} en {server}",
+        "quarterly": "Tu trimestre en {server}"
+      },
+      "eyebrow": {
+        "weekly": "Resumen semanal",
+        "monthly": "Resumen mensual",
+        "quarterly": "Resumen trimestral"
+      },
+      "title": {
+        "weekly": "Tu semana, {name}",
+        "monthly": "Tu {month}, {name}",
+        "quarterly": "Tu trimestre, {name}"
+      },
+      "preheader": "Lo que reprodujiste tú y todos los demás en {server}",
+      "noPlays": {
+        "weekly": "No reprodujiste nada esta semana.",
+        "monthly": "No reprodujiste nada este mes.",
+        "quarterly": "No reprodujiste nada este trimestre."
+      },
+      "onServer": "En {server}",
+      "viewers": "Espectadores",
+      "topShows": "Series más vistas",
+      "topMovies": "Películas más vistas",
+      "topArtists": "Artistas más escuchados",
+      "topUsers": "Quién vio más",
+      "yourRank": "Estás en el puesto {rank} de {count}.",
+      "button": "Ver más estadísticas",
+      "footer": {
+        "weekly": "Recibes este resumen semanal de {server}.",
+        "monthly": "Recibes este resumen mensual de {server}.",
+        "quarterly": "Recibes este resumen trimestral de {server}."
+      },
+      "unsubscribe": "Darse de baja"
+    },
+    "Test": {
+      "subject": "Correo de prueba de {app}",
+      "title": "Funciona",
+      "body": "Tu servidor de correo está configurado, así que ya se pueden enviar las invitaciones al Rewind y los boletines."
+    },
+    "Unsubscribe": {
+      "eyebrow": "Boletín",
+      "button": "Darse de baja",
+      "confirm": {
+        "title": "¿Darte de baja?",
+        "body": "Dejarás de recibir los resúmenes de {server}."
+      },
+      "done": {
+        "title": "Te has dado de baja",
+        "body": "No recibirás más resúmenes de {server}. Pídeselo a su administrador si quieres volver a recibirlos."
+      },
+      "invalid": {
+        "title": "Este enlace no funciona",
+        "body": "Puede que se haya cortado. Prueba el enlace de otro correo de {server}."
+      }
+    }
   }
 }

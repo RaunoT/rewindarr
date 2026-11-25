@@ -1,4 +1,10 @@
-import { AutoplaySpeed, RewindStoryId } from '@/utils/constants'
+import {
+  AutoplaySpeed,
+  EmailSecurity,
+  NewsletterFrequency,
+  NewsletterSection,
+  RewindStoryId,
+} from '@/utils/constants'
 
 export type SettingsFormInitialState<T> = {
   message: string
@@ -101,6 +107,8 @@ export type RewindSettings = {
   // MM-DD, when each calendar year's edition comes out. A date before July is
   // in the year after.
   releaseDate: string
+  // Emails every user with an address an invite on the release day
+  isReleaseEmailActive: boolean
   // Only used by the specific year
   year?: number
   // Only used by the custom period
@@ -166,6 +174,39 @@ export type HistorySettings = OwnOnlySettings & {
   complete: boolean
 }
 
+// The mail server, each user's address and the newsletter. Not part of the
+// setup, so it's complete from the start.
+export type EmailSettings = {
+  smtpHost: string
+  smtpPort: number
+  smtpSecurity: EmailSecurity
+  smtpUser: string
+  smtpPassword: string
+  fromAddress: string
+  fromName: string
+  // Where the links and images in the emails lead, as their readers can't
+  // use the address the admin opened the settings from
+  appUrl: string
+  // The emails are written in one language, as users choose theirs in their
+  // browser
+  locale: string
+  // Addresses the admin set, by user ID, which come before the ones the
+  // statistics source and Seerr have
+  addresses: Record<string, string>
+  // Users who don't get the newsletter, by user ID
+  unsubscribed: string[]
+  isNewsletterActive: boolean
+  newsletterFrequency: NewsletterFrequency
+  // A weekly one's day, where 0 is Sunday
+  newsletterWeekday: number
+  // A monthly or quarterly one's day of the month, up to the 28th
+  newsletterMonthDay: number
+  // In the server's time zone
+  newsletterHour: number
+  newsletterSections: NewsletterSection[]
+  complete: boolean
+}
+
 export type Settings = {
   connection: ConnectionSettings
   general: GeneralSettings
@@ -173,6 +214,7 @@ export type Settings = {
   dashboard: DashboardSettings
   activity: ActivitySettings
   history: HistorySettings
+  email: EmailSettings
   setupComplete: boolean
 }
 
@@ -187,7 +229,11 @@ export type PublicConnectionSettings = Pick<
 
 export type PublicGeneralSettings = Omit<GeneralSettings, 'excludedUsers'>
 
-export type PublicSettings = Omit<Settings, 'connection' | 'general'> & {
+// The email settings hold users' addresses, so only their own page gets them
+export type PublicSettings = Omit<
+  Settings,
+  'connection' | 'general' | 'email'
+> & {
   connection: PublicConnectionSettings
   general: PublicGeneralSettings
 }

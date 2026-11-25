@@ -2,6 +2,7 @@ import {
   ActivitySettings,
   ConnectionSettings,
   DashboardSettings,
+  EmailSettings,
   GeneralSettings,
   HistorySettings,
   RewindSettings,
@@ -24,6 +25,7 @@ type SettingsTypeMap = {
   general: GeneralSettings
   activity: Partial<ActivitySettings>
   history: Partial<HistorySettings>
+  email: Partial<EmailSettings>
 }
 
 export default async function updateSettings<K extends keyof SettingsTypeMap>(

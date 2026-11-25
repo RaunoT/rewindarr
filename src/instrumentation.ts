@@ -1,6 +1,6 @@
 // Runs once when the server starts, before any request. The statistics
 // source's play history is read from then on, so the first pages opened don't
-// have to wait for it.
+// have to wait for it, and the newsletter's schedule starts.
 export async function register() {
   if (
     process.env.NEXT_RUNTIME !== 'nodejs' ||
@@ -26,4 +26,8 @@ export async function register() {
   void import('./utils/getVersion')
     .then(({ default: getVersion }) => getVersion())
     .catch(() => {})
+
+  const { startEmailSchedule } = await import('./utils/newsletter')
+
+  startEmailSchedule()
 }

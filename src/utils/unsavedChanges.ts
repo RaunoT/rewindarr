@@ -25,6 +25,27 @@ export function getFormSnapshot(
   )
 }
 
+// The saved form with the loaded fields that weren't in it yet, at their
+// values in the current one. Only those, as others that appeared meanwhile
+// came from an edit, while these can't have been edited before they did.
+export function addLoadedFields(
+  saved: string,
+  current: string,
+  loadedNames: string[],
+) {
+  const fields = new Map<string, string[]>(JSON.parse(saved))
+
+  for (const [name, values] of JSON.parse(current) as [string, string[]][]) {
+    if (!fields.has(name) && loadedNames.includes(name)) {
+      fields.set(name, values)
+    }
+  }
+
+  return JSON.stringify(
+    [...fields.keys()].sort().map((name) => [name, fields.get(name)]),
+  )
+}
+
 type SaveResult = {
   // As sent, or null when it wasn't read
   submitted: string | null

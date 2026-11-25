@@ -24,7 +24,11 @@ export default function SettingsNav({
   const pathname = usePathname()
   const t = useTranslations('Settings.Nav')
   const hintId = useId()
-  const hasLockedPages = SETTINGS_PAGES.some(({ key }) =>
+  // The setup reads as numbered steps, which the optional pages aren't
+  const pages = SETTINGS_PAGES.filter(
+    (page) => !missingSetting || !page.isOptional,
+  )
+  const hasLockedPages = pages.some(({ key }) =>
     isSettingsPageLocked(key, settings),
   )
 
@@ -32,10 +36,11 @@ export default function SettingsNav({
     return (
       <TitleMenu
         label={t('label')}
-        items={SETTINGS_PAGES.map(({ href, key }, index) => {
+        items={pages.map(({ href, key }, index) => {
+          // The email settings aren't public, and never a step
           const isComplete =
             settings[key as keyof Omit<PublicSettings, 'setupComplete'>]
-              .complete
+              ?.complete ?? true
           const isLocked = isSettingsPageLocked(key, settings)
 
           return {
@@ -55,10 +60,11 @@ export default function SettingsNav({
   return (
     <nav aria-label={t('label')}>
       <ul className='nav'>
-        {SETTINGS_PAGES.map(({ href, key }, index) => {
+        {pages.map(({ href, key }, index) => {
+          // The email settings aren't public, and never a step
           const isComplete =
             settings[key as keyof Omit<PublicSettings, 'setupComplete'>]
-              .complete
+              ?.complete ?? true
           const isLocked = isSettingsPageLocked(key, settings)
 
           return (
