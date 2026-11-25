@@ -88,7 +88,7 @@ export default function ActivityTile({ settings }: Props) {
         !data?.stream_count && (
           // Big and at the bottom, so the empty tile doesn't look unfinished
           <p className='mt-auto text-2xl font-semibold tracking-tight'>
-            {t('Home.streams', { count: 0 })}
+            {t('Activity.noActivity')}
           </p>
         )
       )}

@@ -30,7 +30,7 @@
     "rewindDescription": "Vos moments forts, une histoire à la fois.",
     "rewindEdition": "Votre Rewind {year} est là, une histoire à la fois.",
     "earlierRewinds": "Années précédentes",
-    "streams": "{count, plural, =0 {Aucune lecture en cours} one {# lecture en cours} other {# lectures en cours}}",
+    "streams": "{count, plural, one {# lecture en cours} other {# lectures en cours}}",
     "mostWatched": "Le plus regardé",
     "mostListened": "Le plus écouté",
     "emptyTitle": "Rien à afficher pour le moment",
@@ -146,8 +146,8 @@
     "days": "{count, plural, one {# jour} other {# jours}}"
   },
   "NotFound": {
-    "title": "404",
-    "cta": "Il serait peut-être préférable de recommencer"
+    "title": "Page introuvable",
+    "cta": "Retour à l'accueil"
   },
   "AppProvider": {
     "updateAvailable": "Mise à jour disponible",

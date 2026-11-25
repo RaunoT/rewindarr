@@ -30,7 +30,7 @@
     "rewindDescription": "I tuoi momenti migliori, una storia alla volta.",
     "rewindEdition": "Il tuo Rewind {year} è arrivato, una storia alla volta.",
     "earlierRewinds": "Anni precedenti",
-    "streams": "{count, plural, =0 {Niente in riproduzione} one {# in riproduzione} other {# in riproduzione}}",
+    "streams": "{count, plural, one {# in riproduzione} other {# in riproduzione}}",
     "mostWatched": "Il più visto",
     "mostListened": "Il più ascoltato",
     "emptyTitle": "Ancora niente da mostrare",
@@ -50,7 +50,7 @@
     "location": "Posizione",
     "bandwidth": "Banda",
     "streamDetails": "Dettagli dello stream",
-    "noActivity": "Nessuna riproduzione in corso",
+    "noActivity": "Niente in riproduzione",
     "loadError": "Impossibile caricare l'attività",
     "paused": "In pausa",
     "buffering": "In buffering",
@@ -146,8 +146,8 @@
     "days": "{count, plural, one {# giorno} other {# giorni}}"
   },
   "NotFound": {
-    "title": "404",
-    "cta": "Forse conviene ricominciare dall'inizio"
+    "title": "Pagina non trovata",
+    "cta": "Torna alla home"
   },
   "AppProvider": {
     "updateAvailable": "Aggiornamento disponibile",

@@ -30,7 +30,7 @@
     "rewindDescription": "Your viewing highlights, one story at a time.",
     "rewindEdition": "Your {year} Rewind is here, one story at a time.",
     "earlierRewinds": "Earlier years",
-    "streams": "{count, plural, =0 {Nothing playing} one {# stream} other {# streams}}",
+    "streams": "{count, plural, one {# stream} other {# streams}}",
     "mostWatched": "Most watched",
     "mostListened": "Most listened",
     "emptyTitle": "Nothing to show yet",
@@ -50,7 +50,7 @@
     "location": "Location",
     "bandwidth": "Bandwidth",
     "streamDetails": "Stream details",
-    "noActivity": "No active streams",
+    "noActivity": "Nothing playing",
     "loadError": "Couldn't load activity",
     "paused": "Paused",
     "buffering": "Buffering",
@@ -146,8 +146,8 @@
     "days": "{count, plural, one {# day} other {# days}}"
   },
   "NotFound": {
-    "title": "404",
-    "cta": "Might be better to start over"
+    "title": "Page not found",
+    "cta": "Back to home"
   },
   "AppProvider": {
     "updateAvailable": "Update available",

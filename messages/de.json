@@ -30,7 +30,7 @@
     "rewindDescription": "Deine Highlights, Geschichte für Geschichte.",
     "rewindEdition": "Dein Rewind {year} ist da, Geschichte für Geschichte.",
     "earlierRewinds": "Frühere Jahre",
-    "streams": "{count, plural, =0 {Nichts läuft} one {# Stream} other {# Streams}}",
+    "streams": "{count, plural, one {# Stream} other {# Streams}}",
     "mostWatched": "Am meisten gesehen",
     "mostListened": "Am meisten gehört",
     "emptyTitle": "Hier gibt es noch nichts zu sehen",
@@ -50,7 +50,7 @@
     "location": "Standort",
     "bandwidth": "Bandbreite",
     "streamDetails": "Stream-Details",
-    "noActivity": "Keine aktiven Streams",
+    "noActivity": "Nichts läuft",
     "loadError": "Aktivität konnte nicht geladen werden",
     "paused": "Pausiert",
     "buffering": "Puffert",
@@ -146,8 +146,8 @@
     "days": "{count, plural, one {# Tag} other {# Tage}}"
   },
   "NotFound": {
-    "title": "404",
-    "cta": "Bitte von vorne beginnen"
+    "title": "Seite nicht gefunden",
+    "cta": "Zurück zur Startseite"
   },
   "AppProvider": {
     "updateAvailable": "Aktualisierung verfügbar",

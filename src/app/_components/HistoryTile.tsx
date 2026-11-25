@@ -5,6 +5,7 @@ import { DashboardSearchParams } from '@/types/dashboard'
 import { Settings } from '@/types/settings'
 import { Library } from '@/types/statsSource'
 import { TIME_ZONE_COOKIE_NAME } from '@/utils/constants'
+import { formatClockTime, formatDateTime } from '@/utils/formatting'
 import { getRecentPlays } from '@/utils/getHistory'
 import { getOwnOnlyUserId } from '@/utils/helpers'
 import { getImageProxyUrl } from '@/utils/imageProxy'
@@ -178,19 +179,16 @@ function TimelineMark({
     <>
       <time
         dateTime={time.toISOString()}
-        title={new Intl.DateTimeFormat(locale, {
-          dateStyle: 'medium',
-          timeStyle: 'short',
-          timeZone,
-        }).format(time)}
+        title={formatDateTime(time, locale, timeZone)}
         className='w-14 shrink-0 text-right text-xs whitespace-nowrap text-neutral-400 tabular-nums'
       >
-        {new Intl.DateTimeFormat(locale, {
-          ...(isToday
-            ? { hour: 'numeric', minute: '2-digit' }
-            : { day: 'numeric', month: 'short' }),
-          timeZone,
-        }).format(time)}
+        {isToday
+          ? formatClockTime(time, locale, timeZone)
+          : new Intl.DateTimeFormat(locale, {
+              day: 'numeric',
+              month: 'short',
+              timeZone,
+            }).format(time)}
       </time>
       <span
         aria-hidden='true'
