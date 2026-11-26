@@ -5,12 +5,7 @@ import { authOptions } from '@/lib/auth'
 import { buildTestEmail } from '@/utils/emailContent'
 import { getEmailIntl } from '@/utils/emailIntl'
 import { isEmailAddress } from '@/utils/emailRecipients'
-import {
-  SendOutcome,
-  SendReport,
-  sendNewsletter,
-  sendRewindEmails,
-} from '@/utils/emailSend'
+import { SendOutcome, SendReport, sendNewsletter } from '@/utils/emailSend'
 import getSettings from '@/utils/getSettings'
 import { isMailServerSet, restoreMailPassword, sendEmail } from '@/utils/mailer'
 import {
@@ -93,14 +88,6 @@ async function toResult(report: SendReport): Promise<SendActionResult> {
     message: t('sendSummary', { sent, failed, skipped }),
     outcomes: report.outcomes,
   }
-}
-
-export async function sendRewind(userIds: string[]): Promise<SendActionResult> {
-  if (!(await canManageEmail())) {
-    return deny()
-  }
-
-  return toResult(await sendRewindEmails(getSettings(), userIds))
 }
 
 // The signed-in admin's own newsletter for the last period, sent to them

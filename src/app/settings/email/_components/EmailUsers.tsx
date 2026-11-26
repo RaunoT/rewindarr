@@ -26,10 +26,6 @@ import {
   WAS_INVITED_FIELD,
   WAS_SUBSCRIBED_FIELD,
 } from '../_actions/emailForm'
-import SendRewindButton, {
-  getSendKey,
-  useRewindSends,
-} from './SendRewindButton'
 
 type Props = {
   // Read while the rest of the form shows. Null when they couldn't be read.
@@ -42,8 +38,6 @@ type Props = {
   // The same for the Rewind invites on the release day
   isInviteActive: boolean
   isInviteOnLoad: boolean
-  // Whether a user can be emailed their Rewind invite straight away
-  canSendRewind: boolean
 }
 
 // A switch each user has, for an email they can stop
@@ -102,7 +96,6 @@ function UserList({
   isNewsletterOnLoad,
   isInviteActive,
   isInviteOnLoad,
-  canSendRewind,
 }: Props) {
   const t = useTranslations('Settings.Email')
   const recipients = use(request)
@@ -112,7 +105,6 @@ function UserList({
   const [subscribed, setSubscribed] = useState(() => getSubscribed(recipients))
   const [invited, setInvited] = useState(() => getInvited(recipients))
   const [shownRecipients, setShownRecipients] = useState(recipients)
-  const sends = useRewindSends()
   // Which read of the users the address fields show
   const [version, setVersion] = useState(0)
 
@@ -170,9 +162,8 @@ function UserList({
     ...(isInviteActive ? [inviteColumn] : []),
   ]
   const ids = recipients.map(({ id }) => id)
-  // The address goes under the name sooner with more beside it: both
-  // switches, or the button that sends a Rewind invite
-  const isStacked = columns.length > 1 || canSendRewind
+  // The address goes under the name sooner with both switches beside it
+  const isStacked = columns.length > 1
   // Select all and clear are for every switch, whichever column it's in
   const switchKeys = columns.flatMap((_, index) =>
     ids.map((id) => `${index}:${id}`),
@@ -223,31 +214,21 @@ function UserList({
                 value={recipient.id}
               />
               {/* Beside the name where the list has the room, else under it */}
-              <div
+              <input
+                key={`address-${version}`}
+                type='email'
                 className={clsx(
-                  'order-last flex w-full items-center gap-2',
-                  isStacked ? '@2xl:order-none' : '@lg:order-none @lg:w-56',
-                  isStacked && (canSendRewind ? '@2xl:w-80' : '@2xl:w-56'),
+                  'input order-last text-base sm:text-sm',
+                  isStacked
+                    ? '@2xl:order-none @2xl:w-56'
+                    : '@lg:order-none @lg:w-56',
                 )}
-              >
-                <input
-                  key={`address-${version}`}
-                  type='email'
-                  className='input min-w-0 flex-1 text-base sm:text-sm'
-                  name={`${ADDRESS_FIELD_PREFIX}${recipient.id}`}
-                  defaultValue={recipient.customAddress}
-                  placeholder={recipient.foundAddress || t('noAddress')}
-                  aria-label={t('addressLabel', { name: recipient.name })}
-                  autoComplete='off'
-                />
-                {canSendRewind && (
-                  <SendRewindButton
-                    user={recipient}
-                    state={sends.states[getSendKey(recipient)]}
-                    onSend={() => sends.send(recipient)}
-                  />
-                )}
-              </div>
+                name={`${ADDRESS_FIELD_PREFIX}${recipient.id}`}
+                defaultValue={recipient.customAddress}
+                placeholder={recipient.foundAddress || t('noAddress')}
+                aria-label={t('addressLabel', { name: recipient.name })}
+                autoComplete='off'
+              />
               {/* Each with its label, beside the name where the list has the
                   room, else under it */}
               {!!columns.length && (
@@ -310,9 +291,6 @@ export default function EmailUsers(props: Props) {
         <span className='label-wrapper'>{t('users')}</span>
         {(props.isNewsletterActive || props.isInviteActive) && (
           <small>{t('recipientsDescription')}</small>
-        )}
-        {props.canSendRewind && (
-          <small className='mt-2'>{t('sendNowDescription')}</small>
         )}
       </span>
     </div>

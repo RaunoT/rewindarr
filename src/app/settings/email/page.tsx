@@ -4,7 +4,6 @@ import { getSiteUrl } from '@/utils/constants'
 import { canShowOthers } from '@/utils/emailContent'
 import { EmailRecipient, getEmailRecipients } from '@/utils/emailRecipients'
 import getSettings from '@/utils/getSettings'
-import { checkRequiredSettings } from '@/utils/helpers'
 import { isMailServerSet, maskMailPassword } from '@/utils/mailer'
 import { readNewsletterState } from '@/utils/newsletter'
 import { readRewindEmailsState } from '@/utils/rewindRelease'
@@ -13,7 +12,6 @@ import {
   getLatestReleaseYear,
   getNextReleaseEmailTime,
 } from '@/utils/rewindReleaseSchedule'
-import { canShareRewind } from '@/utils/rewindShare'
 import { Metadata } from 'next'
 import { getServerSession } from 'next-auth'
 import { getTranslations } from 'next-intl/server'
@@ -81,12 +79,6 @@ export default async function EmailSettingsPage() {
       siteUrl={getSiteUrl() ?? ''}
       isOthersShown={canShowOthers(settings)}
       invite={await getInviteStatus()}
-      // Not during the setup, when there's no one to send to yet
-      canSendRewind={
-        !checkRequiredSettings(settings) &&
-        canShareRewind(settings) &&
-        isMailServerSet(settings.email)
-      }
       lastRun={lastRun}
       adminAddress={session?.user.email ?? ''}
       adminId={session?.user.id ?? ''}
