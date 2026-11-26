@@ -110,6 +110,7 @@ async function validateAndSave(
       )
       .optional(),
     unsubscribed: z.array(z.string()).optional(),
+    inviteUnsubscribed: z.array(z.string()).optional(),
     isNewsletterActive: z.boolean(),
     newsletterFrequency: z.enum(NEWSLETTER_FREQUENCIES).optional(),
     newsletterWeekday: z.number().int().min(0).max(6).optional(),

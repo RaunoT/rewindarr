@@ -372,7 +372,7 @@
       "releaseDateDescription": "Cuándo sale la edición {year}",
       "releaseDateError": "Revisa la fecha de lanzamiento.",
       "releaseEmail": "Invitaciones por correo",
-      "releaseEmailDescription": "El día del lanzamiento, envía a cada usuario con dirección una invitación a su Rewind. Las próximas salen el {date}.",
+      "releaseEmailDescription": "El día del lanzamiento, envía a cada usuario con dirección una invitación a su Rewind. Elige quién la recibe en los ajustes de Correo. Las próximas salen el {date}.",
       "releaseEmailNeedsMail": "Configura primero el servidor de correo en los ajustes de Correo.",
       "yearError": "Revisa el año.",
       "startDateError": "Revisa la fecha de inicio.",
@@ -437,6 +437,8 @@
       "noAddress": "Sin dirección",
       "addressLabel": "Dirección de correo de {name}",
       "subscribedLabel": "Boletín para {name}",
+      "invite": "Invitación a Rewind",
+      "invitedLabel": "Invitación a Rewind para {name}",
       "newsletter": "Boletín",
       "newsletterDescription": "Envía a cada usuario un resumen de lo que reprodujeron él y todos los demás",
       "frequency": "Frecuencia",
@@ -957,7 +959,8 @@
       },
       "button": "Ver mi Rewind",
       "footer": "Este enlace abre tu Rewind sin iniciar sesión, así que compártelo solo con quien quieras que lo vea.",
-      "footerLogin": "Este enlace abre tu Rewind después de iniciar sesión. Otros usuarios del servidor también pueden abrirlo, así que compártelo solo con quien quieras que lo vea."
+      "footerLogin": "Este enlace abre tu Rewind después de iniciar sesión. Otros usuarios del servidor también pueden abrirlo, así que compártelo solo con quien quieras que lo vea.",
+      "unsubscribe": "No recibir más invitaciones a Rewind"
     },
     "Newsletter": {
       "subject": {
@@ -1002,19 +1005,32 @@
       "body": "Tu servidor de correo está configurado, así que ya se pueden enviar las invitaciones al Rewind y los boletines."
     },
     "Unsubscribe": {
-      "eyebrow": "Boletín",
       "button": "Darse de baja",
-      "confirm": {
-        "title": "¿Darte de baja?",
-        "body": "Dejarás de recibir los resúmenes de {server}."
-      },
-      "done": {
-        "title": "Te has dado de baja",
-        "body": "No recibirás más resúmenes de {server}. Pídeselo a su administrador si quieres volver a recibirlos."
-      },
       "invalid": {
         "title": "Este enlace no funciona",
         "body": "Puede que se haya cortado. Prueba el enlace de otro correo de {server}."
+      },
+      "newsletter": {
+        "eyebrow": "Boletín",
+        "confirm": {
+          "title": "¿Darte de baja?",
+          "body": "Dejarás de recibir los resúmenes de {server}."
+        },
+        "done": {
+          "title": "Te has dado de baja",
+          "body": "No recibirás más resúmenes de {server}. Pídeselo a su administrador si quieres volver a recibirlos."
+        }
+      },
+      "invite": {
+        "eyebrow": "Rewind",
+        "confirm": {
+          "title": "¿Dejar de recibir invitaciones a Rewind?",
+          "body": "Dejarás de recibir un correo de {server} cuando salga tu próximo Rewind."
+        },
+        "done": {
+          "title": "Sin más invitaciones a Rewind",
+          "body": "No recibirás más invitaciones a Rewind de {server}. Pídeselo a su administrador si quieres volver a recibirlas."
+        }
       }
     }
   }

@@ -372,7 +372,7 @@
       "releaseDateDescription": "Quand sort l'édition {year}",
       "releaseDateError": "Vérifiez la date de sortie.",
       "releaseEmail": "Invitations par e-mail",
-      "releaseEmailDescription": "Le jour de la sortie, envoie à chaque utilisateur ayant une adresse une invitation à découvrir son Rewind. Les prochaines partent le {date}.",
+      "releaseEmailDescription": "Le jour de la sortie, envoie à chaque utilisateur ayant une adresse une invitation à découvrir son Rewind. Choisissez qui la reçoit dans les paramètres e-mail. Les prochaines partent le {date}.",
       "releaseEmailNeedsMail": "Configurez d'abord le serveur de messagerie dans les réglages E-mail.",
       "yearError": "Vérifiez l'année.",
       "startDateError": "Vérifiez la date de début.",
@@ -437,6 +437,8 @@
       "noAddress": "Aucune adresse",
       "addressLabel": "Adresse e-mail de {name}",
       "subscribedLabel": "Newsletter pour {name}",
+      "invite": "Invitation Rewind",
+      "invitedLabel": "Invitation Rewind pour {name}",
       "newsletter": "Newsletter",
       "newsletterDescription": "Envoie à chaque utilisateur un récapitulatif de ce que lui et tous les autres ont regardé et écouté",
       "frequency": "Fréquence",
@@ -957,7 +959,8 @@
       },
       "button": "Voir mon Rewind",
       "footer": "Ce lien ouvre votre Rewind sans connexion, alors ne le partagez qu'avec les personnes à qui vous voulez le montrer.",
-      "footerLogin": "Ce lien ouvre votre Rewind après connexion. Les autres membres du serveur peuvent aussi l'ouvrir, alors ne le partagez qu'avec les personnes à qui vous voulez le montrer."
+      "footerLogin": "Ce lien ouvre votre Rewind après connexion. Les autres membres du serveur peuvent aussi l'ouvrir, alors ne le partagez qu'avec les personnes à qui vous voulez le montrer.",
+      "unsubscribe": "Ne plus recevoir les invitations Rewind"
     },
     "Newsletter": {
       "subject": {
@@ -1002,19 +1005,32 @@
       "body": "Votre serveur de messagerie est configuré : les invitations au Rewind et les newsletters peuvent partir."
     },
     "Unsubscribe": {
-      "eyebrow": "Newsletter",
       "button": "Se désabonner",
-      "confirm": {
-        "title": "Se désabonner ?",
-        "body": "Vous ne recevrez plus les récapitulatifs de {server}."
-      },
-      "done": {
-        "title": "Vous êtes désabonné",
-        "body": "Vous ne recevrez plus de récapitulatifs de {server}. Demandez à son administrateur si vous souhaitez les recevoir à nouveau."
-      },
       "invalid": {
         "title": "Ce lien ne fonctionne pas",
         "body": "Il a peut-être été coupé. Essayez le lien d'un autre e-mail de {server}."
+      },
+      "newsletter": {
+        "eyebrow": "Newsletter",
+        "confirm": {
+          "title": "Se désabonner ?",
+          "body": "Vous ne recevrez plus les récapitulatifs de {server}."
+        },
+        "done": {
+          "title": "Vous êtes désabonné",
+          "body": "Vous ne recevrez plus de récapitulatifs de {server}. Demandez à son administrateur si vous souhaitez les recevoir à nouveau."
+        }
+      },
+      "invite": {
+        "eyebrow": "Rewind",
+        "confirm": {
+          "title": "Ne plus recevoir les invitations Rewind ?",
+          "body": "Vous ne recevrez plus d'e-mail de {server} à la sortie de votre prochain Rewind."
+        },
+        "done": {
+          "title": "Plus d'invitations Rewind",
+          "body": "Vous ne recevrez plus d'invitations Rewind de {server}. Demandez à son administrateur si vous souhaitez les recevoir à nouveau."
+        }
       }
     }
   }

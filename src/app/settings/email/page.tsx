@@ -6,6 +6,7 @@ import { EmailRecipient, getEmailRecipients } from '@/utils/emailRecipients'
 import getSettings from '@/utils/getSettings'
 import { maskMailPassword } from '@/utils/mailer'
 import { readNewsletterState } from '@/utils/newsletter'
+import { isReleaseEmailOn } from '@/utils/rewindReleaseSchedule'
 import { Metadata } from 'next'
 import { getServerSession } from 'next-auth'
 import { getTranslations } from 'next-intl/server'
@@ -38,6 +39,7 @@ export default async function EmailSettingsPage() {
   const {
     addresses: _addresses,
     unsubscribed: _unsubscribed,
+    inviteUnsubscribed: _inviteUnsubscribed,
     ...email
   } = maskMailPassword(settings.email)
 
@@ -48,6 +50,7 @@ export default async function EmailSettingsPage() {
       recipients={readRecipients()}
       siteUrl={getSiteUrl() ?? ''}
       isOthersShown={canShowOthers(settings)}
+      isInviteActive={isReleaseEmailOn(settings)}
       lastRun={lastRun}
       adminAddress={session?.user.email ?? ''}
       adminId={session?.user.id ?? ''}

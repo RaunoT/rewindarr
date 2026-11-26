@@ -372,7 +372,7 @@
       "releaseDateDescription": "Quando esce l'edizione {year}",
       "releaseDateError": "Controlla la data di uscita.",
       "releaseEmail": "Inviti via email",
-      "releaseEmailDescription": "Il giorno dell'uscita, invia a ogni utente con un indirizzo un invito al suo Rewind. I prossimi partono il {date}.",
+      "releaseEmailDescription": "Il giorno dell'uscita, invia a ogni utente con un indirizzo un invito al suo Rewind. Scegli chi lo riceve nelle impostazioni Email. I prossimi partono il {date}.",
       "releaseEmailNeedsMail": "Configura prima il server di posta nelle impostazioni Email.",
       "yearError": "Controlla l'anno.",
       "startDateError": "Controlla la data di inizio.",
@@ -437,6 +437,8 @@
       "noAddress": "Nessun indirizzo",
       "addressLabel": "Indirizzo email di {name}",
       "subscribedLabel": "Newsletter per {name}",
+      "invite": "Invito a Rewind",
+      "invitedLabel": "Invito a Rewind per {name}",
       "newsletter": "Newsletter",
       "newsletterDescription": "Invia a ogni utente un riepilogo di cosa hanno riprodotto lui e tutti gli altri",
       "frequency": "Frequenza",
@@ -957,7 +959,8 @@
       },
       "button": "Guarda il mio Rewind",
       "footer": "Questo link apre il tuo Rewind senza accedere, quindi condividilo solo con chi vuoi che lo veda.",
-      "footerLogin": "Questo link apre il tuo Rewind dopo l'accesso. Possono aprirlo anche gli altri utenti del server, quindi condividilo solo con chi vuoi che lo veda."
+      "footerLogin": "Questo link apre il tuo Rewind dopo l'accesso. Possono aprirlo anche gli altri utenti del server, quindi condividilo solo con chi vuoi che lo veda.",
+      "unsubscribe": "Non ricevere più inviti a Rewind"
     },
     "Newsletter": {
       "subject": {
@@ -1002,19 +1005,32 @@
       "body": "Il tuo server di posta è configurato, quindi gli inviti al Rewind e le newsletter possono partire."
     },
     "Unsubscribe": {
-      "eyebrow": "Newsletter",
       "button": "Annulla l'iscrizione",
-      "confirm": {
-        "title": "Annullare l'iscrizione?",
-        "body": "Non riceverai più i riepiloghi da {server}."
-      },
-      "done": {
-        "title": "Iscrizione annullata",
-        "body": "Non riceverai più riepiloghi da {server}. Chiedi al suo amministratore se li vuoi di nuovo."
-      },
       "invalid": {
         "title": "Questo link non funziona",
         "body": "Potrebbe essere stato troncato. Prova il link in un'altra email da {server}."
+      },
+      "newsletter": {
+        "eyebrow": "Newsletter",
+        "confirm": {
+          "title": "Annullare l'iscrizione?",
+          "body": "Non riceverai più i riepiloghi da {server}."
+        },
+        "done": {
+          "title": "Iscrizione annullata",
+          "body": "Non riceverai più riepiloghi da {server}. Chiedi al suo amministratore se li vuoi di nuovo."
+        }
+      },
+      "invite": {
+        "eyebrow": "Rewind",
+        "confirm": {
+          "title": "Non ricevere più inviti a Rewind?",
+          "body": "Non riceverai più un'email da {server} quando esce il tuo prossimo Rewind."
+        },
+        "done": {
+          "title": "Niente più inviti a Rewind",
+          "body": "Non riceverai più inviti a Rewind da {server}. Chiedi al suo amministratore se li vuoi di nuovo."
+        }
       }
     }
   }

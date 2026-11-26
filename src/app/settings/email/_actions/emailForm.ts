@@ -7,16 +7,19 @@ import {
 import type { MailServer } from '@/utils/mailer'
 import { normalizeUrl } from '@/utils/url'
 
-// Each user's address and subscription are sent under their ID
+// Each user's address and subscriptions are sent under their ID
 export const ADDRESS_FIELD_PREFIX = 'address:'
 export const SUBSCRIBED_FIELD = 'subscribed'
+export const INVITED_FIELD = 'invited'
 // Who was subscribed when the form was opened, so a save only changes the
 // ones the admin switched, and not someone who unsubscribed since
 export const WAS_SUBSCRIBED_FIELD = 'wasSubscribed'
+export const WAS_INVITED_FIELD = 'wasInvited'
 // The users each list showed, so the ones it couldn't keep their settings.
-// The newsletter's list only shows while it's on.
+// The newsletter's and the invites' lists only show while they're on.
 export const ADDRESS_USERS_FIELD = 'addressUsers'
 export const SUBSCRIPTION_USERS_FIELD = 'subscriptionUsers'
+export const INVITE_USERS_FIELD = 'inviteUsers'
 
 function readText(formData: FormData, name: string): string {
   return String(formData.get(name) ?? '').trim()
@@ -33,6 +36,38 @@ export function readMailServerForm(formData: FormData): MailServer {
     fromAddress: readText(formData, 'fromAddress'),
     fromName: readText(formData, 'fromName'),
   }
+}
+
+// Who doesn't get an email after a save: the ones saved, with the switches
+// the admin turned changed. Undefined when the list wasn't shown.
+function readUnsubscribed(
+  formData: FormData,
+  saved: string[],
+  fields: { users: string; isOn: string; wasOn: string },
+): string[] | undefined {
+  const userIds = formData.getAll(fields.users).map(String)
+
+  if (!userIds.length) {
+    return undefined
+  }
+
+  const isOn = new Set(formData.getAll(fields.isOn).map(String))
+  const wasOn = new Set(formData.getAll(fields.wasOn).map(String))
+  const unsubscribed = new Set(saved)
+
+  for (const userId of userIds) {
+    if (isOn.has(userId) === wasOn.has(userId)) {
+      continue
+    }
+
+    if (isOn.has(userId)) {
+      unsubscribed.delete(userId)
+    } else {
+      unsubscribed.add(userId)
+    }
+  }
+
+  return [...unsubscribed]
 }
 
 // The email settings form as sent, before the saved password is restored.
@@ -86,32 +121,27 @@ export function readEmailForm(
     data.addresses = addresses
   }
 
-  const subscriptionUsers = formData
-    .getAll(SUBSCRIPTION_USERS_FIELD)
-    .map(String)
+  const unsubscribed = readUnsubscribed(formData, saved.unsubscribed, {
+    users: SUBSCRIPTION_USERS_FIELD,
+    isOn: SUBSCRIBED_FIELD,
+    wasOn: WAS_SUBSCRIBED_FIELD,
+  })
+  const inviteUnsubscribed = readUnsubscribed(
+    formData,
+    saved.inviteUnsubscribed,
+    {
+      users: INVITE_USERS_FIELD,
+      isOn: INVITED_FIELD,
+      wasOn: WAS_INVITED_FIELD,
+    },
+  )
 
-  if (subscriptionUsers.length) {
-    const subscribed = new Set(formData.getAll(SUBSCRIBED_FIELD).map(String))
-    const wasSubscribed = new Set(
-      formData.getAll(WAS_SUBSCRIBED_FIELD).map(String),
-    )
-    const unsubscribed = new Set(saved.unsubscribed)
+  if (unsubscribed) {
+    data.unsubscribed = unsubscribed
+  }
 
-    for (const userId of subscriptionUsers) {
-      const isSubscribed = subscribed.has(userId)
-
-      if (isSubscribed === wasSubscribed.has(userId)) {
-        continue
-      }
-
-      if (isSubscribed) {
-        unsubscribed.delete(userId)
-      } else {
-        unsubscribed.add(userId)
-      }
-    }
-
-    data.unsubscribed = [...unsubscribed]
+  if (inviteUnsubscribed) {
+    data.inviteUnsubscribed = inviteUnsubscribed
   }
 
   return data

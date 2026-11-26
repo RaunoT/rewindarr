@@ -372,7 +372,7 @@
       "releaseDateDescription": "Millal {year}. aasta väljaanne ilmub",
       "releaseDateError": "Kontrolli avaldamise kuupäeva.",
       "releaseEmail": "Kutsed meiliga",
-      "releaseEmailDescription": "Ilmumise päeval saadab igale aadressiga kasutajale kutse nende Rewindile. Järgmised lähevad välja {date}.",
+      "releaseEmailDescription": "Ilmumise päeval saadab igale aadressiga kasutajale kutse nende Rewindile. Kes selle saavad, vali e-posti seadetes. Järgmised lähevad välja {date}.",
       "releaseEmailNeedsMail": "Seadista esmalt meiliserver E-posti seadetes.",
       "yearError": "Kontrolli aastat.",
       "startDateError": "Kontrolli alguskuupäeva.",
@@ -437,6 +437,8 @@
       "noAddress": "Aadress puudub",
       "addressLabel": "Kasutaja {name} e-posti aadress",
       "subscribedLabel": "Uudiskiri kasutajale {name}",
+      "invite": "Rewindi kutse",
+      "invitedLabel": "Rewindi kutse kasutajale {name}",
       "newsletter": "Uudiskiri",
       "newsletterDescription": "Saadab igale kasutajale kokkuvõtte sellest, mida tema ja kõik teised mängisid",
       "frequency": "Sagedus",
@@ -957,7 +959,8 @@
       },
       "button": "Vaata minu Rewindi",
       "footer": "See link avab sinu Rewindi ilma sisse logimata, seega jaga seda ainult nendega, kellele tahad seda näidata.",
-      "footerLogin": "See link avab sinu Rewindi pärast sisselogimist. Ka teised serveri kasutajad saavad selle avada, seega jaga seda ainult nendega, kellele tahad seda näidata."
+      "footerLogin": "See link avab sinu Rewindi pärast sisselogimist. Ka teised serveri kasutajad saavad selle avada, seega jaga seda ainult nendega, kellele tahad seda näidata.",
+      "unsubscribe": "Loobu Rewindi kutsetest"
     },
     "Newsletter": {
       "subject": {
@@ -1002,19 +1005,32 @@
       "body": "Sinu meiliserver on seadistatud, seega saab Rewindi kutseid ja uudiskirju saata."
     },
     "Unsubscribe": {
-      "eyebrow": "Uudiskiri",
       "button": "Loobu tellimusest",
-      "confirm": {
-        "title": "Loobud tellimusest?",
-        "body": "Sa ei saa enam kokkuvõtteid serverist {server}."
-      },
-      "done": {
-        "title": "Tellimusest loobutud",
-        "body": "Sa ei saa enam kokkuvõtteid serverist {server}. Kui soovid neid uuesti, küsi selle administraatorilt."
-      },
       "invalid": {
         "title": "See link ei tööta",
         "body": "Võib-olla jäi see poolikuks. Proovi linki mõnest teisest serveri {server} e-kirjast."
+      },
+      "newsletter": {
+        "eyebrow": "Uudiskiri",
+        "confirm": {
+          "title": "Loobud tellimusest?",
+          "body": "Sa ei saa enam kokkuvõtteid serverist {server}."
+        },
+        "done": {
+          "title": "Tellimusest loobutud",
+          "body": "Sa ei saa enam kokkuvõtteid serverist {server}. Kui soovid neid uuesti, küsi selle administraatorilt."
+        }
+      },
+      "invite": {
+        "eyebrow": "Rewind",
+        "confirm": {
+          "title": "Loobud Rewindi kutsetest?",
+          "body": "Sa ei saa enam serverist {server} e-kirja, kui su järgmine Rewind ilmub."
+        },
+        "done": {
+          "title": "Rewindi kutsetest loobutud",
+          "body": "Sa ei saa enam Rewindi kutseid serverist {server}. Kui soovid neid uuesti, küsi selle administraatorilt."
+        }
       }
     }
   }

@@ -4,9 +4,12 @@ import { describe, expect, it } from 'vitest'
 import {
   ADDRESS_FIELD_PREFIX,
   ADDRESS_USERS_FIELD,
+  INVITE_USERS_FIELD,
+  INVITED_FIELD,
   readEmailForm,
   SUBSCRIBED_FIELD,
   SUBSCRIPTION_USERS_FIELD,
+  WAS_INVITED_FIELD,
   WAS_SUBSCRIBED_FIELD,
 } from './emailForm'
 
@@ -14,6 +17,7 @@ const SAVED: EmailSettings = {
   ...DEFAULT_SETTINGS.email,
   addresses: { 1: 'one@example.com', 9: 'nine@example.com' },
   unsubscribed: ['2', '9'],
+  inviteUnsubscribed: ['5'],
 }
 
 function toFormData(fields: [string, string][]): FormData {
@@ -125,6 +129,22 @@ describe('readEmailForm', () => {
     expect(data.unsubscribed).toEqual(['2', '9'])
   })
 
+  it('reads the invites apart from the newsletter', () => {
+    const data = readEmailForm(
+      toFormData([
+        ...SERVER_FIELDS,
+        [INVITE_USERS_FIELD, '1'],
+        [INVITE_USERS_FIELD, '5'],
+        [WAS_INVITED_FIELD, '1'],
+        [INVITED_FIELD, '5'],
+      ]),
+      SAVED,
+    )
+
+    expect(data.inviteUnsubscribed).toEqual(['1'])
+    expect(data).not.toHaveProperty('unsubscribed')
+  })
+
   it('keeps the subscriptions while the newsletter list is hidden', () => {
     const data = readEmailForm(
       toFormData([
@@ -144,5 +164,6 @@ describe('readEmailForm', () => {
 
     expect(data).not.toHaveProperty('addresses')
     expect(data).not.toHaveProperty('unsubscribed')
+    expect(data).not.toHaveProperty('inviteUnsubscribed')
   })
 })

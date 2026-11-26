@@ -25,7 +25,7 @@ import EmailUsers from './EmailUsers'
 
 export type EmailFormSettings = Omit<
   EmailSettings,
-  'addresses' | 'unsubscribed'
+  'addresses' | 'unsubscribed' | 'inviteUnsubscribed'
 >
 
 type Props = {
@@ -36,6 +36,9 @@ type Props = {
   siteUrl: string
   // Off when users see only their own stats, which leaves out the server's
   isOthersShown: boolean
+  // Whether Rewind invites go out on the release day, set in the Rewind
+  // settings
+  isInviteActive: boolean
   lastRun: NewsletterRun | null
   adminAddress: string
   adminId: string
@@ -67,6 +70,7 @@ export default function EmailSettingsForm({
   recipients,
   siteUrl,
   isOthersShown,
+  isInviteActive,
   lastRun,
   adminAddress,
   adminId,
@@ -435,6 +439,7 @@ export default function EmailSettingsForm({
           recipients={recipients}
           isNewsletterActive={isNewsletterActive}
           isNewsletterOnLoad={settings.isNewsletterActive}
+          isInviteActive={isInviteActive}
         />
       </section>
     </SettingsForm>
