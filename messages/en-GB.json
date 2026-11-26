@@ -377,7 +377,10 @@
       "yearError": "Check the year.",
       "startDateError": "Check the start date.",
       "shareLinks": "Shared links",
-      "shareLinksDescription": "Each link opens that user's Rewind without signing in, so anyone it's passed on to can see it too.",
+      "shareLinksDescription": "Every user has their own link. It opens their Rewind without signing in, so anyone it's passed on to can see it too.",
+      "shareLinksLoginDescription": "Every user has their own link. It opens their Rewind for anyone who signs in, so others on the server it's passed on to can see it.",
+      "shareLogin": "Sign in for shared links",
+      "shareLoginDescription": "Each user's own Rewind link opens only after signing in. When off, anyone who has it can open it, whatever \"Allow outside access\" says.",
       "shareLinksSendDescription": "Send now emails it to the address in the <link>Email settings</link>.",
       "shareLinksSearch": "Search users",
       "shareLinksNoUsers": "No users found",
@@ -953,7 +956,8 @@
         "personality": "Personality"
       },
       "button": "Watch my Rewind",
-      "footer": "This link opens your Rewind without signing in, so only share it with people you want to see it."
+      "footer": "This link opens your Rewind without signing in, so only share it with people you want to see it.",
+      "footerLogin": "This link opens your Rewind after signing in. Others on the server can open it too, so only share it with people you want to see it."
     },
     "Newsletter": {
       "subject": {

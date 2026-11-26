@@ -116,6 +116,7 @@ export const DEFAULT_SETTINGS: Settings = {
     isReleaseEmailActive: false,
     startDate: '',
     shareVersion: 0,
+    isShareLoginRequired: false,
     complete: false,
   },
   dashboard: {
