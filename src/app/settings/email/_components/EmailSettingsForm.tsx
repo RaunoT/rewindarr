@@ -14,6 +14,7 @@ import { getLocaleName } from '@/utils/localeName'
 import type { NewsletterRun } from '@/utils/newsletter'
 import { getNextSendTime, MAX_MONTH_DAY } from '@/utils/newsletterSchedule'
 import type { RewindEmailsRun } from '@/utils/rewindRelease'
+import clsx from 'clsx'
 import { useFormatter, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useActionState, useState, useSyncExternalStore } from 'react'
@@ -472,54 +473,61 @@ export default function EmailSettingsForm({
                     </span>
                   )}
                 </small>
+                {/* When they go out and how the last ones went, once on */}
+                {isInviteActive && (
+                  <>
+                    <small className='mt-2'>
+                      {t('invitesNext', {
+                        date: format.dateTime(new Date(invite.nextTime), {
+                          weekday: 'long',
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          timeZone,
+                        }),
+                      })}
+                    </small>
+                    {invite.lastRun && (
+                      <small
+                        className={clsx(
+                          'mt-2',
+                          (invite.lastRun.error || invite.lastRun.failed) &&
+                            'text-danger',
+                        )}
+                      >
+                        {invite.lastRun.error
+                          ? t('lastRunError', {
+                              date: format.dateTime(
+                                new Date(invite.lastRun.at),
+                                {
+                                  dateStyle: 'medium',
+                                  timeStyle: 'short',
+                                  timeZone,
+                                },
+                              ),
+                              error: t(invite.lastRun.error),
+                            })
+                          : t('lastRun', {
+                              date: format.dateTime(
+                                new Date(invite.lastRun.at),
+                                {
+                                  dateStyle: 'medium',
+                                  timeStyle: 'short',
+                                  timeZone,
+                                },
+                              ),
+                              sent: invite.lastRun.sent,
+                              failed: invite.lastRun.failed,
+                              skipped: invite.lastRun.skipped,
+                            })}
+                      </small>
+                    )}
+                  </>
+                )}
               </span>
             </Switch>
-            {isInviteActive && (
-              <div className='grid gap-1 text-sm sm:pl-50'>
-                <p className='text-neutral-300'>
-                  {t('invitesNext', {
-                    date: format.dateTime(new Date(invite.nextTime), {
-                      weekday: 'long',
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                      hour: 'numeric',
-                      minute: '2-digit',
-                      timeZone,
-                    }),
-                  })}
-                </p>
-                {invite.lastRun && (
-                  <p
-                    className={
-                      invite.lastRun.error || invite.lastRun.failed
-                        ? 'text-danger'
-                        : 'text-neutral-400'
-                    }
-                  >
-                    {invite.lastRun.error
-                      ? t('lastRunError', {
-                          date: format.dateTime(new Date(invite.lastRun.at), {
-                            dateStyle: 'medium',
-                            timeStyle: 'short',
-                            timeZone,
-                          }),
-                          error: t(invite.lastRun.error),
-                        })
-                      : t('lastRun', {
-                          date: format.dateTime(new Date(invite.lastRun.at), {
-                            dateStyle: 'medium',
-                            timeStyle: 'short',
-                            timeZone,
-                          }),
-                          sent: invite.lastRun.sent,
-                          failed: invite.lastRun.failed,
-                          skipped: invite.lastRun.skipped,
-                        })}
-                  </p>
-                )}
-              </div>
-            )}
           </>
         ) : (
           // Nothing to turn on without a release day
