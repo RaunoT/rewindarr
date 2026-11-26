@@ -434,7 +434,6 @@
       "invitesNeedMailServer": "Seadista esmalt meiliserver",
       "invitesNeedRewind": "Kutsed lähevad välja Rewindi ilmumise päeval. Ava Rewind kasutajatele ja vali perioodiks „Kalendriaastad“ <link>Rewindi seadetes</link>.",
       "newsletter": "Uudiskiri",
-      "newsletterDescription": "Saadab igale kasutajale kokkuvõtte sellest, mida tema ja kõik teised mängisid",
       "frequency": "Sagedus",
       "frequencies": {
         "weekly": "Iga nädal",

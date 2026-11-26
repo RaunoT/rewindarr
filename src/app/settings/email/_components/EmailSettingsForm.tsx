@@ -279,7 +279,7 @@ export default function EmailSettingsForm({
       <section className='group-settings group'>
         <h2 className='heading-settings'>{t('newsletter')}</h2>
         <Switch
-          className='switch items-start'
+          className='switch'
           name='isNewsletterActive'
           isSelected={isNewsletterActive}
           onChange={setIsNewsletterActive}
@@ -287,7 +287,6 @@ export default function EmailSettingsForm({
           <div className='indicator' />
           <span className='label'>
             <span className='label-wrapper'>{tCommon('enabled')}</span>
-            <small>{t('newsletterDescription')}</small>
           </span>
         </Switch>
         {isNewsletterActive && (

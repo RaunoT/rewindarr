@@ -434,7 +434,6 @@
       "invitesNeedMailServer": "Configura prima il server di posta",
       "invitesNeedRewind": "Gli inviti partono il giorno dell'uscita di Rewind. Apri Rewind agli utenti e scegli «Anni solari» come periodo nelle <link>impostazioni del Rewind</link>.",
       "newsletter": "Newsletter",
-      "newsletterDescription": "Invia a ogni utente un riepilogo di cosa hanno riprodotto lui e tutti gli altri",
       "frequency": "Frequenza",
       "frequencies": {
         "weekly": "Settimanale",

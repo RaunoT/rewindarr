@@ -434,7 +434,6 @@
       "invitesNeedMailServer": "Set up the mail server first",
       "invitesNeedRewind": "Invites go out on Rewind's release day. Open Rewind to users and pick \"Calendar years\" as its period in the <link>Rewind settings</link>.",
       "newsletter": "Newsletter",
-      "newsletterDescription": "Sends each user a recap of what they and everyone else played",
       "frequency": "Frequency",
       "frequencies": {
         "weekly": "Weekly",

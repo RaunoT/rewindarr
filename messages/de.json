@@ -434,7 +434,6 @@
       "invitesNeedMailServer": "Richte zuerst den Mailserver ein",
       "invitesNeedRewind": "Einladungen gehen am Erscheinungstag von Rewind raus. Öffne Rewind für Benutzer und wähle „Kalenderjahre“ als Zeitraum in den <link>Rewind Einstellungen</link>.",
       "newsletter": "Newsletter",
-      "newsletterDescription": "Schickt jedem Benutzer einen Rückblick darauf, was er und alle anderen abgespielt haben",
       "frequency": "Häufigkeit",
       "frequencies": {
         "weekly": "Wöchentlich",
