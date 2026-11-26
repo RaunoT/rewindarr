@@ -16,6 +16,11 @@ type SendUser = {
 
 type SendState = 'pending' | 'sent'
 
+// By the address too, so one saved since doesn't show as sent to
+export function getSendKey(user: SendUser): string {
+  return `${user.id}:${user.address}`
+}
+
 // Emails a user the invite to their Rewind straight away, apart from the
 // form's save
 export function useRewindSends() {
@@ -25,7 +30,7 @@ export function useRewindSends() {
   const [states, setStates] = useState<Partial<Record<string, SendState>>>({})
 
   function setState(user: SendUser, state?: SendState) {
-    setStates((states) => ({ ...states, [user.id]: state }))
+    setStates((states) => ({ ...states, [getSendKey(user)]: state }))
   }
 
   // Not in a transition, so a send to one user doesn't wait for another's

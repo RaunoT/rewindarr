@@ -26,7 +26,10 @@ import {
   WAS_INVITED_FIELD,
   WAS_SUBSCRIBED_FIELD,
 } from '../_actions/emailForm'
-import SendRewindButton, { useRewindSends } from './SendRewindButton'
+import SendRewindButton, {
+  getSendKey,
+  useRewindSends,
+} from './SendRewindButton'
 
 type Props = {
   // Read while the rest of the form shows. Null when they couldn't be read.
@@ -280,7 +283,7 @@ function UserList({
                 {canSendRewind && (
                   <SendRewindButton
                     user={recipient}
-                    state={sends.states[recipient.id]}
+                    state={sends.states[getSendKey(recipient)]}
                     onSend={() => sends.send(recipient)}
                   />
                 )}

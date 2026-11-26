@@ -544,7 +544,8 @@ export default function EmailSettingsForm({
           recipients={recipients}
           isNewsletterActive={isNewsletterActive}
           isNewsletterOnLoad={settings.isNewsletterActive}
-          isInviteActive={isInviteActive}
+          // Not once a save elsewhere left no release day to send them on
+          isInviteActive={invite.canInvite && isInviteActive}
           isInviteOnLoad={isInviteOnLoad}
           canSendRewind={canSendRewind}
         />
