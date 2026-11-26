@@ -433,7 +433,7 @@
       "invite": "Invitation Rewind",
       "invitedLabel": "Invitation Rewind pour {name}",
       "invites": "Invitations Rewind",
-      "invitesDescription": "Le jour de la sortie, envoie à chaque utilisateur ayant une adresse une invitation à découvrir son Rewind",
+      "invitesDescription": "Le jour de la sortie, envoie aux utilisateurs une invitation à découvrir leur Rewind",
       "invitesNext": "Les prochaines partent le {date}",
       "invitesNeedMailServer": "Configurez d'abord le serveur de messagerie",
       "invitesNeedRewind": "Les invitations partent le jour de la sortie du Rewind. Ouvrez le Rewind aux utilisateurs et choisissez « Années civiles » comme période dans les <link>paramètres Rewind</link>.",

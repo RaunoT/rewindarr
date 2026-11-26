@@ -433,7 +433,7 @@
       "invite": "Rewind invite",
       "invitedLabel": "Rewind invite for {name}",
       "invites": "Rewind invites",
-      "invitesDescription": "On the release day, emails every user with an address an invite to their Rewind",
+      "invitesDescription": "On the release day, emails users an invite to their Rewind",
       "invitesNext": "The next ones go out on {date}",
       "invitesNeedMailServer": "Set up the mail server first",
       "invitesNeedRewind": "Invites go out on Rewind's release day. Open Rewind to users and pick \"Calendar years\" as its period in the <link>Rewind settings</link>.",

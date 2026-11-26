@@ -433,7 +433,7 @@
       "invite": "Invito a Rewind",
       "invitedLabel": "Invito a Rewind per {name}",
       "invites": "Inviti a Rewind",
-      "invitesDescription": "Il giorno dell'uscita, invia a ogni utente con un indirizzo un invito al suo Rewind",
+      "invitesDescription": "Il giorno dell'uscita, invia agli utenti un invito al loro Rewind",
       "invitesNext": "I prossimi partono il {date}",
       "invitesNeedMailServer": "Configura prima il server di posta",
       "invitesNeedRewind": "Gli inviti partono il giorno dell'uscita di Rewind. Apri Rewind agli utenti e scegli «Anni solari» come periodo nelle <link>impostazioni del Rewind</link>.",

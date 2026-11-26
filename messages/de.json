@@ -433,7 +433,7 @@
       "invite": "Rewind-Einladung",
       "invitedLabel": "Rewind-Einladung für {name}",
       "invites": "Rewind-Einladungen",
-      "invitesDescription": "Schickt am Erscheinungstag jedem Benutzer mit Adresse eine Einladung zu seinem Rewind",
+      "invitesDescription": "Schickt am Erscheinungstag Benutzern eine Einladung zu ihrem Rewind",
       "invitesNext": "Die nächsten gehen am {date} raus",
       "invitesNeedMailServer": "Richte zuerst den Mailserver ein",
       "invitesNeedRewind": "Einladungen gehen am Erscheinungstag von Rewind raus. Öffne Rewind für Benutzer und wähle „Kalenderjahre“ als Zeitraum in den <link>Rewind Einstellungen</link>.",

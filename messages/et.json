@@ -433,7 +433,7 @@
       "invite": "Rewindi kutse",
       "invitedLabel": "Rewindi kutse kasutajale {name}",
       "invites": "Rewindi kutsed",
-      "invitesDescription": "Ilmumise päeval saadab igale aadressiga kasutajale kutse tema Rewindile",
+      "invitesDescription": "Ilmumise päeval saadab kasutajatele kutse nende Rewindile",
       "invitesNext": "Järgmised lähevad välja: {date}",
       "invitesNeedMailServer": "Seadista esmalt meiliserver",
       "invitesNeedRewind": "Kutsed lähevad välja Rewindi ilmumise päeval. Ava Rewind kasutajatele ja vali perioodiks „Kalendriaastad“ <link>Rewindi seadetes</link>.",
