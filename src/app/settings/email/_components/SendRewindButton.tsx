@@ -108,7 +108,8 @@ export default function SendRewindButton({ user, state, onSend }: Props) {
     <>
       <button
         type='button'
-        className='button-card shrink-0 disabled:opacity-50 aria-disabled:opacity-50'
+        // As tall and as round as the address field it's beside
+        className='button-card h-auto shrink-0 self-stretch rounded-xl px-3 text-sm disabled:opacity-50 aria-disabled:opacity-50 [&>svg]:size-4'
         onClick={send}
         disabled={isPending}
         aria-disabled={!user.address || undefined}
