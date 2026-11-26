@@ -1,9 +1,9 @@
 'use client'
 
+import FadeInImage from '@/components/FadeInImage'
 import ImageFallback from '@/components/ImageFallback'
 import { getInitials } from '@/utils/formatting'
 import { getImageProxyUrl } from '@/utils/imageProxy'
-import Image from 'next/image'
 import { useState } from 'react'
 
 type Props = {
@@ -35,8 +35,8 @@ export default function Avatar({ src, name, alt = '', sizes, preload }: Props) {
   }
 
   return (
-    <Image
-      fill
+    <FadeInImage
+      hasPlaceholder
       className='object-cover object-top'
       alt={alt}
       src={imageSrc}

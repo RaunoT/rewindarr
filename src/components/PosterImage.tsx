@@ -1,8 +1,8 @@
 'use client'
 
+import FadeInImage from '@/components/FadeInImage'
 import { MediaIcon } from '@/components/icons'
 import ImageFallback from '@/components/ImageFallback'
-import Image from 'next/image'
 import { useState } from 'react'
 
 type Props = {
@@ -37,8 +37,8 @@ export default function PosterImage({
   }
 
   return (
-    <Image
-      fill
+    <FadeInImage
+      hasPlaceholder
       className='object-cover object-top'
       alt={alt}
       src={src}
