@@ -191,9 +191,11 @@ async function getAllLibraries(fresh = false): Promise<Library[] | null> {
   return libraries
 }
 
-async function getLibraries({ fresh }: LibrariesQuery = {}): Promise<
-  Library[]
-> {
+async function getLibraries({
+  fresh,
+  userId,
+  isAll,
+}: LibrariesQuery = {}): Promise<Library[]> {
   const libraries = await getAllLibraries(fresh)
 
   if (!libraries) {
@@ -202,7 +204,11 @@ async function getLibraries({ fresh }: LibrariesQuery = {}): Promise<
     return []
   }
 
-  return filterBySharedLibraries(getSettings(), libraries)
+  if (isAll) {
+    return libraries
+  }
+
+  return filterBySharedLibraries(getSettings(), libraries, userId)
 }
 
 // Shares the libraries request, so asking costs no extra call
@@ -219,13 +225,14 @@ async function isTautulliReachable(): Promise<boolean> {
 async function filterBySharedLibraries(
   settings: Settings,
   libraries: Library[],
+  // In place of the signed-in user
+  ofUserId?: string,
 ): Promise<Library[]> {
   if (settings.general.isOutsideAccess || !settings.setupComplete) {
     return libraries
   }
 
-  const session = await getServerSession(authOptions)
-  const userId = session?.user.id
+  const userId = ofUserId ?? (await getServerSession(authOptions))?.user.id
 
   if (!userId) {
     console.error('[TAUTULLI] - No user ID found!')

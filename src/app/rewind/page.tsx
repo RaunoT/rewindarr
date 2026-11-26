@@ -158,7 +158,12 @@ async function RewindContent({
     year: parseEditionYear(year, getLatestEditionYear(settings, timeZone)),
     timeZone,
   })
-  const libraries = await getLibraries()
+  // The user's own, as a shared Rewind opens without anyone signed in. An
+  // admin's stay their own, as the years they pick from are read from them.
+  const libraries = await getLibraries(
+    true,
+    session?.user.isAdmin ? undefined : { userId: user.id },
+  )
   const progress = await getHistoryProgress(period.since, libraries)
 
   if (progress) {
