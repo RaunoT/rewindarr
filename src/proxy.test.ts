@@ -284,6 +284,26 @@ describe('proxy', () => {
       expect(res?.cookies.get(REWIND_SHARE_COOKIE)).toBeUndefined()
     })
 
+    it("marks the login a shared Rewind returns from, so analytics doesn't keep its key", async () => {
+      const settings = getSettings()
+      const path = getRewindSharePath(settings, '42')!
+
+      settings.rewind.isShareLoginRequired = true
+
+      const login = await request(
+        '',
+        `/?callbackUrl=${encodeURIComponent(path)}`,
+      )
+      const other = await request('', '/?callbackUrl=%2Fhistory')
+
+      expect(
+        login?.headers.get(`x-middleware-request-${REWIND_SHARE_HEADER}`),
+      ).toBe('42')
+      expect(
+        other?.headers.get(`x-middleware-request-${REWIND_SHARE_HEADER}`),
+      ).toBeNull()
+    })
+
     it('opens a shared Rewind that asks for a login once logged in', async () => {
       const settings = getSettings()
 
