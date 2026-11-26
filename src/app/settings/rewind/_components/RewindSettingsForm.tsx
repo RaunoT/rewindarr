@@ -360,12 +360,7 @@ export default function RewindSettingsForm({
           </section>
           {/* As saved, until a save opens or closes Rewind to users */}
           {!isAdminOnly && shareUsers && (
-            <RewindShareLinks
-              users={shareUsers}
-              canEmail={canEmail}
-              // As saved, like the links
-              isLoginRequired={settings.rewind.isShareLoginRequired}
-            />
+            <RewindShareLinks users={shareUsers} canEmail={canEmail} />
           )}
         </>
       )}
