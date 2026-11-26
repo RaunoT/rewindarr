@@ -378,7 +378,7 @@
       "startDateError": "Check the start date.",
       "shareLinks": "Shared links",
       "shareLinksDescription": "Every user has their own link. It opens their Rewind without signing in, so anyone it's passed on to can see it too.",
-      "shareLinksLoginDescription": "Every user has their own link. It opens their Rewind for anyone who signs in, so others on the server it's passed on to can see it too.",
+      "shareLinksLoginDescription": "Every user has their own link. It opens their Rewind for anyone who signs in, so others on the server it's passed on to can see it.",
       "shareLogin": "Sign in for shared links",
       "shareLoginDescription": "Each user's own Rewind link opens only after signing in. When off, anyone who has it can open it, whatever \"Allow outside access\" says.",
       "shareLinksSendDescription": "Send now emails it to the address in the <link>Email settings</link>.",

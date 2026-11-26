@@ -378,7 +378,7 @@
       "startDateError": "Kontrolli alguskuupäeva.",
       "shareLinks": "Jagatud lingid",
       "shareLinksDescription": "Igal kasutajal on oma link. See avab tema Rewindi ilma sisse logimata, nii et seda näeb ka igaüks, kellele link edasi saadetakse.",
-      "shareLinksLoginDescription": "Igal kasutajal on oma link. See avab tema Rewindi igaühele, kes sisse logib, nii et seda näevad ka teised serveri kasutajad, kellele link edasi saadetakse.",
+      "shareLinksLoginDescription": "Igal kasutajal on oma link. See avab tema Rewindi igaühele, kes sisse logib, nii et seda näevad teised serveri kasutajad, kellele link edasi saadetakse.",
       "shareLogin": "Jagatud lingid nõuavad sisselogimist",
       "shareLoginDescription": "Iga kasutaja isiklik Rewindi link avaneb alles pärast sisselogimist. Väljalülitatuna saab selle avada igaüks, kellel link on, olenemata sättest „Luba väline ligipääs“.",
       "shareLinksSendDescription": "Nupp Saada kohe saadab selle aadressile, mis on <link>E-posti seadetes</link>.",

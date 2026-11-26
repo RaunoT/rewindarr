@@ -378,7 +378,7 @@
       "startDateError": "Vérifiez la date de début.",
       "shareLinks": "Liens partagés",
       "shareLinksDescription": "Chaque utilisateur a son propre lien. Il ouvre son Rewind sans connexion, donc toute personne à qui il est transmis peut aussi le voir.",
-      "shareLinksLoginDescription": "Chaque utilisateur a son propre lien. Il ouvre son Rewind pour toute personne qui se connecte, donc les autres membres du serveur à qui il est transmis peuvent aussi le voir.",
+      "shareLinksLoginDescription": "Chaque utilisateur a son propre lien. Il ouvre son Rewind pour toute personne qui se connecte, donc les autres membres du serveur à qui il est transmis peuvent le voir.",
       "shareLogin": "Connexion pour les liens partagés",
       "shareLoginDescription": "Le lien Rewind propre à chaque utilisateur ne s'ouvre qu'après connexion. Désactivé, toute personne qui l'a peut l'ouvrir, quel que soit le réglage « Autoriser l'accès externe ».",
       "shareLinksSendDescription": "Le bouton Envoyer maintenant l'envoie à l'adresse indiquée dans les <link>paramètres e-mail</link>.",
