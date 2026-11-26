@@ -109,7 +109,14 @@ export function toAppImageUrl(
   )
 }
 
-function signUnsubscribe(userId: string): Buffer | null {
+// What a link unsubscribes from: the newsletter, or the Rewind invites on the
+// release day
+export type EmailList = 'newsletter' | 'invite'
+
+// The newsletter's links have no list, as the ones sent before it had one
+const LIST_PARAM = 'list'
+
+function signUnsubscribe(userId: string, list: EmailList): Buffer | null {
   const secret = process.env.NEXTAUTH_SECRET
 
   if (!secret) {
@@ -117,34 +124,59 @@ function signUnsubscribe(userId: string): Buffer | null {
   }
 
   return createHmac('sha256', secret)
-    .update(`email-unsubscribe:${userId}`)
+    .update(
+      list === 'newsletter'
+        ? `email-unsubscribe:${userId}`
+        : `email-unsubscribe-${list}:${userId}`,
+    )
     .digest()
     .subarray(0, KEY_BYTES)
 }
 
-// Lets the user stop the newsletter without signing in
+// Lets the user stop the newsletter or the invites without signing in
 export function getUnsubscribeUrl(
   appUrl: string,
   userId: string,
+  list: EmailList = 'newsletter',
 ): string | null {
-  const key = signUnsubscribe(userId)
+  const key = signUnsubscribe(userId, list)
 
   if (!key) {
     return null
   }
 
-  return toAppUrl(
-    appUrl,
-    `${UNSUBSCRIBE_PATH}?${new URLSearchParams({ userId, key: key.toString('base64url') })}`,
-  )
+  const params = new URLSearchParams({ userId })
+
+  if (list !== 'newsletter') {
+    params.set(LIST_PARAM, list)
+  }
+
+  params.set('key', key.toString('base64url'))
+
+  return toAppUrl(appUrl, `${UNSUBSCRIBE_PATH}?${params}`)
 }
 
-export function isUnsubscribeKey(userId: unknown, key: unknown): boolean {
+// The list a link's own, or null for one it doesn't know
+export function readEmailList(params: URLSearchParams): EmailList | null {
+  const list = params.get(LIST_PARAM)
+
+  if (list === null) {
+    return 'newsletter'
+  }
+
+  return list === 'invite' ? list : null
+}
+
+export function isUnsubscribeKey(
+  userId: unknown,
+  key: unknown,
+  list: EmailList = 'newsletter',
+): boolean {
   if (typeof userId !== 'string' || typeof key !== 'string' || !userId) {
     return false
   }
 
-  const signature = signUnsubscribe(userId)
+  const signature = signUnsubscribe(userId, list)
 
   if (!signature) {
     return false

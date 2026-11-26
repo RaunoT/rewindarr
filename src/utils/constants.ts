@@ -156,6 +156,7 @@ export const DEFAULT_SETTINGS: Settings = {
     locale: 'en-GB',
     addresses: {},
     unsubscribed: [],
+    inviteUnsubscribed: [],
     isNewsletterActive: false,
     newsletterFrequency: 'weekly',
     newsletterWeekday: 1,

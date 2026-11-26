@@ -1,8 +1,8 @@
 'use client'
 
+import FadeInImage from '@/components/FadeInImage'
 import { MediaIcon } from '@/components/icons'
 import ImageFallback from '@/components/ImageFallback'
-import Image from 'next/image'
 import { useState } from 'react'
 
 type Props = {
@@ -13,6 +13,8 @@ type Props = {
   alt?: string
   sizes: string
   preload?: boolean
+  // Shown as it loads, without the placeholder and fade-in
+  isInstant?: boolean
 }
 
 // Fills its parent, like the poster frame
@@ -22,6 +24,7 @@ export default function PosterImage({
   alt = '',
   sizes,
   preload,
+  isInstant,
 }: Props) {
   const [failedSrcs, setFailedSrcs] = useState<string[]>([])
   const src = srcs.find(
@@ -37,8 +40,9 @@ export default function PosterImage({
   }
 
   return (
-    <Image
-      fill
+    <FadeInImage
+      hasPlaceholder
+      isInstant={isInstant}
       className='object-cover object-top'
       alt={alt}
       src={src}

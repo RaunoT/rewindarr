@@ -1,6 +1,6 @@
 'use client'
 
-import Image from 'next/image'
+import FadeInImage from '@/components/FadeInImage'
 import { useState } from 'react'
 
 type Props = {
@@ -26,8 +26,7 @@ export default function TileGlow({ srcs }: Props) {
       aria-hidden='true'
       className='pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-3xl mask-b-from-0% mask-b-to-80%'
     >
-      <Image
-        fill
+      <FadeInImage
         className='scale-150 object-cover opacity-30 blur-3xl saturate-150'
         alt=''
         src={src}

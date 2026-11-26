@@ -40,7 +40,6 @@ import SettingsForm from '../../_components/SettingsForm'
 import saveRewindSettings from '../_actions/updateRewindSettings'
 import RewindMusicUpload from './RewindMusicUpload'
 import RewindReleaseDate from './RewindReleaseDate'
-import RewindReleaseEmail, { ReleaseEmailStatus } from './RewindReleaseEmail'
 import RewindShareLinks, { ShareUser } from './RewindShareLinks'
 
 type Props = {
@@ -48,9 +47,6 @@ type Props = {
   currentYear: number
   // Each user's shared link, while users can see their own Rewind
   shareUsers?: Promise<ShareUser[] | null>
-  // With a mail server, so each user can be emailed theirs
-  canEmail: boolean
-  releaseEmail: ReleaseEmailStatus
 }
 
 type RewindFormState = SettingsFormInitialState<Partial<RewindSettings>>
@@ -107,8 +103,6 @@ export default function RewindSettingsForm({
   settings,
   currentYear,
   shareUsers,
-  canEmail,
-  releaseEmail,
 }: Props) {
   const [isActive, setIsActive] = useState<boolean>(settings.rewind.isActive)
   const [period, setPeriod] = useState<RewindPeriodType>(
@@ -179,21 +173,6 @@ export default function RewindSettingsForm({
             <div className='indicator' />
             <span className='label'>
               <span className='label-wrapper'>{tCommon('adminOnly')}</span>
-            </span>
-          </Switch>
-        )}
-        {/* While users can open their own Rewind, which the links lead to */}
-        {isActive && !isAdminOnly && (
-          <Switch
-            key={`share-login-${rewindSettings.isShareLoginRequired}`}
-            className='switch items-start'
-            name='isShareLoginRequired'
-            defaultSelected={rewindSettings.isShareLoginRequired}
-          >
-            <div className='indicator' />
-            <span className='label'>
-              <span className='label-wrapper'>{t('shareLogin')}</span>
-              <small>{t('shareLoginDescription')}</small>
             </span>
           </Switch>
         )}
@@ -322,14 +301,6 @@ export default function RewindSettingsForm({
                 year={currentYear}
               />
             )}
-            {/* While users can open their own Rewind, which the invites lead to */}
-            {period === 'calendarYear' && !isAdminOnly && (
-              <RewindReleaseEmail
-                key={`release-email-${rewindSettings.isReleaseEmailActive}`}
-                defaultSelected={rewindSettings.isReleaseEmailActive}
-                {...releaseEmail}
-              />
-            )}
             {period === 'specificYear' && (
               <label className='input-wrapper'>
                 <input
@@ -358,14 +329,25 @@ export default function RewindSettingsForm({
               />
             )}
           </section>
-          {/* As saved, until a save opens or closes Rewind to users */}
-          {!isAdminOnly && shareUsers && (
-            <RewindShareLinks
-              users={shareUsers}
-              canEmail={canEmail}
-              // As saved, like the links
-              isLoginRequired={settings.rewind.isShareLoginRequired}
-            />
+          {/* While users can open their own Rewind, which the links lead to */}
+          {!isAdminOnly && (
+            <section className='group-settings group'>
+              <h2 className='heading-settings'>{t('shareLinks')}</h2>
+              <Switch
+                key={`share-login-${rewindSettings.isShareLoginRequired}`}
+                className='switch items-start'
+                name='isShareLoginRequired'
+                defaultSelected={rewindSettings.isShareLoginRequired}
+              >
+                <div className='indicator' />
+                <span className='label'>
+                  <span className='label-wrapper'>{t('shareLogin')}</span>
+                  <small>{t('shareLoginDescription')}</small>
+                </span>
+              </Switch>
+              {/* As saved, until a save opens or closes Rewind to users */}
+              {shareUsers && <RewindShareLinks users={shareUsers} />}
+            </section>
           )}
         </>
       )}

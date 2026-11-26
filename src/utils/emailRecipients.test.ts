@@ -50,6 +50,7 @@ describe('toEmailRecipient', () => {
       foundAddress: 'alex@example.com',
       address: 'alex@example.com',
       isSubscribed: true,
+      isInvited: true,
     })
   })
 
@@ -103,5 +104,13 @@ describe('toEmailRecipient', () => {
     settings.email.unsubscribed = ['42']
 
     expect(toEmailRecipient(settings, USER, null).isSubscribed).toBe(false)
+    expect(toEmailRecipient(settings, USER, null).isInvited).toBe(true)
+  })
+
+  it('knows who stopped the Rewind invites, apart from the newsletter', () => {
+    settings.email.inviteUnsubscribed = ['42']
+
+    expect(toEmailRecipient(settings, USER, null).isInvited).toBe(false)
+    expect(toEmailRecipient(settings, USER, null).isSubscribed).toBe(true)
   })
 })

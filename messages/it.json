@@ -371,17 +371,12 @@
       "releaseDate": "Data di uscita",
       "releaseDateDescription": "Quando esce l'edizione {year}",
       "releaseDateError": "Controlla la data di uscita.",
-      "releaseEmail": "Inviti via email",
-      "releaseEmailDescription": "Il giorno dell'uscita, invia a ogni utente con un indirizzo un invito al suo Rewind. I prossimi partono il {date}.",
-      "releaseEmailNeedsMail": "Configura prima il server di posta nelle impostazioni Email.",
       "yearError": "Controlla l'anno.",
       "startDateError": "Controlla la data di inizio.",
       "shareLinks": "Link condivisi",
-      "shareLinksDescription": "Ogni utente ha il proprio link. Apre il suo Rewind senza accedere, quindi può vederlo anche chiunque lo riceva.",
-      "shareLinksLoginDescription": "Ogni utente ha il proprio link. Apre il suo Rewind a chiunque acceda, quindi possono vederlo gli altri utenti del server che lo ricevono.",
+      "shareLinksDescription": "Ogni utente ha il proprio link al suo Rewind",
       "shareLogin": "Accesso per i link condivisi",
-      "shareLoginDescription": "Il link Rewind personale di ogni utente si apre solo dopo l'accesso. Se disattivato, chiunque lo abbia può aprirlo, qualunque sia l'impostazione «Consenti l'accesso esterno».",
-      "shareLinksSendDescription": "Invia ora lo manda all'indirizzo nelle <link>impostazioni Email</link>.",
+      "shareLoginDescription": "Se attivato, i link Rewind si aprono solo dopo l'accesso. Se disattivato, chiunque abbia un link può aprirlo, anche con «Consenti l'accesso esterno» disattivato.",
       "shareLinksSearch": "Cerca utenti",
       "shareLinksNoUsers": "Nessun utente trovato",
       "shareLinksError": "Impossibile leggere gli utenti",
@@ -391,10 +386,6 @@
       "shareLabel": "Condividi il Rewind di {name}",
       "copied": "Copiato",
       "copyError": "Impossibile copiare il link: {url}",
-      "sendNow": "Invia ora",
-      "emailLabel": "Invia a {name} il link al suo Rewind",
-      "sent": "Inviato",
-      "emailError": "Impossibile inviare l'email a {name}: {reason}",
       "shareLinksReset": "Reimposta i link",
       "shareLinksResetDescription": "Tutti i link condivisi finora smettono di funzionare",
       "shareLinksResetDone": "I link condivisi prima non funzionano più",
@@ -426,8 +417,6 @@
       "appUrlDescription": "Dove portano i link nelle email. I tuoi utenti devono poterlo aprire.",
       "language": "Lingua",
       "users": "Utenti",
-      "userColumn": "Utente",
-      "addressColumn": "Indirizzo",
       "recipients": "Destinatari",
       "recipientsDescription": "Gli utenti possono annullare l'iscrizione in qualsiasi momento",
       "recipientsSearch": "Cerca utenti",
@@ -437,8 +426,14 @@
       "noAddress": "Nessun indirizzo",
       "addressLabel": "Indirizzo email di {name}",
       "subscribedLabel": "Newsletter per {name}",
+      "invite": "Invito a Rewind",
+      "invitedLabel": "Invito a Rewind per {name}",
+      "invites": "Inviti a Rewind",
+      "invitesDescription": "Il giorno dell'uscita, invia agli utenti un invito al loro Rewind",
+      "invitesNext": "I prossimi partono il {date}.",
+      "invitesNeedMailServer": "Configura prima il server di posta",
+      "invitesNeedRewind": "Gli inviti partono il giorno dell'uscita di Rewind. Apri Rewind agli utenti e scegli «Anni solari» come periodo nelle <link>impostazioni del Rewind</link>.",
       "newsletter": "Newsletter",
-      "newsletterDescription": "Invia a ogni utente un riepilogo di cosa hanno riprodotto lui e tutti gli altri",
       "frequency": "Frequenza",
       "frequencies": {
         "weekly": "Settimanale",
@@ -957,7 +952,8 @@
       },
       "button": "Guarda il mio Rewind",
       "footer": "Questo link apre il tuo Rewind senza accedere, quindi condividilo solo con chi vuoi che lo veda.",
-      "footerLogin": "Questo link apre il tuo Rewind dopo l'accesso. Possono aprirlo anche gli altri utenti del server, quindi condividilo solo con chi vuoi che lo veda."
+      "footerLogin": "Questo link apre il tuo Rewind dopo l'accesso. Possono aprirlo anche gli altri utenti del server, quindi condividilo solo con chi vuoi che lo veda.",
+      "unsubscribe": "Non ricevere più inviti a Rewind"
     },
     "Newsletter": {
       "subject": {
@@ -1002,19 +998,32 @@
       "body": "Il tuo server di posta è configurato, quindi gli inviti al Rewind e le newsletter possono partire."
     },
     "Unsubscribe": {
-      "eyebrow": "Newsletter",
       "button": "Annulla l'iscrizione",
-      "confirm": {
-        "title": "Annullare l'iscrizione?",
-        "body": "Non riceverai più i riepiloghi da {server}."
-      },
-      "done": {
-        "title": "Iscrizione annullata",
-        "body": "Non riceverai più riepiloghi da {server}. Chiedi al suo amministratore se li vuoi di nuovo."
-      },
       "invalid": {
         "title": "Questo link non funziona",
         "body": "Potrebbe essere stato troncato. Prova il link in un'altra email da {server}."
+      },
+      "newsletter": {
+        "eyebrow": "Newsletter",
+        "confirm": {
+          "title": "Annullare l'iscrizione?",
+          "body": "Non riceverai più i riepiloghi da {server}."
+        },
+        "done": {
+          "title": "Iscrizione annullata",
+          "body": "Non riceverai più riepiloghi da {server}. Chiedi al suo amministratore se li vuoi di nuovo."
+        }
+      },
+      "invite": {
+        "eyebrow": "Rewind",
+        "confirm": {
+          "title": "Non ricevere più inviti a Rewind?",
+          "body": "Non riceverai più un'email da {server} quando esce il tuo prossimo Rewind."
+        },
+        "done": {
+          "title": "Niente più inviti a Rewind",
+          "body": "Non riceverai più inviti a Rewind da {server}. Chiedi al suo amministratore se li vuoi di nuovo."
+        }
       }
     }
   }

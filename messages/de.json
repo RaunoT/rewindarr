@@ -371,17 +371,12 @@
       "releaseDate": "Erscheinungsdatum",
       "releaseDateDescription": "Wann die Ausgabe {year} erscheint",
       "releaseDateError": "Prüfe das Erscheinungsdatum.",
-      "releaseEmail": "E-Mail-Einladungen",
-      "releaseEmailDescription": "Schickt am Erscheinungstag jedem Benutzer mit Adresse eine Einladung zu seinem Rewind. Die nächsten gehen am {date} raus.",
-      "releaseEmailNeedsMail": "Richte zuerst den Mailserver in den E-Mail-Einstellungen ein.",
       "yearError": "Prüfe das Jahr.",
       "startDateError": "Prüfe das Startdatum.",
       "shareLinks": "Geteilte Links",
-      "shareLinksDescription": "Jeder Benutzer hat seinen eigenen Link. Er öffnet dessen Rewind ohne Anmeldung, also kann ihn auch jeder sehen, an den er weitergegeben wird.",
-      "shareLinksLoginDescription": "Jeder Benutzer hat seinen eigenen Link. Er öffnet dessen Rewind für jeden, der sich anmeldet, also können ihn andere auf dem Server sehen, an die er weitergegeben wird.",
+      "shareLinksDescription": "Jeder Benutzer hat seinen eigenen Link zu seinem Rewind",
       "shareLogin": "Anmeldung für geteilte Links",
-      "shareLoginDescription": "Der eigene Rewind-Link jedes Benutzers öffnet sich erst nach der Anmeldung. Ist das aus, kann ihn jeder öffnen, der ihn hat, egal wie „Zugang von Außen zulassen“ eingestellt ist.",
-      "shareLinksSendDescription": "Jetzt senden schickt ihn an die Adresse in den <link>E-Mail-Einstellungen</link>.",
+      "shareLoginDescription": "Ist das an, öffnen sich Rewind-Links erst nach der Anmeldung. Ist das aus, kann jeder einen Link öffnen, der ihn hat, auch wenn „Zugang von Außen zulassen“ aus ist.",
       "shareLinksSearch": "Benutzer suchen",
       "shareLinksNoUsers": "Keine Benutzer gefunden",
       "shareLinksError": "Benutzer konnten nicht gelesen werden",
@@ -391,10 +386,6 @@
       "shareLabel": "Rewind von {name} teilen",
       "copied": "Kopiert",
       "copyError": "Link konnte nicht kopiert werden: {url}",
-      "sendNow": "Jetzt senden",
-      "emailLabel": "Link zum Rewind von {name} per E-Mail senden",
-      "sent": "Gesendet",
-      "emailError": "E-Mail an {name} konnte nicht gesendet werden: {reason}",
       "shareLinksReset": "Links zurücksetzen",
       "shareLinksResetDescription": "Alle bisher geteilten Links funktionieren dann nicht mehr",
       "shareLinksResetDone": "Zuvor geteilte Links funktionieren nicht mehr",
@@ -426,8 +417,6 @@
       "appUrlDescription": "Wohin die Links in den E-Mails führen. Deine Benutzer müssen sie öffnen können.",
       "language": "Sprache",
       "users": "Benutzer",
-      "userColumn": "Benutzer",
-      "addressColumn": "Adresse",
       "recipients": "Empfänger",
       "recipientsDescription": "Benutzer können sich jederzeit abmelden",
       "recipientsSearch": "Benutzer suchen",
@@ -437,8 +426,14 @@
       "noAddress": "Keine Adresse",
       "addressLabel": "E-Mail-Adresse von {name}",
       "subscribedLabel": "Newsletter für {name}",
+      "invite": "Rewind-Einladung",
+      "invitedLabel": "Rewind-Einladung für {name}",
+      "invites": "Rewind-Einladungen",
+      "invitesDescription": "Schickt am Erscheinungstag Benutzern eine Einladung zu ihrem Rewind",
+      "invitesNext": "Die nächsten gehen am {date} raus.",
+      "invitesNeedMailServer": "Richte zuerst den Mailserver ein",
+      "invitesNeedRewind": "Einladungen gehen am Erscheinungstag von Rewind raus. Öffne Rewind für Benutzer und wähle „Kalenderjahre“ als Zeitraum in den <link>Rewind Einstellungen</link>.",
       "newsletter": "Newsletter",
-      "newsletterDescription": "Schickt jedem Benutzer einen Rückblick darauf, was er und alle anderen abgespielt haben",
       "frequency": "Häufigkeit",
       "frequencies": {
         "weekly": "Wöchentlich",
@@ -957,7 +952,8 @@
       },
       "button": "Meinen Rewind ansehen",
       "footer": "Dieser Link öffnet deinen Rewind ohne Anmeldung, also teile ihn nur mit Leuten, denen du ihn zeigen möchtest.",
-      "footerLogin": "Dieser Link öffnet deinen Rewind nach der Anmeldung. Andere auf dem Server können ihn auch öffnen, also teile ihn nur mit Leuten, denen du ihn zeigen möchtest."
+      "footerLogin": "Dieser Link öffnet deinen Rewind nach der Anmeldung. Andere auf dem Server können ihn auch öffnen, also teile ihn nur mit Leuten, denen du ihn zeigen möchtest.",
+      "unsubscribe": "Keine Rewind-Einladungen mehr"
     },
     "Newsletter": {
       "subject": {
@@ -1002,19 +998,32 @@
       "body": "Dein Mailserver ist eingerichtet, also können Rewind-Einladungen und Newsletter verschickt werden."
     },
     "Unsubscribe": {
-      "eyebrow": "Newsletter",
       "button": "Abmelden",
-      "confirm": {
-        "title": "Abmelden?",
-        "body": "Du bekommst dann keine Rückblicke mehr von {server}."
-      },
-      "done": {
-        "title": "Du bist abgemeldet",
-        "body": "Du bekommst keine Rückblicke mehr von {server}. Frag den Admin, wenn du sie wieder haben möchtest."
-      },
       "invalid": {
         "title": "Dieser Link funktioniert nicht",
         "body": "Vielleicht wurde er abgeschnitten. Versuche den Link in einer anderen E-Mail von {server}."
+      },
+      "newsletter": {
+        "eyebrow": "Newsletter",
+        "confirm": {
+          "title": "Abmelden?",
+          "body": "Du bekommst dann keine Rückblicke mehr von {server}."
+        },
+        "done": {
+          "title": "Du bist abgemeldet",
+          "body": "Du bekommst keine Rückblicke mehr von {server}. Frag den Admin, wenn du sie wieder haben möchtest."
+        }
+      },
+      "invite": {
+        "eyebrow": "Rewind",
+        "confirm": {
+          "title": "Keine Rewind-Einladungen mehr?",
+          "body": "Du bekommst keine E-Mail mehr von {server}, wenn dein nächster Rewind erscheint."
+        },
+        "done": {
+          "title": "Keine Rewind-Einladungen mehr",
+          "body": "Du bekommst keine Rewind-Einladungen mehr von {server}. Frag den Admin, wenn du sie wieder haben möchtest."
+        }
       }
     }
   }

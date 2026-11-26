@@ -107,7 +107,8 @@ export type RewindSettings = {
   // MM-DD, when each calendar year's edition comes out. A date before July is
   // in the year after.
   releaseDate: string
-  // Emails every user with an address an invite on the release day
+  // Emails every user with an address an invite on the release day, apart
+  // from the ones in the email settings' inviteUnsubscribed
   isReleaseEmailActive: boolean
   // Only used by the specific year
   year?: number
@@ -198,6 +199,8 @@ export type EmailSettings = {
   addresses: Record<string, string>
   // Users who don't get the newsletter, by user ID
   unsubscribed: string[]
+  // Users who don't get the Rewind invites on the release day, by user ID
+  inviteUnsubscribed: string[]
   isNewsletterActive: boolean
   newsletterFrequency: NewsletterFrequency
   // A weekly one's day, where 0 is Sunday

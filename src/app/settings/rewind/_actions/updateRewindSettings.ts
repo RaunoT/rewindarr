@@ -49,7 +49,6 @@ export default async function saveRewindSettings(
         .string()
         .refine(isReleaseDate, { message: t('releaseDateError') })
         .optional(),
-      isReleaseEmailActive: z.boolean().optional(),
       year: z
         .number()
         .refine(
@@ -110,12 +109,6 @@ export default async function saveRewindSettings(
     // The picker's date has a year, which the release date leaves out
     if (data.period === 'calendarYear') {
       data.releaseDate = String(formData.get('releaseDate')).slice(5)
-
-      // Only offered while users can open their own Rewind
-      if (!data.isAdminOnly) {
-        data.isReleaseEmailActive =
-          formData.get('isReleaseEmailActive') === 'on'
-      }
     }
 
     if (data.period === 'specificYear') {
@@ -127,8 +120,9 @@ export default async function saveRewindSettings(
   const state = await updateSettings(schema, data, 'rewind')
   const updated = getSettings().rewind
 
-  // An edition that's already out isn't emailed by a save that turns the
-  // invites on, in any of the ways, or moves the release, only the next one
+  // An edition that's already out isn't emailed by a save that lets the
+  // invites, turned on in the email settings, go out, or moves the release,
+  // only the next one
   if (
     state.status === 'success' &&
     isReleaseEmailOn({ rewind: updated }) &&

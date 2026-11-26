@@ -371,17 +371,12 @@
       "releaseDate": "Release date",
       "releaseDateDescription": "When the {year} edition comes out",
       "releaseDateError": "Check the release date.",
-      "releaseEmail": "Email invites",
-      "releaseEmailDescription": "On the release day, emails every user with an address an invite to their Rewind. The next ones go out on {date}.",
-      "releaseEmailNeedsMail": "Set up the mail server in the Email settings first.",
       "yearError": "Check the year.",
       "startDateError": "Check the start date.",
       "shareLinks": "Shared links",
-      "shareLinksDescription": "Every user has their own link. It opens their Rewind without signing in, so anyone it's passed on to can see it too.",
-      "shareLinksLoginDescription": "Every user has their own link. It opens their Rewind for anyone who signs in, so others on the server it's passed on to can see it.",
+      "shareLinksDescription": "Every user has their own link to their Rewind",
       "shareLogin": "Sign in for shared links",
-      "shareLoginDescription": "Each user's own Rewind link opens only after signing in. When off, anyone who has it can open it, whatever \"Allow outside access\" says.",
-      "shareLinksSendDescription": "Send now emails it to the address in the <link>Email settings</link>.",
+      "shareLoginDescription": "When on, Rewind links only open after signing in. When off, anyone with a link can open it, even with \"Allow outside access\" off.",
       "shareLinksSearch": "Search users",
       "shareLinksNoUsers": "No users found",
       "shareLinksError": "Couldn't read the users",
@@ -391,10 +386,6 @@
       "shareLabel": "Share {name}'s Rewind",
       "copied": "Copied",
       "copyError": "Couldn't copy the link: {url}",
-      "sendNow": "Send now",
-      "emailLabel": "Email {name} a link to their Rewind",
-      "sent": "Sent",
-      "emailError": "Couldn't email {name}: {reason}",
       "shareLinksReset": "Reset links",
       "shareLinksResetDescription": "Stops every link shared so far from working",
       "shareLinksResetDone": "Links shared before no longer work",
@@ -426,8 +417,6 @@
       "appUrlDescription": "Where the links in the emails lead. Your users have to be able to open it.",
       "language": "Language",
       "users": "Users",
-      "userColumn": "User",
-      "addressColumn": "Address",
       "recipients": "Recipients",
       "recipientsDescription": "Users can unsubscribe any time",
       "recipientsSearch": "Search users",
@@ -437,8 +426,14 @@
       "noAddress": "No address",
       "addressLabel": "{name}'s email address",
       "subscribedLabel": "Newsletter for {name}",
+      "invite": "Rewind invite",
+      "invitedLabel": "Rewind invite for {name}",
+      "invites": "Rewind invites",
+      "invitesDescription": "On the release day, emails users an invite to their Rewind",
+      "invitesNext": "The next ones go out on {date}.",
+      "invitesNeedMailServer": "Set up the mail server first",
+      "invitesNeedRewind": "Invites go out on Rewind's release day. Open Rewind to users and pick \"Calendar years\" as its period in the <link>Rewind settings</link>.",
       "newsletter": "Newsletter",
-      "newsletterDescription": "Sends each user a recap of what they and everyone else played",
       "frequency": "Frequency",
       "frequencies": {
         "weekly": "Weekly",
@@ -957,7 +952,8 @@
       },
       "button": "Watch my Rewind",
       "footer": "This link opens your Rewind without signing in, so only share it with people you want to see it.",
-      "footerLogin": "This link opens your Rewind after signing in. Others on the server can open it too, so only share it with people you want to see it."
+      "footerLogin": "This link opens your Rewind after signing in. Others on the server can open it too, so only share it with people you want to see it.",
+      "unsubscribe": "Stop Rewind invites"
     },
     "Newsletter": {
       "subject": {
@@ -1002,19 +998,32 @@
       "body": "Your mail server is set up, so Rewind invites and newsletters can go out."
     },
     "Unsubscribe": {
-      "eyebrow": "Newsletter",
       "button": "Unsubscribe",
-      "confirm": {
-        "title": "Unsubscribe?",
-        "body": "You'll stop getting the recaps from {server}."
-      },
-      "done": {
-        "title": "You're unsubscribed",
-        "body": "You won't get any more recaps from {server}. Ask its admin if you'd like them again."
-      },
       "invalid": {
         "title": "This link doesn't work",
         "body": "It may have been cut short. Try the link in another email from {server}."
+      },
+      "newsletter": {
+        "eyebrow": "Newsletter",
+        "confirm": {
+          "title": "Unsubscribe?",
+          "body": "You'll stop getting the recaps from {server}."
+        },
+        "done": {
+          "title": "You're unsubscribed",
+          "body": "You won't get any more recaps from {server}. Ask its admin if you'd like them again."
+        }
+      },
+      "invite": {
+        "eyebrow": "Rewind",
+        "confirm": {
+          "title": "Stop Rewind invites?",
+          "body": "You won't get an email from {server} when your next Rewind is out."
+        },
+        "done": {
+          "title": "No more Rewind invites",
+          "body": "You won't get any more Rewind invites from {server}. Ask its admin if you'd like them again."
+        }
       }
     }
   }

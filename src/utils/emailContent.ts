@@ -219,6 +219,8 @@ export async function buildRewindEmail(
   const { serverName, logoUrl } = getBranding(settings)
   const year = period.year
   const name = recipient.name
+  // Stops the ones on the release day. One sent from the settings still goes.
+  const unsubscribeUrl = getUnsubscribeUrl(appUrl, recipient.id, 'invite')
   const subject =
     year === null
       ? t('Email.Rewind.subject', { name })
@@ -249,12 +251,34 @@ export async function buildRewindEmail(
         ? 'Email.Rewind.footerLogin'
         : 'Email.Rewind.footer',
     ),
+    footerLink: unsubscribeUrl
+      ? { href: unsubscribeUrl, label: t('Email.Rewind.unsubscribe') }
+      : undefined,
   })
 
   return {
     status: 'ready',
-    email: { to: recipient.address, subject, html, text },
+    email: {
+      to: recipient.address,
+      subject,
+      html,
+      text,
+      headers: getUnsubscribeHeaders(unsubscribeUrl),
+    },
   }
+}
+
+// Lets mail apps offer their own unsubscribe button, which posts to the link
+// without opening it
+function getUnsubscribeHeaders(
+  unsubscribeUrl: string | null,
+): Record<string, string> | undefined {
+  return unsubscribeUrl
+    ? {
+        'List-Unsubscribe': `<${unsubscribeUrl}>`,
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      }
+    : undefined
 }
 
 // What the newsletter shows of the whole server, the same for every reader
@@ -548,14 +572,7 @@ export async function buildNewsletter(
       subject,
       html,
       text,
-      headers: unsubscribeUrl
-        ? {
-            // Lets mail apps offer their own unsubscribe button, which posts
-            // to the link without opening it
-            'List-Unsubscribe': `<${unsubscribeUrl}>`,
-            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-          }
-        : undefined,
+      headers: getUnsubscribeHeaders(unsubscribeUrl),
     },
   }
 }
