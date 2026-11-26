@@ -13,10 +13,13 @@ import type { EmailRecipient } from '@/utils/emailRecipients'
 import { getLocaleName } from '@/utils/localeName'
 import type { NewsletterRun } from '@/utils/newsletter'
 import { getNextSendTime, MAX_MONTH_DAY } from '@/utils/newsletterSchedule'
+import type { RewindEmailsRun } from '@/utils/rewindRelease'
 import { useFormatter, useTranslations } from 'next-intl'
+import Link from 'next/link'
 import { useActionState, useState, useSyncExternalStore } from 'react'
 import { Switch } from 'react-aria-components'
 import SettingsForm from '../../_components/SettingsForm'
+import { INVITE_OFFERED_FIELD } from '../_actions/emailForm'
 import { sendNewsletterToMe } from '../_actions/sendEmails'
 import saveEmailSettings from '../_actions/updateEmailSettings'
 import EmailTest from './EmailTest'
@@ -25,8 +28,20 @@ import EmailUsers from './EmailUsers'
 
 export type EmailFormSettings = Omit<
   EmailSettings,
-  'addresses' | 'unsubscribed'
+  'addresses' | 'unsubscribed' | 'inviteUnsubscribed'
 >
+
+// The Rewind invites that go out on the release day
+export type InviteStatus = {
+  // Whether there's a release day: Rewind is open to users, by calendar year
+  canInvite: boolean
+  // As saved
+  isActive: boolean
+  isMailServerSet: boolean
+  // ISO 8601
+  nextTime: string
+  lastRun: RewindEmailsRun | null
+}
 
 type Props = {
   // With the password masked
@@ -36,6 +51,7 @@ type Props = {
   siteUrl: string
   // Off when users see only their own stats, which leaves out the server's
   isOthersShown: boolean
+  invite: InviteStatus
   lastRun: NewsletterRun | null
   adminAddress: string
   adminId: string
@@ -67,6 +83,7 @@ export default function EmailSettingsForm({
   recipients,
   siteUrl,
   isOthersShown,
+  invite,
   lastRun,
   adminAddress,
   adminId,
@@ -89,6 +106,8 @@ export default function EmailSettingsForm({
   const [isNewsletterActive, setIsNewsletterActive] = useState(
     settings.isNewsletterActive,
   )
+  const isInviteOnLoad = invite.canInvite && invite.isActive
+  const [isInviteActive, setIsInviteActive] = useState(isInviteOnLoad)
   const [frequency, setFrequency] = useState<NewsletterFrequency>(
     settings.newsletterFrequency,
   )
@@ -260,7 +279,7 @@ export default function EmailSettingsForm({
       <section className='group-settings group'>
         <h2 className='heading-settings'>{t('newsletter')}</h2>
         <Switch
-          className='switch items-start'
+          className='switch'
           name='isNewsletterActive'
           isSelected={isNewsletterActive}
           onChange={setIsNewsletterActive}
@@ -268,7 +287,6 @@ export default function EmailSettingsForm({
           <div className='indicator' />
           <span className='label'>
             <span className='label-wrapper'>{tCommon('enabled')}</span>
-            <small>{t('newsletterDescription')}</small>
           </span>
         </Switch>
         {isNewsletterActive && (
@@ -428,6 +446,94 @@ export default function EmailSettingsForm({
           </>
         )}
       </section>
+      <section className='group-settings group'>
+        <h2 className='heading-settings'>{t('invites')}</h2>
+        {invite.canInvite ? (
+          <>
+            <input type='hidden' name={INVITE_OFFERED_FIELD} value='on' />
+            <Switch
+              className='switch items-start'
+              name='isReleaseEmailActive'
+              isSelected={isInviteActive}
+              onChange={setIsInviteActive}
+            >
+              <div className='indicator' />
+              <span className='label'>
+                <span className='label-wrapper'>{tCommon('enabled')}</span>
+                <small>
+                  {t('invitesDescription')}
+                  {!invite.isMailServerSet && (
+                    <span className='text-danger block'>
+                      {t('invitesNeedMailServer')}
+                    </span>
+                  )}
+                </small>
+              </span>
+            </Switch>
+            {/* Like the newsletter's: when they go out and how the last went */}
+            {isInviteActive && (
+              <div className='grid gap-1 text-sm sm:pl-50'>
+                <p className='text-neutral-300'>
+                  {t('invitesNext', {
+                    date: format.dateTime(new Date(invite.nextTime), {
+                      weekday: 'long',
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      timeZone,
+                    }),
+                  })}
+                </p>
+                {invite.lastRun && (
+                  <p
+                    className={
+                      invite.lastRun.error || invite.lastRun.failed
+                        ? 'text-danger'
+                        : 'text-neutral-400'
+                    }
+                  >
+                    {invite.lastRun.error
+                      ? t('lastRunError', {
+                          date: format.dateTime(new Date(invite.lastRun.at), {
+                            dateStyle: 'medium',
+                            timeStyle: 'short',
+                            timeZone,
+                          }),
+                          error: t(invite.lastRun.error),
+                        })
+                      : t('lastRun', {
+                          date: format.dateTime(new Date(invite.lastRun.at), {
+                            dateStyle: 'medium',
+                            timeStyle: 'short',
+                            timeZone,
+                          }),
+                          sent: invite.lastRun.sent,
+                          failed: invite.lastRun.failed,
+                          skipped: invite.lastRun.skipped,
+                        })}
+                  </p>
+                )}
+              </div>
+            )}
+          </>
+        ) : (
+          // Nothing to turn on without a release day
+          <p className='text-sm text-neutral-400 sm:pl-50'>
+            {t.rich('invitesNeedRewind', {
+              link: (chunks) => (
+                <Link
+                  href='/settings/rewind'
+                  className='link-light text-neutral-200 underline underline-offset-2'
+                >
+                  {chunks}
+                </Link>
+              ),
+            })}
+          </p>
+        )}
+      </section>
       {/* Apart from the newsletter, as every email goes to these addresses */}
       <section className='group-settings group'>
         <h2 className='heading-settings'>{t('recipients')}</h2>
@@ -435,6 +541,9 @@ export default function EmailSettingsForm({
           recipients={recipients}
           isNewsletterActive={isNewsletterActive}
           isNewsletterOnLoad={settings.isNewsletterActive}
+          // Not once a save elsewhere left no release day to send them on
+          isInviteActive={invite.canInvite && isInviteActive}
+          isInviteOnLoad={isInviteOnLoad}
         />
       </section>
     </SettingsForm>

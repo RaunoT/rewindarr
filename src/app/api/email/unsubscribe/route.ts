@@ -7,29 +7,48 @@ import {
   renderLayout,
 } from '@/utils/emailHtml'
 import { getEmailIntl } from '@/utils/emailIntl'
-import { getAppUrl, isUnsubscribeKey, toAppUrl } from '@/utils/emailLinks'
+import {
+  EmailList,
+  getAppUrl,
+  isUnsubscribeKey,
+  readEmailList,
+  toAppUrl,
+} from '@/utils/emailLinks'
 import getSettings, { writeSettings } from '@/utils/getSettings'
 
 export const dynamic = 'force-dynamic'
 
 type Page = 'confirm' | 'done' | 'invalid'
 
+// Where each list's unsubscribed users are kept
+const LIST_FIELDS = {
+  newsletter: 'unsubscribed',
+  invite: 'inviteUnsubscribed',
+} as const satisfies Record<EmailList, keyof Settings['email']>
+
 // A page in the emails' look, as the reader comes from one
 async function renderPage(
   settings: Settings,
   page: Page,
+  list: EmailList,
   action?: string,
 ): Promise<Response> {
   const { t, locale } = await getEmailIntl(settings.email.locale)
   const appUrl = getAppUrl(settings)
   const serverName = settings.general.serverName || APP_NAME
+  // A broken link has nothing to do with the list
+  const title =
+    page === 'invalid'
+      ? t('Email.Unsubscribe.invalid.title')
+      : t(`Email.Unsubscribe.${list}.${page}.title`)
+  const body =
+    page === 'invalid'
+      ? t('Email.Unsubscribe.invalid.body', { server: serverName })
+      : t(`Email.Unsubscribe.${list}.${page}.body`, { server: serverName })
   const blocks: EmailBlock[] = [
-    { type: 'eyebrow', text: t('Email.Unsubscribe.eyebrow') },
-    { type: 'title', text: t(`Email.Unsubscribe.${page}.title`) },
-    {
-      type: 'paragraph',
-      text: t(`Email.Unsubscribe.${page}.body`, { server: serverName }),
-    },
+    { type: 'eyebrow', text: t(`Email.Unsubscribe.${list}.eyebrow`) },
+    { type: 'title', text: title },
+    { type: 'paragraph', text: body },
   ]
 
   if (page === 'confirm' && action) {
@@ -43,7 +62,7 @@ async function renderPage(
   return new Response(
     renderLayout({
       locale,
-      title: t(`Email.Unsubscribe.${page}.title`),
+      title,
       preheader: '',
       serverName,
       logoUrl: appUrl && toAppUrl(appUrl, '/icon-192x192.png'),
@@ -64,35 +83,41 @@ async function renderPage(
 function readKey(request: Request) {
   const { searchParams } = new URL(request.url)
 
-  return { userId: searchParams.get('userId'), key: searchParams.get('key') }
+  return {
+    userId: searchParams.get('userId'),
+    key: searchParams.get('key'),
+    list: readEmailList(searchParams),
+  }
 }
 
 // Opening the link only asks, as mail scanners open links too
 export async function GET(request: Request) {
   const settings = getSettings()
-  const { userId, key } = readKey(request)
+  const { userId, key, list } = readKey(request)
 
-  if (!isUnsubscribeKey(userId, key)) {
-    return renderPage(settings, 'invalid')
+  if (!list || !isUnsubscribeKey(userId, key, list)) {
+    return renderPage(settings, 'invalid', list ?? 'newsletter')
   }
 
   const url = new URL(request.url)
 
-  return renderPage(settings, 'confirm', `${url.pathname}${url.search}`)
+  return renderPage(settings, 'confirm', list, `${url.pathname}${url.search}`)
 }
 
 // From the page's button, and from mail apps' own unsubscribe buttons
 export async function POST(request: Request) {
   const settings = getSettings()
-  const { userId, key } = readKey(request)
+  const { userId, key, list } = readKey(request)
 
-  if (!userId || !isUnsubscribeKey(userId, key)) {
-    return renderPage(settings, 'invalid')
+  if (!list || !userId || !isUnsubscribeKey(userId, key, list)) {
+    return renderPage(settings, 'invalid', list ?? 'newsletter')
   }
 
+  const unsubscribed = settings.email[LIST_FIELDS[list]]
+
   try {
-    if (!settings.email.unsubscribed.includes(userId)) {
-      settings.email.unsubscribed.push(userId)
+    if (!unsubscribed.includes(userId)) {
+      unsubscribed.push(userId)
       writeSettings(settings)
     }
   } catch (error) {
@@ -101,5 +126,5 @@ export async function POST(request: Request) {
     return new Response(null, { status: 500 })
   }
 
-  return renderPage(settings, 'done')
+  return renderPage(settings, 'done', list)
 }

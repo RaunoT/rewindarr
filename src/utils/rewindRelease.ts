@@ -117,7 +117,9 @@ export async function checkRewindRelease(now: Date = new Date()) {
     const recipients = await getEmailRecipients(settings)
     const report = await sendRewindEmails(
       settings,
-      recipients.filter(({ address }) => address).map(({ id }) => id),
+      recipients
+        .filter(({ address, isInvited }) => address && isInvited)
+        .map(({ id }) => id),
     )
 
     // Nothing went out, so it's tried again at the next check while the

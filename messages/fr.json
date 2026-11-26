@@ -371,17 +371,12 @@
       "releaseDate": "Date de sortie",
       "releaseDateDescription": "Quand sort l'édition {year}",
       "releaseDateError": "Vérifiez la date de sortie.",
-      "releaseEmail": "Invitations par e-mail",
-      "releaseEmailDescription": "Le jour de la sortie, envoie à chaque utilisateur ayant une adresse une invitation à découvrir son Rewind. Les prochaines partent le {date}.",
-      "releaseEmailNeedsMail": "Configurez d'abord le serveur de messagerie dans les réglages E-mail.",
       "yearError": "Vérifiez l'année.",
       "startDateError": "Vérifiez la date de début.",
       "shareLinks": "Liens partagés",
-      "shareLinksDescription": "Chaque utilisateur a son propre lien. Il ouvre son Rewind sans connexion, donc toute personne à qui il est transmis peut aussi le voir.",
-      "shareLinksLoginDescription": "Chaque utilisateur a son propre lien. Il ouvre son Rewind pour toute personne qui se connecte, donc les autres membres du serveur à qui il est transmis peuvent le voir.",
+      "shareLinksDescription": "Chaque utilisateur a son propre lien vers son Rewind",
       "shareLogin": "Connexion pour les liens partagés",
-      "shareLoginDescription": "Le lien Rewind propre à chaque utilisateur ne s'ouvre qu'après connexion. Désactivé, toute personne qui l'a peut l'ouvrir, quel que soit le réglage « Autoriser l'accès externe ».",
-      "shareLinksSendDescription": "Le bouton Envoyer maintenant l'envoie à l'adresse indiquée dans les <link>paramètres e-mail</link>.",
+      "shareLoginDescription": "Activé, les liens Rewind ne s'ouvrent qu'après connexion. Désactivé, toute personne qui a un lien peut l'ouvrir, même si « Autoriser l'accès externe » est désactivé.",
       "shareLinksSearch": "Rechercher des utilisateurs",
       "shareLinksNoUsers": "Aucun utilisateur trouvé",
       "shareLinksError": "Impossible de lire les utilisateurs",
@@ -391,10 +386,6 @@
       "shareLabel": "Partager le Rewind de {name}",
       "copied": "Copié",
       "copyError": "Impossible de copier le lien : {url}",
-      "sendNow": "Envoyer maintenant",
-      "emailLabel": "Envoyer à {name} le lien vers son Rewind",
-      "sent": "Envoyé",
-      "emailError": "Impossible d'envoyer l'e-mail à {name} : {reason}",
       "shareLinksReset": "Réinitialiser les liens",
       "shareLinksResetDescription": "Tous les liens partagés jusqu'ici cessent de fonctionner",
       "shareLinksResetDone": "Les liens partagés auparavant ne fonctionnent plus",
@@ -426,8 +417,6 @@
       "appUrlDescription": "Là où mènent les liens des e-mails. Vos utilisateurs doivent pouvoir l'ouvrir.",
       "language": "Langue",
       "users": "Utilisateurs",
-      "userColumn": "Utilisateur",
-      "addressColumn": "Adresse",
       "recipients": "Destinataires",
       "recipientsDescription": "Les utilisateurs peuvent se désabonner à tout moment",
       "recipientsSearch": "Rechercher des utilisateurs",
@@ -437,8 +426,14 @@
       "noAddress": "Aucune adresse",
       "addressLabel": "Adresse e-mail de {name}",
       "subscribedLabel": "Newsletter pour {name}",
+      "invite": "Invitation Rewind",
+      "invitedLabel": "Invitation Rewind pour {name}",
+      "invites": "Invitations Rewind",
+      "invitesDescription": "Le jour de la sortie, envoie aux utilisateurs une invitation à découvrir leur Rewind",
+      "invitesNext": "Les prochaines partent le {date}.",
+      "invitesNeedMailServer": "Configurez d'abord le serveur de messagerie",
+      "invitesNeedRewind": "Les invitations partent le jour de la sortie du Rewind. Ouvrez le Rewind aux utilisateurs et choisissez « Années civiles » comme période dans les <link>paramètres Rewind</link>.",
       "newsletter": "Newsletter",
-      "newsletterDescription": "Envoie à chaque utilisateur un récapitulatif de ce que lui et tous les autres ont regardé et écouté",
       "frequency": "Fréquence",
       "frequencies": {
         "weekly": "Hebdomadaire",
@@ -957,7 +952,8 @@
       },
       "button": "Voir mon Rewind",
       "footer": "Ce lien ouvre votre Rewind sans connexion, alors ne le partagez qu'avec les personnes à qui vous voulez le montrer.",
-      "footerLogin": "Ce lien ouvre votre Rewind après connexion. Les autres membres du serveur peuvent aussi l'ouvrir, alors ne le partagez qu'avec les personnes à qui vous voulez le montrer."
+      "footerLogin": "Ce lien ouvre votre Rewind après connexion. Les autres membres du serveur peuvent aussi l'ouvrir, alors ne le partagez qu'avec les personnes à qui vous voulez le montrer.",
+      "unsubscribe": "Ne plus recevoir les invitations Rewind"
     },
     "Newsletter": {
       "subject": {
@@ -1002,19 +998,32 @@
       "body": "Votre serveur de messagerie est configuré : les invitations au Rewind et les newsletters peuvent partir."
     },
     "Unsubscribe": {
-      "eyebrow": "Newsletter",
       "button": "Se désabonner",
-      "confirm": {
-        "title": "Se désabonner ?",
-        "body": "Vous ne recevrez plus les récapitulatifs de {server}."
-      },
-      "done": {
-        "title": "Vous êtes désabonné",
-        "body": "Vous ne recevrez plus de récapitulatifs de {server}. Demandez à son administrateur si vous souhaitez les recevoir à nouveau."
-      },
       "invalid": {
         "title": "Ce lien ne fonctionne pas",
         "body": "Il a peut-être été coupé. Essayez le lien d'un autre e-mail de {server}."
+      },
+      "newsletter": {
+        "eyebrow": "Newsletter",
+        "confirm": {
+          "title": "Se désabonner ?",
+          "body": "Vous ne recevrez plus les récapitulatifs de {server}."
+        },
+        "done": {
+          "title": "Vous êtes désabonné",
+          "body": "Vous ne recevrez plus de récapitulatifs de {server}. Demandez à son administrateur si vous souhaitez les recevoir à nouveau."
+        }
+      },
+      "invite": {
+        "eyebrow": "Rewind",
+        "confirm": {
+          "title": "Ne plus recevoir les invitations Rewind ?",
+          "body": "Vous ne recevrez plus d'e-mail de {server} à la sortie de votre prochain Rewind."
+        },
+        "done": {
+          "title": "Plus d'invitations Rewind",
+          "body": "Vous ne recevrez plus d'invitations Rewind de {server}. Demandez à son administrateur si vous souhaitez les recevoir à nouveau."
+        }
       }
     }
   }

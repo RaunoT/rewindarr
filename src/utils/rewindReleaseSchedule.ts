@@ -73,15 +73,18 @@ export function getNextReleaseEmailTime(
   return getReleaseEmailTime(settings, getLatestReleaseYear(settings, now) + 1)
 }
 
-// Whether invites go out on the release day: Rewind is on and open to users,
-// by the calendar year, which has a release day, and the emails are on
-export function isReleaseEmailOn(settings: ReleaseSettings): boolean {
-  const { isActive, isAdminOnly, isReleaseEmailActive } = settings.rewind
+// Whether there's a release day to invite users on: Rewind is on and open to
+// users, by the calendar year
+export function canSendReleaseEmails(settings: ReleaseSettings): boolean {
+  const { isActive, isAdminOnly } = settings.rewind
 
   return (
-    isActive &&
-    !isAdminOnly &&
-    isReleaseEmailActive &&
-    getRewindPeriodType(settings) === 'calendarYear'
+    isActive && !isAdminOnly && getRewindPeriodType(settings) === 'calendarYear'
   )
+}
+
+// Whether invites go out on the release day: there is one, and the emails
+// are on
+export function isReleaseEmailOn(settings: ReleaseSettings): boolean {
+  return canSendReleaseEmails(settings) && settings.rewind.isReleaseEmailActive
 }

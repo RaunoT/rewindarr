@@ -14,7 +14,10 @@ export type EmailRecipient = {
   foundAddress: string
   // Where their emails go, empty when there's nowhere
   address: string
+  // To the newsletter
   isSubscribed: boolean
+  // To the Rewind invites on the release day
+  isInvited: boolean
 }
 
 // Loose on purpose: the mail server is the one to tell what it can deliver to.
@@ -54,6 +57,7 @@ export function toEmailRecipient(
     foundAddress,
     address: customAddress || foundAddress,
     isSubscribed: !settings.email.unsubscribed.includes(id),
+    isInvited: !settings.email.inviteUnsubscribed.includes(id),
   }
 }
 

@@ -49,6 +49,7 @@ config/*-history.json.gz*
 config/source-snapshot.json*
 config/music-previews.json*
 config/newsletter.json*
+config/rewind-emails.json*
 config/rewind-music*
 config/auth-secret
 

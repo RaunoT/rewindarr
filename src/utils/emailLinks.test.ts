@@ -8,6 +8,7 @@ import {
   getUnsubscribeUrl,
   isPublicUrl,
   isUnsubscribeKey,
+  readEmailList,
   toAppImageUrl,
   toAppUrl,
 } from './emailLinks'
@@ -78,6 +79,31 @@ describe('unsubscribe links', () => {
     expect(isUnsubscribeKey('43', key)).toBe(false)
     expect(isUnsubscribeKey('42', `${key}x`)).toBe(false)
     expect(isUnsubscribeKey('42', null)).toBe(false)
+  })
+
+  it("stop the invites with a key of their own, which the newsletter's can't", () => {
+    const url = getUnsubscribeUrl('https://rewind.example.com', '42', 'invite')
+    const key = getKey(url)
+
+    expect(url).toMatch(
+      /^https:\/\/rewind\.example\.com\/api\/email\/unsubscribe\?userId=42&list=invite&key=[\w-]{22}$/,
+    )
+    expect(isUnsubscribeKey('42', key, 'invite')).toBe(true)
+    expect(isUnsubscribeKey('42', key)).toBe(false)
+    expect(
+      isUnsubscribeKey(
+        '42',
+        getKey(getUnsubscribeUrl('https://rewind.example.com', '42')),
+        'invite',
+      ),
+    ).toBe(false)
+  })
+
+  it('read the list, which is the newsletter without one', () => {
+    expect(readEmailList(new URLSearchParams('userId=42'))).toBe('newsletter')
+    expect(readEmailList(new URLSearchParams('list=invite'))).toBe('invite')
+    expect(readEmailList(new URLSearchParams('list=newsletter'))).toBeNull()
+    expect(readEmailList(new URLSearchParams('list=other'))).toBeNull()
   })
 
   it("can't be made without the secret", () => {

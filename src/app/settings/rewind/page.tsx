@@ -1,21 +1,12 @@
 import { requireSettingsAccess } from '@/lib/access'
-import { toEmailRecipient } from '@/utils/emailRecipients'
-import { fetchSeerrEmails } from '@/utils/fetchSeerr'
 import getSettings from '@/utils/getSettings'
 import { checkRequiredSettings } from '@/utils/helpers'
-import { isMailServerSet } from '@/utils/mailer'
 import { toPublicSettings } from '@/utils/publicSettings'
-import { readRewindEmailsState } from '@/utils/rewindRelease'
-import {
-  getLatestReleaseYear,
-  getNextReleaseEmailTime,
-} from '@/utils/rewindReleaseSchedule'
 import { canShareRewind, getRewindSharePath } from '@/utils/rewindShare'
 import { getRewindUserName } from '@/utils/rewindUser'
 import { getActiveUsers } from '@/utils/statsSource'
 import { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
-import { ReleaseEmailStatus } from './_components/RewindReleaseEmail'
 import RewindSettingsForm from './_components/RewindSettingsForm'
 import { ShareUser } from './_components/RewindShareLinks'
 
@@ -27,14 +18,11 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-async function getShareUsers(canEmail: boolean): Promise<ShareUser[] | null> {
+async function getShareUsers(): Promise<ShareUser[] | null> {
   const settings = getSettings()
 
   try {
-    const [users, seerrEmails] = await Promise.all([
-      getActiveUsers(settings),
-      canEmail ? fetchSeerrEmails() : null,
-    ])
+    const users = await getActiveUsers(settings)
 
     return users
       .flatMap((user) => {
@@ -48,9 +36,6 @@ async function getShareUsers(canEmail: boolean): Promise<ShareUser[] | null> {
                 name: getRewindUserName(user),
                 thumb: user.user_thumb || user.thumb || null,
                 path,
-                hasAddress:
-                  canEmail &&
-                  !!toEmailRecipient(settings, user, seerrEmails).address,
               },
             ]
           : []
@@ -63,34 +48,12 @@ async function getShareUsers(canEmail: boolean): Promise<ShareUser[] | null> {
   }
 }
 
-async function getReleaseEmailStatus(): Promise<ReleaseEmailStatus> {
-  const settings = getSettings()
-  const { handledYear, lastRun } = await readRewindEmailsState()
-  const now = new Date()
-
-  return {
-    isMailServerSet: isMailServerSet(settings.email),
-    // While they're off, as turning them on would make it: an edition that's
-    // already out is passed over
-    nextTime: getNextReleaseEmailTime(
-      settings,
-      settings.rewind.isReleaseEmailActive
-        ? handledYear
-        : getLatestReleaseYear(settings, now),
-      now,
-    ).toISOString(),
-    lastRun,
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-  }
-}
-
 export default async function RewindSettingsPage() {
   await requireSettingsAccess('rewind')
 
   const settings = getSettings()
   // Not during the setup, when there's no one to share with yet
   const canShare = !checkRequiredSettings(settings) && canShareRewind(settings)
-  const canEmail = isMailServerSet(settings.email)
   const currentYear = new Date().getFullYear()
 
   return (
@@ -98,11 +61,7 @@ export default async function RewindSettingsPage() {
       settings={toPublicSettings(settings)}
       currentYear={currentYear}
       // Not waited for, so the form shows while they're read
-      shareUsers={canShare ? getShareUsers(canEmail) : undefined}
-      canEmail={canEmail}
-      // Always, as the form shows the switch as soon as users can open their
-      // own Rewind, and a save of a form without it would turn it off
-      releaseEmail={await getReleaseEmailStatus()}
+      shareUsers={canShare ? getShareUsers() : undefined}
     />
   )
 }
