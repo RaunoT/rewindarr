@@ -61,7 +61,7 @@ import {
   getPersonalitySignals,
   getPlaySignals,
 } from '@/utils/rewindPersonality'
-import { isRewindShareKey } from '@/utils/rewindShare'
+import { canOpenRewindShare, isRewindShareKey } from '@/utils/rewindShare'
 import { getTopPercent } from '@/utils/rewindTotal'
 import { getRewindUserName } from '@/utils/rewindUser'
 import {
@@ -108,8 +108,11 @@ async function RewindContent({
 }) {
   const session = await getServerSession(authOptions)
   const settings = getSettings()
-  // A user's shared link opens their Rewind for anyone, signed in or not
-  const isShared = isRewindShareKey(settings, userId, shareKey)
+  // A user's shared link opens their Rewind for anyone, signed in or not,
+  // unless the links ask to sign in
+  const isShared =
+    isRewindShareKey(settings, userId, shareKey) &&
+    canOpenRewindShare(settings, !!session)
 
   if (!isShared && !canViewFeature(settings, 'rewind', getViewer(session))) {
     return notFound()
@@ -155,7 +158,12 @@ async function RewindContent({
     year: parseEditionYear(year, getLatestEditionYear(settings, timeZone)),
     timeZone,
   })
-  const libraries = await getLibraries()
+  // The user's own, as a shared Rewind opens without anyone signed in. An
+  // admin's stay their own, as the years they pick from are read from them.
+  const libraries = await getLibraries(
+    true,
+    session?.user.isAdmin ? undefined : { userId: user.id },
+  )
   const progress = await getHistoryProgress(period.since, libraries)
 
   if (progress) {

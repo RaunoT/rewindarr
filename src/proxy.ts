@@ -2,7 +2,7 @@ import { Settings } from '@/types/settings'
 import { decode, getToken } from 'next-auth/jwt'
 import { NextRequest, NextResponse } from 'next/server'
 import { recheckServerUser } from './lib/auth'
-import { CALLBACK_URL_PARAM } from './utils/callbackUrl'
+import { CALLBACK_URL_PARAM, getCallbackPath } from './utils/callbackUrl'
 import { createNonce, getContentSecurityPolicy } from './utils/csp'
 import getSettings from './utils/getSettings'
 import {
@@ -16,6 +16,7 @@ import {
   isSettingsPath,
 } from './utils/helpers'
 import {
+  canOpenRewindShare,
   isRewindShareKey,
   REWIND_SHARE_COOKIE,
   REWIND_SHARE_HEADER,
@@ -109,8 +110,10 @@ function getSessionToken(req: NextRequest) {
 }
 
 // The user and key of a shared Rewind's link, when it's a valid one
-function getRewindShare(req: NextRequest, settings: Settings | null) {
-  const { pathname, searchParams } = req.nextUrl
+function getRewindShare(
+  { pathname, searchParams }: Pick<URL, 'pathname' | 'searchParams'>,
+  settings: Settings | null,
+) {
   const [userId, ...otherUserIds] = searchParams.getAll('userId')
   const [key, ...otherKeys] = searchParams.getAll('key')
 
@@ -128,6 +131,23 @@ function getRewindShare(req: NextRequest, settings: Settings | null) {
   }
 
   return { userId, key }
+}
+
+// The login's address carries the shared Rewind it returns to, key and all,
+// so it's kept from analytics like the Rewind itself
+function getLoginShareUserId(
+  req: NextRequest,
+  settings: Settings | null,
+): string | undefined {
+  if (req.nextUrl.pathname !== '/') {
+    return undefined
+  }
+
+  const callbackPath = getCallbackPath(
+    req.nextUrl.searchParams.get(CALLBACK_URL_PARAM),
+  )
+
+  return getRewindShare(new URL(callbackPath, req.nextUrl), settings)?.userId
 }
 
 export default async function proxy(req: NextRequest) {
@@ -198,15 +218,18 @@ export default async function proxy(req: NextRequest) {
     }
   }
 
-  const rewindShare = getRewindShare(req, settings)
+  const share = getRewindShare(req.nextUrl, settings)
+  // A shared Rewind opens without signing in, unless its links ask for it
+  const rewindShare =
+    share && settings && canOpenRewindShare(settings, !!token) ? share : null
 
-  // A shared Rewind opens without signing in
+  // The login returns to the link, key and all
   if (
     !token &&
     !rewindShare &&
     req.method === 'GET' &&
     settings &&
-    isLoginRequired(settings, pathname)
+    (share || isLoginRequired(settings, pathname))
   ) {
     return redirectToLogin(req)
   }
@@ -241,7 +264,7 @@ export default async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL('/rewind', req.nextUrl))
   }
 
-  return nextWithCsp(req)
+  return nextWithCsp(req, getLoginShareUserId(req, settings))
 }
 
 export const config = {

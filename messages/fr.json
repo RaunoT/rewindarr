@@ -377,7 +377,10 @@
       "yearError": "Vérifiez l'année.",
       "startDateError": "Vérifiez la date de début.",
       "shareLinks": "Liens partagés",
-      "shareLinksDescription": "Chaque lien ouvre le Rewind de cet utilisateur sans connexion, donc toute personne à qui il est transmis peut aussi le voir.",
+      "shareLinksDescription": "Chaque utilisateur a son propre lien. Il ouvre son Rewind sans connexion, donc toute personne à qui il est transmis peut aussi le voir.",
+      "shareLinksLoginDescription": "Chaque utilisateur a son propre lien. Il ouvre son Rewind pour toute personne qui se connecte, donc les autres membres du serveur à qui il est transmis peuvent le voir.",
+      "shareLogin": "Connexion pour les liens partagés",
+      "shareLoginDescription": "Le lien Rewind propre à chaque utilisateur ne s'ouvre qu'après connexion. Désactivé, toute personne qui l'a peut l'ouvrir, quel que soit le réglage « Autoriser l'accès externe ».",
       "shareLinksSendDescription": "Le bouton Envoyer maintenant l'envoie à l'adresse indiquée dans les <link>paramètres e-mail</link>.",
       "shareLinksSearch": "Rechercher des utilisateurs",
       "shareLinksNoUsers": "Aucun utilisateur trouvé",
@@ -953,7 +956,8 @@
         "personality": "Profil"
       },
       "button": "Voir mon Rewind",
-      "footer": "Ce lien ouvre votre Rewind sans connexion, alors ne le partagez qu'avec les personnes à qui vous voulez le montrer."
+      "footer": "Ce lien ouvre votre Rewind sans connexion, alors ne le partagez qu'avec les personnes à qui vous voulez le montrer.",
+      "footerLogin": "Ce lien ouvre votre Rewind après connexion. Les autres membres du serveur peuvent aussi l'ouvrir, alors ne le partagez qu'avec les personnes à qui vous voulez le montrer."
     },
     "Newsletter": {
       "subject": {

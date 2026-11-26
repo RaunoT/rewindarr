@@ -45,6 +45,14 @@ export function getRewindSharePath(
   return `/rewind?${new URLSearchParams({ userId, key: key.toString('base64url') })}`
 }
 
+// A link opens for anyone who has it, or only once they've signed in
+export function canOpenRewindShare(
+  settings: ShareSettings,
+  isLoggedIn: boolean,
+): boolean {
+  return isLoggedIn || !settings.rewind.isShareLoginRequired
+}
+
 export function isRewindShareKey(
   settings: ShareSettings,
   userId: unknown,

@@ -17,7 +17,8 @@ export default async function getRewindEditions(
   now: Date = new Date(),
 ): Promise<Record<string, number[]>> {
   const settings = getSettings()
-  const libraries = await getLibraries()
+  // The user's own, as a shared Rewind opens without anyone signed in
+  const libraries = await getLibraries(true, { userId })
   const firstYear = getFirstReadYear(
     await getHistoryReadFrom(libraries),
     timeZone,

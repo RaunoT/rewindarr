@@ -182,6 +182,21 @@ export default function RewindSettingsForm({
             </span>
           </Switch>
         )}
+        {/* While users can open their own Rewind, which the links lead to */}
+        {isActive && !isAdminOnly && (
+          <Switch
+            key={`share-login-${rewindSettings.isShareLoginRequired}`}
+            className='switch items-start'
+            name='isShareLoginRequired'
+            defaultSelected={rewindSettings.isShareLoginRequired}
+          >
+            <div className='indicator' />
+            <span className='label'>
+              <span className='label-wrapper'>{t('shareLogin')}</span>
+              <small>{t('shareLoginDescription')}</small>
+            </span>
+          </Switch>
+        )}
         {/* Where users start depends on the other pages too, so it's spelled
             out here */}
         {isActive && !isAdminOnly && (
@@ -345,7 +360,12 @@ export default function RewindSettingsForm({
           </section>
           {/* As saved, until a save opens or closes Rewind to users */}
           {!isAdminOnly && shareUsers && (
-            <RewindShareLinks users={shareUsers} canEmail={canEmail} />
+            <RewindShareLinks
+              users={shareUsers}
+              canEmail={canEmail}
+              // As saved, like the links
+              isLoginRequired={settings.rewind.isShareLoginRequired}
+            />
           )}
         </>
       )}
