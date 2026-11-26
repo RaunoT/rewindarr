@@ -380,7 +380,7 @@
       "shareLinksDescription": "Igal kasutajal on oma link oma Rewindile. Säte „Jagatud lingid nõuavad sisselogimist“ määrab, kas see avaneb ilma sisse logimata.",
       "shareLogin": "Jagatud lingid nõuavad sisselogimist",
       "shareLoginDescription": "Sisselülitatuna avanevad Rewindi lingid alles pärast sisselogimist. Väljalülitatuna saab lingi avada igaüks, kellel see on, isegi kui „Luba väline ligipääs“ on välja lülitatud.",
-      "shareLinksSendDescription": "Nupp Saada kohe saadab kasutajale tema lingi aadressile, mis on <link>E-posti seadetes</link>, isegi kui tema Rewindi kutse on seal välja lülitatud.",
+      "shareLinksSendDescription": "Nupp Saada kohe saadab selle aadressile, mis on <link>E-posti seadetes</link>.",
       "shareLinksSearch": "Otsi kasutajaid",
       "shareLinksNoUsers": "Kasutajaid ei leitud",
       "shareLinksError": "Kasutajaid ei õnnestunud lugeda",

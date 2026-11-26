@@ -380,7 +380,7 @@
       "shareLinksDescription": "Every user has their own link to their Rewind. \"Sign in for shared links\" decides whether it opens without signing in.",
       "shareLogin": "Sign in for shared links",
       "shareLoginDescription": "When on, Rewind links only open after signing in. When off, anyone with a link can open it, even with \"Allow outside access\" off.",
-      "shareLinksSendDescription": "Send now emails a user their link, to the address in the <link>Email settings</link>, even if their Rewind invite is off there.",
+      "shareLinksSendDescription": "Send now emails it to the address in the <link>Email settings</link>.",
       "shareLinksSearch": "Search users",
       "shareLinksNoUsers": "No users found",
       "shareLinksError": "Couldn't read the users",

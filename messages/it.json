@@ -380,7 +380,7 @@
       "shareLinksDescription": "Ogni utente ha il proprio link al suo Rewind. «Accesso per i link condivisi» decide se si apre senza accedere.",
       "shareLogin": "Accesso per i link condivisi",
       "shareLoginDescription": "Se attivato, i link Rewind si aprono solo dopo l'accesso. Se disattivato, chiunque abbia un link può aprirlo, anche con «Consenti l'accesso esterno» disattivato.",
-      "shareLinksSendDescription": "Invia ora manda a un utente il suo link, all'indirizzo nelle <link>impostazioni Email</link>, anche se lì il suo invito a Rewind è disattivato.",
+      "shareLinksSendDescription": "Invia ora lo manda all'indirizzo nelle <link>impostazioni Email</link>.",
       "shareLinksSearch": "Cerca utenti",
       "shareLinksNoUsers": "Nessun utente trovato",
       "shareLinksError": "Impossibile leggere gli utenti",
