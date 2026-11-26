@@ -115,6 +115,9 @@ export type RewindSettings = {
   startDate?: string
   // Raised to reset the share links, so the ones shared before stop working
   shareVersion: number
+  // Whether the share links, the emailed ones too, ask a visitor to sign in
+  // first, in place of opening for anyone who has one
+  isShareLoginRequired: boolean
   complete: boolean
 }
 

@@ -3,6 +3,7 @@ import { cloneDeep } from 'lodash'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SETTINGS } from './constants'
 import {
+  canOpenRewindShare,
   getRewindSharePath,
   isRewindShareCookie,
   isRewindShareKey,
@@ -93,5 +94,14 @@ describe('rewind share links', () => {
     )
     expect(isRewindShareCookie(settings, key)).toBe(false)
     expect(isRewindShareCookie(settings, undefined)).toBe(false)
+  })
+
+  it('opens for anyone, or only once signed in when the links ask for it', () => {
+    expect(canOpenRewindShare(settings, false)).toBe(true)
+
+    settings.rewind.isShareLoginRequired = true
+
+    expect(canOpenRewindShare(settings, false)).toBe(false)
+    expect(canOpenRewindShare(settings, true)).toBe(true)
   })
 })

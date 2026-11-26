@@ -61,7 +61,7 @@ import {
   getPersonalitySignals,
   getPlaySignals,
 } from '@/utils/rewindPersonality'
-import { isRewindShareKey } from '@/utils/rewindShare'
+import { canOpenRewindShare, isRewindShareKey } from '@/utils/rewindShare'
 import { getTopPercent } from '@/utils/rewindTotal'
 import { getRewindUserName } from '@/utils/rewindUser'
 import {
@@ -108,8 +108,11 @@ async function RewindContent({
 }) {
   const session = await getServerSession(authOptions)
   const settings = getSettings()
-  // A user's shared link opens their Rewind for anyone, signed in or not
-  const isShared = isRewindShareKey(settings, userId, shareKey)
+  // A user's shared link opens their Rewind for anyone, signed in or not,
+  // unless the links ask to sign in
+  const isShared =
+    isRewindShareKey(settings, userId, shareKey) &&
+    canOpenRewindShare(settings, !!session)
 
   if (!isShared && !canViewFeature(settings, 'rewind', getViewer(session))) {
     return notFound()

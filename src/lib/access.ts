@@ -6,7 +6,11 @@ import {
   isInitialSetup,
   isSettingsPageLocked,
 } from '@/utils/helpers'
-import { isRewindShareCookie, REWIND_SHARE_COOKIE } from '@/utils/rewindShare'
+import {
+  canOpenRewindShare,
+  isRewindShareCookie,
+  REWIND_SHARE_COOKIE,
+} from '@/utils/rewindShare'
 import { getServerSession } from 'next-auth'
 import { getTranslations } from 'next-intl/server'
 import { cookies } from 'next/headers'
@@ -83,5 +87,8 @@ export async function canPlayRewind(
 
   const cookie = (await cookies()).get(REWIND_SHARE_COOKIE)?.value
 
-  return isRewindShareCookie(settings, cookie)
+  return (
+    canOpenRewindShare(settings, !!session) &&
+    isRewindShareCookie(settings, cookie)
+  )
 }

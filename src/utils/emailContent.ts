@@ -244,7 +244,11 @@ export async function buildRewindEmail(
         { type: 'button', href: shareUrl, label: t('Email.Rewind.button') },
       ],
     ],
-    footer: t('Email.Rewind.footer'),
+    footer: t(
+      settings.rewind.isShareLoginRequired
+        ? 'Email.Rewind.footerLogin'
+        : 'Email.Rewind.footer',
+    ),
   })
 
   return {

@@ -38,6 +38,8 @@ type Props = {
   users: Promise<ShareUser[] | null>
   // With a mail server, so each user can be emailed theirs
   canEmail: boolean
+  // Whether the links ask a visitor to sign in first
+  isLoginRequired: boolean
 }
 
 const COPIED_MS = 2000
@@ -343,7 +345,11 @@ function ShareLinkList({
 
 // In the form, though copying a link or resetting them saves nothing in it,
 // like the background track
-export default function RewindShareLinks({ users, canEmail }: Props) {
+export default function RewindShareLinks({
+  users,
+  canEmail,
+  isLoginRequired,
+}: Props) {
   const t = useTranslations('Settings.Rewind')
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -398,7 +404,13 @@ export default function RewindShareLinks({ users, canEmail }: Props) {
         </div>
         <span className='label label--start'>
           <span className='label-wrapper'>{t('shareLinksUsers')}</span>
-          <small>{t('shareLinksDescription')}</small>
+          <small>
+            {t(
+              isLoginRequired
+                ? 'shareLinksLoginDescription'
+                : 'shareLinksDescription',
+            )}
+          </small>
           {canEmail && (
             <small className='mt-2'>
               {t.rich('shareLinksSendDescription', {
