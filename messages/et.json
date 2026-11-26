@@ -437,7 +437,7 @@
       "invitesNext": "Järgmised lähevad välja: {date}",
       "invitesNeedMailServer": "Seadista esmalt meiliserver",
       "invitesNeedRewind": "Kutsed lähevad välja Rewindi ilmumise päeval. Ava Rewind kasutajatele ja vali perioodiks „Kalendriaastad“ <link>Rewindi seadetes</link>.",
-      "sendNowDescription": "Nupp Saada kohe saadab kasutajale kutse tema Rewindile kohe, tema salvestatud aadressile",
+      "sendNowDescription": "Nupp Saada kohe saadab kasutajale kutse tema Rewindile kohe",
       "newsletter": "Uudiskiri",
       "newsletterDescription": "Saadab igale kasutajale kokkuvõtte sellest, mida tema ja kõik teised mängisid",
       "frequency": "Sagedus",

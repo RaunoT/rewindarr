@@ -437,7 +437,7 @@
       "invitesNext": "Die nächsten gehen am {date} raus",
       "invitesNeedMailServer": "Richte zuerst den Mailserver ein",
       "invitesNeedRewind": "Einladungen gehen am Erscheinungstag von Rewind raus. Öffne Rewind für Benutzer und wähle „Kalenderjahre“ als Zeitraum in den <link>Rewind Einstellungen</link>.",
-      "sendNowDescription": "Jetzt senden schickt einem Benutzer die Einladung zu seinem Rewind sofort, an seine gespeicherte Adresse",
+      "sendNowDescription": "Jetzt senden schickt einem Benutzer die Einladung zu seinem Rewind sofort",
       "newsletter": "Newsletter",
       "newsletterDescription": "Schickt jedem Benutzer einen Rückblick darauf, was er und alle anderen abgespielt haben",
       "frequency": "Häufigkeit",

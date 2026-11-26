@@ -437,7 +437,7 @@
       "invitesNext": "Les prochaines partent le {date}",
       "invitesNeedMailServer": "Configurez d'abord le serveur de messagerie",
       "invitesNeedRewind": "Les invitations partent le jour de la sortie du Rewind. Ouvrez le Rewind aux utilisateurs et choisissez « Années civiles » comme période dans les <link>paramètres Rewind</link>.",
-      "sendNowDescription": "Le bouton Envoyer maintenant envoie tout de suite à un utilisateur l'invitation à son Rewind, à son adresse enregistrée",
+      "sendNowDescription": "Le bouton Envoyer maintenant envoie tout de suite à un utilisateur l'invitation à son Rewind",
       "newsletter": "Newsletter",
       "newsletterDescription": "Envoie à chaque utilisateur un récapitulatif de ce que lui et tous les autres ont regardé et écouté",
       "frequency": "Fréquence",
