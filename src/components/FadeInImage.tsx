@@ -7,6 +7,9 @@ import { useCallback, useState } from 'react'
 type Props = Omit<ImageProps, 'fill' | 'onLoad'> & {
   // Pulses in the frame until the picture is there, like a skeleton
   hasPlaceholder?: boolean
+  // Shown as it loads, for pictures drawn into a saved image, which would
+  // otherwise catch them hidden or halfway through fading in
+  isInstant?: boolean
 }
 
 // A picture that fills its parent and fades in once it has loaded, so it
@@ -17,6 +20,7 @@ export default function FadeInImage({
   alt,
   className,
   hasPlaceholder,
+  isInstant,
   ...props
 }: Props) {
   const [loadedSrc, setLoadedSrc] = useState<Props['src'] | null>(null)
@@ -36,13 +40,16 @@ export default function FadeInImage({
 
   return (
     <>
-      {hasPlaceholder && !isLoaded && (
+      {hasPlaceholder && !isInstant && !isLoaded && (
         <span
           aria-hidden
           className='absolute inset-0 animate-pulse bg-white/10'
         />
       )}
+      {/* A new element for each picture, so the last one doesn't fade out
+          while the next loads */}
       <Image
+        key={typeof src === 'string' ? src : undefined}
         {...props}
         ref={ref}
         fill
@@ -50,9 +57,10 @@ export default function FadeInImage({
         alt={alt}
         className={clsx(
           className,
-          !isCached &&
+          !isInstant &&
+            !isCached &&
             'transition-opacity duration-300 motion-reduce:transition-none',
-          !isLoaded && 'opacity-0!',
+          !isInstant && !isLoaded && 'opacity-0!',
         )}
         onLoad={() => setLoadedSrc(src)}
       />

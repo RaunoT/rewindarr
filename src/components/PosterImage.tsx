@@ -13,6 +13,8 @@ type Props = {
   alt?: string
   sizes: string
   preload?: boolean
+  // Shown as it loads, without the placeholder and fade-in
+  isInstant?: boolean
 }
 
 // Fills its parent, like the poster frame
@@ -22,6 +24,7 @@ export default function PosterImage({
   alt = '',
   sizes,
   preload,
+  isInstant,
 }: Props) {
   const [failedSrcs, setFailedSrcs] = useState<string[]>([])
   const src = srcs.find(
@@ -39,6 +42,7 @@ export default function PosterImage({
   return (
     <FadeInImage
       hasPlaceholder
+      isInstant={isInstant}
       className='object-cover object-top'
       alt={alt}
       src={src}

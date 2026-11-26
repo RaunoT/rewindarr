@@ -12,13 +12,22 @@ type Props = {
   alt?: string
   sizes: string
   preload?: boolean
+  // Shown as it loads, without the placeholder and fade-in
+  isInstant?: boolean
 }
 
 // Fills its parent, which sets the size and shape. Accounts and people without
 // a picture get their initials, like a contact without a photo. The image proxy
 // turns away the coloured letters Plex generates for them, so those fall back
 // too. TMDB's portraits load directly, like its posters.
-export default function Avatar({ src, name, alt = '', sizes, preload }: Props) {
+export default function Avatar({
+  src,
+  name,
+  alt = '',
+  sizes,
+  preload,
+  isInstant,
+}: Props) {
   const imageSrc = !src
     ? null
     : src.startsWith('https://image.tmdb.org')
@@ -37,6 +46,7 @@ export default function Avatar({ src, name, alt = '', sizes, preload }: Props) {
   return (
     <FadeInImage
       hasPlaceholder
+      isInstant={isInstant}
       className='object-cover object-top'
       alt={alt}
       src={imageSrc}
