@@ -421,8 +421,6 @@
       "appUrlDescription": "Dove portano i link nelle email. I tuoi utenti devono poterlo aprire.",
       "language": "Lingua",
       "users": "Utenti",
-      "userColumn": "Utente",
-      "addressColumn": "Indirizzo",
       "recipients": "Destinatari",
       "recipientsDescription": "Gli utenti possono annullare l'iscrizione in qualsiasi momento",
       "recipientsSearch": "Cerca utenti",

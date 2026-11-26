@@ -421,8 +421,6 @@
       "appUrlDescription": "Adónde llevan los enlaces de los correos. Tus usuarios tienen que poder abrirla.",
       "language": "Idioma",
       "users": "Usuarios",
-      "userColumn": "Usuario",
-      "addressColumn": "Dirección",
       "recipients": "Destinatarios",
       "recipientsDescription": "Los usuarios pueden darse de baja en cualquier momento",
       "recipientsSearch": "Buscar usuarios",

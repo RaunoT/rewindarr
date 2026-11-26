@@ -421,8 +421,6 @@
       "appUrlDescription": "Kuhu e-kirjades olevad lingid viivad. Sinu kasutajad peavad saama seda avada.",
       "language": "Keel",
       "users": "Kasutajad",
-      "userColumn": "Kasutaja",
-      "addressColumn": "Aadress",
       "recipients": "Saajad",
       "recipientsDescription": "Kasutajad saavad igal ajal loobuda",
       "recipientsSearch": "Otsi kasutajaid",

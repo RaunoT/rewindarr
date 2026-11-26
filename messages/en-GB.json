@@ -421,8 +421,6 @@
       "appUrlDescription": "Where the links in the emails lead. Your users have to be able to open it.",
       "language": "Language",
       "users": "Users",
-      "userColumn": "User",
-      "addressColumn": "Address",
       "recipients": "Recipients",
       "recipientsDescription": "Users can unsubscribe any time",
       "recipientsSearch": "Search users",

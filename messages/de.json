@@ -421,8 +421,6 @@
       "appUrlDescription": "Wohin die Links in den E-Mails führen. Deine Benutzer müssen sie öffnen können.",
       "language": "Sprache",
       "users": "Benutzer",
-      "userColumn": "Benutzer",
-      "addressColumn": "Adresse",
       "recipients": "Empfänger",
       "recipientsDescription": "Benutzer können sich jederzeit abmelden",
       "recipientsSearch": "Benutzer suchen",

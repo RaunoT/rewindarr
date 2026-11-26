@@ -46,7 +46,7 @@ type Props = {
   canSendRewind: boolean
 }
 
-// A column of switches, one for each user, for an email they can stop
+// A switch each user has, for an email they can stop
 type SwitchColumn = {
   label: string
   getSwitchLabel: (name: string) => string
@@ -56,9 +56,6 @@ type SwitchColumn = {
   // Whether it was on for a user when the form showed
   wasOn: (recipient: EmailRecipient) => boolean
   fields: { users: string; isOn: string; wasOn: string }
-  // How wide it is beside the other column, which in a narrow list is its
-  // label's width and a little closer to what's before it, for the name's room
-  width: string
 }
 
 function getSubscribed(recipients: EmailRecipient[] | null): string[] {
@@ -150,7 +147,6 @@ function UserList({
     value: subscribed,
     onChange: setSubscribed,
     wasOn: (recipient) => recipient.isSubscribed,
-    width: 'w-16 @max-md:-ml-1 @md:w-20',
     fields: {
       users: SUBSCRIPTION_USERS_FIELD,
       isOn: SUBSCRIBED_FIELD,
@@ -163,7 +159,6 @@ function UserList({
     value: invited,
     onChange: setInvited,
     wasOn: (recipient) => recipient.isInvited,
-    width: 'w-20 @max-md:-ml-1',
     fields: {
       users: INVITE_USERS_FIELD,
       isOn: INVITED_FIELD,
@@ -175,11 +170,9 @@ function UserList({
     ...(isInviteActive ? [inviteColumn] : []),
   ]
   const ids = recipients.map(({ id }) => id)
-  // With both columns each has a width of its own
-  const hasBoth = columns.length > 1
-  // The address goes under the name sooner with more beside it: both columns,
-  // or the button that sends a Rewind invite
-  const isStacked = hasBoth || canSendRewind
+  // The address goes under the name sooner with more beside it: both
+  // switches, or the button that sends a Rewind invite
+  const isStacked = columns.length > 1 || canSendRewind
   // Select all and clear are for every switch, whichever column it's in
   const switchKeys = columns.flatMap((_, index) =>
     ids.map((id) => `${index}:${id}`),
@@ -207,39 +200,6 @@ function UserList({
           users={recipients}
           searchLabel={t('recipientsSearch')}
           emptyLabel={t('recipientsNone')}
-          header={
-            // The controls have their own labels. Without the room for the
-            // address beside the name it goes under it, so there are only
-            // the switches' to name.
-            <div
-              className={clsx(
-                'flex items-end gap-3 border-b border-white/10 px-3 py-2 text-xs font-medium text-neutral-400',
-                !columns.length && '@max-lg:hidden',
-              )}
-              aria-hidden
-            >
-              <span className='min-w-0 flex-1'>{t('userColumn')}</span>
-              <span
-                className={clsx(
-                  canSendRewind ? 'w-80' : 'w-56',
-                  isStacked ? '@max-2xl:hidden' : '@max-lg:hidden',
-                )}
-              >
-                {t('addressColumn')}
-              </span>
-              {columns.map((column) => (
-                <span
-                  key={column.label}
-                  className={clsx(
-                    'text-right',
-                    hasBoth ? column.width : '@lg:w-20',
-                  )}
-                >
-                  {column.label}
-                </span>
-              ))}
-            </div>
-          }
           footer={
             !!columns.length && (
               <fieldset
@@ -288,30 +248,30 @@ function UserList({
                   />
                 )}
               </div>
-              {columns.map((column) => (
-                <div
-                  key={column.label}
-                  className={clsx(
-                    'flex justify-end',
-                    hasBoth ? column.width : '@lg:w-20',
-                  )}
-                >
-                  <Switch
-                    className='switch switch--small'
-                    isSelected={column.value.includes(recipient.id)}
-                    onChange={(isSelected) =>
-                      column.onChange((ids) =>
-                        isSelected
-                          ? [...ids, recipient.id]
-                          : ids.filter((id) => id !== recipient.id),
-                      )
-                    }
-                    aria-label={column.getSwitchLabel(recipient.name)}
-                  >
-                    <div className='indicator' />
-                  </Switch>
+              {/* Each with its label, beside the name where the list has the
+                  room, else under it */}
+              {!!columns.length && (
+                <div className='flex flex-wrap gap-x-5 gap-y-2 @max-md:w-full'>
+                  {columns.map((column) => (
+                    <Switch
+                      key={column.label}
+                      className='switch switch--small flex-row text-xs'
+                      isSelected={column.value.includes(recipient.id)}
+                      onChange={(isSelected) =>
+                        column.onChange((ids) =>
+                          isSelected
+                            ? [...ids, recipient.id]
+                            : ids.filter((id) => id !== recipient.id),
+                        )
+                      }
+                      aria-label={column.getSwitchLabel(recipient.name)}
+                    >
+                      <div className='indicator' />
+                      <span aria-hidden>{column.label}</span>
+                    </Switch>
+                  ))}
                 </div>
-              ))}
+              )}
             </>
           )}
         </UserSearchList>
