@@ -380,7 +380,7 @@
       "shareLinksDescription": "Jeder Link öffnet den Rewind dieses Benutzers ohne Anmeldung, also kann ihn auch jeder sehen, an den er weitergegeben wird.",
       "shareLinksLoginDescription": "Jeder Link öffnet den Rewind dieses Benutzers für jeden, der sich anmeldet, also können ihn auch andere auf dem Server sehen, an die er weitergegeben wird.",
       "shareLogin": "Anmeldung für geteilte Links",
-      "shareLoginDescription": "Geteilte Links und E-Mail-Einladungen verlangen vor dem Öffnen eine Anmeldung. Sonst öffnen sie sich für jeden, der einen hat.",
+      "shareLoginDescription": "Der eigene Rewind-Link jedes Benutzers, auch die E-Mail-Einladung, öffnet sich erst nach der Anmeldung. Ist das aus, öffnet er sich für jeden, der ihn hat, auch wenn „Zugang von Außen zulassen“ aus ist.",
       "shareLinksSendDescription": "Jetzt senden schickt ihn an die Adresse in den <link>E-Mail-Einstellungen</link>.",
       "shareLinksSearch": "Benutzer suchen",
       "shareLinksNoUsers": "Keine Benutzer gefunden",
