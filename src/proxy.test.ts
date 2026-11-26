@@ -268,6 +268,39 @@ describe('proxy', () => {
       expect(res?.cookies.get(REWIND_SHARE_COOKIE)?.value).toMatch(/^42:/)
     })
 
+    it('sends a shared Rewind to log in and back when its links ask for it', async () => {
+      const settings = getSettings()
+      const path = getRewindSharePath(settings, '42')!
+
+      settings.rewind.isShareLoginRequired = true
+      // Outside access leaves the links closed too
+      settings.general.isOutsideAccess = true
+
+      const res = await request('', path)
+
+      expect(res?.headers.get('location')).toBe(
+        `http://localhost:3000/?callbackUrl=${encodeURIComponent(path)}`,
+      )
+      expect(res?.cookies.get(REWIND_SHARE_COOKIE)).toBeUndefined()
+    })
+
+    it('opens a shared Rewind that asks for a login once logged in', async () => {
+      const settings = getSettings()
+
+      settings.rewind.isShareLoginRequired = true
+      vi.mocked(getServerUser).mockResolvedValue({
+        status: 'member',
+        isAdmin: false,
+      })
+
+      const res = await requestAsAdmin(getRewindSharePath(settings, '42')!)
+
+      expect(res?.headers.get('location')).toBeNull()
+      expect(
+        res?.headers.get(`x-middleware-request-${REWIND_SHARE_HEADER}`),
+      ).toBe('42')
+    })
+
     it("sends a link with another user's key to log in", async () => {
       const key = new URLSearchParams(
         getRewindSharePath(getSettings(), '42')!.split('?')[1],

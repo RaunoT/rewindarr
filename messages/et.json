@@ -378,6 +378,9 @@
       "startDateError": "Kontrolli alguskuupäeva.",
       "shareLinks": "Jagatud lingid",
       "shareLinksDescription": "Iga link avab selle kasutaja Rewindi ilma sisse logimata, nii et seda näeb ka igaüks, kellele link edasi saadetakse.",
+      "shareLinksLoginDescription": "Iga link avab selle kasutaja Rewindi igaühele, kes sisse logib, nii et seda näevad ka teised serveri kasutajad, kellele link edasi saadetakse.",
+      "shareLogin": "Jagatud lingid nõuavad sisselogimist",
+      "shareLoginDescription": "Jagatud lingid ja meiliga saadetud kutsed paluvad enne avamist sisse logida. Muidu avanevad need igaühele, kellel link on.",
       "shareLinksSendDescription": "Nupp Saada kohe saadab selle aadressile, mis on <link>E-posti seadetes</link>.",
       "shareLinksSearch": "Otsi kasutajaid",
       "shareLinksNoUsers": "Kasutajaid ei leitud",
@@ -953,7 +956,8 @@
         "personality": "Vaatajatüüp"
       },
       "button": "Vaata minu Rewindi",
-      "footer": "See link avab sinu Rewindi ilma sisse logimata, seega jaga seda ainult nendega, kellele tahad seda näidata."
+      "footer": "See link avab sinu Rewindi ilma sisse logimata, seega jaga seda ainult nendega, kellele tahad seda näidata.",
+      "footerLogin": "See link avab sinu Rewindi pärast sisselogimist. Ka teised serveri kasutajad saavad selle avada, seega jaga seda ainult nendega, kellele tahad seda näidata."
     },
     "Newsletter": {
       "subject": {

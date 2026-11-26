@@ -36,6 +36,7 @@ export default async function saveRewindSettings(
     .object({
       isActive: z.boolean(),
       isAdminOnly: z.boolean().optional(),
+      isShareLoginRequired: z.boolean().optional(),
       hiddenStories: z.array(z.enum(REWIND_STORIES)).optional(),
       isThemeMusicActive: z.boolean().optional(),
       isSnowActive: z.boolean().optional(),
@@ -87,6 +88,13 @@ export default async function saveRewindSettings(
 
   if (isActive) {
     data.isAdminOnly = formData.get('isAdminOnly') === 'on'
+
+    // Only offered while users can open their own Rewind, which the links
+    // lead to
+    if (!data.isAdminOnly) {
+      data.isShareLoginRequired = formData.get('isShareLoginRequired') === 'on'
+    }
+
     data.hiddenStories = formData.getAll('hiddenStories') as RewindStoryId[]
     data.isThemeMusicActive = formData.get('isThemeMusicActive') === 'on'
     data.isSnowActive = formData.get('isSnowActive') === 'on'

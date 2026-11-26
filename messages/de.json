@@ -378,6 +378,9 @@
       "startDateError": "Prüfe das Startdatum.",
       "shareLinks": "Geteilte Links",
       "shareLinksDescription": "Jeder Link öffnet den Rewind dieses Benutzers ohne Anmeldung, also kann ihn auch jeder sehen, an den er weitergegeben wird.",
+      "shareLinksLoginDescription": "Jeder Link öffnet den Rewind dieses Benutzers für jeden, der sich anmeldet, also können ihn auch andere auf dem Server sehen, an die er weitergegeben wird.",
+      "shareLogin": "Anmeldung für geteilte Links",
+      "shareLoginDescription": "Geteilte Links und E-Mail-Einladungen verlangen vor dem Öffnen eine Anmeldung. Sonst öffnen sie sich für jeden, der einen hat.",
       "shareLinksSendDescription": "Jetzt senden schickt ihn an die Adresse in den <link>E-Mail-Einstellungen</link>.",
       "shareLinksSearch": "Benutzer suchen",
       "shareLinksNoUsers": "Keine Benutzer gefunden",
@@ -953,7 +956,8 @@
         "personality": "Zuschauertyp"
       },
       "button": "Meinen Rewind ansehen",
-      "footer": "Dieser Link öffnet deinen Rewind ohne Anmeldung, also teile ihn nur mit Leuten, denen du ihn zeigen möchtest."
+      "footer": "Dieser Link öffnet deinen Rewind ohne Anmeldung, also teile ihn nur mit Leuten, denen du ihn zeigen möchtest.",
+      "footerLogin": "Dieser Link öffnet deinen Rewind nach der Anmeldung. Andere auf dem Server können ihn auch öffnen, also teile ihn nur mit Leuten, denen du ihn zeigen möchtest."
     },
     "Newsletter": {
       "subject": {

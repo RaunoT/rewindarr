@@ -16,6 +16,7 @@ import {
   isSettingsPath,
 } from './utils/helpers'
 import {
+  canOpenRewindShare,
   isRewindShareKey,
   REWIND_SHARE_COOKIE,
   REWIND_SHARE_HEADER,
@@ -198,15 +199,18 @@ export default async function proxy(req: NextRequest) {
     }
   }
 
-  const rewindShare = getRewindShare(req, settings)
+  const share = getRewindShare(req, settings)
+  // A shared Rewind opens without signing in, unless its links ask for it
+  const rewindShare =
+    share && settings && canOpenRewindShare(settings, !!token) ? share : null
 
-  // A shared Rewind opens without signing in
+  // The login returns to the link, key and all
   if (
     !token &&
     !rewindShare &&
     req.method === 'GET' &&
     settings &&
-    isLoginRequired(settings, pathname)
+    (share || isLoginRequired(settings, pathname))
   ) {
     return redirectToLogin(req)
   }
