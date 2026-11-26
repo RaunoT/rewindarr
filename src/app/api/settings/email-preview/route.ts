@@ -58,7 +58,8 @@ export async function GET(request: Request) {
 
   // A preview goes nowhere, so it doesn't need an address
   const reader = { ...recipient, address: recipient.address || '-' }
-  const libraries = await getLibraries()
+  // As the emails are sent
+  const libraries = await getLibraries(true, { isAll: true })
   const period =
     type === 'rewind'
       ? getRewindPeriod(settings, { timeZone: intl.timeZone })

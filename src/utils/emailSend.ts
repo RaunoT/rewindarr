@@ -57,7 +57,8 @@ async function prepare(
     return 'appUrlMissing'
   }
 
-  const libraries = await getLibraries()
+  // Sent on a schedule too, with nobody signed in to go by
+  const libraries = await getLibraries(true, { isAll: true })
 
   if (await getHistoryProgress(since, libraries, HISTORY_TIMEOUT_MS)) {
     return 'historyReading'

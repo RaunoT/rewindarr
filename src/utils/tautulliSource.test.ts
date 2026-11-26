@@ -690,6 +690,41 @@ describe('while Tautulli is down', () => {
     ])
   })
 
+  it('returns the libraries shared with the user asked for, whoever is signed in', async () => {
+    const settings = vi.mocked(getSettings)()
+
+    settings.general.isOutsideAccess = false
+    settings.setupComplete = true
+    vi.mocked(getServerSession).mockResolvedValue(null)
+    fetchMock.mockResolvedValue(null)
+    useSnapshot({
+      [`${KEY}|libraries`]: [library('1', 'movie'), library('2', 'show')],
+      [`${KEY}|sharedLibraries|7`]: ['2'],
+    })
+
+    await expect(tautulliSource.getLibraries()).resolves.toEqual([])
+    await expect(tautulliSource.getLibraries({ userId: '7' })).resolves.toEqual(
+      [library('2', 'show')],
+    )
+    expect(getServerSession).toHaveBeenCalledTimes(1)
+  })
+
+  it('returns every library with nobody signed in when asked for all', async () => {
+    const settings = vi.mocked(getSettings)()
+
+    settings.general.isOutsideAccess = false
+    settings.setupComplete = true
+    fetchMock.mockResolvedValue(null)
+    useSnapshot({
+      [`${KEY}|libraries`]: [library('1', 'movie'), library('2', 'show')],
+    })
+
+    await expect(tautulliSource.getLibraries({ isAll: true })).resolves.toEqual(
+      [library('1', 'movie'), library('2', 'show')],
+    )
+    expect(getServerSession).not.toHaveBeenCalled()
+  })
+
   it('finds an inactive user in the saved users', async () => {
     fetchMock.mockResolvedValue(null)
     useSnapshot({ [`${KEY}|users`]: users })

@@ -49,6 +49,12 @@ describe('getRewindEditions', () => {
     expect(getHistoryPlays).toHaveBeenCalledTimes(1)
   })
 
+  it("reads the user's own libraries, whoever is signed in", async () => {
+    await getRewindEditions('1', false, 'UTC', now)
+
+    expect(getLibraries).toHaveBeenCalledWith(true, { userId: '1' })
+  })
+
   it("lists everyone's years for an admin, excluded or not", async () => {
     await expect(getRewindEditions('2', true, 'UTC', now)).resolves.toEqual({
       1: [2024, 2022],

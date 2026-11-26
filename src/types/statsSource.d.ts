@@ -300,6 +300,11 @@ export type LibrariesQuery = {
   // Asks Tautulli again instead of giving the libraries it kept, for where
   // they're picked. Tracearr's are one per media type, so they hardly change.
   fresh?: boolean
+  // Whose shared libraries to keep, in place of the signed-in user's: the
+  // user a Rewind is of, whoever opens it
+  userId?: string
+  // Every library, for the emails, which go out with nobody signed in
+  isAll?: boolean
 }
 
 // Each statistics source maps its data onto the types above.
