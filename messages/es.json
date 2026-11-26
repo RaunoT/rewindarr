@@ -380,7 +380,7 @@
       "shareLinksDescription": "Cada enlace abre el Rewind de ese usuario sin iniciar sesión, así que cualquiera a quien se le reenvíe también puede verlo.",
       "shareLinksLoginDescription": "Cada enlace abre el Rewind de ese usuario a cualquiera que inicie sesión, así que otros usuarios del servidor a quienes se les reenvíe también pueden verlo.",
       "shareLogin": "Inicio de sesión para los enlaces compartidos",
-      "shareLoginDescription": "El enlace de Rewind propio de cada usuario, también la invitación por correo, solo se abre tras iniciar sesión. Si está desactivado, se abre para cualquiera que lo tenga, aunque «Permitir acceso externo» esté desactivado.",
+      "shareLoginDescription": "El enlace de Rewind propio de cada usuario solo se abre tras iniciar sesión. Si está desactivado, cualquiera que lo tenga puede abrirlo, sea cual sea el ajuste «Permitir acceso externo».",
       "shareLinksSendDescription": "Enviar ahora lo manda a la dirección de los <link>ajustes de Correo</link>.",
       "shareLinksSearch": "Buscar usuarios",
       "shareLinksNoUsers": "No se encontraron usuarios",

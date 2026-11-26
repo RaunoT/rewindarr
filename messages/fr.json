@@ -380,7 +380,7 @@
       "shareLinksDescription": "Chaque lien ouvre le Rewind de cet utilisateur sans connexion, donc toute personne à qui il est transmis peut aussi le voir.",
       "shareLinksLoginDescription": "Chaque lien ouvre le Rewind de cet utilisateur pour toute personne qui se connecte, donc les autres membres du serveur à qui il est transmis peuvent aussi le voir.",
       "shareLogin": "Connexion pour les liens partagés",
-      "shareLoginDescription": "Le lien Rewind propre à chaque utilisateur, y compris l'invitation par e-mail, ne s'ouvre qu'après connexion. Désactivé, il s'ouvre pour toute personne qui l'a, même si « Autoriser l'accès externe » est désactivé.",
+      "shareLoginDescription": "Le lien Rewind propre à chaque utilisateur ne s'ouvre qu'après connexion. Désactivé, toute personne qui l'a peut l'ouvrir, quel que soit le réglage « Autoriser l'accès externe ».",
       "shareLinksSendDescription": "Le bouton Envoyer maintenant l'envoie à l'adresse indiquée dans les <link>paramètres e-mail</link>.",
       "shareLinksSearch": "Rechercher des utilisateurs",
       "shareLinksNoUsers": "Aucun utilisateur trouvé",

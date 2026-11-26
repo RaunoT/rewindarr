@@ -380,7 +380,7 @@
       "shareLinksDescription": "Iga link avab selle kasutaja Rewindi ilma sisse logimata, nii et seda näeb ka igaüks, kellele link edasi saadetakse.",
       "shareLinksLoginDescription": "Iga link avab selle kasutaja Rewindi igaühele, kes sisse logib, nii et seda näevad ka teised serveri kasutajad, kellele link edasi saadetakse.",
       "shareLogin": "Jagatud lingid nõuavad sisselogimist",
-      "shareLoginDescription": "Iga kasutaja isiklik Rewindi link, ka meiliga saadetud kutse, avaneb alles pärast sisselogimist. Väljalülitatuna avaneb see igaühele, kellel link on, isegi kui „Luba väline ligipääs“ on väljas.",
+      "shareLoginDescription": "Iga kasutaja isiklik Rewindi link avaneb alles pärast sisselogimist. Väljalülitatuna saab selle avada igaüks, kellel link on, olenemata sättest „Luba väline ligipääs“.",
       "shareLinksSendDescription": "Nupp Saada kohe saadab selle aadressile, mis on <link>E-posti seadetes</link>.",
       "shareLinksSearch": "Otsi kasutajaid",
       "shareLinksNoUsers": "Kasutajaid ei leitud",
