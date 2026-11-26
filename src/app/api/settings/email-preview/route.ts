@@ -78,7 +78,14 @@ export async function GET(request: Request) {
 
   const built =
     type === 'rewind'
-      ? await buildRewindEmail(settings, intl, reader, appUrl, libraries)
+      ? await buildRewindEmail(
+          settings,
+          intl,
+          reader,
+          appUrl,
+          // The reader's own, as their Rewind has
+          await getLibraries(true, { userId: reader.id }),
+        )
       : await buildNewsletter(
           settings,
           intl,

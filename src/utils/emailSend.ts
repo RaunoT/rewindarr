@@ -157,14 +157,22 @@ export async function sendRewindEmails(
   const intl = await getEmailIntl(settings.email.locale)
   const period = getRewindPeriod(settings, { timeZone: intl.timeZone })
 
-  return run(period.since, settings, async ({ appUrl, libraries }) => {
+  return run(period.since, settings, async ({ appUrl }) => {
     const recipients = pickRecipients(
       await getEmailRecipients(settings),
       userIds,
     )
 
-    return buildAndSend(settings, recipients, (recipient) =>
-      buildRewindEmail(settings, intl, recipient, appUrl, libraries),
+    // The recipient's own libraries, as the Rewind the invite leads to has
+    // only their plays in those
+    return buildAndSend(settings, recipients, async (recipient) =>
+      buildRewindEmail(
+        settings,
+        intl,
+        recipient,
+        appUrl,
+        await getLibraries(true, { userId: recipient.id }),
+      ),
     )
   })
 }
