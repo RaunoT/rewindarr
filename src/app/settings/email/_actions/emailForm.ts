@@ -20,6 +20,9 @@ export const WAS_INVITED_FIELD = 'wasInvited'
 export const ADDRESS_USERS_FIELD = 'addressUsers'
 export const SUBSCRIPTION_USERS_FIELD = 'subscriptionUsers'
 export const INVITE_USERS_FIELD = 'inviteUsers'
+// Sent while the form offers the Rewind invites' switch, so a save without it
+// doesn't turn them off
+export const INVITE_OFFERED_FIELD = 'isInviteOffered'
 
 function readText(formData: FormData, name: string): string {
   return String(formData.get(name) ?? '').trim()

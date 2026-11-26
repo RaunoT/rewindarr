@@ -26,6 +26,7 @@ import {
   WAS_INVITED_FIELD,
   WAS_SUBSCRIBED_FIELD,
 } from '../_actions/emailForm'
+import SendRewindButton, { useRewindSends } from './SendRewindButton'
 
 type Props = {
   // Read while the rest of the form shows. Null when they couldn't be read.
@@ -35,9 +36,11 @@ type Props = {
   // Whether the newsletter was on when the form showed, rather than turned
   // on since
   isNewsletterOnLoad: boolean
-  // Whether Rewind invites go out on the release day, which their column
-  // shows for. Set in the Rewind settings, so it doesn't change here.
+  // The same for the Rewind invites on the release day
   isInviteActive: boolean
+  isInviteOnLoad: boolean
+  // Whether a user can be emailed their Rewind invite straight away
+  canSendRewind: boolean
 }
 
 // A column of switches, one for each user, for an email they can stop
@@ -98,6 +101,8 @@ function UserList({
   isNewsletterActive,
   isNewsletterOnLoad,
   isInviteActive,
+  isInviteOnLoad,
+  canSendRewind,
 }: Props) {
   const t = useTranslations('Settings.Email')
   const recipients = use(request)
@@ -107,6 +112,7 @@ function UserList({
   const [subscribed, setSubscribed] = useState(() => getSubscribed(recipients))
   const [invited, setInvited] = useState(() => getInvited(recipients))
   const [shownRecipients, setShownRecipients] = useState(recipients)
+  const sends = useRewindSends()
   // Which read of the users the address fields show
   const [version, setVersion] = useState(0)
 
@@ -125,7 +131,7 @@ function UserList({
   // The newsletter's fields only count as loaded when it was on as the form
   // showed, rather than turned on since
   useLoadedFields(subscriptionRef, isNewsletterOnLoad && isNewsletterActive)
-  useLoadedFields(inviteRef, isInviteActive)
+  useLoadedFields(inviteRef, isInviteOnLoad && isInviteActive)
 
   if (!recipients) {
     return (
@@ -166,9 +172,11 @@ function UserList({
     ...(isInviteActive ? [inviteColumn] : []),
   ]
   const ids = recipients.map(({ id }) => id)
-  // With both columns the address goes under the name sooner, and each
-  // column has a width of its own
+  // With both columns each has a width of its own
   const hasBoth = columns.length > 1
+  // The address goes under the name sooner with more beside it: both columns,
+  // or the button that sends a Rewind invite
+  const isStacked = hasBoth || canSendRewind
   // Select all and clear are for every switch, whichever column it's in
   const switchKeys = columns.flatMap((_, index) =>
     ids.map((id) => `${index}:${id}`),
@@ -210,8 +218,8 @@ function UserList({
               <span className='min-w-0 flex-1'>{t('userColumn')}</span>
               <span
                 className={clsx(
-                  'w-56',
-                  hasBoth ? '@max-2xl:hidden' : '@max-lg:hidden',
+                  canSendRewind ? 'w-80' : 'w-56',
+                  isStacked ? '@max-2xl:hidden' : '@max-lg:hidden',
                 )}
               >
                 {t('addressColumn')}
@@ -252,21 +260,31 @@ function UserList({
                 value={recipient.id}
               />
               {/* Beside the name where the list has the room, else under it */}
-              <input
-                key={`address-${version}`}
-                type='email'
+              <div
                 className={clsx(
-                  'input order-last text-base sm:text-sm',
-                  hasBoth
-                    ? '@2xl:order-none @2xl:w-56'
-                    : '@lg:order-none @lg:w-56',
+                  'order-last flex w-full items-center gap-2',
+                  isStacked ? '@2xl:order-none' : '@lg:order-none @lg:w-56',
+                  isStacked && (canSendRewind ? '@2xl:w-80' : '@2xl:w-56'),
                 )}
-                name={`${ADDRESS_FIELD_PREFIX}${recipient.id}`}
-                defaultValue={recipient.customAddress}
-                placeholder={recipient.foundAddress || t('noAddress')}
-                aria-label={t('addressLabel', { name: recipient.name })}
-                autoComplete='off'
-              />
+              >
+                <input
+                  key={`address-${version}`}
+                  type='email'
+                  className='input min-w-0 flex-1 text-base sm:text-sm'
+                  name={`${ADDRESS_FIELD_PREFIX}${recipient.id}`}
+                  defaultValue={recipient.customAddress}
+                  placeholder={recipient.foundAddress || t('noAddress')}
+                  aria-label={t('addressLabel', { name: recipient.name })}
+                  autoComplete='off'
+                />
+                {canSendRewind && (
+                  <SendRewindButton
+                    user={recipient}
+                    state={sends.states[recipient.id]}
+                    onSend={() => sends.send(recipient)}
+                  />
+                )}
+              </div>
               {columns.map((column) => (
                 <div
                   key={column.label}
@@ -329,6 +347,9 @@ export default function EmailUsers(props: Props) {
         <span className='label-wrapper'>{t('users')}</span>
         {(props.isNewsletterActive || props.isInviteActive) && (
           <small>{t('recipientsDescription')}</small>
+        )}
+        {props.canSendRewind && (
+          <small className='mt-2'>{t('sendNowDescription')}</small>
         )}
       </span>
     </div>

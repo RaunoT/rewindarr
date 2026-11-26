@@ -10,7 +10,7 @@ import {
 } from '@/utils/constants'
 import { isWebUrl } from '@/utils/emailLinks'
 import { isEmailAddress } from '@/utils/emailRecipients'
-import getSettings from '@/utils/getSettings'
+import getSettings, { writeSettings } from '@/utils/getSettings'
 import {
   isMailServerSet,
   maskMailPassword,
@@ -18,10 +18,12 @@ import {
 } from '@/utils/mailer'
 import { passOverDueNewsletter } from '@/utils/newsletter'
 import { isSameSchedule, MAX_MONTH_DAY } from '@/utils/newsletterSchedule'
+import { passOverReleasedRewind } from '@/utils/rewindRelease'
+import { canSendReleaseEmails } from '@/utils/rewindReleaseSchedule'
 import { getTranslations } from 'next-intl/server'
 import { z } from 'zod'
 import updateSettings from '../../_actions/updateSettings'
-import { readEmailForm } from './emailForm'
+import { INVITE_OFFERED_FIELD, readEmailForm } from './emailForm'
 
 type EmailFormState = SettingsFormInitialState<Partial<EmailSettings>>
 
@@ -34,6 +36,31 @@ export default async function saveEmailSettings(
   return {
     ...state,
     fields: maskMailPassword(state.fields, getSettings().email),
+  }
+}
+
+// Whether Rewind invites go out on the release day, which is one of Rewind's
+// settings, as it's the release that sends them
+async function saveInviteSwitch(isOn: boolean) {
+  const settings = getSettings()
+
+  if (
+    !canSendReleaseEmails(settings) ||
+    settings.rewind.isReleaseEmailActive === isOn
+  ) {
+    return
+  }
+
+  try {
+    settings.rewind.isReleaseEmailActive = isOn
+    writeSettings(settings)
+
+    // An edition that's already out isn't emailed, only the next one
+    if (isOn) {
+      await passOverReleasedRewind(settings)
+    }
+  } catch (error) {
+    console.error('[REWIND EMAILS] - Unable to save the invites!', error)
   }
 }
 
@@ -124,6 +151,14 @@ async function validateAndSave(
   })
   const state = await updateSettings(schema, data, 'email')
   const updated = getSettings().email
+
+  // Only sent while there's a release day to invite users on
+  if (
+    state.status === 'success' &&
+    formData.get(INVITE_OFFERED_FIELD) === 'on'
+  ) {
+    await saveInviteSwitch(formData.get('isReleaseEmailActive') === 'on')
+  }
 
   // The first one goes out at the next send time, not straight away
   if (
